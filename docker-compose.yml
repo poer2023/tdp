@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tdp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tdp
+      POSTGRES_PASSWORD: tdp_password
+      POSTGRES_DB: tdp
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tdp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tdp-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tdp-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./public/uploads:/app/public/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tdp-net
+
+volumes:
+  postgres-data:
+
+networks:
+  tdp-net:
+    driver: bridge

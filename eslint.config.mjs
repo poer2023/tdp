@@ -18,6 +18,13 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "*.config.js",
+      "*.config.mjs",
+      "*.config.ts",
+      "prisma/migrations/**",
+      "public/uploads/**",
+      "playwright-report/**",
+      "test-results/**",
     ],
   },
 ];
