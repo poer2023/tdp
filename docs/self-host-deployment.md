@@ -125,6 +125,79 @@ sudo journalctl -u tdp -f
 
 > 如需以不同端口运行，可在 `.env` 中增加 `PORT=3000` 类变量，Next.js 会自动识别。
 
+## 5.1 健康检查配置
+
+应用已内置健康检查接口，可用于监控服务状态：
+
+```bash
+# 检查应用健康状态
+curl http://localhost:3000/api/health
+```
+
+### Nginx 健康检查集成
+在 Nginx 配置中可以使用健康检查路径：
+
+```nginx
+upstream app_backend {
+    server 127.0.0.1:3000;
+    # 可配置健康检查
+}
+
+server {
+    location /health {
+        access_log off;
+        proxy_pass http://app_backend/api/health;
+    }
+}
+```
+
+### systemd 服务健康监控
+为 systemd 服务添加健康检查脚本 `/usr/local/bin/tdp-health.sh`：
+
+```bash
+#!/bin/bash
+response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health)
+if [ "$response" -eq 200 ]; then
+    exit 0
+else
+    exit 1
+fi
+```
+
+设置定时健康检查：
+```bash
+sudo chmod +x /usr/local/bin/tdp-health.sh
+
+# 添加到 crontab（每分钟检查一次）
+echo "* * * * * /usr/local/bin/tdp-health.sh || systemctl restart tdp" | sudo crontab -
+```
+
+## 5.2 安全配置
+
+### 运行用户
+建议使用非特权用户运行应用：
+
+```bash
+# 创建专用用户
+sudo useradd -r -s /bin/false tdp-user
+
+# 设置目录权限
+sudo chown -R tdp-user:tdp-user /var/www/tdp
+
+# 修改 systemd 服务文件中的 User 配置
+User=tdp-user
+```
+
+### 文件权限
+确保上传目录权限正确：
+
+```bash
+# 创建上传目录
+mkdir -p /var/www/tdp/public/uploads
+sudo chown -R tdp-user:www-data /var/www/tdp/public/uploads
+sudo chmod -R 755 /var/www/tdp/public/uploads
+```
+
 ## 6. 反向代理配置（以 Nginx 为例）
 
 1. 安装 Nginx：

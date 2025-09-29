@@ -44,3 +44,7 @@ next-env.d.ts
 /public/uploads/*
 !/public/uploads/.gitkeep
 /prisma/prisma/dev.db
+
+# Notion临时文件
+notion_page*.html
+notion_public_data.json

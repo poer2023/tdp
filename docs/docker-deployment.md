@@ -38,7 +38,91 @@ docker compose up -d --build
 
 访问 <http://localhost:3000>（或映射后的域名/端口），完成 Google 登录后即可使用后台。
 
-## 4. 常用命令
+## 4. 健康检查
+
+应用已内置健康检查接口 `/api/health`，用于监控应用和数据库状态：
+
+```bash
+# 检查应用健康状态
+curl http://localhost:3000/api/health
+```
+
+正常响应：
+```json
+{
+  "ok": true,
+  "db": "ok",
+  "timestamp": "2025-01-15T10:30:00.000Z"
+}
+```
+
+Docker Compose 已配置自动健康探针：
+- **interval**: 10s - 每10秒检查一次
+- **timeout**: 5s - 5秒超时
+- **retries**: 10 - 失败10次才标记为不健康
+- **start_period**: 30s - 启动后30秒开始检查
+
+查看容器健康状态：
+```bash
+docker compose ps
+# 显示服务状态：healthy, starting, unhealthy
+```
+
+## 5. 安全配置
+
+### 非 Root 运行
+应用容器已配置为使用 `node` 用户运行（非 root），提升安全性：
+
+```bash
+# 验证容器进程用户
+docker exec tdp-app id
+# 输出应显示 UID/GID 非 0
+```
+
+### 文件权限
+- 上传目录 `public/uploads` 已通过卷映射确保可写
+- 入口脚本会自动创建所需目录并设置权限
+
+### 最佳实践
+- 定期更新基础镜像和依赖
+- 使用强随机密钥作为 `NEXTAUTH_SECRET`
+- 在生产环境中使用 HTTPS
+- 配置防火墙限制不必要的端口访问
+
+## 6. CI/CD 镜像发布
+
+项目已配置 GitHub Actions 自动构建和发布 Docker 镜像：
+
+### 触发条件
+- 推送到 `main` 分支
+- 创建版本标签（如 `v1.0.0`）
+
+### 镜像仓库
+镜像发布到 GitHub Container Registry (GHCR)：
+```
+ghcr.io/[username]/tdp:latest
+ghcr.io/[username]/tdp:[git-sha]
+```
+
+### 使用发布的镜像
+修改 `docker-compose.yml` 使用远程镜像：
+```yaml
+services:
+  app:
+    image: ghcr.io/[username]/tdp:latest
+    # 注释掉 build 配置
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+```
+
+然后拉取并启动：
+```bash
+docker compose pull
+docker compose up -d
+```
+
+## 7. 常用命令
 
 - 查看日志：`docker compose logs -f app`
 - 运行数据库控制台：
@@ -55,7 +139,7 @@ docker compose up -d --build
   ```
   （构建完成后容器会自动执行迁移，确保 schema 最新。）
 
-## 5. 数据备份
+## 8. 数据备份
 
 - 数据库备份：
   ```bash
@@ -63,13 +147,13 @@ docker compose up -d --build
   ```
 - 上传文件备份：直接同步 `public/uploads` 目录。
 
-## 6. 自定义配置
+## 9. 自定义配置
 
 - 修改监听端口：编辑 `docker-compose.yml` 中 app 服务的 `ports` 映射，如 `8080:3000`。
 - 调整数据库密码/名称：同时修改 `.env` 与 `docker-compose.yml` 的环境变量。
 - 多环境部署：为不同环境定义 `.env.production`、`.env.staging` 等文件，再用 `env_file` 引用。
 
-## 7. 生产环境建议
+## 10. 生产环境建议
 
 - 在 Nginx/Traefik 前端做反向代理与 HTTPS 终端。
 - 将备份任务加入 crontab，例如定期调用 `pg_dump`。

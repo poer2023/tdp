@@ -17,20 +17,23 @@ RUN npm run build
 
 FROM base AS runner
 ENV NODE_ENV=production
-# Install only production dependencies
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
 
-COPY --from=builder /app/.next ./.next
+# Copy the standalone server build
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/next.config.ts ./next.config.ts
-COPY --from=builder /app/postcss.config.mjs ./postcss.config.mjs
-COPY --from=builder /app/tailwind.config.js ./tailwind.config.js 2>/dev/null || true
-COPY --from=builder /app/tailwind.config.ts ./tailwind.config.ts 2>/dev/null || true
 COPY docker/entrypoint.sh ./docker/entrypoint.sh
 RUN chmod +x ./docker/entrypoint.sh
 
+# Install production dependencies to ensure prisma CLI is available for migrations
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# Set ownership to node user and switch to non-root user
+RUN chown -R node:node /app
+USER node
+
 EXPOSE 3000
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
-CMD ["npm", "run", "start"]
+CMD ["node", "server.js"]

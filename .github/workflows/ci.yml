@@ -51,6 +51,22 @@ jobs:
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tdp
+          POSTGRES_PASSWORD: tdp_password
+          POSTGRES_DB: tdp
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -64,8 +80,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+
       - name: Run unit tests
         run: npm run test:run
+        env:
+          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
 
   build:
     name: Build Application
@@ -87,7 +110,7 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          DATABASE_URL: "file:./dev.db"
+          DATABASE_URL: "postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public"
           NEXTAUTH_SECRET: "test-secret"
           GOOGLE_CLIENT_ID: "test-client-id"
           GOOGLE_CLIENT_SECRET: "test-client-secret"
