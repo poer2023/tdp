@@ -51,9 +51,12 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "npm run build && npm start",
+    // Next.js with output: 'standalone' cannot use `next start`.
+    // Build then run the standalone server directly.
+    command: "npm run build && node .next/standalone/server.js",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    // Allow extra time in CI to complete Next.js build
+    timeout: 300 * 1000,
   },
 });

@@ -23,6 +23,10 @@ jobs:
     name: Deploy to Server
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    concurrency: deploy-${{ github.ref }}
+    env:
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
 
     steps:
       - name: Deploy to server via SSH
@@ -32,34 +36,45 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          script_stop: true
+          envs: GHCR_USERNAME,GHCR_TOKEN
           script: |
+            set -Eeuo pipefail
+
             cd ${{ secrets.PROJECT_DIR }}
 
-            # Pull latest changes
-            git pull origin main
+            echo "==> Pulling latest repo changes"
+            git pull --ff-only origin main
 
-            # Pull latest Docker images
+            # Login to GHCR if credentials are provided (for private images)
+            if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
+              echo "==> Logging into GHCR"
+              echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+            else
+              echo "==> Skipping GHCR login (using public images or pre-authenticated daemon)"
+            fi
+
+            echo "==> Pulling latest Docker images"
             docker compose pull
 
-            # Restart services with new images
+            echo "==> Restarting services"
             docker compose up -d
 
-            # Wait for services to be ready
-            echo "Waiting for services to start..."
+            echo "==> Waiting for services to start..."
             sleep 30
 
-            # Check health status
+            echo "==> Checking service health"
             if docker compose ps | grep -q "healthy"; then
               echo "✅ Deployment successful - services are healthy"
             else
               echo "❌ Deployment may have issues - checking service status:"
-              docker compose ps
-              docker compose logs --tail=50
+              docker compose ps || true
+              docker compose logs --tail=50 || true
               exit 1
             fi
 
-            # Optional: Clean up unused images
-            docker image prune -f
+            echo "==> Cleaning up unused images"
+            docker image prune -f || true
 
   notification:
     name: Deploy Notification

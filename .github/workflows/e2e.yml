@@ -53,6 +53,7 @@ jobs:
         env:
           DATABASE_URL: "postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public"
           NEXTAUTH_SECRET: "test-secret"
+          NEXTAUTH_URL: "http://localhost:3000"
           GOOGLE_CLIENT_ID: "test-client-id"
           GOOGLE_CLIENT_SECRET: "test-client-secret"
 

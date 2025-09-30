@@ -5,20 +5,26 @@ test.describe("Navigation", () => {
     await page.goto("/");
 
     // Click on "查看全部文章" link
-    await page.getByText("查看全部文章").click();
+    await page.getByRole("link", { name: /查看全部文章/ }).click();
 
     await expect(page).toHaveURL("/posts");
-    await expect(page.getByText("文章列表")).toBeVisible();
+    // The posts page header is "全部文章"
+    await expect(
+      page.getByRole("heading", { level: 1, name: "全部文章" })
+    ).toBeVisible();
   });
 
   test("should navigate to gallery page", async ({ page }) => {
     await page.goto("/");
 
     // Click on "查看相册" link
-    await page.getByText("查看相册").click();
+    await page.getByRole("link", { name: /查看相册/ }).click();
 
     await expect(page).toHaveURL("/gallery");
-    await expect(page.getByText("相册")).toBeVisible();
+    // Avoid ambiguous text matches; assert on the H1 heading.
+    await expect(
+      page.getByRole("heading", { level: 1, name: "灵感相册" })
+    ).toBeVisible();
   });
 
   test("should navigate to login page", async ({ page }) => {
