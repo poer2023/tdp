@@ -19,6 +19,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    concurrency: docker-build-${{ github.ref }}
     permissions:
       contents: read
       packages: write
@@ -67,8 +68,8 @@ jobs:
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=tdp
+          cache-to: type=gha,mode=max,scope=tdp
           provenance: false
 
       # Multi-arch build and push only on main and tags
@@ -82,18 +83,21 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=tdp
+          cache-to: type=gha,mode=max,scope=tdp
           provenance: false
 
       # Run Trivy vulnerability scanner
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner (SARIF + fail on HIGH/CRITICAL)
         if: github.event_name != 'pull_request'
+        continue-on-error: true
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           format: "sarif"
           output: "trivy-results.sarif"
+          severity: "HIGH,CRITICAL"
+          exit-code: "1"
 
       # Upload Trivy scan results to GitHub Security tab
       - name: Upload Trivy scan results to GitHub Security tab
@@ -112,13 +116,4 @@ jobs:
           path: trivy-results.sarif
           if-no-files-found: ignore
 
-      # Check for HIGH and CRITICAL vulnerabilities
-      - name: Check for critical vulnerabilities
-        if: github.event_name != 'pull_request'
-        uses: aquasecurity/trivy-action@master
-        continue-on-error: true
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          format: "table"
-          severity: "HIGH,CRITICAL"
-          exit-code: "1"
+      # Removed duplicate table scan to save time; severity handled above
