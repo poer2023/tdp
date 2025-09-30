@@ -11,6 +11,7 @@ USER_ACTION_REQUIRED.md
 codex.md
 docker-compose.yml
 docs/auto-deployment-setup.md
+docs/docker-build.md
 docs/docker-deployment.md
 docs/self-host-deployment.md
 docs/user-configuration-checklist.md
