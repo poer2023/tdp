@@ -24,6 +24,10 @@ public/uploads/*
 
 # (no special ignores for e2e; keep them checked by Prettier)
 
+# Local tooling and reports (do not format)
+.claude/
+playwright-report/
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
