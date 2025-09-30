@@ -110,7 +110,7 @@ jobs:
             docker compose up -d
 
             echo "==> Waiting for services to start..."
-            sleep 30
+            sleep 60
 
             echo "==> Checking service health"
             if docker compose ps | grep -q "healthy"; then
@@ -134,14 +134,40 @@ jobs:
     steps:
       - name: Deployment Success
         if: needs.deploy.result == 'success'
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
           echo "🚀 Deployment completed successfully!"
           echo "Environment: ${{ github.event.inputs.environment || 'production' }}"
           echo "Commit: ${{ github.sha }}"
+          {
+            echo "# ✅ Deploy Succeeded";
+            echo;
+            echo "- Host: ${SSH_HOST:-unknown}";
+            echo "- Service: tdp-app (port 3000)";
+            echo;
+            echo "Try opening: http://${SSH_HOST:-<server-ip>}:3000";
+            echo;
+            echo "Quick checks:";
+            echo "- ssh USER@${SSH_HOST:-<server-ip>} 'docker compose ps'";
+            echo "- ssh USER@${SSH_HOST:-<server-ip>} 'curl -fsS http://localhost:3000/api/health'";
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Deployment Failed
         if: needs.deploy.result == 'failure'
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
         run: |
           echo "❌ Deployment failed!"
           echo "Please check the deployment logs and server status."
+          {
+            echo "# ❌ Deploy Failed";
+            echo;
+            echo "Host: ${SSH_HOST:-unknown}";
+            echo;
+            echo "Try on server:";
+            echo "- docker compose ps";
+            echo "- docker compose logs --tail=100 app";
+            echo "- curl -v http://localhost:3000/api/health";
+          } >> "$GITHUB_STEP_SUMMARY"
           exit 1
