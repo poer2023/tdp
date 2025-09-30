@@ -1,0 +1,70 @@
+name: Deploy Only
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (default: latest)"
+        required: false
+        default: "latest"
+      environment:
+        description: "Deploy environment"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - staging
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Selected Image
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ inputs.image_tag || 'latest' }}
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      PROJECT_DIR: ${{ secrets.PROJECT_DIR }}
+
+    steps:
+      - name: Check required deploy secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          [[ -n "${SSH_HOST:-}" ]] || missing+=(SSH_HOST)
+          [[ -n "${SSH_USER:-}" ]] || missing+=(SSH_USER)
+          [[ -n "${{ secrets.SSH_KEY }}" ]] || missing+=(SSH_KEY)
+          [[ -n "${PROJECT_DIR:-}" ]] || missing+=(PROJECT_DIR)
+          if (( ${#missing[@]} > 0 )); then
+            echo "Missing required secrets: ${missing[*]}" >&2
+            exit 1
+          fi
+
+      - name: Deploy via SSH (pull tag and restart)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT || '22' }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script_stop: true
+          envs: IMAGE_TAG,GHCR_USERNAME,GHCR_TOKEN,PROJECT_DIR
+          script: |
+            set -eo pipefail
+            echo "Deploying image tag: ${IMAGE_TAG:-latest}"
+            cd "${PROJECT_DIR}"
+            if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
+              echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+            fi
+            export IMAGE_TAG
+            docker compose pull
+            docker compose up -d
+            sleep 30
+            curl -fsS http://localhost:3000/api/health || (docker compose ps && docker compose logs --tail=100 app && exit 1)

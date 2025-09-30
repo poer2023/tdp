@@ -18,8 +18,8 @@ services:
       - tdp-net
 
   app:
-    # 使用 GitHub Container Registry 的预构建镜像，避免服务器本地构建
-    image: ghcr.io/poer2023/tdp:latest
+    # 使用 GHCR 预构建镜像；支持通过环境变量覆盖镜像标签
+    image: ghcr.io/poer2023/tdp:${IMAGE_TAG:-latest}
     pull_policy: always
     container_name: tdp-app
     restart: unless-stopped
