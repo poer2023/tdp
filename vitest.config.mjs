@@ -6,6 +6,16 @@ export default defineConfig({
     globals: true,
     environment: "node",
     setupFiles: ["./src/test/setup.ts"],
+    // 避免 Vitest 误执行 Playwright 的 e2e 用例
+    exclude: [
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      ".next/**",
+      "e2e/**",
+      "playwright-report/**",
+      "test-results/**",
+    ],
   },
   resolve: {
     alias: {

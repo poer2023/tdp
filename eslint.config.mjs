@@ -23,6 +23,7 @@ const eslintConfig = [
       "*.config.ts",
       "prisma/migrations/**",
       "public/uploads/**",
+      "e2e/**",
       "playwright-report/**",
       "test-results/**",
     ],
