@@ -18,9 +18,9 @@ services:
       - tdp-net
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # 使用 GitHub Container Registry 的预构建镜像，避免服务器本地构建
+    image: ghcr.io/poer2023/tdp:latest
+    pull_policy: always
     container_name: tdp-app
     restart: unless-stopped
     env_file:
@@ -43,6 +43,10 @@ services:
         condition: service_healthy
     networks:
       - tdp-net
+    # 如果需要本地构建，取消下面的注释
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
 
 volumes:
   postgres-data:
