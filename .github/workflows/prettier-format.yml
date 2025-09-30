@@ -31,9 +31,11 @@ jobs:
         run: npm ci
 
       - name: Run Prettier (write)
+        shell: bash
         run: |
-          set -e
-          # Build pattern list without YAML-unfriendly heredocs
+          set -euo pipefail
+
+          # Build pattern list
           printf "%s\n" \
             "docs/**/*.md" \
             "README.md" \
@@ -48,7 +50,27 @@ jobs:
 
           echo "Formatting patterns:"
           cat patterns.txt
-          npx prettier --write $(tr '\n' ' ' < patterns.txt)
+
+          # Expand patterns to concrete files using git pathspec globs
+          : > files.txt
+          while IFS= read -r pat; do
+            git ls-files -z -- ":(glob)${pat}" >> files.bin || true
+          done < patterns.txt
+          if [ -f files.bin ]; then
+            tr '\0' '\n' < files.bin | sort -u > files.txt
+            rm -f files.bin
+          fi
+
+          echo "Matched files:" || true
+          sed 's/^/  - /' files.txt || true
+
+          # If nothing matched, exit gracefully
+          if [ ! -s files.txt ]; then
+            echo "No files matched. Skipping Prettier."
+            exit 0
+          fi
+
+          xargs -a files.txt -r npx prettier --write
 
       - name: Commit and push changes
         run: |
