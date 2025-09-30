@@ -1,0 +1,75 @@
+name: Autofix
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # 对 PR 事件，检出源分支的 head
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint --fix
+        run: npm run lint:fix || true
+
+      - name: Run Prettier --write
+        run: npm run format || true
+
+      - name: Show diff
+        run: |
+          git status --porcelain
+          git diff --name-only | sed 's/^/  changed: /' || true
+
+      - name: Commit changes (same-repo branches)
+        if: >-
+          (github.event_name == 'push') ||
+          (github.event_name == 'pull_request' &&
+           github.event.pull_request.head.repo.full_name == github.repository)
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore(autofix): prettier & eslint auto-fix"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+
+      - name: Create PR with changes (forked PRs)
+        if: >-
+          (github.event_name == 'pull_request' &&
+           github.event.pull_request.head.repo.full_name != github.repository)
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore(autofix): prettier & eslint auto-fix"
+          title: "chore(autofix): prettier & eslint auto-fix"
+          body: |
+            Automated fixes from Autofix workflow (Prettier + ESLint).
+          branch: autofix/${{ github.run_id }}
+          base: ${{ github.base_ref || 'main' }}
+          delete-branch: true
