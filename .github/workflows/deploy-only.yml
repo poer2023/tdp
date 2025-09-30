@@ -31,6 +31,17 @@ jobs:
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_USER: ${{ secrets.SSH_USER }}
       PROJECT_DIR: ${{ secrets.PROJECT_DIR }}
+      # Environment variables for .env file generation
+      ENV_DATABASE_URL: ${{ secrets.ENV_DATABASE_URL }}
+      ENV_NEXTAUTH_SECRET: ${{ secrets.ENV_NEXTAUTH_SECRET }}
+      ENV_NEXTAUTH_URL: ${{ secrets.ENV_NEXTAUTH_URL }}
+      ENV_GOOGLE_CLIENT_ID: ${{ secrets.ENV_GOOGLE_CLIENT_ID }}
+      ENV_GOOGLE_CLIENT_SECRET: ${{ secrets.ENV_GOOGLE_CLIENT_SECRET }}
+      ENV_SITE_NAME: ${{ secrets.ENV_SITE_NAME }}
+      ENV_SITE_TAGLINE: ${{ secrets.ENV_SITE_TAGLINE }}
+      ENV_MAX_UPLOAD_SIZE_MB: ${{ secrets.ENV_MAX_UPLOAD_SIZE_MB }}
+      ENV_STORAGE_DRIVER: ${{ secrets.ENV_STORAGE_DRIVER }}
+      ENV_LOG_LEVEL: ${{ secrets.ENV_LOG_LEVEL }}
 
     steps:
       - name: Check required deploy secrets
@@ -55,14 +66,41 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
-          envs: IMAGE_TAG,GHCR_USERNAME,GHCR_TOKEN,PROJECT_DIR
+          envs: IMAGE_TAG,GHCR_USERNAME,GHCR_TOKEN,PROJECT_DIR,ENV_DATABASE_URL,ENV_NEXTAUTH_SECRET,ENV_NEXTAUTH_URL,ENV_GOOGLE_CLIENT_ID,ENV_GOOGLE_CLIENT_SECRET,ENV_SITE_NAME,ENV_SITE_TAGLINE,ENV_MAX_UPLOAD_SIZE_MB,ENV_STORAGE_DRIVER,ENV_LOG_LEVEL
           script: |
             set -eo pipefail
             echo "Deploying image tag: ${IMAGE_TAG:-latest}"
             cd "${PROJECT_DIR}"
+
+            # Generate .env file from GitHub Secrets
+            echo "Generating .env file..."
+            cat > .env << EOF
+            DATABASE_URL="${ENV_DATABASE_URL}"
+            NEXTAUTH_SECRET="${ENV_NEXTAUTH_SECRET}"
+            NEXTAUTH_URL="${ENV_NEXTAUTH_URL}"
+            GOOGLE_CLIENT_ID="${ENV_GOOGLE_CLIENT_ID:-}"
+            GOOGLE_CLIENT_SECRET="${ENV_GOOGLE_CLIENT_SECRET:-}"
+            SITE_NAME="${ENV_SITE_NAME:-Hao · 全栈博客}"
+            SITE_TAGLINE="${ENV_SITE_TAGLINE:-清新简约的个人博客，记录代码与生活的灵感}"
+            MAX_UPLOAD_SIZE_MB="${ENV_MAX_UPLOAD_SIZE_MB:-8}"
+            STORAGE_DRIVER="${ENV_STORAGE_DRIVER:-local}"
+            IMAGE_OPTIMIZE=0
+            IMAGE_MAX_DIMENSION=2000
+            IMAGE_QUALITY_JPEG=80
+            IMAGE_QUALITY_WEBP=80
+            IMAGE_QUALITY_AVIF=50
+            LOG_LEVEL="${ENV_LOG_LEVEL:-info}"
+            RATE_LIMIT_AUTH_PER_MIN=30
+            RATE_LIMIT_UPLOADS_PER_MIN=20
+            NODE_ENV=production
+            EOF
+
+            # Login to GHCR if credentials provided
             if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
               echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
             fi
+
+            # Deploy
             export IMAGE_TAG
             docker compose pull
             docker compose up -d
