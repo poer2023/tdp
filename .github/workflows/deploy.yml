@@ -31,6 +31,8 @@ jobs:
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_USER: ${{ secrets.SSH_USER }}
       PROJECT_DIR: ${{ secrets.PROJECT_DIR }}
+      GIT_URL: ${{ github.server_url }}/${{ github.repository }}.git
+      BRANCH: main
 
     steps:
       - name: Check required deploy secrets
@@ -56,11 +58,39 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
-          envs: GHCR_USERNAME,GHCR_TOKEN
+          envs: GHCR_USERNAME,GHCR_TOKEN,GIT_URL,BRANCH,PROJECT_DIR
           script: |
             set -Eeuo pipefail
 
-            cd ${{ secrets.PROJECT_DIR }}
+            # Ensure Docker and Compose exist
+            if ! command -v docker >/dev/null 2>&1; then
+              echo "Docker is not installed on the server. Please install Docker and the compose plugin." >&2
+              exit 1
+            fi
+            if ! docker compose version >/dev/null 2>&1; then
+              echo "Docker Compose plugin not found. Please install docker-compose-plugin." >&2
+              exit 1
+            fi
+
+            # First-time setup: clone repository if PROJECT_DIR is not a git repo
+            if [ ! -d "${PROJECT_DIR}/.git" ]; then
+              echo "==> First-time setup: cloning repo into ${PROJECT_DIR}"
+              if [ -d "${PROJECT_DIR}" ] && [ "$(ls -A "${PROJECT_DIR}" 2>/dev/null | wc -l)" -gt 0 ]; then
+                echo "Directory exists and is not empty. Backing up to ${PROJECT_DIR}.bak-$(date +%s)"
+                mv "${PROJECT_DIR}" "${PROJECT_DIR}.bak-$(date +%s)"
+              fi
+              mkdir -p "${PROJECT_DIR}"
+              git clone --depth 1 --branch "${BRANCH}" "${GIT_URL}" "${PROJECT_DIR}"
+            fi
+
+            cd "${PROJECT_DIR}"
+            # Ensure origin URL is correct and pull latest changes
+            if git rev-parse --git-dir >/dev/null 2>&1; then
+              git remote set-url origin "${GIT_URL}" || true
+              git fetch --depth 1 origin "${BRANCH}"
+              git checkout -B "${BRANCH}" "origin/${BRANCH}" || git checkout "${BRANCH}"
+              git pull --ff-only origin "${BRANCH}"
+            fi
 
             echo "==> Pulling latest repo changes"
             git pull --ff-only origin main
