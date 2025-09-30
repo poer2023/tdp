@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
 const NAV_ITEMS = [
@@ -10,6 +11,9 @@ const NAV_ITEMS = [
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
+  if (!session) {
+    redirect("/login");
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
