@@ -10,7 +10,7 @@ echo "YOUR_GITHUB_TOKEN" | docker login ghcr.io -u YOUR_USERNAME --password-stdi
 
 ### 2. 构建并推送镜像
 
-**推荐方式 (带缓存优化):**
+**推荐方式 (本地构建,利用 GitHub Actions 缓存):**
 
 ```bash
 TAG=$(date +%Y%m%d-%H%M)-$(git rev-parse --short HEAD)
@@ -19,13 +19,15 @@ docker buildx build \
   -t ghcr.io/poer2023/tdp:$TAG \
   -t ghcr.io/poer2023/tdp:latest \
   --cache-from type=registry,ref=ghcr.io/poer2023/tdp:buildcache \
-  --cache-to type=registry,ref=ghcr.io/poer2023/tdp:buildcache,mode=min \
   --push .
 
 echo "✅ Built and pushed: ghcr.io/poer2023/tdp:$TAG"
 ```
 
-**简化方式 (不使用远程缓存):**
+> **注意:** 本地构建建议只使用 `--cache-from` (读取 cache),不使用 `--cache-to` (导出 cache)。
+> Cache 导出由 GitHub Actions 负责,本地导出会增加 5-10 分钟的额外时间。
+
+**最简方式 (纯本地缓存):**
 
 ```bash
 TAG=$(date +%Y%m%d-%H%M)-$(git rev-parse --short HEAD)
@@ -48,19 +50,27 @@ gh workflow run "Deploy Only"
 
 ## 缓存策略说明
 
-### mode=min vs mode=max
+### 本地构建 vs CI/CD 构建
 
-| 参数       | 说明             | 大小           | 速度         | 适用场景                   |
-| ---------- | ---------------- | -------------- | ------------ | -------------------------- |
-| `mode=min` | 仅导出最终镜像层 | 小 (100-300MB) | 快 (1-2分钟) | **推荐** - 本地开发、CI/CD |
-| `mode=max` | 导出所有中间层   | 大 (500MB-2GB) | 慢 (3-5分钟) | 多架构构建、极致缓存优化   |
+| 场景               | Cache From | Cache To      | 原因                                          |
+| ------------------ | ---------- | ------------- | --------------------------------------------- |
+| **本地构建**       | ✅ (可选)  | ❌ 不推荐     | 导出 cache 需要 5-10 分钟,增加构建时间        |
+| **GitHub Actions** | ✅         | ✅ (mode=min) | CI 环境需要共享 cache,mode=min 平衡速度和效果 |
 
-### 为什么使用 mode=min?
+### mode=min vs mode=max vs 不导出
 
-1. **避免超时:** cache 导出时间减少 60-70%
-2. **网络友好:** 减少网络传输压力
-3. **效果充足:** 对单架构构建,缓存效果与 max 差异不大
-4. **与 CI 一致:** 保持本地和 GitHub Actions 策略一致
+| 策略         | 说明             | 导出时间  | 适用场景         |
+| ------------ | ---------------- | --------- | ---------------- |
+| 不导出 cache | 只读取,不写入    | 0 分钟    | **本地开发推荐** |
+| `mode=min`   | 仅导出最终镜像层 | 1-3 分钟  | CI/CD 环境       |
+| `mode=max`   | 导出所有中间层   | 5-10 分钟 | 极少使用         |
+
+### 为什么本地不导出 cache?
+
+1. **时间成本高:** 导出 cache 需要额外 5-10 分钟,即使使用 mode=min
+2. **本地有 Docker 缓存:** Docker 本地层缓存已经很快
+3. **可以读取 CI cache:** 通过 `--cache-from` 利用 GitHub Actions 的 cache
+4. **避免超时:** 不导出 cache 可以将构建时间控制在 8 分钟内
 
 ## 故障排查
 
