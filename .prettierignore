@@ -22,6 +22,20 @@ next-env.d.ts
 .next/
 public/uploads/*
 
+# Docs and content (skip formatting to avoid CI noise)
+docs/**
+README.md
+USER_ACTION_REQUIRED.md
+codex.md
+部署规范.md
+
+# CI/Deploy config files (handled manually)
+.github/workflows/**
+docker-compose.yml
+
+# E2E specs are formatted by Playwright conventions
+e2e/**
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
