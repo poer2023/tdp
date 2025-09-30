@@ -86,16 +86,13 @@ jobs:
             fi
 
             cd "${PROJECT_DIR}"
-            # Ensure origin URL is correct and pull latest changes
+            # Ensure origin URL is correct and sync to remote HEAD robustly
             if git rev-parse --git-dir >/dev/null 2>&1; then
               git remote set-url origin "${GIT_URL}" || true
-              git fetch --depth 1 origin "${BRANCH}"
-              git checkout -B "${BRANCH}" "origin/${BRANCH}" || git checkout "${BRANCH}"
-              git pull --ff-only origin "${BRANCH}"
+              git fetch origin "${BRANCH}" --depth 1 || true
+              git checkout -B "${BRANCH}" "origin/${BRANCH}" 2>/dev/null || git checkout "${BRANCH}" || true
+              git reset --hard "origin/${BRANCH}" || true
             fi
-
-            echo "==> Pulling latest repo changes"
-            git pull --ff-only origin main
 
             # Login to GHCR if credentials are provided (for private images)
             if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
