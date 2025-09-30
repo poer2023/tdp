@@ -24,19 +24,23 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async signIn({ user }) {
-      if (!user?.email) return false;
-      const adminExists = await prisma.user.findFirst({ where: { role: UserRole.ADMIN } });
-      if (!adminExists) {
-        await prisma.user.update({ where: { id: user.id }, data: { role: UserRole.ADMIN } });
-      }
-      return true;
+      // Just verify user has email, actual role assignment happens in createUser event
+      return !!user?.email;
     },
   },
   events: {
     async createUser({ user }) {
-      const adminExists = await prisma.user.findFirst({ where: { role: UserRole.ADMIN } });
-      if (!adminExists) {
-        await prisma.user.update({ where: { id: user.id }, data: { role: UserRole.ADMIN } });
+      // Check if this is the first user (no admin exists yet)
+      const adminExists = await prisma.user.findFirst({
+        where: { role: UserRole.ADMIN },
+      });
+
+      // If no admin exists, promote this newly created user to ADMIN
+      if (!adminExists && user.id) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: UserRole.ADMIN },
+        });
       }
     },
   },

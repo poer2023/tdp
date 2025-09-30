@@ -51,12 +51,7 @@ export function CreatePostForm() {
         </p>
       )}
 
-      <form
-        ref={formRef}
-        action={formAction}
-        encType="multipart/form-data"
-        className="mt-6 grid gap-5 md:grid-cols-2"
-      >
+      <form ref={formRef} action={formAction} className="mt-6 grid gap-5 md:grid-cols-2">
         <div className="space-y-4 md:col-span-1">
           <Field label="标题" error={state.errors?.title}>
             <input

@@ -38,7 +38,7 @@ export function EditPostForm({ post }: { post: PublicPost }) {
         </p>
       )}
 
-      <form action={formAction} encType="multipart/form-data" className="mt-6 space-y-5">
+      <form action={formAction} className="mt-6 space-y-5">
         <input type="hidden" name="id" value={post.id} />
 
         <div className="grid gap-5 md:grid-cols-2">

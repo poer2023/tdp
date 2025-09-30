@@ -40,12 +40,7 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
         </p>
       )}
 
-      <form
-        ref={formRef}
-        action={formAction}
-        encType="multipart/form-data"
-        className="mt-6 grid gap-4 md:grid-cols-2"
-      >
+      <form ref={formRef} action={formAction} className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="space-y-4">
           <Field label="标题 (可选)">
             <input
