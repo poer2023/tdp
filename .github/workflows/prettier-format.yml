@@ -1,6 +1,6 @@
 name: Prettier Auto Format
 
-'on':
+on:
   push:
     branches:
       - main
@@ -24,8 +24,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -33,18 +33,19 @@ jobs:
       - name: Run Prettier (write)
         run: |
           set -e
-          cat > patterns.txt <<'PATTERNS'
-          docs/**/*.md
-          README.md
-          USER_ACTION_REQUIRED.md
-          codex.md
-          部署规范.md
-          e2e/**/*.ts
-          e2e/**/*.tsx
-          .github/workflows/**/*.yml
-          .github/workflows/**/*.yaml
-          docker-compose.yml
-PATTERNS
+          # Build pattern list without YAML-unfriendly heredocs
+          printf "%s\n" \
+            "docs/**/*.md" \
+            "README.md" \
+            "USER_ACTION_REQUIRED.md" \
+            "codex.md" \
+            "部署规范.md" \
+            "e2e/**/*.ts" \
+            "e2e/**/*.tsx" \
+            ".github/workflows/**/*.yml" \
+            ".github/workflows/**/*.yaml" \
+            "docker-compose.yml" > patterns.txt
+
           echo "Formatting patterns:"
           cat patterns.txt
           npx prettier --write $(tr '\n' ' ' < patterns.txt)

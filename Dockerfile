@@ -18,6 +18,7 @@ RUN npx prisma generate && npm run build
 
 FROM base AS runner
 ENV NODE_ENV=production
+ENV HUSKY=0
 
 # Copy the standalone server build
 COPY --from=builder /app/.next/standalone ./
