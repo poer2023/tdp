@@ -8,13 +8,17 @@ WORKDIR /app
 
 FROM base AS deps
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm npm ci
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # Ensure Prisma Client is generated with the actual schema before building
 RUN npx prisma generate && npm run build
+
+FROM base AS prod-deps
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm npm ci --omit=dev
 
 FROM base AS runner
 ENV NODE_ENV=production
@@ -28,9 +32,9 @@ COPY --from=builder /app/prisma ./prisma
 COPY docker/entrypoint.sh ./docker/entrypoint.sh
 RUN chmod +x ./docker/entrypoint.sh
 
-# Install production dependencies to ensure prisma CLI is available for migrations
+# Install production dependencies from cached build stage
+COPY --from=prod-deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
 
 # Set ownership to node user and switch to non-root user
 RUN chown -R node:node /app
