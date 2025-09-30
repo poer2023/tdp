@@ -13,7 +13,8 @@ RUN npm ci
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+# Ensure Prisma Client is generated with the actual schema before building
+RUN npx prisma generate && npm run build
 
 FROM base AS runner
 ENV NODE_ENV=production
