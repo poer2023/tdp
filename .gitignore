@@ -48,3 +48,7 @@ next-env.d.ts
 # Notion临时文件
 notion_page*.html
 notion_public_data.json
+
+# Local commit documentation
+/doc/*
+!/doc/.gitkeep
