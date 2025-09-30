@@ -60,7 +60,9 @@ jobs:
           script_stop: true
           envs: GHCR_USERNAME,GHCR_TOKEN,GIT_URL,BRANCH,PROJECT_DIR
           script: |
-            set -Eeuo pipefail
+            # Be strict on errors but do not fail on unset vars to simplify secret handling
+            set -eo pipefail
+            echo "DEBUG: BRANCH=${BRANCH:-} PROJECT_DIR=${PROJECT_DIR:-} GHCR_USER_SET=$([ -n "${GHCR_USERNAME:-}" ] && echo 1 || echo 0) GHCR_TOKEN_SET=$([ -n "${GHCR_TOKEN:-}" ] && echo 1 || echo 0)"
 
             # Ensure Docker and Compose exist
             if ! command -v docker >/dev/null 2>&1; then
