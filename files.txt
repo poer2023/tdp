@@ -1,6 +1,7 @@
 .github/workflows/ai-fix.yml
 .github/workflows/autofix.yml
 .github/workflows/ci.yml
+.github/workflows/deploy-only.yml
 .github/workflows/deploy.yml
 .github/workflows/docker-publish.yml
 .github/workflows/e2e.yml
