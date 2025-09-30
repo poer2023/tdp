@@ -22,8 +22,7 @@ next-env.d.ts
 .next/
 public/uploads/*
 
-# E2E specs are formatted by Playwright conventions (optional)
-e2e/**
+# (no special ignores for e2e; keep them checked by Prettier)
 
 # Logs
 npm-debug.log*

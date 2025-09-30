@@ -12,6 +12,8 @@ on:
           USER_ACTION_REQUIRED.md
           codex.md
           部署规范.md
+          e2e/**/*.ts
+          e2e/**/*.tsx
           .github/workflows/**/*.yml
           .github/workflows/**/*.yaml
           docker-compose.yml
@@ -82,4 +84,3 @@ PATTERNS
           else
             echo "No changes to commit."
           fi
-
