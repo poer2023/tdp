@@ -22,13 +22,13 @@
 
 ## 本地开发（推荐）
 
-1) 安装依赖
+1. 安装依赖
 
 ```bash
 npm ci
 ```
 
-2) 配置环境变量（根目录新建 `.env`）
+2. 配置环境变量（根目录新建 `.env`）
 
 ```env
 # PostgreSQL 连接串（本地或容器）
@@ -46,13 +46,13 @@ GOOGLE_CLIENT_SECRET="你的 Google Client Secret"
 MAX_UPLOAD_SIZE_MB=8
 ```
 
-3) 初始化数据库（只需首次或模型变更后）
+3. 初始化数据库（只需首次或模型变更后）
 
 ```bash
 npm run db:migrate
 ```
 
-4) 启动开发服务器
+4. 启动开发服务器
 
 ```bash
 npm run dev

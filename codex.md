@@ -166,24 +166,27 @@
 **所有待办事项已完成！**
 
 ### P1（最高优先级）- 全部完成 ✅
+
 1. ✅ 健康检查 - `/api/health` 接口和 Docker healthcheck
 2. ✅ Docker 非 root 运行 - USER node 配置
 3. ✅ 环境变量样例 - `.env.example` 创建
 4. ✅ 镜像构建与发布 - GitHub Actions 完整配置
-9. ✅ 文档更新 - README 和部署文档完善
+5. ✅ 文档更新 - README 和部署文档完善
 
 ### P2（中优先级）- 全部完成 ✅
+
 5. ✅ 自动部署（可选）- deploy.yml 配置 + 详细配置文档
 6. ✅ 镜像安全 - Trivy 扫描集成 + Security 标签页上传
 7. ✅ CI/E2E 数据库一致性 - PostgreSQL 服务配置完成
 
 ### P3（低优先级）- 全部完成 ✅
+
 8. ✅ Standalone 构建优化 - next.config 和 Dockerfile 优化
-10. ✅ 清理与忽略 - 无临时文件需要清理
+9. ✅ 清理与忽略 - 无临时文件需要清理
 
 ### 新增文档 📚
+
 - ✅ `docs/auto-deployment-setup.md` - 自动部署完整配置指南（SSH 密钥、GitHub Secrets、故障排查）
 - ✅ `docs/user-configuration-checklist.md` - 用户配置清单与快速入门（Docker/自建部署、OAuth 配置、自动部署）
 
 **Status**: 🚀 所有 P1、P2、P3 任务已完成！项目已达到生产级别的部署规范和自动化能力。
-

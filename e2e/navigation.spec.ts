@@ -9,9 +9,7 @@ test.describe("Navigation", () => {
 
     await expect(page).toHaveURL("/posts");
     // The posts page header is "全部文章"
-    await expect(
-      page.getByRole("heading", { level: 1, name: "全部文章" })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "全部文章" })).toBeVisible();
   });
 
   test("should navigate to gallery page", async ({ page }) => {
@@ -22,9 +20,7 @@ test.describe("Navigation", () => {
 
     await expect(page).toHaveURL("/gallery");
     // Avoid ambiguous text matches; assert on the H1 heading.
-    await expect(
-      page.getByRole("heading", { level: 1, name: "灵感相册" })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "灵感相册" })).toBeVisible();
   });
 
   test("should navigate to login page", async ({ page }) => {

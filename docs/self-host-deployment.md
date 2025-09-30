@@ -135,6 +135,7 @@ curl http://localhost:3000/api/health
 ```
 
 ### Nginx 健康检查集成
+
 在 Nginx 配置中可以使用健康检查路径：
 
 ```nginx
@@ -152,6 +153,7 @@ server {
 ```
 
 ### systemd 服务健康监控
+
 为 systemd 服务添加健康检查脚本 `/usr/local/bin/tdp-health.sh`：
 
 ```bash
@@ -165,6 +167,7 @@ fi
 ```
 
 设置定时健康检查：
+
 ```bash
 sudo chmod +x /usr/local/bin/tdp-health.sh
 
@@ -175,6 +178,7 @@ echo "* * * * * /usr/local/bin/tdp-health.sh || systemctl restart tdp" | sudo cr
 ## 5.2 安全配置
 
 ### 运行用户
+
 建议使用非特权用户运行应用：
 
 ```bash
@@ -189,6 +193,7 @@ User=tdp-user
 ```
 
 ### 文件权限
+
 确保上传目录权限正确：
 
 ```bash

@@ -48,6 +48,7 @@ curl http://localhost:3000/api/health
 ```
 
 正常响应：
+
 ```json
 {
   "ok": true,
@@ -57,12 +58,14 @@ curl http://localhost:3000/api/health
 ```
 
 Docker Compose 已配置自动健康探针：
+
 - **interval**: 10s - 每10秒检查一次
 - **timeout**: 5s - 5秒超时
 - **retries**: 10 - 失败10次才标记为不健康
 - **start_period**: 30s - 启动后30秒开始检查
 
 查看容器健康状态：
+
 ```bash
 docker compose ps
 # 显示服务状态：healthy, starting, unhealthy
@@ -71,6 +74,7 @@ docker compose ps
 ## 5. 安全配置
 
 ### 非 Root 运行
+
 应用容器已配置为使用 `node` 用户运行（非 root），提升安全性：
 
 ```bash
@@ -80,10 +84,12 @@ docker exec tdp-app id
 ```
 
 ### 文件权限
+
 - 上传目录 `public/uploads` 已通过卷映射确保可写
 - 入口脚本会自动创建所需目录并设置权限
 
 ### 最佳实践
+
 - 定期更新基础镜像和依赖
 - 使用强随机密钥作为 `NEXTAUTH_SECRET`
 - 在生产环境中使用 HTTPS
@@ -94,18 +100,23 @@ docker exec tdp-app id
 项目已配置 GitHub Actions 自动构建和发布 Docker 镜像：
 
 ### 触发条件
+
 - 推送到 `main` 分支
 - 创建版本标签（如 `v1.0.0`）
 
 ### 镜像仓库
+
 镜像发布到 GitHub Container Registry (GHCR)：
+
 ```
 ghcr.io/[username]/tdp:latest
 ghcr.io/[username]/tdp:[git-sha]
 ```
 
 ### 使用发布的镜像
+
 修改 `docker-compose.yml` 使用远程镜像：
+
 ```yaml
 services:
   app:
@@ -117,6 +128,7 @@ services:
 ```
 
 然后拉取并启动：
+
 ```bash
 docker compose pull
 docker compose up -d

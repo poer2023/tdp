@@ -54,6 +54,7 @@
    - ⚠️ 妥善保管，不要泄露或提交到代码仓库
 
 **配置位置**：在 `.env` 文件中填入：
+
 ```env
 GOOGLE_CLIENT_ID="你的Client ID"
 GOOGLE_CLIENT_SECRET="你的Client Secret"
@@ -70,11 +71,13 @@ GOOGLE_CLIENT_SECRET="你的Client Secret"
 **步骤**：
 
 在终端执行：
+
 ```bash
 openssl rand -base64 32
 ```
 
 复制生成的随机字符串到 `.env` 文件：
+
 ```env
 NEXTAUTH_SECRET="生成的32位随机字符串"
 ```
@@ -88,11 +91,13 @@ NEXTAUTH_SECRET="生成的32位随机字符串"
 **步骤**：
 
 1. **复制环境变量模板**
+
    ```bash
    cp .env.example .env
    ```
 
 2. **编辑 `.env` 文件**
+
    ```env
    # 数据库配置（Docker 部署使用默认值即可）
    DATABASE_URL="postgresql://tdp:tdp_password@postgres:5432/tdp?schema=public"
@@ -124,6 +129,7 @@ NEXTAUTH_SECRET="生成的32位随机字符串"
 **为什么需要**：推送代码后自动部署到服务器，提升开发效率
 
 **前置条件**：
+
 - 已有服务器可通过 SSH 访问
 - 服务器已安装 Docker 和 Docker Compose
 - 服务器已完成项目初始部署
@@ -133,6 +139,7 @@ NEXTAUTH_SECRET="生成的32位随机字符串"
 ##### 4.1 生成 SSH 密钥对
 
 在**本地电脑**执行：
+
 ```bash
 # 生成专用部署密钥（不要设置密码）
 ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github_deploy_key
@@ -152,15 +159,16 @@ ssh -i ~/.ssh/github_deploy_key your_user@your_server_ip
 
 在 GitHub 仓库配置（**Settings** → **Secrets and variables** → **Actions** → **New repository secret**）：
 
-| Secret 名称 | 说明 | 如何获取 |
-|------------|------|---------|
-| `SSH_HOST` | 服务器 IP 或域名 | 例如：`38.246.246.229` |
-| `SSH_PORT` | SSH 端口 | 通常为 `22` |
-| `SSH_USER` | SSH 用户名 | 例如：`ubuntu` 或 `root` |
-| `SSH_KEY` | SSH 私钥完整内容 | `cat ~/.ssh/github_deploy_key` |
-| `PROJECT_DIR` | 项目在服务器上的路径 | 例如：`/var/www/tdp` |
+| Secret 名称   | 说明                 | 如何获取                       |
+| ------------- | -------------------- | ------------------------------ |
+| `SSH_HOST`    | 服务器 IP 或域名     | 例如：`38.246.246.229`         |
+| `SSH_PORT`    | SSH 端口             | 通常为 `22`                    |
+| `SSH_USER`    | SSH 用户名           | 例如：`ubuntu` 或 `root`       |
+| `SSH_KEY`     | SSH 私钥完整内容     | `cat ~/.ssh/github_deploy_key` |
+| `PROJECT_DIR` | 项目在服务器上的路径 | 例如：`/var/www/tdp`           |
 
 **⚠️ 重要提示**：
+
 - `SSH_KEY` 必须包含**完整内容**，包括 `-----BEGIN/END-----` 标记
 - 不要在密钥中添加额外的空格或换行
 - 确保服务器项目目录已配置为 Git 仓库
@@ -181,6 +189,7 @@ nano docker-compose.yml
 ```
 
 修改内容：
+
 ```yaml
 services:
   app:
@@ -197,6 +206,7 @@ services:
 ##### 4.5 测试自动部署
 
 **方式 1：推送代码触发**
+
 ```bash
 git add .
 git commit -m "test: trigger auto deployment"
@@ -204,11 +214,13 @@ git push origin main
 ```
 
 **方式 2：手动触发**
+
 1. 访问 GitHub 仓库 → **Actions** 标签页
 2. 选择 **Auto Deploy** 工作流
 3. 点击 **Run workflow** → 点击绿色按钮
 
 **验证部署结果**：
+
 - GitHub Actions 页面显示绿色勾号
 - 服务器上执行：`docker compose ps`（服务状态应为 healthy）
 - 访问网站验证功能正常
@@ -273,6 +285,7 @@ sudo nano /usr/local/bin/backup-tdp.sh
 ```
 
 脚本内容：
+
 ```bash
 #!/bin/bash
 BACKUP_DIR="/backups"
@@ -303,6 +316,7 @@ echo "0 3 * * * /usr/local/bin/backup-tdp.sh" | sudo crontab -
 完成上述配置后，请验证：
 
 ### 必须验证（P1）
+
 - [ ] 访问 http://localhost:3000 正常显示首页
 - [ ] Google 登录功能正常工作
 - [ ] 健康检查接口返回正常：`curl http://localhost:3000/api/health`
@@ -310,11 +324,13 @@ echo "0 3 * * * /usr/local/bin/backup-tdp.sh" | sudo crontab -
 - [ ] 可以创建文章并上传图片
 
 ### 可选验证（P2）
+
 - [ ] 推送代码自动触发部署成功
 - [ ] GitHub Actions 工作流全部通过（绿色勾号）
 - [ ] 服务器自动拉取最新镜像并重启
 
 ### 生产环境验证（P3）
+
 - [ ] HTTPS 证书配置成功，浏览器显示锁标志
 - [ ] 防火墙规则已配置，`sudo ufw status` 显示正确
 - [ ] 数据库备份定时任务正常运行
@@ -326,14 +342,17 @@ echo "0 3 * * * /usr/local/bin/backup-tdp.sh" | sudo crontab -
 ### 常见问题快速解决
 
 **问题 1：Google 登录失败 - Error 400**
+
 - 检查 Google Cloud Console 的回调 URI 配置
 - 确保 `.env` 中的 `NEXTAUTH_URL` 与实际访问地址一致
 
 **问题 2：数据库连接失败**
+
 - 检查 Docker 容器状态：`docker compose ps`
 - 查看数据库日志：`docker compose logs postgres`
 
 **问题 3：自动部署失败**
+
 - 验证 SSH 连接：`ssh -i ~/.ssh/github_deploy_key your_user@your_server_ip`
 - 检查 GitHub Secrets 配置是否完整
 
@@ -377,6 +396,7 @@ echo "0 3 * * * /usr/local/bin/backup-tdp.sh" | sudo crontab -
 - ✅ 完善的文档和故障排查指南
 
 **下一步建议**：
+
 - 📝 开始创建您的第一篇文章
 - 🎨 自定义网站样式和配置
 - 📊 配置网站分析工具

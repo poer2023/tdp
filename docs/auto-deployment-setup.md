@@ -64,29 +64,32 @@ newgrp docker
 
 在 GitHub 仓库中配置以下 Secrets（Settings → Secrets and variables → Actions → New repository secret）：
 
-| Secret 名称 | 说明 | 示例值 |
-|------------|------|--------|
-| `SSH_HOST` | 服务器 IP 地址或域名 | `38.246.246.229` 或 `blog.example.com` |
-| `SSH_PORT` | SSH 端口 | `22`（默认）或自定义端口如 `2222` |
-| `SSH_USER` | SSH 登录用户名 | `ubuntu` 或 `root` |
-| `SSH_KEY` | SSH 私钥内容 | 复制 `~/.ssh/github_deploy_key` 的**完整内容** |
-| `PROJECT_DIR` | 项目在服务器上的路径 | `/var/www/tdp` 或 `/home/user/tdp` |
+| Secret 名称   | 说明                 | 示例值                                         |
+| ------------- | -------------------- | ---------------------------------------------- |
+| `SSH_HOST`    | 服务器 IP 地址或域名 | `38.246.246.229` 或 `blog.example.com`         |
+| `SSH_PORT`    | SSH 端口             | `22`（默认）或自定义端口如 `2222`              |
+| `SSH_USER`    | SSH 登录用户名       | `ubuntu` 或 `root`                             |
+| `SSH_KEY`     | SSH 私钥内容         | 复制 `~/.ssh/github_deploy_key` 的**完整内容** |
+| `PROJECT_DIR` | 项目在服务器上的路径 | `/var/www/tdp` 或 `/home/user/tdp`             |
 
 ### 如何复制私钥内容
 
 **macOS/Linux:**
+
 ```bash
 cat ~/.ssh/github_deploy_key | pbcopy  # macOS（自动复制到剪贴板）
 cat ~/.ssh/github_deploy_key           # Linux（手动复制输出）
 ```
 
 **Windows:**
+
 ```powershell
 Get-Content ~\.ssh\github_deploy_key | Set-Clipboard  # PowerShell
 type %USERPROFILE%\.ssh\github_deploy_key             # CMD
 ```
 
 **注意**：必须复制**完整内容**，包括：
+
 ```
 -----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAA...（中间省略）
@@ -108,6 +111,7 @@ git push origin main
 ### 手动触发部署
 
 在 GitHub 仓库页面：
+
 1. 进入 **Actions** 标签页
 2. 选择 **Auto Deploy** 工作流
 3. 点击 **Run workflow**
@@ -117,6 +121,7 @@ git push origin main
 ### 查看部署状态
 
 在 Actions 页面可以实时查看部署进度和日志：
+
 - ✅ **绿色勾号**：部署成功
 - ❌ **红色叉号**：部署失败（点击查看详细日志）
 
@@ -129,6 +134,7 @@ git push origin main
    - 或手动触发（workflow_dispatch）
 
 2. **部署步骤**：
+
    ```bash
    # 1. SSH 连接到服务器
    # 2. 进入项目目录
@@ -238,6 +244,7 @@ PasswordAuthentication no
 ```
 
 重启 SSH 服务：
+
 ```bash
 sudo systemctl restart sshd
 ```
@@ -265,6 +272,7 @@ sudo firewall-cmd --reload
 **错误信息**：`Permission denied (publickey)`
 
 **解决方案**：
+
 ```bash
 # 1. 检查公钥是否正确添加到服务器
 ssh your_user@your_server_ip "cat ~/.ssh/authorized_keys"
@@ -281,6 +289,7 @@ ssh your_user@your_server_ip "sudo cat /var/log/auth.log | tail -20"
 **错误信息**：`permission denied while trying to connect to the Docker daemon socket`
 
 **解决方案**：
+
 ```bash
 # 将用户添加到 docker 组
 sudo usermod -aG docker $USER
@@ -297,6 +306,7 @@ docker ps
 **错误信息**：`Deployment may have issues - checking service status`
 
 **解决方案**：
+
 ```bash
 # 1. 检查服务状态
 docker compose ps
@@ -318,11 +328,13 @@ docker compose exec app npm run db:migrate
 **解决方案**：
 
 确保 docker-compose.yml 中的镜像名称正确：
+
 ```yaml
 image: ghcr.io/your-github-username/tdp:latest
 ```
 
 如果是私有仓库，需要在服务器登录 GHCR：
+
 ```bash
 echo $GITHUB_TOKEN | docker login ghcr.io -u your-username --password-stdin
 ```
@@ -332,6 +344,7 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u your-username --password-stdin
 ### 查看部署历史
 
 在 GitHub Actions 页面可以查看：
+
 - 部署时间和持续时间
 - 部署日志和错误信息
 - 每次部署的 Git commit

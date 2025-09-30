@@ -27,11 +27,13 @@
 **必需软件清单：**
 
 - [ ] **Node.js 20+**（LTS 版本）
+
   ```bash
   node --version  # 应显示 v20.x.x
   ```
 
 - [ ] **Docker 与 Docker Compose**（如使用容器部署）
+
   ```bash
   docker --version        # 应显示 Docker version 20+
   docker compose version  # 应显示 Docker Compose version v2+
@@ -53,6 +55,7 @@ brew install node@20
 brew install docker
 brew install git
 ```
+
 </details>
 
 <details>
@@ -70,6 +73,7 @@ sudo usermod -aG docker $USER
 # Git
 sudo apt install -y git
 ```
+
 </details>
 
 <details>
@@ -125,6 +129,7 @@ sudo apt install -y git
 ### 🐳 方式 A：Docker 部署（推荐）
 
 **适用场景：**
+
 - ✅ 快速部署，环境隔离
 - ✅ 跨平台一致性
 - ✅ 方便扩展和维护
@@ -164,6 +169,7 @@ MAX_UPLOAD_SIZE_MB="8"
 ```
 
 生成 `NEXTAUTH_SECRET`：
+
 ```bash
 openssl rand -base64 32
 ```
@@ -186,6 +192,7 @@ docker compose logs -f app
 打开浏览器访问：http://localhost:3000
 
 **配置清单：**
+
 - [ ] 项目已克隆到本地
 - [ ] `.env` 文件已配置所有必需变量
 - [ ] `NEXTAUTH_SECRET` 已生成（32位以上随机字符串）
@@ -200,6 +207,7 @@ docker compose logs -f app
 ### 🖥️ 方式 B：自建服务器部署
 
 **适用场景：**
+
 - ✅ 完全控制服务器环境
 - ✅ 已有服务器资源
 - ✅ 需要深度定制
@@ -247,6 +255,7 @@ sudo nano .env
 ```
 
 `.env` 配置：
+
 ```env
 DATABASE_URL="postgresql://tdp:your_secure_password@localhost:5432/tdp?schema=public"
 GOOGLE_CLIENT_ID="your-google-client-id"
@@ -283,6 +292,7 @@ sudo nano /etc/nginx/sites-available/tdp
 ```
 
 Nginx 配置：
+
 ```nginx
 server {
     listen 80;
@@ -316,6 +326,7 @@ sudo certbot --nginx -d yourdomain.com
 ```
 
 **配置清单：**
+
 - [ ] 服务器环境已安装（Node.js, PostgreSQL, Nginx）
 - [ ] 数据库已创建并配置用户权限
 - [ ] 项目已部署到 `/var/www/tdp`
@@ -333,6 +344,7 @@ sudo certbot --nginx -d yourdomain.com
 ## 4️⃣ （可选）配置自动部署
 
 **前置条件：**
+
 - ✅ 已完成 Docker 部署方式配置
 - ✅ 服务器可通过 SSH 访问
 - ✅ GitHub 仓库已推送代码
@@ -366,15 +378,16 @@ ssh -i ~/.ssh/github_deploy_key your_user@your_server_ip
 
 在 GitHub 仓库中配置（**Settings** → **Secrets and variables** → **Actions** → **New repository secret**）：
 
-| Secret 名称 | 获取方式 | 示例值 |
-|------------|---------|--------|
-| `SSH_HOST` | 服务器 IP 或域名 | `38.246.246.229` |
-| `SSH_PORT` | SSH 端口 | `22` |
-| `SSH_USER` | SSH 用户名 | `ubuntu` |
-| `SSH_KEY` | 私钥完整内容 | `cat ~/.ssh/github_deploy_key` 的输出 |
-| `PROJECT_DIR` | 项目路径 | `/var/www/tdp` |
+| Secret 名称   | 获取方式         | 示例值                                |
+| ------------- | ---------------- | ------------------------------------- |
+| `SSH_HOST`    | 服务器 IP 或域名 | `38.246.246.229`                      |
+| `SSH_PORT`    | SSH 端口         | `22`                                  |
+| `SSH_USER`    | SSH 用户名       | `ubuntu`                              |
+| `SSH_KEY`     | 私钥完整内容     | `cat ~/.ssh/github_deploy_key` 的输出 |
+| `PROJECT_DIR` | 项目路径         | `/var/www/tdp`                        |
 
 **⚠️ 重要**：
+
 - `SSH_KEY` 必须包含完整的密钥内容（包括 `-----BEGIN/END-----` 标记）
 - 不要在密钥中添加额外的空格或换行
 
@@ -395,6 +408,7 @@ nano docker-compose.yml
 ```
 
 修改 `docker-compose.yml`：
+
 ```yaml
 services:
   app:
@@ -411,6 +425,7 @@ services:
 ### 步骤 5：测试自动部署
 
 **方式 1：推送代码触发**
+
 ```bash
 # 本地推送到 main 分支
 git add .
@@ -419,6 +434,7 @@ git push origin main
 ```
 
 **方式 2：手动触发**
+
 1. 访问 GitHub 仓库 → **Actions** 标签页
 2. 选择 **Auto Deploy** 工作流
 3. 点击 **Run workflow**
@@ -427,10 +443,12 @@ git push origin main
 ### 步骤 6：验证部署结果
 
 在 GitHub Actions 页面查看：
+
 - ✅ **绿色勾号**：部署成功
 - ❌ **红色叉号**：部署失败（点击查看日志）
 
 在服务器上验证：
+
 ```bash
 # 查看服务状态
 docker compose ps
@@ -443,6 +461,7 @@ curl http://localhost:3000/api/health
 ```
 
 **配置清单：**
+
 - [ ] SSH 密钥对已生成（无密码保护）
 - [ ] 服务器已添加公钥到 `authorized_keys`
 - [ ] SSH 连接测试成功
@@ -462,6 +481,7 @@ curl http://localhost:3000/api/health
 ### ✅ 功能验证清单
 
 #### 基础功能
+
 - [ ] 访问首页正常显示
 - [ ] Google 登录功能正常
 - [ ] 健康检查接口返回正常
@@ -471,6 +491,7 @@ curl http://localhost:3000/api/health
   ```
 
 #### 后台管理
+
 - [ ] 登录后台成功（`/admin`）
 - [ ] 创建文章功能正常
 - [ ] 上传图片功能正常
@@ -479,11 +500,13 @@ curl http://localhost:3000/api/health
 - [ ] 相册管理功能正常
 
 #### 数据库
+
 - [ ] 数据库连接正常
 - [ ] 数据持久化正常（重启后数据不丢失）
 - [ ] 数据库迁移正常执行
 
 #### 性能与安全
+
 - [ ] 页面加载速度正常（< 3秒）
 - [ ] 图片上传大小限制生效（默认 8MB）
 - [ ] HTTPS 证书配置正常（生产环境）
@@ -497,6 +520,7 @@ curl http://localhost:3000/api/health
 **原因**：OAuth 回调 URI 配置不正确
 
 **解决方案**：
+
 1. 检查 Google Cloud Console 中的 **Authorized redirect URIs** 是否包含：
    ```
    http://localhost:3000/api/auth/callback/google
@@ -514,6 +538,7 @@ curl http://localhost:3000/api/health
 **解决方案**：
 
 **Docker 部署：**
+
 ```bash
 # 检查数据库容器状态
 docker compose ps postgres
@@ -526,6 +551,7 @@ docker compose restart postgres
 ```
 
 **自建部署：**
+
 ```bash
 # 检查 PostgreSQL 服务状态
 sudo systemctl status postgresql
@@ -536,6 +562,7 @@ sudo systemctl start postgresql
 # 测试连接
 psql -U tdp -d tdp -h localhost
 ```
+
 </details>
 
 <details>
@@ -544,6 +571,7 @@ psql -U tdp -d tdp -h localhost
 **原因**：SSH 密钥配置错误或服务器访问受限
 
 **解决方案**：
+
 1. 验证 SSH 密钥：
    ```bash
    ssh -i ~/.ssh/github_deploy_key your_user@your_server_ip
@@ -554,7 +582,7 @@ psql -U tdp -d tdp -h localhost
    ```bash
    sudo tail -f /var/log/auth.log
    ```
-</details>
+   </details>
 
 <details>
 <summary>❌ 图片上传失败：Upload failed</summary>
@@ -564,6 +592,7 @@ psql -U tdp -d tdp -h localhost
 **解决方案**：
 
 **Docker 部署：**
+
 ```bash
 # 检查上传目录权限
 ls -la public/uploads
@@ -573,6 +602,7 @@ docker compose exec app chmod 755 /app/public/uploads
 ```
 
 **自建部署：**
+
 ```bash
 # 创建上传目录
 mkdir -p /var/www/tdp/public/uploads
@@ -583,6 +613,7 @@ sudo chmod -R 755 /var/www/tdp/public/uploads
 ```
 
 检查图片大小是否超过限制（`.env` 中的 `MAX_UPLOAD_SIZE_MB`）
+
 </details>
 
 ---
@@ -625,6 +656,7 @@ sudo chmod -R 755 /var/www/tdp/public/uploads
 恭喜！如果您完成了上述所有步骤，您的博客项目已经成功部署并配置了自动化流程。
 
 **下一步建议：**
+
 - 📝 开始创建您的第一篇文章
 - 🎨 自定义网站样式和配置
 - 📊 配置网站分析（Google Analytics）
