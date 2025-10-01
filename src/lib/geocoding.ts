@@ -29,6 +29,9 @@ export async function reverseGeocode(
     if (cityValue) result.city = cityValue;
     if (location.country) result.country = location.country;
 
+    // Return null if the result object is empty
+    if (Object.keys(result).length === 0) return null;
+
     return result;
   } catch (error) {
     console.error("Geocoding failed:", error);

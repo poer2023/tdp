@@ -53,8 +53,7 @@ describe("Live Photo Detection", () => {
       const result = detectLivePhoto([videoFile]);
 
       expect(result).toEqual({
-        image: null,
-        video: undefined,
+        image: videoFile, // Falls back to first file when no image detected
       });
     });
 

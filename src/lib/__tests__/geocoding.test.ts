@@ -1,22 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
+// Mock node-geocoder module - must be hoisted before imports
+vi.mock("node-geocoder");
+
 import { reverseGeocode } from "../geocoding";
-import type { LocationInfo } from "../geocoding";
-
-// Mock node-geocoder
-vi.mock("node-geocoder", () => ({
-  default: vi.fn(() => ({
-    reverse: vi.fn(),
-  })),
-}));
-
 import NodeGeocoder from "node-geocoder";
 
-describe("Geocoding", () => {
-  let mockReverse: ReturnType<typeof vi.fn>;
+// Get mock instance after import
+const mockReverse = vi.fn();
 
+describe("Geocoding", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockReverse = vi.fn();
+    mockReverse.mockReset();
     vi.mocked(NodeGeocoder).mockReturnValue({
       reverse: mockReverse,
     } as any);
