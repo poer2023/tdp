@@ -41,7 +41,7 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
 
 # Set ownership to node user and switch to non-root user
-RUN mkdir -p /app/public/uploads && chown -R node:node /app
+RUN chown -R node:node /app
 USER node
 
 EXPOSE 3000
