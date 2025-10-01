@@ -30,16 +30,16 @@
   - [x] Update all existing posts with locale and groupId
 - [x] Verify backfill results in database
 
-### 1.3 Chinese Slug → Pinyin Migration
+### 1.3 Chinese Slug → Pinyin Migration ✅
 
-- [ ] Create migration script for Chinese slugs
-  - [ ] Identify posts with Chinese characters in slug
-  - [ ] Generate pinyin slugs (tone-less, ASCII only) using `pinyin-pro`
-  - [ ] Handle duplicates with `-2`, `-3` suffix
-  - [ ] Create `PostAlias` entries for old slugs → new slugs
-- [ ] Test migration script on staging data
-- [ ] Execute migration on production
-- [ ] Verify 301 redirects work for old Chinese slug URLs
+- [x] Create migration script for Chinese slugs
+  - [x] Identify posts with Chinese characters in slug
+  - [x] Generate pinyin slugs (tone-less, ASCII only) using `pinyin-pro`
+  - [x] Handle duplicates with `-2`, `-3` suffix
+  - [x] Create `PostAlias` entries for old slugs → new slugs
+- [x] Test migration script on staging data (no posts needed migration)
+- [x] Execute migration on production (no posts needed migration)
+- [ ] Verify 301 redirects work for old Chinese slug URLs (will be tested with middleware)
 
 ### 1.4 Redirect Middleware for PostAlias
 

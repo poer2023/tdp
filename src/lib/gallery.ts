@@ -101,6 +101,36 @@ export async function deleteGalleryImage(id: string): Promise<void> {
   await prisma.galleryImage.delete({ where: { id } });
 }
 
+export async function getGalleryImageById(id: string): Promise<GalleryImage | null> {
+  const image = await prisma.galleryImage.findUnique({ where: { id } });
+  if (!image) return null;
+  return toGalleryImage(image);
+}
+
+export async function getAdjacentImageIds(
+  id: string
+): Promise<{ prev: string | null; next: string | null }> {
+  const currentImage = await prisma.galleryImage.findUnique({ where: { id } });
+  if (!currentImage) return { prev: null, next: null };
+
+  const prevImage = await prisma.galleryImage.findFirst({
+    where: { createdAt: { lt: currentImage.createdAt } },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+
+  const nextImage = await prisma.galleryImage.findFirst({
+    where: { createdAt: { gt: currentImage.createdAt } },
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+
+  return {
+    prev: prevImage?.id || null,
+    next: nextImage?.id || null,
+  };
+}
+
 function toGalleryImage(image: {
   id: string;
   title: string | null;
