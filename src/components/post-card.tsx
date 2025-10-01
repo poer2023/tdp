@@ -44,13 +44,13 @@ export function PostCard({ post }: PostCardProps) {
           )}
         </div>
         <h3 className="text-xl leading-snug font-semibold text-zinc-900 dark:text-zinc-50">
-          <Link href={`/posts/${post.slug}`}>{post.title}</Link>
+          <Link href={`/posts/${encodeURIComponent(post.slug)}`}>{post.title}</Link>
         </h3>
         <p className="line-clamp-3 text-base leading-loose text-zinc-600 dark:text-zinc-400">
           {post.excerpt}
         </p>
         <Link
-          href={`/posts/${post.slug}`}
+          href={`/posts/${encodeURIComponent(post.slug)}`}
           className="text-sm font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600 dark:text-zinc-100"
         >
           阅读全文

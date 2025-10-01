@@ -1,5 +1,6 @@
 import { PostStatus, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { pinyin } from "pinyin-pro";
 
 export type PublicPost = {
   id: string;
@@ -191,10 +192,27 @@ async function createUniqueSlug(title: string): Promise<string> {
 }
 
 function slugify(input: string): string {
-  return input
+  const text = String(input || "");
+
+  // 将中文转换为拼音（无声调），其他字符保留，随后统一做 URL 安全清洗
+  let converted = text;
+  try {
+    // pinyin-pro: 输出为字符串，使用 v 代替 ü，移除音调
+    converted = pinyin(text, {
+      toneType: "none",
+      type: "string",
+      v: true,
+    }) as string;
+  } catch {
+    // 如果转换失败，回退到原始文本
+    converted = text;
+  }
+
+  // 归一化并仅保留 ASCII 字母、数字、空格与连字符
+  return converted
     .toLowerCase()
     .normalize("NFKD")
-    .replace(/[^\w\s\u4e00-\u9fa5-]/g, "")
+    .replace(/[^\w\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");

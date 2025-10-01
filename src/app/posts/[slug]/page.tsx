@@ -14,7 +14,7 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const post = await getPostBySlug(params.slug);
+  const post = await getPostBySlug(safeDecode(params.slug));
 
   if (!post) {
     return {
@@ -34,7 +34,7 @@ export async function generateMetadata({
 }
 
 export default async function PostPage({ params }: { params: { slug: string } }) {
-  const post = await getPostBySlug(params.slug);
+  const post = await getPostBySlug(safeDecode(params.slug));
 
   if (!post) {
     notFound();
@@ -99,4 +99,12 @@ export default async function PostPage({ params }: { params: { slug: string } })
       </article>
     </div>
   );
+}
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
