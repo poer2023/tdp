@@ -14,12 +14,6 @@
 /coverage
 /test-results/
 /playwright-report/
-**/__tests__/
-*.test.ts
-*.test.tsx
-*.spec.ts
-*.spec.tsx
-vitest.config.*
 .vitest/
 
 # next.js

@@ -1,66 +1,184 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { PostStatus } from "@prisma/client";
+import { PostStatus, PostLocale, CommentStatus } from "@prisma/client";
 
 export const revalidate = 0;
 
 export default async function AdminHomePage() {
   const session = await auth();
-  const [totalPosts, publishedPosts, draftPosts, galleryCount] = await Promise.all([
+
+  // Fetch content statistics
+  const [
+    totalPosts,
+    enPosts,
+    zhPosts,
+    publishedPosts,
+    draftPosts,
+    pendingComments,
+    totalComments,
+    galleryCount,
+  ] = await Promise.all([
     prisma.post.count(),
+    prisma.post.count({ where: { locale: PostLocale.EN } }),
+    prisma.post.count({ where: { locale: PostLocale.ZH } }),
     prisma.post.count({ where: { status: PostStatus.PUBLISHED } }),
     prisma.post.count({ where: { status: PostStatus.DRAFT } }),
+    prisma.comment.count({ where: { status: CommentStatus.PENDING } }),
+    prisma.comment.count(),
     prisma.galleryImage.count(),
   ]);
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-3">
-        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Admin</p>
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">内容概览</h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          欢迎回来，{session?.user?.name ?? "管理员"}。在这里快速查看最新的创作数据。
+    <div className="space-y-12">
+      {/* Page Header */}
+      <header className="max-w-3xl space-y-4">
+        <h1 className="text-4xl font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">
+          Overview
+        </h1>
+        <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+          Content management dashboard. Monitor posts, moderate comments, and manage content
+          operations.
         </p>
       </header>
 
+      {/* Statistics Grid */}
       <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="文章总数" value={totalPosts.toString()} accent="bg-blue-500" />
-        <StatCard title="已发布" value={publishedPosts.toString()} accent="bg-emerald-500" />
-        <StatCard title="草稿" value={draftPosts.toString()} accent="bg-amber-500" />
-        <StatCard title="相册照片" value={galleryCount.toString()} accent="bg-purple-500" />
+        <MetricCard
+          label="Total Posts"
+          value={totalPosts}
+          detail={`${enPosts} EN / ${zhPosts} ZH`}
+        />
+        <MetricCard label="Published" value={publishedPosts} />
+        <MetricCard label="Drafts" value={draftPosts} />
+        <MetricCard
+          label="Comments"
+          value={totalComments}
+          detail={pendingComments > 0 ? `${pendingComments} pending` : undefined}
+          alert={pendingComments > 0}
+        />
       </section>
 
-      <section className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-zinc-800/70 dark:bg-zinc-900/70">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">快速操作</h2>
-          <ul className="mt-4 space-y-3 text-sm text-zinc-600 dark:text-zinc-300">
-            <li>→ 在「文章管理」中编写 Markdown 内容并上传封面。</li>
-            <li>→ 在「相册」板块上传更多配图，提升首页的视觉体验。</li>
-            <li>→ 若需邀请他人协作，可将其设为 AUTHOR 角色。</li>
-          </ul>
-        </div>
-
-        <div className="rounded-3xl border border-dashed border-blue-300 bg-blue-50/80 p-6 text-sm text-blue-800 shadow-sm dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
-          <h2 className="text-lg font-semibold">接下来可以做什么？</h2>
-          <p className="mt-3 leading-6">
-            · 自定义域名并部署到 Vercel。
-            <br />· 使用 Prisma Client 编写更多统计接口。
-            <br />· 集成评论系统或订阅邮件，为博客读者提供互动渠道。
+      {/* Moderation Queue */}
+      {pendingComments > 0 && (
+        <section className="max-w-3xl space-y-4 border-l-2 border-zinc-900 pl-6 dark:border-zinc-100">
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+            Moderation Queue
+          </h2>
+          <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            {pendingComments} comment{pendingComments !== 1 ? "s" : ""} awaiting review.
           </p>
+          <Link
+            href="/admin/comments"
+            className="inline-flex items-center gap-2 text-sm font-medium text-zinc-900 underline decoration-1 underline-offset-4 transition-colors duration-150 hover:text-zinc-600 dark:text-zinc-100 dark:hover:text-zinc-400"
+          >
+            <span>Review comments</span>
+            <span aria-hidden>→</span>
+          </Link>
+        </section>
+      )}
+
+      {/* Quick Actions */}
+      <section className="max-w-3xl space-y-6">
+        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Quick Actions</h2>
+        <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          <ActionLink
+            href="/admin/posts"
+            label="Manage Posts"
+            description="Create, edit, and publish blog articles"
+          />
+          <ActionLink
+            href="/admin/comments"
+            label="Moderate Comments"
+            description="Review and manage user comments"
+          />
+          <ActionLink
+            href="/admin/export"
+            label="Export Content"
+            description="Download posts as Markdown files"
+          />
+          <ActionLink
+            href="/admin/import"
+            label="Import Content"
+            description="Upload Markdown files to create or update posts"
+          />
+          <ActionLink
+            href="/admin/gallery"
+            label="Gallery Management"
+            description="Manage photo uploads and metadata"
+          />
         </div>
+      </section>
+
+      {/* System Info */}
+      <section className="max-w-3xl space-y-4 text-sm text-zinc-500 dark:text-zinc-500">
+        <p>Logged in as {session?.user?.email}</p>
+        <p>
+          System Status:{" "}
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">Operational</span>
+        </p>
       </section>
     </div>
   );
 }
 
-function StatCard({ title, value, accent }: { title: string; value: string; accent: string }) {
+function MetricCard({
+  label,
+  value,
+  detail,
+  alert,
+}: {
+  label: string;
+  value: number;
+  detail?: string;
+  alert?: boolean;
+}) {
   return (
-    <div className="flex flex-col justify-between rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-zinc-800/70 dark:bg-zinc-900/70">
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">{title}</p>
-      <div className="mt-6 flex items-end gap-3">
-        <span className="text-4xl font-semibold text-zinc-900 dark:text-zinc-50">{value}</span>
-        <span className={`inline-flex h-2 w-12 rounded-full ${accent}`} aria-hidden />
+    <div className="space-y-3 border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">{label}</p>
+      <div className="space-y-1">
+        <p className="text-3xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
+          {value}
+        </p>
+        {detail && (
+          <p
+            className={`text-xs ${alert ? "font-medium text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-500"}`}
+          >
+            {detail}
+          </p>
+        )}
       </div>
     </div>
+  );
+}
+
+function ActionLink({
+  href,
+  label,
+  description,
+}: {
+  href: string;
+  label: string;
+  description: string;
+}) {
+  return (
+    <Link href={href} className="group block py-4 transition-colors duration-150">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <h3 className="font-medium text-zinc-900 group-hover:text-zinc-600 dark:text-zinc-100 dark:group-hover:text-zinc-400">
+            {label}
+          </h3>
+          <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            {description}
+          </p>
+        </div>
+        <span
+          aria-hidden
+          className="text-zinc-400 transition-transform duration-150 group-hover:translate-x-0.5"
+        >
+          →
+        </span>
+      </div>
+    </Link>
   );
 }
