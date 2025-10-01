@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
 import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
 import { AuthHeader } from "@/components/auth-header";
+import { MainNav } from "@/components/main-nav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,23 +41,7 @@ export default function RootLayout({
         <SessionProvider>
           <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-              <nav className="flex items-center gap-8">
-                <Link href="/" className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                  Hao
-                </Link>
-                <Link
-                  href="/posts"
-                  className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                >
-                  Blog
-                </Link>
-                <Link
-                  href="/gallery"
-                  className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                >
-                  Gallery
-                </Link>
-              </nav>
+              <MainNav />
               <AuthHeader />
             </div>
           </header>

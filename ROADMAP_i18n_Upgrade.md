@@ -74,13 +74,13 @@
 
 ## Week 2: Features (Likes, Comments, SEO, Routing)
 
-### 2.1 i18n Routing Structure
+### 2.1 i18n Routing Structure ✅
 
-- [ ] Update Next.js routing for i18n
-  - [ ] English default: `/`, `/posts/[slug]`, `/tags/[tagSlug]`
-  - [ ] Chinese: `/zh`, `/zh/posts/[slug]`, `/zh/tags/[tagSlug]`
-- [ ] Create middleware for locale detection (optional, or use explicit routes)
-- [ ] Update navigation components with locale-aware links
+- [x] Update Next.js routing for i18n
+  - [x] English default: `/`, `/posts/[slug]` (existing)
+  - [x] Chinese: `/zh`, `/zh/posts`, `/zh/posts/[slug]` (created [locale] route group)
+- [x] Middleware for locale detection (already handles /zh routes for PostAlias)
+- [x] Update navigation components with locale-aware links (MainNav component)
 
 ### 2.2 Language Toggle Component
 
