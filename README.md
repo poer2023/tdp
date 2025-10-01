@@ -107,6 +107,85 @@ open http://localhost:3000
 - CI 工作流：`.github/workflows/ci.yml`（Lint/TypeCheck/单测/构建）、`.github/workflows/e2e.yml`（Playwright）
 - E2E 启动器：`playwright.config.ts` 会在测试前构建并启动本地服务器
 
+## 生产部署
+
+本项目支持两种部署方式：**自动部署**（推荐）和 **手动部署**。
+
+### 方式一：自动部署（CI/CD）
+
+**触发条件**：`git push origin main`
+
+**流程**：
+
+1. 推送代码到 `main` 分支
+2. GitHub Actions 自动构建 Docker 镜像
+3. 推送镜像到 GitHub Container Registry (ghcr.io)
+4. 自动部署到生产服务器
+
+**时间**：约 15-20 分钟
+
+```bash
+git add .
+git commit -m "feat: new feature"
+git push origin main
+
+# 查看部署进度
+open https://github.com/poer2023/tdp/actions
+```
+
+### 方式二：手动部署（本地构建）
+
+**触发条件**：手动执行构建和部署命令
+
+**适用场景**：
+
+- 需要快速验证镜像构建
+- 想要部署特定版本（非 latest）
+- GitHub Actions 不可用时
+- 测试新的 Docker 配置
+
+**流程**：
+
+```bash
+# 1. 启动 Docker
+open -a Docker
+
+# 2. 登录 GHCR（如未登录）
+echo "YOUR_GITHUB_TOKEN" | docker login ghcr.io -u YOUR_USERNAME --password-stdin
+
+# 3. 生成 TAG
+TAG=$(date +%Y%m%d-%H%M)-$(git rev-parse --short HEAD)
+
+# 4. 构建并推送镜像（约 8 分钟）
+docker buildx build \
+  --platform linux/amd64 \
+  -t ghcr.io/poer2023/tdp:$TAG \
+  -t ghcr.io/poer2023/tdp:latest \
+  --cache-from type=registry,ref=ghcr.io/poer2023/tdp:buildcache \
+  --push .
+
+# 5. 手动触发部署
+gh workflow run "Deploy Only" -f image_tag=$TAG
+
+# 6. 监控部署进度
+gh run watch
+```
+
+**注意**：本地构建建议只使用 `--cache-from`（读取缓存），不使用 `--cache-to`（导出缓存），以避免额外的 5-10 分钟导出时间。
+
+### 部署方式对比
+
+| 方式         | 触发条件               | 构建位置       | 时间        | 适用场景               |
+| ------------ | ---------------------- | -------------- | ----------- | ---------------------- |
+| **自动部署** | `git push origin main` | GitHub Actions | ~15-20 分钟 | 日常开发，自动化发布   |
+| **手动部署** | 手动触发 workflow      | 本地构建       | ~8-10 分钟  | 快速验证，特定版本部署 |
+
+### 相关文档
+
+- 本地构建详细指南：[`docs/docker-build.md`](docs/docker-build.md)
+- Docker 部署说明：[`docs/docker-deployment.md`](docs/docker-deployment.md)
+- 自托管部署：[`docs/self-host-deployment.md`](docs/self-host-deployment.md)
+
 ## 路线图 / 待办
 
 详细的部署与改造待办清单见根目录 `codex.md`。其中包括：
