@@ -49,26 +49,26 @@
   - [x] Log redirect hits for monitoring
 - [x] Test redirects with sample old URLs (test alias created, ready for dev server testing)
 
-### 1.5 Top-Right Auth Controls (Google Only)
+### 1.5 Top-Right Auth Controls (Google Only) ✅
 
-- [ ] Update NextAuth configuration
-  - [ ] Configure Google OAuth provider only
-  - [ ] Set up proper callback URLs
-  - [ ] Request minimal scopes (profile, email)
-  - [ ] Implement CSRF protection
-- [ ] Create header auth component
-  - [ ] Desktop: "Sign in with Google" button (icon + text)
-  - [ ] Mobile: icon or short text
-  - [ ] Logged in state: avatar button with dropdown menu
-  - [ ] Menu items: "Dashboard", "Sign out"
-  - [ ] Return to current page after sign in/out
-- [ ] Implement SSR session loading in header (no flicker)
-- [ ] Add accessibility features
-  - [ ] `aria-haspopup="menu"` on avatar button
-  - [ ] Focus management for dropdown
-  - [ ] Esc key to close menu
-  - [ ] Keyboard navigation support
-- [ ] Test auth flow on desktop and mobile
+- [x] Update NextAuth configuration
+  - [x] Configure Google OAuth provider only (already configured)
+  - [x] Set up proper callback URLs
+  - [x] Request minimal scopes (profile, email)
+  - [x] Implement CSRF protection (NextAuth default)
+- [x] Create header auth component
+  - [x] Desktop: "Sign in with Google" button (icon + text)
+  - [x] Mobile: "Sign in" short text
+  - [x] Logged in state: avatar button with dropdown menu
+  - [x] Menu items: "Dashboard", "Sign out"
+  - [x] Return to current page after sign in/out
+- [x] Implement SSR session loading in header (no flicker)
+- [x] Add accessibility features
+  - [x] `aria-haspopup="menu"` on avatar button
+  - [x] Focus management for dropdown
+  - [x] Esc key to close menu
+  - [x] Keyboard navigation support (Arrow Up/Down)
+- [ ] Test auth flow on desktop and mobile (ready for dev server testing)
 
 ---
 
