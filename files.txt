@@ -17,4 +17,5 @@ docs/self-host-deployment.md
 docs/user-configuration-checklist.md
 e2e/home.spec.ts
 e2e/navigation.spec.ts
+e2e/uploads.spec.ts
 部署规范.md
