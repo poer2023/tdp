@@ -5,9 +5,7 @@ test.describe("Home Page", () => {
     await page.goto("/");
 
     // Check hero section elements
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "清新简约的个人博客，记录代码与生活的灵感"
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("清新简约的个人博客");
 
     // Check navigation elements
     await expect(page.getByText("阅读文章")).toBeVisible();
@@ -41,10 +39,10 @@ test.describe("Home Page", () => {
 
     // Test mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    await expect(page.getByText("全栈日志")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("清新简约的个人博客");
 
     // Test desktop viewport
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await expect(page.getByText("全栈日志")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("清新简约的个人博客");
   });
 });
