@@ -25,8 +25,8 @@ ENV NODE_ENV=production
 ENV HUSKY=0
 ENV HOSTNAME=0.0.0.0
 
-# Install curl for container healthcheck (used by docker-compose.yml)
-RUN apk add --no-cache curl
+# Install curl for container healthcheck and su-exec for user switching
+RUN apk add --no-cache curl su-exec
 
 # Copy the standalone server build
 COPY --from=builder /app/.next/standalone ./
@@ -40,9 +40,8 @@ RUN chmod +x ./docker/entrypoint.sh
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
 
-# Set ownership to node user and switch to non-root user
+# Set ownership to node user (user switching handled in entrypoint)
 RUN chown -R node:node /app
-USER node
 
 EXPOSE 3000
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
