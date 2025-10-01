@@ -42,7 +42,7 @@ export async function persistUploadedFile(file: File, category: UploadCategory):
 
   await writeFile(filePath, buffer);
 
-  return `/uploads/${category}/${fileName}`;
+  return `/api/uploads/${category}/${fileName}`;
 }
 
 export async function removeUploadedFile(relativePath?: string | null) {
