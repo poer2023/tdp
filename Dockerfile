@@ -23,6 +23,7 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm npm ci --omit=dev
 FROM base AS runner
 ENV NODE_ENV=production
 ENV HUSKY=0
+ENV HOSTNAME=0.0.0.0
 
 # Install curl for container healthcheck (used by docker-compose.yml)
 RUN apk add --no-cache curl
