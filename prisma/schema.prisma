@@ -18,6 +18,17 @@ enum PostStatus {
   PUBLISHED
 }
 
+enum PostLocale {
+  EN
+  ZH
+}
+
+enum CommentStatus {
+  PENDING
+  PUBLISHED
+  HIDDEN
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -28,6 +39,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   posts         Post[]
+  comments      Comment[]
 }
 
 model Account {
@@ -36,13 +48,13 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String?  @map("refreshToken")
-  access_token      String?  @map("accessToken")
-  expires_at        Int?     @map("expiresAt")
-  token_type        String?  @map("tokenType")
+  refresh_token     String? @map("refreshToken")
+  access_token      String? @map("accessToken")
+  expires_at        Int?    @map("expiresAt")
+  token_type        String? @map("tokenType")
   scope             String?
-  id_token          String?  @map("idToken")
-  session_state     String?  @map("sessionState")
+  id_token          String? @map("idToken")
+  session_state     String? @map("sessionState")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -67,21 +79,86 @@ model VerificationToken {
 }
 
 model Post {
-  id             String      @id @default(cuid())
+  id             String     @id @default(cuid())
   title          String
-  slug           String      @unique
+  slug           String
   excerpt        String
   content        String
   coverImagePath String?
   tags           String?
-  status         PostStatus  @default(DRAFT)
+  status         PostStatus @default(DRAFT)
+  locale         PostLocale @default(EN)
+  groupId        String?
   publishedAt    DateTime?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
   authorId       String?
 
-  author User? @relation(fields: [authorId], references: [id])
-  gallery GalleryImage[]
+  author          User?              @relation(fields: [authorId], references: [id])
+  gallery         GalleryImage[]
+  aliases         PostAlias[]
+  reactions       ReactionAggregate?
+  reactionRecords Reaction[]
+  comments        Comment[]
+
+  @@unique([locale, slug])
+  @@unique([groupId, locale])
+  @@index([status, locale])
+}
+
+model PostAlias {
+  id        String     @id @default(cuid())
+  locale    PostLocale
+  oldSlug   String
+  postId    String
+  createdAt DateTime   @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([locale, oldSlug])
+  @@index([postId])
+}
+
+model ReactionAggregate {
+  postId    String   @id
+  likeCount Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Reaction {
+  id             String   @id @default(cuid())
+  postId         String
+  sessionKeyHash String
+  createdAt      DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, sessionKeyHash])
+  @@index([sessionKeyHash])
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  postId    String
+  parentId  String?
+  authorId  String
+  content   String
+  status    CommentStatus @default(PENDING)
+  ipHash    String?
+  userAgent String?
+  locale    PostLocale    @default(EN)
+  createdAt DateTime      @default(now())
+
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([postId, status])
+  @@index([authorId])
+  @@index([parentId])
 }
 
 model GalleryImage {
@@ -91,6 +168,27 @@ model GalleryImage {
   filePath    String
   postId      String?
   createdAt   DateTime @default(now())
+
+  // 地理位置字段
+  latitude     Float?
+  longitude    Float?
+  locationName String? // "西湖风景区"
+  city         String? // "杭州"
+  country      String? // "中国"
+
+  // Live Photo 支持
+  livePhotoVideoPath String? // MOV 视频路径
+  isLivePhoto        Boolean @default(false)
+
+  // 基础元数据
+  fileSize   Int? // 字节
+  width      Int? // 像素
+  height     Int? // 像素
+  mimeType   String? // "image/heic"
+  capturedAt DateTime? // EXIF 拍摄时间
+
+  // 存储位置标记
+  storageType String @default("local") // "local" | "s3"
 
   post Post? @relation(fields: [postId], references: [id], onDelete: SetNull)
 }

@@ -21,10 +21,10 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
   return (
     <section className="rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-zinc-800/70 dark:bg-zinc-900/70">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="space-y-1">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">上传照片</h2>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            支持 JPG/PNG/WebP/AVIF 等格式，可选关联到文章。
+          <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+            EXIF 元数据与 GPS 坐标将自动提取。Live Photo 通过文件名自动配对（需同名 HEIC+MOV）。
           </p>
         </div>
         {state.status === "success" && state.message && (
@@ -77,22 +77,26 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
         </div>
 
         <div className="flex flex-col gap-4">
-          <Field label="图片文件" required>
+          <Field label="文件上传" required>
             <input
-              name="file"
+              name="files"
               type="file"
               required
-              accept="image/*"
-              className="w-full text-sm text-zinc-600 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-600 hover:file:bg-blue-100 dark:text-zinc-300"
+              accept="image/*,video/quicktime,video/mp4"
+              multiple
+              className="w-full text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border file:border-zinc-300 file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-zinc-900 file:transition-all hover:file:bg-zinc-50 dark:text-zinc-300 dark:file:border-zinc-700 dark:file:bg-zinc-900 dark:file:text-zinc-100"
             />
+            <p className="mt-1.5 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+              支持 JPG/PNG/WebP/HEIC 图片。上传同名 HEIC+MOV 文件将自动识别为 Live Photo。
+            </p>
           </Field>
 
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-lg border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
-            {isPending ? "上传中…" : "上传到相册"}
+            {isPending ? "处理中…" : "上传照片"}
           </button>
         </div>
       </form>

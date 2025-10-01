@@ -13,6 +13,10 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/gif",
   "image/svg+xml",
   "image/avif",
+  "image/heic", // Live Photo
+  "image/heif", // Live Photo
+  "video/quicktime", // Live Photo MOV
+  "video/mp4", // Live Photo alternative
 ]);
 
 export type UploadCategory = "covers" | "gallery";
@@ -27,7 +31,7 @@ export async function persistUploadedFile(file: File, category: UploadCategory):
   }
 
   if (file.type && !ALLOWED_MIME_TYPES.has(file.type)) {
-    throw new Error("仅支持上传 JPG/PNG/WebP/GIF/SVG/AVIF 图片");
+    throw new Error("仅支持上传 JPG/PNG/WebP/GIF/SVG/AVIF/HEIC 图片和 MOV/MP4 视频");
   }
 
   const arrayBuffer = await file.arrayBuffer();
@@ -82,4 +86,8 @@ const MIME_EXTENSION_MAP = {
   "image/gif": "gif",
   "image/svg+xml": "svg",
   "image/avif": "avif",
+  "image/heic": "heic",
+  "image/heif": "heif",
+  "video/quicktime": "mov",
+  "video/mp4": "mp4",
 } as const;

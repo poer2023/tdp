@@ -7,6 +7,25 @@ export type GalleryImage = {
   filePath: string;
   postId: string | null;
   createdAt: string;
+
+  // 地理位置
+  latitude?: number | null;
+  longitude?: number | null;
+  locationName?: string | null;
+  city?: string | null;
+  country?: string | null;
+
+  // Live Photo
+  livePhotoVideoPath?: string | null;
+  isLivePhoto: boolean;
+
+  // 元数据
+  fileSize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  mimeType?: string | null;
+  capturedAt?: string | null;
+  storageType: string;
 };
 
 export type CreateGalleryImageInput = {
@@ -14,6 +33,25 @@ export type CreateGalleryImageInput = {
   description?: string | null;
   filePath: string;
   postId?: string | null;
+
+  // 地理位置
+  latitude?: number | null;
+  longitude?: number | null;
+  locationName?: string | null;
+  city?: string | null;
+  country?: string | null;
+
+  // Live Photo
+  livePhotoVideoPath?: string | null;
+  isLivePhoto?: boolean;
+
+  // 元数据
+  fileSize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  mimeType?: string | null;
+  capturedAt?: Date | null;
+  storageType?: string;
 };
 
 export async function listGalleryImages(limit?: number): Promise<GalleryImage[]> {
@@ -34,6 +72,25 @@ export async function addGalleryImage(input: CreateGalleryImageInput): Promise<G
       description: input.description?.trim() || null,
       filePath: input.filePath,
       postId: input.postId ?? null,
+
+      // 地理位置
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
+      locationName: input.locationName?.trim() || null,
+      city: input.city?.trim() || null,
+      country: input.country?.trim() || null,
+
+      // Live Photo
+      livePhotoVideoPath: input.livePhotoVideoPath ?? null,
+      isLivePhoto: input.isLivePhoto ?? false,
+
+      // 元数据
+      fileSize: input.fileSize ?? null,
+      width: input.width ?? null,
+      height: input.height ?? null,
+      mimeType: input.mimeType ?? null,
+      capturedAt: input.capturedAt ?? null,
+      storageType: input.storageType ?? "local",
     },
   });
 
@@ -51,6 +108,19 @@ function toGalleryImage(image: {
   filePath: string;
   postId: string | null;
   createdAt: Date;
+  latitude: number | null;
+  longitude: number | null;
+  locationName: string | null;
+  city: string | null;
+  country: string | null;
+  livePhotoVideoPath: string | null;
+  isLivePhoto: boolean;
+  fileSize: number | null;
+  width: number | null;
+  height: number | null;
+  mimeType: string | null;
+  capturedAt: Date | null;
+  storageType: string;
 }): GalleryImage {
   return {
     id: image.id,
@@ -59,5 +129,18 @@ function toGalleryImage(image: {
     filePath: image.filePath,
     postId: image.postId,
     createdAt: image.createdAt.toISOString(),
+    latitude: image.latitude,
+    longitude: image.longitude,
+    locationName: image.locationName,
+    city: image.city,
+    country: image.country,
+    livePhotoVideoPath: image.livePhotoVideoPath,
+    isLivePhoto: image.isLivePhoto,
+    fileSize: image.fileSize,
+    width: image.width,
+    height: image.height,
+    mimeType: image.mimeType,
+    capturedAt: image.capturedAt?.toISOString() || null,
+    storageType: image.storageType,
   };
 }
