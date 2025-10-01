@@ -109,54 +109,115 @@ open http://localhost:3000
 
 ## 生产部署
 
-本项目支持两种部署方式：**自动部署**（推荐）和 **手动部署**。
+**推荐工作流**：分支开发 + PR 合并 + 受控发布
 
-### 方式一：自动部署（CI/CD）
+本项目采用"分支开发、PR 验证、审批发布"的 CI/CD 流程，既方便日常随手提交，又能确保生产发布可控。
 
-**触发条件**：`git push origin main`
+### 工作流程概览
 
-**流程**：
-
-1. 推送代码到 `main` 分支
-2. GitHub Actions 自动构建 Docker 镜像
-3. 推送镜像到 GitHub Container Registry (ghcr.io)
-4. 自动部署到生产服务器
-
-**时间**：约 15-20 分钟
-
-```bash
-git add .
-git commit -m "feat: new feature"
-git push origin main
-
-# 查看部署进度
-open https://github.com/poer2023/tdp/actions
+```
+功能分支 push
+    ↓
+创建 PR → CI 验证 (lint/typecheck/test/build)
+    ↓
+合并到 main → 自动构建镜像
+    ↓
+等待审批 → 点击 Approve → 部署到生产
 ```
 
-### 方式二：手动部署（本地构建）
+### 当前配置状态
 
-**触发条件**：手动执行构建和部署命令
+| 功能                 | 状态          | 说明                                               |
+| -------------------- | ------------- | -------------------------------------------------- |
+| PR 自动 CI 验证      | ✅ 已实现     | `.github/workflows/ci.yml` 在 PR 时运行全套检查    |
+| 合并后自动构建镜像   | ✅ 已实现     | `docker-publish.yml` 在 main push 时构建并推送镜像 |
+| `[skip deploy]` 跳过 | ✅ 已配置     | 提交信息包含此标记时跳过部署                       |
+| 生产发布需审批       | ⚠️ 需手动配置 | 需创建 `production` 环境并设置审批人（见下方步骤） |
+| main 分支保护        | ⚠️ 可选配置   | 防止直接 push，强制走 PR 流程（推荐但非必需）      |
 
-**适用场景**：
+### 日常使用场景
 
-- 需要快速验证镜像构建
-- 想要部署特定版本（非 latest）
-- GitHub Actions 不可用时
-- 测试新的 Docker 配置
+#### 场景 1：随手保存进度，不影响 main
 
-**流程**：
+```bash
+# 在功能分支上随意提交
+git checkout -b feature/new-feature
+# ... 修改代码 ...
+git add .
+git commit -m "wip: 临时保存进度"
+git push origin feature/new-feature
+
+# ✅ 只推送到功能分支，main 不受影响，不触发部署
+```
+
+#### 场景 2：合并到 main 但暂不部署
+
+```bash
+# PR 合并时在合并提交中加上 [skip deploy]
+# 方式 1: 在 GitHub PR 界面合并时编辑提交信息
+Merge pull request #123 from feature/new-feature [skip deploy]
+
+# 方式 2: 本地合并
+git checkout main
+git merge feature/new-feature -m "feat: new feature [skip deploy]"
+git push origin main
+
+# ✅ 镜像会构建，但不会部署到生产
+```
+
+#### 场景 3：正式发布到生产
+
+```bash
+# 1. 合并 PR 到 main（不加 [skip deploy]）
+# 2. 等待 Docker Build & Push 完成（约 10-15 分钟）
+# 3. 前往 GitHub Actions 页面
+open https://github.com/poer2023/tdp/actions
+
+# 4. 找到 "Auto Deploy" 工作流，点击等待中的部署
+# 5. 点击 "Review deployments" → 勾选 "production" → "Approve and deploy"
+
+# ✅ 审批后自动部署到生产服务器
+```
+
+### 一次性配置步骤
+
+#### 必需：创建 production 环境并配置审批
+
+1. 访问仓库 Settings → Environments → New environment
+2. 输入环境名称: `production`
+3. 勾选 **Required reviewers**，添加你自己（或团队成员）
+4. 保存
+
+完成后，每次 main 合并只会在点击 Approve 后才发布到生产。
+
+#### 可选：开启 main 分支保护
+
+如果希望强制所有变更走 PR 流程，防止直接 push 到 main：
+
+1. 访问仓库 Settings → Branches → Add branch protection rule
+2. Branch name pattern: `main`
+3. 勾选以下选项：
+   - ✅ Require a pull request before merging
+   - ✅ Require status checks to pass before merging
+     - 选择 `CI Pipeline` (或其他必需的检查)
+   - ❌ 不勾选 "Include administrators"（保留紧急推送权限）
+4. 保存
+
+配置后，必须通过 PR 才能合并到 main，直接 push 会被拒绝。
+
+### 高级用法：本地构建 + 手动部署
+
+适用于快速验证、部署特定版本、GitHub Actions 不可用等场景。
 
 ```bash
 # 1. 启动 Docker
 open -a Docker
 
-# 2. 登录 GHCR（如未登录）
+# 2. 登录 GHCR
 echo "YOUR_GITHUB_TOKEN" | docker login ghcr.io -u YOUR_USERNAME --password-stdin
 
-# 3. 生成 TAG
+# 3. 构建并推送镜像（约 8 分钟）
 TAG=$(date +%Y%m%d-%H%M)-$(git rev-parse --short HEAD)
-
-# 4. 构建并推送镜像（约 8 分钟）
 docker buildx build \
   --platform linux/amd64 \
   -t ghcr.io/poer2023/tdp:$TAG \
@@ -164,21 +225,12 @@ docker buildx build \
   --cache-from type=registry,ref=ghcr.io/poer2023/tdp:buildcache \
   --push .
 
-# 5. 手动触发部署
+# 4. 手动触发部署
 gh workflow run "Deploy Only" -f image_tag=$TAG
-
-# 6. 监控部署进度
 gh run watch
 ```
 
 **注意**：本地构建建议只使用 `--cache-from`（读取缓存），不使用 `--cache-to`（导出缓存），以避免额外的 5-10 分钟导出时间。
-
-### 部署方式对比
-
-| 方式         | 触发条件               | 构建位置       | 时间        | 适用场景               |
-| ------------ | ---------------------- | -------------- | ----------- | ---------------------- |
-| **自动部署** | `git push origin main` | GitHub Actions | ~15-20 分钟 | 日常开发，自动化发布   |
-| **手动部署** | 手动触发 workflow      | 本地构建       | ~8-10 分钟  | 快速验证，特定版本部署 |
 
 ### 相关文档
 
