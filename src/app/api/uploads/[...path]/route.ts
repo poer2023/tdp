@@ -82,7 +82,11 @@ export async function GET(request: NextRequest, { params }: Params) {
   const ims = request.headers.get("if-modified-since");
   if (ims) {
     const since = Date.parse(ims);
-    if (!Number.isNaN(since) && stats.mtime.getTime() <= since) {
+    // HTTP dates are second-precision, so compare at second level
+    if (
+      !Number.isNaN(since) &&
+      Math.floor(stats.mtime.getTime() / 1000) <= Math.floor(since / 1000)
+    ) {
       return new NextResponse(null, {
         status: 304,
         headers: {
