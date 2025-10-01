@@ -24,6 +24,9 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV HUSKY=0
 
+# Install curl for container healthcheck
+RUN apk add --no-cache curl
+
 # Copy the standalone server build
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
