@@ -16,32 +16,32 @@ COPY . .
 # Ensure Prisma Client is generated with the actual schema before building
 RUN npx prisma generate && npm run build
 
-FROM base AS prod-deps
+# Migration stage - used for database migrations only
+FROM base AS migrator
+COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
-RUN --mount=type=cache,id=npm-cache,target=/root/.npm npm ci --omit=dev
+COPY prisma ./prisma
+# Prisma CLI is available in node_modules for migrations
+CMD ["npx", "prisma", "migrate", "deploy"]
 
 FROM base AS runner
 ENV NODE_ENV=production
 ENV HUSKY=0
 ENV HOSTNAME=0.0.0.0
 
-# Install curl for container healthcheck and su-exec for user switching
-RUN apk add --no-cache curl su-exec
-
 # Copy the standalone server build
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/prisma ./prisma
+
+# Copy health check and entrypoint scripts
+COPY docker/healthcheck.js ./docker/healthcheck.js
 COPY docker/entrypoint.sh ./docker/entrypoint.sh
-RUN chmod +x ./docker/entrypoint.sh
+RUN chmod +x ./docker/entrypoint.sh ./docker/healthcheck.js
 
-# Install production dependencies from cached build stage
-COPY --from=prod-deps /app/node_modules ./node_modules
-COPY package.json package-lock.json ./
-
-# Set ownership to node user (user switching handled in entrypoint)
+# Set ownership to node user and switch to non-root user
 RUN chown -R node:node /app
+USER node
 
 EXPOSE 3000
 ENTRYPOINT ["/app/docker/entrypoint.sh"]

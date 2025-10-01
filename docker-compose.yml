@@ -17,6 +17,25 @@ services:
     networks:
       - tdp-net
 
+  migrate:
+    # 数据库迁移服务 - 一次性运行
+    image: ghcr.io/poer2023/tdp:${IMAGE_TAG:-latest}
+    container_name: tdp-migrate
+    env_file:
+      - .env
+    command: ["sh", "-c", "npx prisma migrate deploy"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tdp-net
+    restart: "no"
+    # 如果需要本地构建，取消下面的注释
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    #   target: migrator
+
   app:
     # 使用 GHCR 预构建镜像；支持通过环境变量覆盖镜像标签
     image: ghcr.io/poer2023/tdp:${IMAGE_TAG:-latest}
@@ -33,7 +52,7 @@ services:
     volumes:
       - uploads-data:/app/public/uploads
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3000/api/health || exit 1"]
+      test: ["CMD-SHELL", "node /app/docker/healthcheck.js"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -41,6 +60,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
       - tdp-net
     # 如果需要本地构建，取消下面的注释
