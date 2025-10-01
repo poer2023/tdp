@@ -33,7 +33,11 @@ services:
     volumes:
       - ./public/uploads:/app/public/uploads
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider -T 3 http://127.0.0.1:3000/api/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q -T 3 -O - http://127.0.0.1:3000/api/health >/dev/null 2>&1 || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
