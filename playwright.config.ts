@@ -5,7 +5,6 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./e2e",
-  globalSetup: "./e2e/global-setup.ts",
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -53,8 +52,8 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     // Next.js with output: 'standalone' cannot use `next start`.
-    // Build then run the standalone server directly.
-    command: "npm run build && node .next/standalone/server.js",
+    // Build, copy test fixtures, then run the standalone server.
+    command: "bash e2e/setup-and-start.sh",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     // Allow extra time in CI to complete Next.js build
