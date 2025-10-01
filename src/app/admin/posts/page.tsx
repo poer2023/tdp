@@ -67,7 +67,7 @@ export default async function AdminPostsPage() {
                           year: "numeric",
                           month: "long",
                           day: "numeric",
-                        }).format(post.publishedAt)
+                        }).format(new Date(post.publishedAt))
                       : "—"}
                   </td>
                   <td className="px-6 py-4">

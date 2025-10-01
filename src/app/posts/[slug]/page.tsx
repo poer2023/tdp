@@ -45,7 +45,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
         year: "numeric",
         month: "long",
         day: "numeric",
-      }).format(post.publishedAt)
+      }).format(new Date(post.publishedAt))
     : "草稿";
 
   return (
@@ -57,7 +57,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
         >
           ← 返回首页
         </Link>
-        <time dateTime={post.publishedAt?.toISOString() ?? ""}>{formatted}</time>
+        <time dateTime={post.publishedAt ?? ""}>{formatted}</time>
       </div>
 
       <article className="space-y-8">

@@ -10,9 +10,9 @@ export type PublicPost = {
   coverImagePath: string | null;
   tags: string[];
   status: PostStatus;
-  publishedAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
   author?: {
     id: string;
     name: string | null;
@@ -78,7 +78,7 @@ export async function listPostSummaries(): Promise<PostSummary[]> {
     id: post.id,
     title: post.title,
     slug: post.slug,
-    status: post.status,
+    status: post.status as PostStatus,
   }));
 }
 
@@ -210,9 +210,9 @@ function toPublicPost(post: PostWithAuthor): PublicPost {
     coverImagePath: post.coverImagePath,
     tags: parseTags(post.tags),
     status: post.status,
-    publishedAt: post.publishedAt,
-    createdAt: post.createdAt,
-    updatedAt: post.updatedAt,
+    publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
+    createdAt: post.createdAt.toISOString(),
+    updatedAt: post.updatedAt.toISOString(),
     author: post.author
       ? {
           id: post.author.id,

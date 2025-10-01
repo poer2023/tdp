@@ -43,7 +43,7 @@ export default async function GalleryPage() {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
-                  }).format(image.createdAt)}
+                  }).format(new Date(image.createdAt))}
                 </p>
               </figcaption>
             </figure>

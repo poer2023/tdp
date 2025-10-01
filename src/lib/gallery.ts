@@ -6,7 +6,7 @@ export type GalleryImage = {
   description: string | null;
   filePath: string;
   postId: string | null;
-  createdAt: Date;
+  createdAt: string;
 };
 
 export type CreateGalleryImageInput = {
@@ -58,6 +58,6 @@ function toGalleryImage(image: {
     description: image.description,
     filePath: image.filePath,
     postId: image.postId,
-    createdAt: image.createdAt,
+    createdAt: image.createdAt.toISOString(),
   };
 }

@@ -45,7 +45,7 @@ export default async function AdminEditPostPage({ params }: { params: { id: stri
                     year: "numeric",
                     month: "long",
                     day: "numeric",
-                  }).format(post.publishedAt)}`
+                  }).format(new Date(post.publishedAt))}`
                 : "尚未发布"}
             </p>
           </div>
