@@ -8,6 +8,7 @@ on:
       - "v*"
     paths:
       - "Dockerfile"
+      - "docker-compose.yml"
       - "package.json"
       - "package-lock.json"
       - "src/**"
@@ -23,6 +24,7 @@ on:
       - main
     paths:
       - "Dockerfile"
+      - "docker-compose.yml"
       - "package.json"
       - "package-lock.json"
       - "src/**"

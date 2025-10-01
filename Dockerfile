@@ -24,7 +24,7 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV HUSKY=0
 
-# Install curl for container healthcheck
+# Install curl for container healthcheck (used by docker-compose.yml)
 RUN apk add --no-cache curl
 
 # Copy the standalone server build
