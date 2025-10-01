@@ -142,15 +142,18 @@
   - [x] `POST /api/admin/comments/:id/moderate`
   - [x] Actions: approve, hide, delete
   - [x] Auth: admin role only
-- [ ] Create admin moderation UI (pending - API complete)
-  - [ ] List pending comments
-  - [ ] Approve/hide/delete buttons
-  - [ ] Show comment content, author, post context
-  - [ ] Optional: banlist management (by user or hashed identifier)
+- [x] Create admin moderation UI (`/admin/comments`)
+  - [x] Status-based filtering (Pending/Published/Hidden/All)
+  - [x] List comments with full context
+  - [x] Approve/hide/delete buttons inline
+  - [x] Show comment content, author, post context
+  - [x] Display user trust signals (approved comment count)
+  - [x] Post link navigation
+  - [x] Reply count indicators
 - [x] Implement moderation logic
   - [x] Default: require approval for first-time commenters
   - [x] Auto-approve for users with approved history (configurable)
-- [ ] Test moderation workflow (API ready, UI pending)
+- [ ] Test moderation workflow (ready for testing)
 
 ### 2.6 SEO Enhancements ✅
 
@@ -195,11 +198,12 @@
   - [x] Track referenced assets
   - [x] Preserve relative paths for assets
   - [x] Create manifest.json with export metadata
-- [ ] Create admin export UI (API ready, UI pending)
-  - [ ] Filters: date range, status, locale selection
-  - [ ] Show export progress/job status
-  - [ ] Download button for zip file
-- [ ] Test export with various filter combinations (API ready for testing)
+- [x] Create admin export UI (`/admin/export`)
+  - [x] Filters: date range, status, locale selection
+  - [x] One-click download button with loading state
+  - [x] Inline format documentation
+  - [x] Error handling and user feedback
+- [ ] Test export with various filter combinations (ready for testing)
 
 ### 3.3 Import Tool Implementation (Dry-Run) ✅
 
@@ -218,13 +222,15 @@
   - [x] Else: upsert by `(locale, slug)`
   - [x] On conflict: suffix `-2`, `-3`, etc.
 - [x] Auto-generate pinyin slug for ZH posts without slug
-- [ ] Create admin import UI (API ready, UI pending)
-  - [ ] Upload zip file
-  - [ ] Show dry-run preview results
-  - [ ] Display stats: created/updated/skipped
-  - [ ] Show per-file errors
-  - [ ] "Apply Import" button to execute
-- [ ] Test dry-run with sample content (API ready for testing)
+- [x] Create admin import UI (`/admin/import`)
+  - [x] File upload with drag-and-drop (styled as button)
+  - [x] Two-stage process: Preview → Apply
+  - [x] Detailed preview table with action badges
+  - [x] Display stats: created/updated/skipped/errors
+  - [x] Show per-file errors inline
+  - [x] "Apply Import" button with confirmation
+  - [x] Inline documentation
+- [ ] Test dry-run with sample content (ready for testing)
 
 ### 3.4 Import Tool Implementation (Apply) ✅
 
@@ -241,7 +247,11 @@
   - [x] Stats: created, updated, skipped, errors
   - [x] Per-file action details
   - [x] Error details for failed imports
-- [ ] Test import apply with various scenarios (API ready for testing)
+- [x] UI integration for apply workflow
+  - [x] Confirmation dialog before applying
+  - [x] Success/error reporting
+  - [x] Automatic refresh after import
+- [ ] Test import apply with various scenarios (ready for testing)
   - [ ] New posts
   - [ ] Updates to existing posts
   - [ ] Slug conflicts
