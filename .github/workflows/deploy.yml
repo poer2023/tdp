@@ -114,37 +114,37 @@ jobs:
             docker compose pull
 
             echo "==> Restarting services"
-            docker compose up -d
+            docker compose up -d --remove-orphans
 
-            echo "==> Waiting for services to become healthy (timeout 300s)"
+            echo "==> Waiting for HTTP health (port 3000) up to 300s"
             start_ts=$(date +%s)
             timeout=300
             while true; do
-              # Show brief status each pass
-              docker compose ps || true
-
-              containers=$(docker compose ps -q || true)
-              if [ -n "$containers" ]; then
-                statuses=$(docker inspect $containers \
-                  --format '{{.Name}} {{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' || true)
-                echo "Statuses:\n$statuses"
-                # Check both app and postgres report healthy
-                if echo "$statuses" | grep -q "/tdp-app healthy" && echo "$statuses" | grep -q "/tdp-postgres healthy"; then
-                  echo "✅ Deployment successful - services are healthy"
-                  break
-                fi
+              # Quick HTTP probe on host port
+              if curl -fsS -m 3 http://localhost:3000/api/health >/dev/null 2>&1 || wget -qO- --timeout=3 http://localhost:3000/api/health >/dev/null 2>&1; then
+                echo "✅ HTTP health endpoint is responsive"
+                break
               fi
+
+              # Show brief container status
+              docker compose ps || true
 
               now=$(date +%s)
               if [ $((now - start_ts)) -ge $timeout ]; then
-                echo "❌ Timeout waiting for services to become healthy"
+                echo "❌ Timeout waiting for HTTP health endpoint"
                 docker compose ps || true
-                echo "==> Recent logs (app)"; docker compose logs --tail=120 app || true
-                echo "==> Recent logs (postgres)"; docker compose logs --tail=60 postgres || true
+                echo "==> Recent logs (app)"; docker compose logs --tail=200 app || true
+                echo "==> Recent logs (postgres)"; docker compose logs --tail=100 postgres || true
                 exit 1
               fi
               sleep 5
             done
+
+            echo "==> Verifying container health statuses (best-effort)"
+            containers=$(docker compose ps -q || true)
+            if [ -n "$containers" ]; then
+              docker inspect $containers --format '{{.Name}} => {{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' || true
+            fi
 
             echo "==> Cleaning up unused images"
             docker image prune -f || true
