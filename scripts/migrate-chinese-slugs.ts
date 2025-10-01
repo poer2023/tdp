@@ -27,12 +27,10 @@ function hasChinese(text: string): boolean {
 function toPinyinSlug(text: string): string {
   const pinyinText = pinyin(text, {
     toneType: "none", // No tone marks
-    type: "array",
     separator: "-",
   });
 
   return pinyinText
-    .join("-")
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "-") // Replace non-ASCII with hyphens
     .replace(/-+/g, "-") // Collapse multiple hyphens

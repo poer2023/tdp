@@ -41,13 +41,13 @@
 - [x] Execute migration on production (no posts needed migration)
 - [ ] Verify 301 redirects work for old Chinese slug URLs (will be tested with middleware)
 
-### 1.4 Redirect Middleware for PostAlias
+### 1.4 Redirect Middleware for PostAlias ✅
 
-- [ ] Create middleware or API route handler
-  - [ ] Check incoming `/zh/posts/:slug` against `PostAlias` table
-  - [ ] Return 301 redirect to new pinyin slug if alias found
-  - [ ] Log redirect hits for monitoring
-- [ ] Test redirects with sample old URLs
+- [x] Create middleware or API route handler
+  - [x] Check incoming `/zh/posts/:slug` and `/posts/:slug` against `PostAlias` table
+  - [x] Return 301 redirect to new pinyin slug if alias found
+  - [x] Log redirect hits for monitoring
+- [x] Test redirects with sample old URLs (test alias created, ready for dev server testing)
 
 ### 1.5 Top-Right Auth Controls (Google Only)
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listGalleryImages } from "@/lib/gallery";
-import { GalleryMap } from "@/components/gallery-map";
+import { GalleryMapWrapper } from "@/components/gallery-map-wrapper";
 
 export const revalidate = 0;
 
@@ -42,7 +42,7 @@ export default async function GalleryMapPage() {
       </nav>
 
       {/* 地图容器 */}
-      <GalleryMap images={images} />
+      <GalleryMapWrapper images={images} />
 
       {/* Footer - 技术说明（证据链）*/}
       <footer className="border-t border-zinc-200 pt-6 text-xs leading-relaxed text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
