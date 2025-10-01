@@ -121,7 +121,7 @@ jobs:
             timeout=300
             while true; do
               # Quick HTTP probe on host port
-              if curl -fsS -m 3 http://localhost:3000/api/health >/dev/null 2>&1 || wget -qO- --timeout=3 http://localhost:3000/api/health >/dev/null 2>&1; then
+              if curl -fsS -m 3 http://127.0.0.1:3000/api/health >/dev/null 2>&1 || wget -qO- --timeout=3 http://127.0.0.1:3000/api/health >/dev/null 2>&1; then
                 echo "✅ HTTP health endpoint is responsive"
                 break
               fi
