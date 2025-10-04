@@ -52,19 +52,19 @@ publishedAt: "2025-01-15T10:30:00.000Z"
 
 ### Field Descriptions
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `title` | string | Yes | Post title |
-| `date` | ISO8601 | Yes | Creation date (used as publishedAt if status is PUBLISHED) |
-| `slug` | string | Yes | URL-safe slug (auto-generated from title if missing for ZH posts) |
-| `locale` | enum | Yes | `"EN"` or `"ZH"` |
-| `groupId` | string | Yes | UUID linking translations together |
-| `tags` | array | Yes | Array of tag strings (can be empty `[]`) |
-| `status` | enum | Yes | `"PUBLISHED"` or `"DRAFT"` |
-| `excerpt` | string | No | Short description for metadata |
-| `cover` | string | No | Relative path to cover image (from content/ root) |
-| `author` | string | No | User ID (defaults to system/admin if missing) |
-| `publishedAt` | ISO8601 | No | Explicit publish date (defaults to `date` if status is PUBLISHED) |
+| Field         | Type    | Required | Description                                                       |
+| ------------- | ------- | -------- | ----------------------------------------------------------------- |
+| `title`       | string  | Yes      | Post title                                                        |
+| `date`        | ISO8601 | Yes      | Creation date (used as publishedAt if status is PUBLISHED)        |
+| `slug`        | string  | Yes      | URL-safe slug (auto-generated from title if missing for ZH posts) |
+| `locale`      | enum    | Yes      | `"EN"` or `"ZH"`                                                  |
+| `groupId`     | string  | Yes      | UUID linking translations together                                |
+| `tags`        | array   | Yes      | Array of tag strings (can be empty `[]`)                          |
+| `status`      | enum    | Yes      | `"PUBLISHED"` or `"DRAFT"`                                        |
+| `excerpt`     | string  | No       | Short description for metadata                                    |
+| `cover`       | string  | No       | Relative path to cover image (from content/ root)                 |
+| `author`      | string  | No       | User ID (defaults to system/admin if missing)                     |
+| `publishedAt` | ISO8601 | No       | Explicit publish date (defaults to `date` if status is PUBLISHED) |
 
 ## Content Body
 
@@ -87,6 +87,7 @@ Images should use relative paths from the `content/` directory:
 ```
 
 During import:
+
 - Images are copied to the upload storage
 - Paths are updated to absolute URLs
 - Missing images are logged as warnings
@@ -162,6 +163,7 @@ Posts are matched for updates using the following logic:
 ### Filters
 
 Export API supports filtering by:
+
 - **Date range**: `from` and `to` ISO8601 dates
 - **Status**: `PUBLISHED`, `DRAFT`, or both
 - **Locale**: `en`, `zh`, or both
@@ -204,12 +206,14 @@ Before applying import, the system validates:
 ## Round-Trip Guarantee
 
 Export → Import should be lossless:
+
 - All frontmatter fields preserved
 - Content body unchanged
 - Asset links maintained
 - Metadata consistency verified
 
 This enables:
+
 - Version control for content
 - Backup and restore workflows
 - Content migration between environments
