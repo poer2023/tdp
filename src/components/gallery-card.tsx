@@ -5,6 +5,7 @@ import Link from "next/link";
 
 interface GalleryCardProps {
   image: GalleryImage;
+  locale?: "zh" | "en";
 }
 
 /**
@@ -14,12 +15,12 @@ interface GalleryCardProps {
  * - 元数据作为"证据链"呈现
  * - 交互微妙（translate-y-0.5, shadow-sm）
  */
-export function GalleryCard({ image }: GalleryCardProps) {
+export function GalleryCard({ image, locale = "zh" }: GalleryCardProps) {
   const hasLocation = image.latitude && image.longitude;
   const capturedDate = image.capturedAt ? new Date(image.capturedAt) : new Date(image.createdAt);
 
   return (
-    <Link href={`/gallery/${image.id}`} className="block">
+    <Link href={`/${locale}/gallery/${image.id}`} className="block">
       <article className="group relative overflow-hidden rounded-lg border border-zinc-200 bg-white transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         {/* 图片区域 */}
         <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-800">
@@ -104,7 +105,7 @@ export function GalleryCard({ image }: GalleryCardProps) {
                 />
               </svg>
               <time dateTime={capturedDate.toISOString()} className="leading-tight">
-                {new Intl.DateTimeFormat("zh-CN", {
+                {new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
                   year: "numeric",
                   month: "long",
                   day: "numeric",

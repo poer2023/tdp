@@ -10,6 +10,7 @@ import L from "leaflet";
 
 interface GalleryMapProps {
   images: GalleryImage[];
+  locale?: "zh" | "en";
 }
 
 /**
@@ -19,7 +20,7 @@ interface GalleryMapProps {
  * - 标记样式克制，信息清晰
  * - Popup 内容结构化（标题+元信息+预览图）
  */
-export function GalleryMap({ images }: GalleryMapProps) {
+export function GalleryMap({ images, locale = "zh" }: GalleryMapProps) {
   const imagesWithLocation = images.filter((img) => img.latitude && img.longitude);
 
   // 修复 Leaflet 默认标记图标问题
@@ -36,7 +37,9 @@ export function GalleryMap({ images }: GalleryMapProps) {
   if (!imagesWithLocation.length) {
     return (
       <div className="rounded-lg border border-dashed border-zinc-300 px-6 py-16 text-center dark:border-zinc-700">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">暂无带位置信息的照片</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          {locale === "zh" ? "暂无带位置信息的照片" : "No photos with location data"}
+        </p>
       </div>
     );
   }
@@ -88,7 +91,7 @@ export function GalleryMap({ images }: GalleryMapProps) {
                 {/* 标题与描述 */}
                 <div className="space-y-1">
                   <h4 className="text-sm leading-tight font-semibold text-zinc-900">
-                    {image.title || "未命名照片"}
+                    {image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo")}
                   </h4>
                   {image.description && (
                     <p className="line-clamp-2 text-xs leading-relaxed text-zinc-600">
@@ -131,7 +134,9 @@ export function GalleryMap({ images }: GalleryMapProps) {
                         />
                       </svg>
                       <time dateTime={image.capturedAt} className="leading-tight">
-                        {new Date(image.capturedAt).toLocaleDateString("zh-CN")}
+                        {new Date(image.capturedAt).toLocaleDateString(
+                          locale === "zh" ? "zh-CN" : "en-US"
+                        )}
                       </time>
                     </div>
                   )}
@@ -139,10 +144,10 @@ export function GalleryMap({ images }: GalleryMapProps) {
 
                 {/* 返回相册链接 */}
                 <Link
-                  href="/gallery"
+                  href={`/${locale}/gallery/${image.id}`}
                   className="inline-flex items-center gap-1 text-xs font-medium text-zinc-900 underline underline-offset-2 transition-colors hover:text-zinc-600"
                 >
-                  查看相册
+                  {locale === "zh" ? "查看详情" : "View Details"}
                   <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"

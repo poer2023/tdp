@@ -20,30 +20,30 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
 
-  // Only Chinese locale is supported
-  if (locale !== "zh") {
-    return { title: "Not Found" };
-  }
+  // Support both en and zh
+  const l = locale === "zh" ? "zh" : "en";
+  const postLocale = l === "zh" ? PostLocale.ZH : PostLocale.EN;
 
   const post = await prisma.post.findFirst({
     where: {
-      locale: PostLocale.ZH,
+      locale: postLocale,
       slug,
       status: PostStatus.PUBLISHED,
     },
   });
 
   if (!post) {
-    return { title: "Post Not Found" };
+    return { title: l === "zh" ? "文章未找到" : "Post Not Found" };
   }
 
-  // Find alternate English version
+  // Find alternate language version
+  const alternateLocale = postLocale === PostLocale.EN ? PostLocale.ZH : PostLocale.EN;
   let alternateSlug: string | undefined;
   if (post.groupId) {
     const alternatePost = await prisma.post.findFirst({
       where: {
         groupId: post.groupId,
-        locale: PostLocale.EN,
+        locale: alternateLocale,
       },
       select: { slug: true },
     });
@@ -51,8 +51,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
-  const url = `${baseUrl}/zh/posts/${slug}`;
-  const alternateLinks = generateAlternateLinks(PostLocale.ZH, slug, alternateSlug);
+  const url = `${baseUrl}/${l}/posts/${slug}`;
+  const alternateLinks = generateAlternateLinks(postLocale, slug, alternateSlug);
 
   // Use post cover or fallback to default OG image
   const ogImage = post.coverImagePath
@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       images: [ogImage],
       url,
       type: "article",
-      locale: "zh_CN",
+      locale: l === "zh" ? "zh_CN" : "en_US",
     },
     twitter: {
       card: "summary_large_image",
@@ -86,14 +86,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function LocalizedPostPage({ params }: PageProps) {
   const { locale, slug } = await params;
 
-  // Only Chinese locale is supported under /[locale] namespace currently
-  if (locale !== "zh") {
-    notFound();
-  }
+  // Support both en and zh
+  const l = locale === "zh" ? "zh" : "en";
+  const postLocale = l === "zh" ? PostLocale.ZH : PostLocale.EN;
 
   const post = await prisma.post.findFirst({
     where: {
-      locale: PostLocale.ZH,
+      locale: postLocale,
       slug,
       status: PostStatus.PUBLISHED,
     },
@@ -110,7 +109,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
 
   // Generate JSON-LD schema for SEO
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
-  const schema = generateBlogPostingSchema(post, `${baseUrl}/zh/posts/${post.slug}`);
+  const schema = generateBlogPostingSchema(post, `${baseUrl}/${l}/posts/${post.slug}`);
 
   return (
     <article className="mx-auto max-w-3xl px-6 py-16">
@@ -123,7 +122,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
       {/* Language Switcher */}
       <div className="mb-8">
         <LanguageSwitcher
-          currentLocale={PostLocale.ZH}
+          currentLocale={postLocale}
           currentSlug={post.slug}
           groupId={post.groupId}
         />
@@ -139,7 +138,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
           {post.author?.name && <span>{post.author.name}</span>}
           {post.publishedAt && (
             <time dateTime={post.publishedAt.toISOString()}>
-              {new Date(post.publishedAt).toLocaleDateString("zh-CN", {
+              {new Date(post.publishedAt).toLocaleDateString(l === "zh" ? "zh-CN" : "en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
@@ -166,10 +165,10 @@ export default async function LocalizedPostPage({ params }: PageProps) {
       </div>
 
       <footer className="mt-16 flex items-center justify-between border-t border-zinc-200 pt-8 dark:border-zinc-800">
-        <Link href="/zh/posts" className="text-blue-600 hover:underline dark:text-blue-400">
-          ← 返回文章列表
+        <Link href={`/${l}/posts`} className="text-blue-600 hover:underline dark:text-blue-400">
+          {l === "zh" ? "← 返回文章列表" : "← Back to posts"}
         </Link>
-        <LikeButton slug={post.slug} locale="ZH" />
+        <LikeButton slug={post.slug} locale={postLocale} />
       </footer>
     </article>
   );

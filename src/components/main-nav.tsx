@@ -2,23 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getLocaleFromPathname } from "@/lib/i18n";
 
 export function MainNav() {
   const pathname = usePathname();
 
-  // Detect current locale from pathname
-  const isZhLocale = pathname.startsWith("/zh");
-  const locale = isZhLocale ? "zh" : "en";
+  // Detect current locale from pathname using utility function
+  const locale = getLocaleFromPathname(pathname) ?? "en";
 
   const links = [
     {
       href: `/${locale}/posts`,
-      label: isZhLocale ? "博客" : "Blog",
+      label: locale === "zh" ? "博客" : "Blog",
       match: "/posts",
     },
     {
       href: `/${locale}/gallery`,
-      label: isZhLocale ? "相册" : "Gallery",
+      label: locale === "zh" ? "相册" : "Gallery",
       match: "/gallery",
     },
   ];

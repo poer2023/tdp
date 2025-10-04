@@ -2,24 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getLocaleFromPathname } from "@/lib/i18n";
 
 export function Footer() {
   const pathname = usePathname();
 
-  // Detect current locale from pathname
-  const isZhLocale = pathname.startsWith("/zh");
-  const locale = isZhLocale ? "/zh" : "";
+  // Detect current locale from pathname using utility function
+  const locale = getLocaleFromPathname(pathname) ?? "en";
 
   const currentYear = new Date().getFullYear();
 
   const links = [
     {
-      href: `${locale}/posts`,
-      label: isZhLocale ? "博客" : "Blog",
+      href: `/${locale}/posts`,
+      label: locale === "zh" ? "博客" : "Blog",
     },
     {
-      href: "/gallery",
-      label: isZhLocale ? "相册" : "Gallery",
+      href: `/${locale}/gallery`,
+      label: locale === "zh" ? "相册" : "Gallery",
     },
   ];
 
@@ -43,7 +43,7 @@ export function Footer() {
             </nav>
             <span className="text-zinc-400 dark:text-zinc-600">·</span>
             <p className="text-zinc-600 dark:text-zinc-400">
-              © {currentYear} Hao · {isZhLocale ? "用" : "Built with"} ❤️
+              © {currentYear} Hao · {locale === "zh" ? "用" : "Built with"} ❤️
             </p>
           </div>
 

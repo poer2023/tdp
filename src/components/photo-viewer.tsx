@@ -14,9 +14,17 @@ type PhotoViewerProps = {
   nextId: string | null;
   prevPath?: string;
   nextPath?: string;
+  locale?: "zh" | "en";
 };
 
-export function PhotoViewer({ image, prevId, nextId, prevPath, nextPath }: PhotoViewerProps) {
+export function PhotoViewer({
+  image,
+  prevId,
+  nextId,
+  prevPath,
+  nextPath,
+  locale = "zh",
+}: PhotoViewerProps) {
   const router = useRouter();
   const [showInfoDrawer, setShowInfoDrawer] = useState(false);
   const [copyToast, setCopyToast] = useState(false);
@@ -32,17 +40,17 @@ export function PhotoViewer({ image, prevId, nextId, prevPath, nextPath }: Photo
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        router.push("/gallery");
+        router.push(`/${locale}/gallery`);
       } else if (e.key === "ArrowLeft" && prevId) {
-        router.push(`/gallery/${prevId}`);
+        router.push(`/${locale}/gallery/${prevId}`);
       } else if (e.key === "ArrowRight" && nextId) {
-        router.push(`/gallery/${nextId}`);
+        router.push(`/${locale}/gallery/${nextId}`);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [router, prevId, nextId]);
+  }, [router, prevId, nextId, locale]);
 
   // Preload adjacent images
   useEffect(() => {
@@ -58,7 +66,7 @@ export function PhotoViewer({ image, prevId, nextId, prevPath, nextPath }: Photo
 
   const handleShare = async () => {
     const shareData = {
-      title: image.title || "未命名照片",
+      title: image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo"),
       text: image.description || "",
       url: window.location.href,
     };
@@ -84,9 +92,9 @@ export function PhotoViewer({ image, prevId, nextId, prevPath, nextPath }: Photo
         <div className="flex items-center gap-4">
           <Link
             ref={backButtonRef}
-            href="/gallery"
+            href={`/${locale}/gallery`}
             className="flex items-center gap-2 text-sm font-medium text-zinc-400 transition-colors hover:text-zinc-100"
-            aria-label="返回相册页面"
+            aria-label={locale === "zh" ? "返回相册页面" : "Back to Gallery"}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -96,7 +104,7 @@ export function PhotoViewer({ image, prevId, nextId, prevPath, nextPath }: Photo
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            返回相册
+            {locale === "zh" ? "返回相册" : "Back to Gallery"}
           </Link>
 
           {/* Keyboard hints - desktop only */}

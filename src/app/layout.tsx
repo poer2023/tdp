@@ -6,6 +6,7 @@ import { SessionProvider } from "@/components/session-provider";
 import { AuthHeader } from "@/components/auth-header";
 import { MainNav } from "@/components/main-nav";
 import { Footer } from "@/components/footer";
+import { GlobalLanguageSwitcher } from "@/components/global-language-switcher";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
 
 const geistSans = Geist({
@@ -62,7 +63,10 @@ export default async function RootLayout({
           <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
               <MainNav />
-              <AuthHeader />
+              <div className="flex items-center gap-4">
+                <GlobalLanguageSwitcher />
+                <AuthHeader />
+              </div>
             </div>
           </header>
 

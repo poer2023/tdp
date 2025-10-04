@@ -3,11 +3,46 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { pinyin } from "pinyin-pro";
 
+// Language preference detection helper
+function pickPreferredLocale(acceptLanguage: string | null): "zh" | "en" {
+  const al = (acceptLanguage || "").toLowerCase();
+  // Match zh, zh-cn, zh-hans, etc.
+  return /\bzh\b|zh-cn|zh-hans/.test(al) ? "zh" : "en";
+}
+
 // Unified middleware
 // - Adds `x-pathname` header for locale detection in layout
 // - Enforces ADMIN role for `/admin/*` pages
+// - Auto-redirects `/` to `/{locale}` based on browser language
+// - Migrates old routes to new i18n routes
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
+
+  // 1) Root path redirect: / → /zh or /en based on Accept-Language
+  if (pathname === "/") {
+    const target = pickPreferredLocale(request.headers.get("accept-language"));
+    const url = new URL(`/${target}`, request.nextUrl.origin);
+    searchParams.forEach((v, k) => url.searchParams.set(k, v));
+    return NextResponse.redirect(url, { status: 302 });
+  }
+
+  // 2) Old route migration: /posts → /{preferred}/posts (301 permanent)
+  if (pathname === "/posts" || pathname.startsWith("/posts/")) {
+    const pref = pickPreferredLocale(request.headers.get("accept-language"));
+    const rest = pathname.slice("/posts".length); // preserve /:slug if any
+    const url = new URL(`/${pref}/posts${rest}`, request.nextUrl.origin);
+    searchParams.forEach((v, k) => url.searchParams.set(k, v));
+    return NextResponse.redirect(url, { status: 301 });
+  }
+
+  // 3) Old route migration: /gallery → /{preferred}/gallery (301 permanent)
+  if (pathname === "/gallery" || pathname.startsWith("/gallery/")) {
+    const pref = pickPreferredLocale(request.headers.get("accept-language"));
+    const rest = pathname.slice("/gallery".length);
+    const url = new URL(`/${pref}/gallery${rest}`, request.nextUrl.origin);
+    searchParams.forEach((v, k) => url.searchParams.set(k, v));
+    return NextResponse.redirect(url, { status: 301 });
+  }
 
   // Always attach pathname header for i18n html lang resolution
   const requestHeaders = new Headers(request.headers);
