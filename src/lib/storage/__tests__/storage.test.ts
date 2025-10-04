@@ -21,15 +21,23 @@ const mockS3Send = vi.fn();
 const mockUploadDone = vi.fn();
 
 // Configure AWS mocks
-vi.mocked(S3Client).mockImplementation(() => ({
-  send: mockS3Send,
-}) as any);
+vi.mocked(S3Client).mockImplementation(
+  () =>
+    ({
+      send: mockS3Send,
+    }) as unknown as S3Client
+);
 
-vi.mocked(DeleteObjectCommand).mockImplementation((params) => params as any);
+vi.mocked(DeleteObjectCommand).mockImplementation(
+  (params) => params as unknown as DeleteObjectCommand
+);
 
-vi.mocked(Upload).mockImplementation(() => ({
-  done: mockUploadDone,
-}) as any);
+vi.mocked(Upload).mockImplementation(
+  () =>
+    ({
+      done: mockUploadDone,
+    }) as unknown as Upload
+);
 
 describe("Storage Provider Selection", () => {
   const originalEnv = process.env;
@@ -118,10 +126,9 @@ describe("LocalStorage", () => {
 
       await storage.upload(buffer, "test.jpg", "image/jpeg");
 
-      expect(mockMkdir).toHaveBeenCalledWith(
-        expect.stringContaining("public/uploads/gallery"),
-        { recursive: true }
-      );
+      expect(mockMkdir).toHaveBeenCalledWith(expect.stringContaining("public/uploads/gallery"), {
+        recursive: true,
+      });
     });
 
     it("should handle different file types", async () => {

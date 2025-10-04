@@ -41,9 +41,11 @@
     "build",
     "dist",
     "src/test/**",
+    "src/**/__tests__/**",
     "e2e/**",
     "scripts/**",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "playwright.critical.config.ts"
   ],
   "ts-node": {
     "esm": true,

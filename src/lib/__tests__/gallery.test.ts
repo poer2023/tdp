@@ -192,31 +192,35 @@ describe("Gallery Data Operations", () => {
         createdAt: new Date("2024-01-15"),
       };
 
-      const prevImage = { id: "img1" };
-      const nextImage = { id: "img3" };
+      const prevImage = { id: "img1", filePath: "/uploads/img1.jpg" };
+      const nextImage = { id: "img3", filePath: "/uploads/img3.jpg" };
 
-      vi.mocked(prisma.galleryImage.findUnique).mockResolvedValue(currentImage as any);
+      vi.mocked(prisma.galleryImage.findUnique).mockResolvedValue(
+        currentImage as unknown as { id: string; createdAt: Date }
+      );
       vi.mocked(prisma.galleryImage.findFirst)
-        .mockResolvedValueOnce(prevImage as any) // First call for prev
-        .mockResolvedValueOnce(nextImage as any); // Second call for next
+        .mockResolvedValueOnce(prevImage) // First call for prev
+        .mockResolvedValueOnce(nextImage); // Second call for next
 
       const result = await getAdjacentImageIds("img2");
 
       expect(result).toEqual({
         prev: "img1",
         next: "img3",
+        prevPath: "/uploads/img1.jpg",
+        nextPath: "/uploads/img3.jpg",
       });
 
       expect(prisma.galleryImage.findFirst).toHaveBeenNthCalledWith(1, {
         where: { createdAt: { lt: currentImage.createdAt } },
         orderBy: { createdAt: "desc" },
-        select: { id: true },
+        select: { id: true, filePath: true },
       });
 
       expect(prisma.galleryImage.findFirst).toHaveBeenNthCalledWith(2, {
         where: { createdAt: { gt: currentImage.createdAt } },
         orderBy: { createdAt: "asc" },
-        select: { id: true },
+        select: { id: true, filePath: true },
       });
     });
 
@@ -237,18 +241,22 @@ describe("Gallery Data Operations", () => {
         createdAt: new Date("2024-01-01"),
       };
 
-      const nextImage = { id: "img2" };
+      const nextImage = { id: "img2", filePath: "/uploads/img2.jpg" };
 
-      vi.mocked(prisma.galleryImage.findUnique).mockResolvedValue(currentImage as any);
+      vi.mocked(prisma.galleryImage.findUnique).mockResolvedValue(
+        currentImage as unknown as { id: string; createdAt: Date }
+      );
       vi.mocked(prisma.galleryImage.findFirst)
         .mockResolvedValueOnce(null) // No prev
-        .mockResolvedValueOnce(nextImage as any); // Has next
+        .mockResolvedValueOnce(nextImage); // Has next
 
       const result = await getAdjacentImageIds("img1");
 
       expect(result).toEqual({
         prev: null,
         next: "img2",
+        prevPath: undefined,
+        nextPath: "/uploads/img2.jpg",
       });
     });
 
@@ -258,11 +266,13 @@ describe("Gallery Data Operations", () => {
         createdAt: new Date("2024-12-31"),
       };
 
-      const prevImage = { id: "img2" };
+      const prevImage = { id: "img2", filePath: "/uploads/img2.jpg" };
 
-      vi.mocked(prisma.galleryImage.findUnique).mockResolvedValue(currentImage as any);
+      vi.mocked(prisma.galleryImage.findUnique).mockResolvedValue(
+        currentImage as unknown as { id: string; createdAt: Date }
+      );
       vi.mocked(prisma.galleryImage.findFirst)
-        .mockResolvedValueOnce(prevImage as any) // Has prev
+        .mockResolvedValueOnce(prevImage) // Has prev
         .mockResolvedValueOnce(null); // No next
 
       const result = await getAdjacentImageIds("img3");
@@ -270,6 +280,8 @@ describe("Gallery Data Operations", () => {
       expect(result).toEqual({
         prev: "img2",
         next: null,
+        prevPath: "/uploads/img2.jpg",
+        nextPath: undefined,
       });
     });
   });
@@ -303,7 +315,29 @@ describe("Gallery Data Operations", () => {
         capturedAt: input.capturedAt!,
       };
 
-      vi.mocked(prisma.galleryImage.create).mockResolvedValue(mockCreated as any);
+      vi.mocked(prisma.galleryImage.create).mockResolvedValue(
+        mockCreated as unknown as {
+          id: string;
+          title: string | null;
+          description: string | null;
+          filePath: string;
+          postId: string | null;
+          createdAt: Date;
+          latitude: number | null;
+          longitude: number | null;
+          locationName: string | null;
+          city: string | null;
+          country: string | null;
+          livePhotoVideoPath: string | null;
+          isLivePhoto: boolean;
+          fileSize: number | null;
+          width: number | null;
+          height: number | null;
+          mimeType: string | null;
+          capturedAt: Date | null;
+          storageType: string;
+        }
+      );
 
       const result = await addGalleryImage(input);
 
@@ -403,7 +437,7 @@ describe("Gallery Data Operations", () => {
 
   describe("deleteGalleryImage", () => {
     it("should delete gallery image by ID", async () => {
-      vi.mocked(prisma.galleryImage.delete).mockResolvedValue({} as any);
+      vi.mocked(prisma.galleryImage.delete).mockResolvedValue({} as unknown as { id: string });
 
       await deleteGalleryImage("img123");
 

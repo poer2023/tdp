@@ -9,7 +9,7 @@ type LanguageSwitcherProps = {
 
 export async function LanguageSwitcher({
   currentLocale,
-  currentSlug,
+  currentSlug: _currentSlug,
   groupId,
 }: LanguageSwitcherProps) {
   if (!groupId) {

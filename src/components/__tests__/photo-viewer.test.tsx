@@ -13,7 +13,15 @@ vi.mock("next/navigation", () => ({
 
 // Mock Next.js Link
 vi.mock("next/link", () => ({
-  default: ({ href, children, ...props }: any) => (
+  default: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -22,19 +30,29 @@ vi.mock("next/link", () => ({
 
 // Mock Next.js Image
 vi.mock("next/image", () => ({
-  default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
+  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) => (
+    <img src={src} alt={alt} {...props} />
+  ),
 }));
 
 // Mock PhotoMetadataPanel
 vi.mock("../photo-metadata-panel", () => ({
-  PhotoMetadataPanel: ({ image }: any) => (
+  PhotoMetadataPanel: ({ image }: { image: { title: string } }) => (
     <div data-testid="metadata-panel">Metadata for {image.title}</div>
   ),
 }));
 
 // Mock LivePhotoPlayer
 vi.mock("../live-photo-player", () => ({
-  LivePhotoPlayer: ({ imageSrc, videoSrc, alt }: any) => (
+  LivePhotoPlayer: ({
+    imageSrc,
+    videoSrc,
+    alt,
+  }: {
+    imageSrc: string;
+    videoSrc: string;
+    alt: string;
+  }) => (
     <div data-testid="live-photo-player" data-image={imageSrc} data-video={videoSrc}>
       {alt}
     </div>

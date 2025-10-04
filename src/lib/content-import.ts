@@ -54,7 +54,7 @@ export async function importContent(
 
   // Process ALL .md files in the zip (not just content/en/ and content/zh/)
   const allFiles = Object.keys(zip.files).filter(
-    (path) => path.endsWith(".md") && !zip.files[path].dir
+    (path) => path.endsWith(".md") && !zip.files[path]?.dir
   );
 
   // Check for empty zip or no markdown files

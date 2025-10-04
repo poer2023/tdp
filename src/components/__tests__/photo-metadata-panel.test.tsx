@@ -5,21 +5,21 @@ import type { GalleryImage } from "@/lib/gallery";
 
 // Mock react-leaflet components
 vi.mock("react-leaflet", () => ({
-  MapContainer: ({ children, center }: any) => (
+  MapContainer: ({ children, center }: { children: React.ReactNode; center: [number, number] }) => (
     <div data-testid="map-container" data-center={JSON.stringify(center)}>
       {children}
     </div>
   ),
-  TileLayer: ({ url }: any) => <div data-testid="tile-layer" data-url={url} />,
-  Marker: ({ position }: any) => (
+  TileLayer: ({ url }: { url: string }) => <div data-testid="tile-layer" data-url={url} />,
+  Marker: ({ position }: { position: [number, number] }) => (
     <div data-testid="marker" data-position={JSON.stringify(position)} />
   ),
 }));
 
 // Mock next/dynamic
 vi.mock("next/dynamic", () => ({
-  default: (loader: any) => {
-    const Component = (props: any) => {
+  default: (loader: () => React.ComponentType<unknown>) => {
+    const Component = (props: Record<string, unknown>) => {
       const Comp = loader();
       return <Comp {...props} />;
     };

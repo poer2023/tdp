@@ -5,17 +5,29 @@ import type { GalleryImage } from "@/lib/gallery";
 
 // Mock Next.js Image component
 vi.mock("next/image", () => ({
-  default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
+  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) => (
+    <img src={src} alt={alt} {...props} />
+  ),
 }));
 
 // Mock Next.js Link component
 vi.mock("next/link", () => ({
-  default: ({ href, children }: any) => <a href={href}>{children}</a>,
+  default: ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 // Mock LivePhotoPlayer component
 vi.mock("../live-photo-player", () => ({
-  LivePhotoPlayer: ({ imageSrc, videoSrc, alt }: any) => (
+  LivePhotoPlayer: ({
+    imageSrc,
+    videoSrc,
+    alt,
+  }: {
+    imageSrc: string;
+    videoSrc: string;
+    alt: string;
+  }) => (
     <div data-testid="live-photo-player" data-image={imageSrc} data-video={videoSrc}>
       {alt}
     </div>
