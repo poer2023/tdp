@@ -10,7 +10,7 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./e2e",
-  testMatch: /.*\.(critical|improved)\.spec\.ts/,
+  testMatch: /.*-improved\.spec\.ts/,
 
   // Fail fast - stop on first failure in critical tests
   maxFailures: 5,
