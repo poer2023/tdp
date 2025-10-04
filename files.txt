@@ -12,6 +12,7 @@ USER_ACTION_REQUIRED.md
 codex.md
 docker-compose.yml
 docs/ADMIN_GUIDE.md
+docs/CI_CD_E2E_TESTING_STRATEGY.md
 docs/CONFIGURATION.md
 docs/CONTENT_FORMAT.md
 docs/DEPLOYMENT.md
