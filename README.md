@@ -108,6 +108,9 @@ open http://localhost:3000
 
 - 单元测试：`npm run test`、`npm run test:run`
 - E2E 测试：`npm run test:e2e`
+- E2E 本地与 CI 最佳实践：见根目录文档
+  - 本地分阶段全量执行（方案 B）手册：`LOCAL_E2E_SCHEME_B_PLAYBOOK.md`
+  - 一次性全量执行与 CI/CD 最佳实践：`E2E_BEST_PRACTICES_CI_CD.md`
 - i18n 功能测试：
   - 重定向测试：`npx tsx scripts/test-redirect.ts`
   - 点赞功能测试：`npx tsx scripts/test-likes.ts`

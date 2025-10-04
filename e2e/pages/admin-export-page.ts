@@ -74,9 +74,9 @@ export class AdminExportPage extends BasePage {
       return;
     }
 
-    // Fallback to checkboxes
-    const enCheckbox = this.page.getByLabel(/english/i);
-    const zhCheckbox = this.page.getByLabel(/chinese|中文/i);
+    // Fallback to checkboxes - use getByRole to avoid language switcher conflict
+    const enCheckbox = this.page.getByRole("checkbox", { name: /english/i });
+    const zhCheckbox = this.page.getByRole("checkbox", { name: /chinese|中文/i });
 
     if (locale === "EN") {
       if (!(await enCheckbox.isChecked())) await enCheckbox.check();

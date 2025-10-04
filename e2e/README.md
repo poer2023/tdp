@@ -346,3 +346,8 @@ jobs:
 - [Playwright官方文档](https://playwright.dev)
 - [Page Object Model最佳实践](https://playwright.dev/docs/pom)
 - [测试最佳实践](https://playwright.dev/docs/best-practices)
+
+## 延伸阅读（本仓库）
+
+- 本地分阶段全量执行（方案 B）手册：`../LOCAL_E2E_SCHEME_B_PLAYBOOK.md`
+- 一次性全量执行与 CI/CD 最佳实践：`../E2E_BEST_PRACTICES_CI_CD.md`
