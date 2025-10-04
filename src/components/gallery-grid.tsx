@@ -4,13 +4,16 @@ import type { GalleryImage } from "@/lib/gallery";
 
 interface GalleryGridProps {
   images: GalleryImage[];
+  locale?: "zh" | "en";
 }
 
-export function GalleryGrid({ images }: GalleryGridProps) {
+export function GalleryGrid({ images, locale = "zh" }: GalleryGridProps) {
   if (!images.length) {
     return (
       <p className="border border-dashed border-zinc-300 px-6 py-12 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-        相册还没有照片，登录后台即可上传
+        {locale === "zh"
+          ? "相册还没有照片，登录后台即可上传"
+          : "No photos yet, log in to the dashboard to upload"}
       </p>
     );
   }
@@ -33,7 +36,7 @@ export function GalleryGrid({ images }: GalleryGridProps) {
           </div>
           <figcaption className="space-y-2 p-6">
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              {image.title ?? "未命名照片"}
+              {image.title ?? (locale === "zh" ? "未命名照片" : "Untitled Photo")}
             </p>
             {image.description && (
               <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
@@ -41,7 +44,7 @@ export function GalleryGrid({ images }: GalleryGridProps) {
               </p>
             )}
             <p className="text-xs text-zinc-500 dark:text-zinc-500">
-              {new Intl.DateTimeFormat("zh-CN", {
+              {new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
@@ -52,10 +55,10 @@ export function GalleryGrid({ images }: GalleryGridProps) {
       ))}
       {images.length >= 6 && (
         <Link
-          href="/gallery"
+          href={`/${locale}/gallery`}
           className="flex items-center justify-center border border-dashed border-zinc-300 text-sm font-medium text-zinc-900 underline underline-offset-4 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-100"
         >
-          查看更多照片
+          {locale === "zh" ? "查看更多照片" : "View more photos"}
         </Link>
       )}
     </div>

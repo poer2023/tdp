@@ -2,34 +2,36 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { AdminLocale } from "@/lib/admin-translations";
+import { t } from "@/lib/admin-translations";
 
 type NavSection = {
-  title: string;
+  titleKey: keyof typeof import("@/lib/admin-translations").adminTranslations.en;
   items: NavItem[];
 };
 
 type NavItem = {
-  label: string;
+  labelKey: keyof typeof import("@/lib/admin-translations").adminTranslations.en;
   href: string;
-  description: string;
+  descriptionKey: keyof typeof import("@/lib/admin-translations").adminTranslations.en;
 };
 
 const navSections: NavSection[] = [
   {
-    title: "Content",
+    titleKey: "content",
     items: [
-      { label: "Overview", href: "/admin", description: "Dashboard" },
-      { label: "Posts", href: "/admin/posts", description: "Manage articles" },
-      { label: "Gallery", href: "/admin/gallery", description: "Photo management" },
+      { labelKey: "overview", href: "/admin", descriptionKey: "dashboard" },
+      { labelKey: "posts", href: "/admin/posts", descriptionKey: "managePosts" },
+      { labelKey: "gallery", href: "/admin/gallery", descriptionKey: "photoManagement" },
     ],
   },
   {
-    title: "Operations",
-    items: [{ label: "Content I/O", href: "/admin/content-io", description: "Import & Export" }],
+    titleKey: "operations",
+    items: [{ labelKey: "contentIO", href: "/admin/content-io", descriptionKey: "importExport" }],
   },
 ];
 
-export function AdminNav() {
+export function AdminNav({ locale }: { locale: AdminLocale }) {
   const pathname = usePathname();
 
   return (
@@ -39,10 +41,10 @@ export function AdminNav() {
         <div className="border-b border-zinc-200 px-6 py-8 dark:border-zinc-800">
           <Link href="/admin" className="block">
             <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-              Admin
+              {t(locale, "admin")}
             </h1>
             <p className="mt-1 text-sm leading-tight text-zinc-500 dark:text-zinc-400">
-              Content Management
+              {t(locale, "contentManagement")}
             </p>
           </Link>
         </div>
@@ -50,10 +52,10 @@ export function AdminNav() {
         {/* Navigation Sections */}
         <div className="flex-1 overflow-y-auto px-4 py-6">
           {navSections.map((section, idx) => (
-            <div key={section.title} className={idx > 0 ? "mt-8" : ""}>
+            <div key={section.titleKey} className={idx > 0 ? "mt-8" : ""}>
               {/* Section Title */}
               <h2 className="px-3 text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
-                {section.title}
+                {t(locale, section.titleKey)}
               </h2>
 
               {/* Section Items */}
@@ -81,7 +83,7 @@ export function AdminNav() {
                                 : "text-zinc-700 dark:text-zinc-300"
                             }`}
                           >
-                            {item.label}
+                            {t(locale, item.labelKey)}
                           </span>
                         </div>
                         <p
@@ -91,7 +93,7 @@ export function AdminNav() {
                               : "text-zinc-500 dark:text-zinc-500"
                           }`}
                         >
-                          {item.description}
+                          {t(locale, item.descriptionKey)}
                         </p>
                       </Link>
                     </li>
@@ -109,7 +111,7 @@ export function AdminNav() {
             className="inline-flex items-center gap-1.5 text-sm text-zinc-600 transition-colors duration-150 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           >
             <span>←</span>
-            <span>Back to site</span>
+            <span>{t(locale, "backToSite")}</span>
           </Link>
         </div>
       </div>

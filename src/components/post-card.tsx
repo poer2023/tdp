@@ -4,17 +4,20 @@ import type { PublicPost } from "@/lib/posts";
 
 interface PostCardProps {
   post: PublicPost;
+  locale?: "zh" | "en";
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, locale = "zh" }: PostCardProps) {
   const cover = post.coverImagePath ?? "/images/placeholder-cover.svg";
   const formatted = post.publishedAt
-    ? new Intl.DateTimeFormat("zh-CN", {
+    ? new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
       }).format(new Date(post.publishedAt))
-    : "草稿";
+    : locale === "zh"
+      ? "草稿"
+      : "Draft";
 
   return (
     <article className="group overflow-hidden border border-zinc-200 bg-white transition dark:border-zinc-800 dark:bg-zinc-900">
@@ -44,16 +47,16 @@ export function PostCard({ post }: PostCardProps) {
           )}
         </div>
         <h3 className="text-xl leading-snug font-semibold text-zinc-900 dark:text-zinc-50">
-          <Link href={`/posts/${encodeURIComponent(post.slug)}`}>{post.title}</Link>
+          <Link href={`/${locale}/posts/${encodeURIComponent(post.slug)}`}>{post.title}</Link>
         </h3>
         <p className="line-clamp-3 text-base leading-loose text-zinc-600 dark:text-zinc-400">
           {post.excerpt}
         </p>
         <Link
-          href={`/posts/${encodeURIComponent(post.slug)}`}
+          href={`/${locale}/posts/${encodeURIComponent(post.slug)}`}
           className="text-sm font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600 dark:text-zinc-100"
         >
-          阅读全文
+          {locale === "zh" ? "阅读全文" : "Read more"}
         </Link>
       </div>
     </article>

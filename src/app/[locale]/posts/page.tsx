@@ -19,13 +19,12 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
     notFound();
   }
 
-  const postLocale = normalizedLocale as PostLocale;
-  const isZh = postLocale === PostLocale.ZH;
+  const l = locale === "zh" ? "zh" : "en";
+  const isZh = l === "zh";
 
-  // Fetch posts for this locale
+  // Fetch all published posts regardless of content locale - only UI language switches
   const posts = await prisma.post.findMany({
     where: {
-      locale: postLocale,
       status: PostStatus.PUBLISHED,
     },
     orderBy: {
@@ -49,14 +48,14 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
         </h1>
         <p className="mt-4 text-zinc-600 dark:text-zinc-400">
           {isZh
-            ? `共 ${posts.length} 篇中文文章`
+            ? `共 ${posts.length} 篇文章`
             : `${posts.length} post${posts.length !== 1 ? "s" : ""}`}
         </p>
       </header>
 
       {posts.length === 0 ? (
         <p className="text-zinc-500 dark:text-zinc-400">
-          {isZh ? "暂无中文文章" : "No posts available"}
+          {isZh ? "暂无文章" : "No posts available"}
         </p>
       ) : (
         <div className="space-y-12">

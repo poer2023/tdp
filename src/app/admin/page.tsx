@@ -6,6 +6,7 @@ import { MetricCard } from "@/components/admin/metric-card";
 import { ActionCard } from "@/components/admin/action-card";
 import { RecentPosts } from "@/components/admin/recent-posts";
 import { RecentUploads } from "@/components/admin/recent-uploads";
+import { getAdminLocale, t } from "@/lib/admin-i18n";
 
 export const revalidate = 0;
 // Force Node.js runtime because this page queries Prisma directly
@@ -13,6 +14,7 @@ export const runtime = "nodejs";
 
 export default async function AdminHomePage() {
   const session = await auth();
+  const locale = await getAdminLocale();
 
   // Fetch content statistics and recent activity in parallel
   const [
@@ -47,25 +49,25 @@ export default async function AdminHomePage() {
       {/* Page Header - Simplified */}
       <header>
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Overview
+          {t(locale, "overview")}
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Content management dashboard
+          {t(locale, "contentDashboard")}
         </p>
       </header>
 
       {/* Metrics Grid - 2 Cards (comments removed) */}
       <section className="grid gap-6 sm:grid-cols-2">
         <MetricCard
-          label="Posts"
+          label={t(locale, "postsLabel")}
           value={totalPosts}
-          meta={`Published ${publishedPosts} · Drafts ${draftPosts}`}
+          meta={`${t(locale, "published")} ${publishedPosts} · ${t(locale, "drafts")} ${draftPosts}`}
           href="/admin/posts"
         />
         <MetricCard
-          label="Gallery"
+          label={t(locale, "galleryLabel")}
           value={totalGallery}
-          meta={`Live ${livePhotos} · Geotagged ${geotaggedPhotos}`}
+          meta={`${t(locale, "live")} ${livePhotos} · ${t(locale, "geotagged")} ${geotaggedPhotos}`}
           href="/admin/gallery"
         />
       </section>
@@ -73,7 +75,7 @@ export default async function AdminHomePage() {
       {/* Quick Actions Grid */}
       <section className="space-y-4">
         <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
-          Quick Actions
+          {t(locale, "quickActions")}
         </h2>
         <div className="grid gap-6 sm:grid-cols-2">
           <ActionCard
@@ -87,9 +89,9 @@ export default async function AdminHomePage() {
                 />
               </svg>
             }
-            title="Posts"
-            description="Create and manage articles"
-            primaryAction={{ label: "New Post", href: "/admin/posts/new" }}
+            title={t(locale, "posts")}
+            description={t(locale, "createManageArticles")}
+            primaryAction={{ label: t(locale, "newPost"), href: "/admin/posts/new" }}
           />
           <ActionCard
             icon={
@@ -102,9 +104,9 @@ export default async function AdminHomePage() {
                 />
               </svg>
             }
-            title="Gallery"
-            description="Upload and organize photos"
-            primaryAction={{ label: "Upload", href: "/admin/gallery" }}
+            title={t(locale, "gallery")}
+            description={t(locale, "uploadOrganizePhotos")}
+            primaryAction={{ label: t(locale, "upload"), href: "/admin/gallery" }}
           />
           <ActionCard
             icon={
@@ -117,9 +119,9 @@ export default async function AdminHomePage() {
                 />
               </svg>
             }
-            title="Content I/O"
-            description="Import and export content"
-            primaryAction={{ label: "Export", href: "/admin/export" }}
+            title={t(locale, "contentIO")}
+            description={t(locale, "importExportContent")}
+            primaryAction={{ label: t(locale, "export"), href: "/admin/export" }}
           />
         </div>
       </section>
@@ -127,7 +129,7 @@ export default async function AdminHomePage() {
       {/* Recent Activity Grid */}
       <section className="space-y-4">
         <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
-          Recent Activity
+          {t(locale, "recentActivity")}
         </h2>
         <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-2">
           <RecentPosts posts={recentPosts} />
@@ -137,7 +139,9 @@ export default async function AdminHomePage() {
 
       {/* System Info - Footer */}
       <footer className="border-t border-zinc-200 pt-6 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
-        <p>Logged in as {session?.user?.email}</p>
+        <p>
+          {t(locale, "loggedInAs")} {session?.user?.email}
+        </p>
       </footer>
     </div>
   );

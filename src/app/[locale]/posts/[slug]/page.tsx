@@ -19,14 +19,11 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
-
-  // Support both en and zh
   const l = locale === "zh" ? "zh" : "en";
-  const postLocale = l === "zh" ? PostLocale.ZH : PostLocale.EN;
 
+  // Find post by slug only - content is not filtered by UI language
   const post = await prisma.post.findFirst({
     where: {
-      locale: postLocale,
       slug,
       status: PostStatus.PUBLISHED,
     },
@@ -35,6 +32,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!post) {
     return { title: l === "zh" ? "文章未找到" : "Post Not Found" };
   }
+
+  const postLocale = post.locale;
 
   // Find alternate language version
   const alternateLocale = postLocale === PostLocale.EN ? PostLocale.ZH : PostLocale.EN;
@@ -85,14 +84,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function LocalizedPostPage({ params }: PageProps) {
   const { locale, slug } = await params;
-
-  // Support both en and zh
   const l = locale === "zh" ? "zh" : "en";
-  const postLocale = l === "zh" ? PostLocale.ZH : PostLocale.EN;
 
+  // Find post by slug only - content is not filtered by UI language
   const post = await prisma.post.findFirst({
     where: {
-      locale: postLocale,
       slug,
       status: PostStatus.PUBLISHED,
     },
@@ -106,6 +102,8 @@ export default async function LocalizedPostPage({ params }: PageProps) {
   if (!post) {
     notFound();
   }
+
+  const postLocale = post.locale;
 
   // Generate JSON-LD schema for SEO
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";

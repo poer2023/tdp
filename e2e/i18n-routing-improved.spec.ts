@@ -6,14 +6,14 @@ import { expectUrlContains } from "./helpers/assertion-helpers";
 import { waitForNetworkIdle } from "./helpers/wait-helpers";
 
 test.describe("i18n Routing", () => {
-  test("should serve content at root path without locale prefix", async ({ page }) => {
+  test("should redirect root path to locale-specific path", async ({ page }) => {
     await page.goto("/");
     await waitForNetworkIdle(page);
 
-    // Root path should not contain locale prefixes
+    // Root path should redirect to /en or /zh based on browser language
     const url = page.url();
-    expect(url).not.toContain("/zh");
-    expect(url).not.toContain("/en");
+    const hasLocale = url.includes("/zh") || url.includes("/en");
+    expect(hasLocale).toBe(true);
 
     // Verify page loaded successfully
     const html = page.locator("html");
