@@ -4,12 +4,18 @@
 
 ## 特性
 
-- 文章发布：草稿/发布、Markdown 正文、封面图、标签
-- 相册管理：本地上传到 `public/uploads`，可选关联文章
-- 身份认证：NextAuth + Google，首个登录者自动授予 ADMIN 权限
-- 数据库：Prisma + PostgreSQL，生产/本地统一迁移流程
-- 路由保护：`/admin` 需登录访问
-- 工程化：ESLint、Prettier、Vitest 单测、Playwright E2E、CI 构建
+### 核心功能
+
+- **多语言支持 (i18n)**：英文默认 (`/`)、中文支持 (`/zh`)，自动 pinyin slug 转换，301 重定向旧链接
+- **文章管理**：草稿/发布、Markdown 正文、封面图、标签、翻译配对 (groupId)
+- **用户互动**：无需登录的点赞系统
+- **内容运营**：Markdown 导入/导出 (YAML frontmatter)、双语 sitemap
+- **SEO 优化**：hreflang 交叉引用、JSON-LD 结构化数据、Open Graph 元标签
+- **相册管理**：本地上传到 `public/uploads`，可选关联文章
+- **身份认证**：NextAuth + Google，首个登录者自动授予 ADMIN 权限
+- **数据库**：Prisma + PostgreSQL，生产/本地统一迁移流程
+- **路由保护**：`/admin` 需登录访问
+- **工程化**：ESLint、Prettier、Vitest 单测、Playwright E2E、CI 构建
 
 ## 技术栈
 
@@ -85,22 +91,65 @@ open http://localhost:3000
 
 ## 脚本命令
 
+### 开发与构建
+
 - 开发：`npm run dev`
 - 构建：`npm run build`
 - 启动：`npm run start`
 - 代码规范：`npm run lint`、`npm run format`、`npm run type-check`
-- 数据库：`npm run db:migrate`、`npm run db:generate`、`npm run db:studio`
+
+### 数据库
+
+- 迁移：`npm run db:migrate`
+- 生成客户端：`npm run db:generate`
+- 可视化管理：`npm run db:studio`
+
+### 测试
+
 - 单元测试：`npm run test`、`npm run test:run`
-- E2E：`npm run test:e2e`
+- E2E 测试：`npm run test:e2e`
+- i18n 功能测试：
+  - 重定向测试：`npx tsx scripts/test-redirect.ts`
+  - 点赞功能测试：`npx tsx scripts/test-likes.ts`
+  - 导出场景测试：`npx tsx scripts/test-export-scenarios.ts`
+  - 导入场景测试：`npx tsx scripts/test-import-scenarios.ts`
+  - SEO Rich Results 测试：`npx tsx scripts/test-seo-rich-results.ts`
+
+### 部署
+
+- 部署前检查：`./scripts/deploy-checklist.sh`
 
 ## 目录与关键文件
 
+### 应用结构
+
 - 应用入口与页面：`src/app`
+  - 英文路由：`src/app/posts/[slug]`
+  - 中文路由：`src/app/[locale]/posts/[slug]`
 - 接口与权限：`src/app/api/*`、`middleware.ts`
 - 数据访问层：`src/lib/*`、`prisma/schema.prisma`
 - 后台界面：`src/app/admin/*`
+  - 内容导出：`src/app/admin/export`
+  - 内容导入：`src/app/admin/import`
+
+### 文档
+
+- **用户指南**：[docs/USER_GUIDE.md](docs/USER_GUIDE.md) - 点赞、语言切换
+- **管理员指南**：[docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) - 导出、导入
+- **部署指南**：[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - 生产部署步骤
+- **监控指南**：[docs/MONITORING.md](docs/MONITORING.md) - 上线后监控
+- **测试指南**：[docs/TESTING.md](docs/TESTING.md) - 自动化测试
+- **手动测试**：[docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) - 性能、安全、可访问性
+- **配置选项**：[docs/CONFIGURATION.md](docs/CONFIGURATION.md) - 功能配置
+- **隐私政策**：[docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) - 数据处理说明
+- **内容格式**：[docs/CONTENT_FORMAT.md](docs/CONTENT_FORMAT.md) - Markdown 导入/导出规范
+- **完成总结**：[docs/i18n-COMPLETION-SUMMARY.md](docs/i18n-COMPLETION-SUMMARY.md) - i18n 项目总结
+
+### Docker 与部署
+
 - Docker 与编排：`Dockerfile`、`docker-compose.yml`、`docker/entrypoint.sh`
 - 部署文档：`docs/docker-deployment.md`、`docs/self-host-deployment.md`
+- Docker 构建：`docs/docker-build.md`
 
 ## CI / 测试
 

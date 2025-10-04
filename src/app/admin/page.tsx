@@ -1,66 +1,144 @@
+// Admin dashboard home
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { PostStatus } from "@prisma/client";
+import { MetricCard } from "@/components/admin/metric-card";
+import { ActionCard } from "@/components/admin/action-card";
+import { RecentPosts } from "@/components/admin/recent-posts";
+import { RecentUploads } from "@/components/admin/recent-uploads";
 
 export const revalidate = 0;
+// Force Node.js runtime because this page queries Prisma directly
+export const runtime = "nodejs";
 
 export default async function AdminHomePage() {
   const session = await auth();
-  const [totalPosts, publishedPosts, draftPosts, galleryCount] = await Promise.all([
+
+  // Fetch content statistics and recent activity in parallel
+  const [
+    totalPosts,
+    publishedPosts,
+    draftPosts,
+    totalGallery,
+    livePhotos,
+    geotaggedPhotos,
+    recentPosts,
+    recentUploads,
+  ] = await Promise.all([
     prisma.post.count(),
     prisma.post.count({ where: { status: PostStatus.PUBLISHED } }),
     prisma.post.count({ where: { status: PostStatus.DRAFT } }),
     prisma.galleryImage.count(),
+    prisma.galleryImage.count({ where: { isLivePhoto: true } }),
+    prisma.galleryImage.count({ where: { NOT: { latitude: null } } }),
+    prisma.post.findMany({
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+      include: { author: { select: { name: true } } },
+    }),
+    prisma.galleryImage.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 6,
+    }),
   ]);
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-3">
-        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Admin</p>
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">内容概览</h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          欢迎回来，{session?.user?.name ?? "管理员"}。在这里快速查看最新的创作数据。
+    <div className="space-y-8 md:space-y-12">
+      {/* Page Header - Simplified */}
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+          Overview
+        </h1>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          Content management dashboard
         </p>
       </header>
 
-      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="文章总数" value={totalPosts.toString()} accent="bg-blue-500" />
-        <StatCard title="已发布" value={publishedPosts.toString()} accent="bg-emerald-500" />
-        <StatCard title="草稿" value={draftPosts.toString()} accent="bg-amber-500" />
-        <StatCard title="相册照片" value={galleryCount.toString()} accent="bg-purple-500" />
+      {/* Metrics Grid - 2 Cards (comments removed) */}
+      <section className="grid gap-6 sm:grid-cols-2">
+        <MetricCard
+          label="Posts"
+          value={totalPosts}
+          meta={`Published ${publishedPosts} · Drafts ${draftPosts}`}
+          href="/admin/posts"
+        />
+        <MetricCard
+          label="Gallery"
+          value={totalGallery}
+          meta={`Live ${livePhotos} · Geotagged ${geotaggedPhotos}`}
+          href="/admin/gallery"
+        />
       </section>
 
-      <section className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-zinc-800/70 dark:bg-zinc-900/70">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">快速操作</h2>
-          <ul className="mt-4 space-y-3 text-sm text-zinc-600 dark:text-zinc-300">
-            <li>→ 在「文章管理」中编写 Markdown 内容并上传封面。</li>
-            <li>→ 在「相册」板块上传更多配图，提升首页的视觉体验。</li>
-            <li>→ 若需邀请他人协作，可将其设为 AUTHOR 角色。</li>
-          </ul>
-        </div>
-
-        <div className="rounded-3xl border border-dashed border-blue-300 bg-blue-50/80 p-6 text-sm text-blue-800 shadow-sm dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-200">
-          <h2 className="text-lg font-semibold">接下来可以做什么？</h2>
-          <p className="mt-3 leading-6">
-            · 自定义域名并部署到 Vercel。
-            <br />· 使用 Prisma Client 编写更多统计接口。
-            <br />· 集成评论系统或订阅邮件，为博客读者提供互动渠道。
-          </p>
+      {/* Quick Actions Grid */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+          Quick Actions
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <ActionCard
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            }
+            title="Posts"
+            description="Create and manage articles"
+            primaryAction={{ label: "New Post", href: "/admin/posts/new" }}
+          />
+          <ActionCard
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            }
+            title="Gallery"
+            description="Upload and organize photos"
+            primaryAction={{ label: "Upload", href: "/admin/gallery" }}
+          />
+          <ActionCard
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                />
+              </svg>
+            }
+            title="Content I/O"
+            description="Import and export content"
+            primaryAction={{ label: "Export", href: "/admin/export" }}
+          />
         </div>
       </section>
-    </div>
-  );
-}
 
-function StatCard({ title, value, accent }: { title: string; value: string; accent: string }) {
-  return (
-    <div className="flex flex-col justify-between rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-zinc-800/70 dark:bg-zinc-900/70">
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">{title}</p>
-      <div className="mt-6 flex items-end gap-3">
-        <span className="text-4xl font-semibold text-zinc-900 dark:text-zinc-50">{value}</span>
-        <span className={`inline-flex h-2 w-12 rounded-full ${accent}`} aria-hidden />
-      </div>
+      {/* Recent Activity Grid */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+          Recent Activity
+        </h2>
+        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-2">
+          <RecentPosts posts={recentPosts} />
+          <RecentUploads images={recentUploads} />
+        </div>
+      </section>
+
+      {/* System Info - Footer */}
+      <footer className="border-t border-zinc-200 pt-6 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
+        <p>Logged in as {session?.user?.email}</p>
+      </footer>
     </div>
   );
 }

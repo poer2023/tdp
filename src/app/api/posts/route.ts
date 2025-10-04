@@ -3,6 +3,9 @@ import { auth } from "@/auth";
 import { createPost, listPublishedPosts } from "@/lib/posts";
 import { PostStatus, UserRole } from "@prisma/client";
 
+// Force Node.js runtime for Prisma
+export const runtime = "nodejs";
+
 export async function GET() {
   const posts = await listPublishedPosts();
   return NextResponse.json(posts);

@@ -6,7 +6,7 @@ import { UserRole } from "@prisma/client";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "database" },
+  session: { strategy: "jwt" },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -14,12 +14,36 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
-      if (session.user) {
-        const u = user as { id: string; role?: UserRole | null };
+    async jwt({ token, user, trigger }) {
+      // On sign in, add user info to token
+      if (user) {
+        token.id = user.id;
+        // Fetch user role from database
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { role: true },
+        });
+        token.role = dbUser?.role ?? UserRole.AUTHOR;
+      }
+
+      // On session update, refresh role from database
+      if (trigger === "update") {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true },
+        });
+        if (dbUser) {
+          token.role = dbUser.role;
+        }
+      }
+
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token) {
         // These fields are declared in module augmentation under types/next-auth.d.ts
-        session.user.id = u.id;
-        session.user.role = (u.role ?? UserRole.AUTHOR) as UserRole;
+        session.user.id = token.id as string;
+        session.user.role = (token.role ?? UserRole.AUTHOR) as UserRole;
       }
       return session;
     },

@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
+import { SessionProvider } from "@/components/session-provider";
+import { AuthHeader } from "@/components/auth-header";
+import { MainNav } from "@/components/main-nav";
+import { Footer } from "@/components/footer";
+import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,7 +18,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Hao · 全栈博客",
     template: "%s · Hao 的全栈博客",
@@ -25,17 +34,42 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Get current pathname to determine locale
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "/";
+  const locale = getLocaleFromPathname(pathname);
+  const htmlLang = getHtmlLang(locale);
+
   return (
-    <html lang="zh-CN">
+    <html lang={htmlLang}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100`}
       >
-        {children}
+        <SessionProvider>
+          {/* Skip to content link for accessibility */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          >
+            Skip to content
+          </a>
+
+          <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
+            <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+              <MainNav />
+              <AuthHeader />
+            </div>
+          </header>
+
+          <main id="main-content">{children}</main>
+
+          <Footer />
+        </SessionProvider>
       </body>
     </html>
   );

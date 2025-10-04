@@ -15,6 +15,7 @@ export default defineConfig({
       "e2e/**",
       "playwright-report/**",
       "test-results/**",
+      "**/components/__tests__/**", // Exclude React component tests (jsdom incompatible)
     ],
   },
   resolve: {

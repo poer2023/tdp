@@ -83,9 +83,17 @@ export async function listPostSummaries(): Promise<PostSummary[]> {
   }));
 }
 
-export async function getPostBySlug(slug: string): Promise<PublicPost | null> {
+export async function getPostBySlug(
+  slug: string,
+  locale: "EN" | "ZH" = "EN"
+): Promise<PublicPost | null> {
   const post = await prisma.post.findUnique({
-    where: { slug },
+    where: {
+      locale_slug: {
+        locale,
+        slug,
+      },
+    },
     include: { author: true },
   });
 
@@ -176,13 +184,18 @@ export function serializeTags(tags?: string[]): string | null {
     .join(",");
 }
 
-async function createUniqueSlug(title: string): Promise<string> {
+async function createUniqueSlug(title: string, locale: "EN" | "ZH" = "EN"): Promise<string> {
   const base = slugify(title);
   let candidate = base || `post-${Date.now()}`;
   let suffix = 2;
 
   while (true) {
-    const existing = await prisma.post.findUnique({ where: { slug: candidate } });
+    const existing = await prisma.post.findFirst({
+      where: {
+        locale,
+        slug: candidate,
+      },
+    });
     if (!existing) {
       return candidate;
     }
