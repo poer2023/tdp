@@ -49,7 +49,6 @@ e2e/helpers/assertion-helpers.ts
 e2e/helpers/wait-helpers.ts
 e2e/home.spec.ts
 e2e/i18n-routing-improved.spec.ts
-e2e/i18n-routing.spec.ts
 e2e/likes-improved.spec.ts
 e2e/likes.spec.ts
 e2e/navigation.spec.ts
