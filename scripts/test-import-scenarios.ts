@@ -279,10 +279,13 @@ This should create a slug conflict.
 
     // Cleanup
     console.log("\nCleaning up test data...");
+    const idsToDelete = [testPost1.id, testPost2.id, createdPost.id, conflictPost?.id].filter(
+      (id): id is string => Boolean(id)
+    );
     await prisma.post.deleteMany({
       where: {
         id: {
-          in: [testPost1.id, testPost2.id, createdPost.id, conflictPost?.id].filter(Boolean),
+          in: idsToDelete,
         },
       },
     });

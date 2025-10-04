@@ -2,6 +2,8 @@
 set -e
 
 echo "Building Next.js application..."
+# Ensure site URL is consistent for absolute links in metadata/sitemaps during E2E
+export NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-"http://localhost:3000"}
 npm run build
 
 echo "Copying test fixtures to standalone build..."

@@ -36,7 +36,15 @@ export default async function PhotoDetailPage({ params }: Props) {
     notFound();
   }
 
-  const { prev, next } = await getAdjacentImageIds(id);
+  const { prev, next, prevPath, nextPath } = await getAdjacentImageIds(id);
 
-  return <PhotoViewer image={image} prevId={prev} nextId={next} />;
+  return (
+    <PhotoViewer
+      image={image}
+      prevId={prev || null}
+      nextId={next || null}
+      {...(prevPath && { prevPath })}
+      {...(nextPath && { nextPath })}
+    />
+  );
 }

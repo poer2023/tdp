@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { PostStatus } from "@prisma/client";
 import { getPostBySlug } from "@/lib/posts";
 
+// Force Node.js runtime for Prisma usage in lib
+export const runtime = "nodejs";
+
 export async function GET(_request: Request, { params }: { params: { slug: string } }) {
   const slug = safeDecode(params.slug);
   const post = await getPostBySlug(slug);

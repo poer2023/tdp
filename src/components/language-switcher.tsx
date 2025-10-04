@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { PostLocale } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
@@ -32,14 +31,20 @@ export async function LanguageSwitcher({
     },
   });
 
+  // Only render switcher when alternate exists
+  if (!alternatePost) {
+    return null;
+  }
+
   const currentLanguage = currentLocale === PostLocale.EN ? "English" : "中文";
   const alternateLanguage = alternateLocale === PostLocale.EN ? "English" : "中文";
-  const alternateUrl = alternateLocale === PostLocale.EN
-    ? `/posts/${alternatePost?.slug}`
-    : `/zh/posts/${alternatePost?.slug}`;
+  const alternateUrl =
+    alternateLocale === PostLocale.EN
+      ? `/en/posts/${alternatePost.slug}`
+      : `/zh/posts/${alternatePost.slug}`;
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="language-switcher flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
       <svg
         className="h-5 w-5 text-zinc-500 dark:text-zinc-400"
         fill="none"
@@ -58,25 +63,13 @@ export async function LanguageSwitcher({
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
           {currentLanguage}
         </span>
-
-        {alternatePost ? (
-          <>
-            <span className="text-zinc-400 dark:text-zinc-600">•</span>
-            <Link
-              href={alternateUrl}
-              className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
-            >
-              {alternateLanguage}
-            </Link>
-          </>
-        ) : (
-          <>
-            <span className="text-zinc-400 dark:text-zinc-600">•</span>
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
-              {alternateLanguage} version not available
-            </span>
-          </>
-        )}
+        <span className="text-zinc-400 dark:text-zinc-600">•</span>
+        <a
+          href={alternateUrl}
+          className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+        >
+          {alternateLanguage}
+        </a>
       </div>
     </div>
   );

@@ -12,12 +12,17 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch initial like count
+  // Fetch initial like count and whether this session already liked
   useEffect(() => {
+    setIsLoading(true);
     fetch(`/api/posts/${slug}/reactions?locale=${locale}`)
       .then((res) => res.json())
-      .then((data) => setLikeCount(data.likeCount))
-      .catch(console.error);
+      .then((data) => {
+        setLikeCount(data.likeCount ?? 0);
+        if (data.alreadyLiked) setIsLiked(true);
+      })
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
   }, [slug, locale]);
 
   const handleLike = async () => {
@@ -50,6 +55,7 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
     <button
       onClick={handleLike}
       disabled={isLiked || isLoading}
+      data-testid="like-button"
       className={`flex items-center gap-2 rounded-lg border px-4 py-2 transition-colors ${
         isLiked
           ? "border-red-300 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-950 dark:text-red-400"

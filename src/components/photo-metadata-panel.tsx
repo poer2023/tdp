@@ -42,11 +42,11 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
     <div className="space-y-6 p-6">
       {/* Title and description */}
       <div className="space-y-2">
-        <h1 className="text-2xl leading-tight font-bold text-zinc-100">
+        <h1 className="text-2xl leading-tight font-semibold text-zinc-100">
           {image.title || "未命名照片"}
         </h1>
         {image.description && (
-          <p className="text-sm leading-relaxed text-zinc-400">{image.description}</p>
+          <p className="text-sm leading-relaxed text-zinc-300">{image.description}</p>
         )}
       </div>
 
@@ -55,7 +55,7 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
         <section className="space-y-3">
           <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">位置信息</h2>
           <div className="overflow-hidden rounded-lg border border-zinc-800">
-            <div className="h-48 w-full">
+            <div className="h-[200px] w-full">
               <MapContainer
                 center={[image.latitude!, image.longitude!]}
                 zoom={13}
@@ -85,30 +85,34 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
       {/* File information */}
       <section className="space-y-3">
         <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">文件信息</h2>
-        <dl className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-zinc-500">文件名</dt>
-            <dd className="font-mono text-xs text-zinc-300">{fileName}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-zinc-500">文件大小</dt>
-            <dd className="text-zinc-300">{formatFileSize(image.fileSize)}</dd>
-          </div>
+        <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2 text-sm">
+          <dt className="text-zinc-500">文件名</dt>
+          <dd
+            className="line-clamp-2 font-mono text-xs break-all text-zinc-300 md:line-clamp-3"
+            title={fileName}
+          >
+            {fileName}
+          </dd>
+
+          <dt className="text-zinc-500">文件大小</dt>
+          <dd className="text-zinc-300">{formatFileSize(image.fileSize)}</dd>
+
           {image.width && image.height && (
-            <div className="flex justify-between">
+            <>
               <dt className="text-zinc-500">分辨率</dt>
               <dd className="text-zinc-300">
                 {image.width} × {image.height}
               </dd>
-            </div>
+            </>
           )}
+
           {image.mimeType && (
-            <div className="flex justify-between">
+            <>
               <dt className="text-zinc-500">格式</dt>
               <dd className="font-mono text-xs text-zinc-300 uppercase">
                 {image.mimeType.split("/")[1]}
               </dd>
-            </div>
+            </>
           )}
         </dl>
       </section>
@@ -116,17 +120,15 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
       {/* Temporal information */}
       <section className="space-y-3">
         <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">时间信息</h2>
-        <dl className="space-y-2 text-sm">
+        <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2 text-sm">
           {image.capturedAt && (
-            <div>
+            <>
               <dt className="text-zinc-500">拍摄时间</dt>
               <dd className="text-zinc-300">{formatDate(image.capturedAt)}</dd>
-            </div>
+            </>
           )}
-          <div>
-            <dt className="text-zinc-500">上传时间</dt>
-            <dd className="text-zinc-300">{formatDate(image.createdAt)}</dd>
-          </div>
+          <dt className="text-zinc-500">上传时间</dt>
+          <dd className="text-zinc-300">{formatDate(image.createdAt)}</dd>
         </dl>
       </section>
 
@@ -137,7 +139,7 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
           <p className="text-sm text-zinc-400">此照片包含动态视频内容，鼠标悬停在图片上可播放。</p>
           <a
             href={image.livePhotoVideoPath}
-            download
+            download="live-photo-video.mov"
             className="inline-flex items-center gap-2 rounded border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

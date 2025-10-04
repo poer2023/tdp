@@ -1,184 +1,144 @@
-import Link from "next/link";
+// Admin dashboard home
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { PostStatus, PostLocale, CommentStatus } from "@prisma/client";
+import { PostStatus } from "@prisma/client";
+import { MetricCard } from "@/components/admin/metric-card";
+import { ActionCard } from "@/components/admin/action-card";
+import { RecentPosts } from "@/components/admin/recent-posts";
+import { RecentUploads } from "@/components/admin/recent-uploads";
 
 export const revalidate = 0;
+// Force Node.js runtime because this page queries Prisma directly
+export const runtime = "nodejs";
 
 export default async function AdminHomePage() {
   const session = await auth();
 
-  // Fetch content statistics
+  // Fetch content statistics and recent activity in parallel
   const [
     totalPosts,
-    enPosts,
-    zhPosts,
     publishedPosts,
     draftPosts,
-    pendingComments,
-    totalComments,
-    galleryCount,
+    totalGallery,
+    livePhotos,
+    geotaggedPhotos,
+    recentPosts,
+    recentUploads,
   ] = await Promise.all([
     prisma.post.count(),
-    prisma.post.count({ where: { locale: PostLocale.EN } }),
-    prisma.post.count({ where: { locale: PostLocale.ZH } }),
     prisma.post.count({ where: { status: PostStatus.PUBLISHED } }),
     prisma.post.count({ where: { status: PostStatus.DRAFT } }),
-    prisma.comment.count({ where: { status: CommentStatus.PENDING } }),
-    prisma.comment.count(),
     prisma.galleryImage.count(),
+    prisma.galleryImage.count({ where: { isLivePhoto: true } }),
+    prisma.galleryImage.count({ where: { NOT: { latitude: null } } }),
+    prisma.post.findMany({
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+      include: { author: { select: { name: true } } },
+    }),
+    prisma.galleryImage.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 6,
+    }),
   ]);
 
   return (
-    <div className="space-y-12">
-      {/* Page Header */}
-      <header className="max-w-3xl space-y-4">
-        <h1 className="text-4xl font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">
+    <div className="space-y-8 md:space-y-12">
+      {/* Page Header - Simplified */}
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
           Overview
         </h1>
-        <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-          Content management dashboard. Monitor posts, moderate comments, and manage content
-          operations.
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          Content management dashboard
         </p>
       </header>
 
-      {/* Statistics Grid */}
-      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Metrics Grid - 2 Cards (comments removed) */}
+      <section className="grid gap-6 sm:grid-cols-2">
         <MetricCard
-          label="Total Posts"
+          label="Posts"
           value={totalPosts}
-          detail={`${enPosts} EN / ${zhPosts} ZH`}
+          meta={`Published ${publishedPosts} · Drafts ${draftPosts}`}
+          href="/admin/posts"
         />
-        <MetricCard label="Published" value={publishedPosts} />
-        <MetricCard label="Drafts" value={draftPosts} />
         <MetricCard
-          label="Comments"
-          value={totalComments}
-          detail={pendingComments > 0 ? `${pendingComments} pending` : undefined}
-          alert={pendingComments > 0}
+          label="Gallery"
+          value={totalGallery}
+          meta={`Live ${livePhotos} · Geotagged ${geotaggedPhotos}`}
+          href="/admin/gallery"
         />
       </section>
 
-      {/* Moderation Queue */}
-      {pendingComments > 0 && (
-        <section className="max-w-3xl space-y-4 border-l-2 border-zinc-900 pl-6 dark:border-zinc-100">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-            Moderation Queue
-          </h2>
-          <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            {pendingComments} comment{pendingComments !== 1 ? "s" : ""} awaiting review.
-          </p>
-          <Link
-            href="/admin/comments"
-            className="inline-flex items-center gap-2 text-sm font-medium text-zinc-900 underline decoration-1 underline-offset-4 transition-colors duration-150 hover:text-zinc-600 dark:text-zinc-100 dark:hover:text-zinc-400"
-          >
-            <span>Review comments</span>
-            <span aria-hidden>→</span>
-          </Link>
-        </section>
-      )}
-
-      {/* Quick Actions */}
-      <section className="max-w-3xl space-y-6">
-        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Quick Actions</h2>
-        <div className="divide-y divide-zinc-200 border-y border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-          <ActionLink
-            href="/admin/posts"
-            label="Manage Posts"
-            description="Create, edit, and publish blog articles"
+      {/* Quick Actions Grid */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+          Quick Actions
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <ActionCard
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            }
+            title="Posts"
+            description="Create and manage articles"
+            primaryAction={{ label: "New Post", href: "/admin/posts/new" }}
           />
-          <ActionLink
-            href="/admin/comments"
-            label="Moderate Comments"
-            description="Review and manage user comments"
+          <ActionCard
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            }
+            title="Gallery"
+            description="Upload and organize photos"
+            primaryAction={{ label: "Upload", href: "/admin/gallery" }}
           />
-          <ActionLink
-            href="/admin/export"
-            label="Export Content"
-            description="Download posts as Markdown files"
-          />
-          <ActionLink
-            href="/admin/import"
-            label="Import Content"
-            description="Upload Markdown files to create or update posts"
-          />
-          <ActionLink
-            href="/admin/gallery"
-            label="Gallery Management"
-            description="Manage photo uploads and metadata"
+          <ActionCard
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                />
+              </svg>
+            }
+            title="Content I/O"
+            description="Import and export content"
+            primaryAction={{ label: "Export", href: "/admin/export" }}
           />
         </div>
       </section>
 
-      {/* System Info */}
-      <section className="max-w-3xl space-y-4 text-sm text-zinc-500 dark:text-zinc-500">
+      {/* Recent Activity Grid */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+          Recent Activity
+        </h2>
+        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-2">
+          <RecentPosts posts={recentPosts} />
+          <RecentUploads images={recentUploads} />
+        </div>
+      </section>
+
+      {/* System Info - Footer */}
+      <footer className="border-t border-zinc-200 pt-6 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
         <p>Logged in as {session?.user?.email}</p>
-        <p>
-          System Status:{" "}
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">Operational</span>
-        </p>
-      </section>
+      </footer>
     </div>
-  );
-}
-
-function MetricCard({
-  label,
-  value,
-  detail,
-  alert,
-}: {
-  label: string;
-  value: number;
-  detail?: string;
-  alert?: boolean;
-}) {
-  return (
-    <div className="space-y-3 border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">{label}</p>
-      <div className="space-y-1">
-        <p className="text-3xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
-          {value}
-        </p>
-        {detail && (
-          <p
-            className={`text-xs ${alert ? "font-medium text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-500"}`}
-          >
-            {detail}
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ActionLink({
-  href,
-  label,
-  description,
-}: {
-  href: string;
-  label: string;
-  description: string;
-}) {
-  return (
-    <Link href={href} className="group block py-4 transition-colors duration-150">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h3 className="font-medium text-zinc-900 group-hover:text-zinc-600 dark:text-zinc-100 dark:group-hover:text-zinc-400">
-            {label}
-          </h3>
-          <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            {description}
-          </p>
-        </div>
-        <span
-          aria-hidden
-          className="text-zinc-400 transition-transform duration-150 group-hover:translate-x-0.5"
-        >
-          →
-        </span>
-      </div>
-    </Link>
   );
 }

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PostLocale } from "@prisma/client";
+import { createHash } from "crypto";
 import prisma from "@/lib/prisma";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+// Ensure Node.js runtime – Prisma is not supported on Edge
+export const runtime = "nodejs";
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const locale = request.nextUrl.searchParams.get("locale") || "EN";
 
@@ -40,5 +41,21 @@ export async function GET(
     });
   }
 
-  return NextResponse.json({ likeCount: aggregate.likeCount });
+  // Determine if current session has already liked
+  let alreadyLiked = false;
+  const sessionKey = request.cookies.get("sessionKey")?.value;
+  if (sessionKey) {
+    const sessionKeyHash = createHash("sha256").update(sessionKey).digest("hex");
+    const existing = await prisma.reaction.findUnique({
+      where: {
+        postId_sessionKeyHash: {
+          postId: post.id,
+          sessionKeyHash,
+        },
+      },
+    });
+    alreadyLiked = !!existing;
+  }
+
+  return NextResponse.json({ likeCount: aggregate.likeCount, alreadyLiked });
 }

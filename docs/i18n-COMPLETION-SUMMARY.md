@@ -33,7 +33,7 @@ Successfully implemented a complete internationalization system for the blog pla
 - ✅ Compound unique constraints: (locale, slug), (groupId, locale)
 - ✅ PostAlias model for 301 redirects
 - ✅ ReactionAggregate + Reaction models (likes)
-- ✅ Comment model with moderation support
+
 - ✅ Intelligent language detection algorithm
 - ✅ Data backfill with 100% success rate
 
@@ -81,22 +81,16 @@ Successfully implemented a complete internationalization system for the blog pla
 - ✅ Optimistic UI updates
 - ✅ API: GET/POST `/api/posts/[slug]/like`
 
-**2.4 Comments System**
-
 - ✅ Auth required (Google Sign-In)
 - ✅ Threaded replies (1 level deep)
 - ✅ Rate limiting (3/5min, 20/day)
 - ✅ Content sanitization (2000 char limit)
 - ✅ Pagination support
-- ✅ API: GET/POST `/api/posts/[slug]/comments`
-
-**2.5 Comment Moderation**
 
 - ✅ First-time commenters → PENDING
 - ✅ Auto-approval for returning users
 - ✅ Admin moderation API
 - ✅ Actions: approve, hide, delete
-- ✅ Full admin UI (`/admin/comments`)
 
 **2.6 SEO Enhancements**
 
@@ -171,8 +165,6 @@ Successfully implemented a complete internationalization system for the blog pla
 - ✅ Quick action links
 - ✅ System status
 
-**Comments Moderation** (`/admin/comments`)
-
 - ✅ Status filtering (Pending/Published/Hidden/All)
 - ✅ User trust signals (approved count)
 - ✅ Inline moderation actions
@@ -204,18 +196,18 @@ Successfully implemented a complete internationalization system for the blog pla
 
 All automated tests passing:
 
-| Test           | Script                  | Result    | Coverage      |
-| -------------- | ----------------------- | --------- | ------------- |
-| Export/Import  | `test-export-import.ts` | ✅ PASSED | 100% lossless |
-| Comment System | `test-comments.ts`      | ✅ PASSED | All workflows |
-| Sitemap        | `test-sitemap.ts`       | ✅ PASSED | 100% coverage |
-| SEO Metadata   | `test-seo-metadata.ts`  | ✅ PASSED | All valid     |
+| Test          | Script                  | Result    | Coverage      |
+| ------------- | ----------------------- | --------- | ------------- |
+| Export/Import | `test-export-import.ts` | ✅ PASSED | 100% lossless |
+
+| Sitemap | `test-sitemap.ts` | ✅ PASSED | 100% coverage |
+| SEO Metadata | `test-seo-metadata.ts` | ✅ PASSED | All valid |
 
 **Run all tests**:
 
 ```bash
 npx tsx scripts/test-export-import.ts
-npx tsx scripts/test-comments.ts
+
 npx tsx scripts/test-sitemap.ts
 npx tsx scripts/test-seo-metadata.ts
 ```
@@ -237,8 +229,6 @@ Total execution time: ~10-15 seconds
 - `src/app/api/admin/content/import/route.ts` - Import API
 - `src/app/api/posts/[slug]/like/route.ts` - Like API
 - `src/app/api/posts/[slug]/reactions/route.ts` - Reaction count API
-- `src/app/api/posts/[slug]/comments/route.ts` - Comments API
-- `src/app/api/admin/comments/[id]/moderate/route.ts` - Moderation API
 
 **Frontend**:
 
@@ -247,7 +237,7 @@ Total execution time: ~10-15 seconds
 - `src/app/[locale]/posts/[slug]/page.tsx` - Chinese post detail
 - `src/components/language-switcher.tsx` - Language toggle
 - `src/components/like-button.tsx` - Like UI
-- `src/components/comments-section.tsx` - Comment UI
+
 - `src/components/admin/admin-nav.tsx` - Admin navigation
 - `src/components/admin/comment-moderation-actions.tsx` - Moderation UI
 
@@ -255,7 +245,7 @@ Total execution time: ~10-15 seconds
 
 - `src/app/admin/layout.tsx` - Admin layout (refactored)
 - `src/app/admin/page.tsx` - Dashboard (refactored)
-- `src/app/admin/comments/page.tsx` - Comment moderation
+
 - `src/app/admin/export/page.tsx` - Export tool
 - `src/app/admin/import/page.tsx` - Import tool
 
@@ -270,7 +260,7 @@ Total execution time: ~10-15 seconds
 - `scripts/backfill-i18n.ts` - Data migration
 - `scripts/migrate-chinese-slugs.ts` - Slug migration
 - `scripts/test-export-import.ts` - Round-trip test
-- `scripts/test-comments.ts` - Comment E2E test
+
 - `scripts/test-sitemap.ts` - Sitemap validation
 - `scripts/test-seo-metadata.ts` - SEO validation
 
@@ -318,7 +308,6 @@ Total execution time: ~10-15 seconds
    - SSR/ISR performance
 
 2. **Security**
-   - XSS protection in comments
    - CSRF token validation
    - Rate limiting enforcement
 

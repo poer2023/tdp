@@ -11,8 +11,8 @@ export type ExportOptions = {
 };
 
 export type ExportManifest = {
-  exportDate: string;
-  exportVersion: string;
+  exportedAt: string;
+  version: string;
   filters: ExportOptions;
   stats: {
     totalPosts: number;
@@ -28,12 +28,12 @@ export async function exportContent(options: ExportOptions = {}): Promise<Buffer
   const { from, to, statuses, locales } = options;
 
   // Build query filters
-  const where: Parameters<typeof prisma.post.findMany>[0]["where"] = {};
+  const where: Record<string, unknown> = {};
 
   if (from || to) {
     where.publishedAt = {};
-    if (from) where.publishedAt.gte = new Date(from);
-    if (to) where.publishedAt.lte = new Date(to);
+    if (from) (where.publishedAt as Record<string, unknown>).gte = new Date(from);
+    if (to) (where.publishedAt as Record<string, unknown>).lte = new Date(to);
   }
 
   if (statuses && statuses.length > 0) {
@@ -86,8 +86,8 @@ export async function exportContent(options: ExportOptions = {}): Promise<Buffer
 
   // Create manifest
   const manifest: ExportManifest = {
-    exportDate: new Date().toISOString(),
-    exportVersion: "1.0",
+    exportedAt: new Date().toISOString(),
+    version: "1.0",
     filters: options,
     stats: {
       totalPosts: posts.length,
@@ -108,18 +108,23 @@ export async function exportContent(options: ExportOptions = {}): Promise<Buffer
 /**
  * Generate Markdown file with frontmatter from Post
  */
-function generateMarkdown(post: Post & { author: { id: string; name: string | null } | null }): string {
+function generateMarkdown(
+  post: Post & { author: { id: string; name: string | null } | null }
+): string {
   const tags = parseTags(post.tags);
 
   // Build frontmatter
   const frontmatter: Record<string, unknown> = {
+    // Required core fields
     title: post.title,
-    date: post.createdAt.toISOString(),
     slug: post.slug,
     locale: post.locale,
+    status: post.status,
+    // Dates: required created date, optional publishedAt
+    date: post.createdAt.toISOString(),
+    // Associations and taxonomy
     groupId: post.groupId,
     tags,
-    status: post.status,
   };
 
   // Optional fields
@@ -143,9 +148,25 @@ function generateMarkdown(post: Post & { author: { id: string; name: string | nu
     frontmatter.publishedAt = post.publishedAt.toISOString();
   }
 
-  // Generate YAML frontmatter
-  const yaml = Object.entries(frontmatter)
-    .map(([key, value]) => {
+  // Generate YAML frontmatter in deterministic order
+  const orderedKeys = [
+    "title",
+    "slug",
+    "locale",
+    "status",
+    "publishedAt",
+    "date",
+    "groupId",
+    "excerpt",
+    "tags",
+    "cover",
+    "author",
+  ];
+
+  const yaml = orderedKeys
+    .filter((key) => key in frontmatter)
+    .map((key) => {
+      const value = frontmatter[key];
       if (Array.isArray(value)) {
         if (value.length === 0) return `${key}: []`;
         return `${key}:\n${value.map((v) => `  - ${JSON.stringify(v)}`).join("\n")}`;
@@ -166,11 +187,12 @@ export function parseMarkdown(markdown: string): {
 } {
   const match = markdown.match(/^---\n([\s\S]*?)\n---\n\n([\s\S]*)$/);
 
-  if (!match) {
+  if (!match || !match[1] || !match[2]) {
     throw new Error("Invalid Markdown format: missing frontmatter");
   }
 
-  const [, frontmatterText, content] = match;
+  const frontmatterText = match[1];
+  const content = match[2];
 
   // Parse YAML frontmatter (simple implementation)
   const frontmatter: Record<string, unknown> = {};
@@ -197,8 +219,9 @@ export function parseMarkdown(markdown: string): {
 
     // Key-value pair
     const kvMatch = line.match(/^(\w+):\s*(.*)$/);
-    if (kvMatch) {
-      const [, key, value] = kvMatch;
+    if (kvMatch && kvMatch[1] && kvMatch[2] !== undefined) {
+      const key = kvMatch[1];
+      const value = kvMatch[2];
       currentKey = key;
 
       if (value === "[]") {

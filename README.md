@@ -8,8 +8,8 @@
 
 - **多语言支持 (i18n)**：英文默认 (`/`)、中文支持 (`/zh`)，自动 pinyin slug 转换，301 重定向旧链接
 - **文章管理**：草稿/发布、Markdown 正文、封面图、标签、翻译配对 (groupId)
-- **用户互动**：无需登录的点赞系统、需登录的评论系统 (自动审核、嵌套回复)
-- **内容运营**：Markdown 导入/导出 (YAML frontmatter)、评论审核后台、双语 sitemap
+- **用户互动**：无需登录的点赞系统
+- **内容运营**：Markdown 导入/导出 (YAML frontmatter)、双语 sitemap
 - **SEO 优化**：hreflang 交叉引用、JSON-LD 结构化数据、Open Graph 元标签
 - **相册管理**：本地上传到 `public/uploads`，可选关联文章
 - **身份认证**：NextAuth + Google，首个登录者自动授予 ADMIN 权限
@@ -111,8 +111,6 @@ open http://localhost:3000
 - i18n 功能测试：
   - 重定向测试：`npx tsx scripts/test-redirect.ts`
   - 点赞功能测试：`npx tsx scripts/test-likes.ts`
-  - 评论流程测试：`npx tsx scripts/test-comment-flow.ts`
-  - 审核工作流测试：`npx tsx scripts/test-moderation.ts`
   - 导出场景测试：`npx tsx scripts/test-export-scenarios.ts`
   - 导入场景测试：`npx tsx scripts/test-import-scenarios.ts`
   - SEO Rich Results 测试：`npx tsx scripts/test-seo-rich-results.ts`
@@ -133,12 +131,11 @@ open http://localhost:3000
 - 后台界面：`src/app/admin/*`
   - 内容导出：`src/app/admin/export`
   - 内容导入：`src/app/admin/import`
-  - 评论审核：`src/app/admin/comments`
 
 ### 文档
 
-- **用户指南**：[docs/USER_GUIDE.md](docs/USER_GUIDE.md) - 点赞、评论、语言切换
-- **管理员指南**：[docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) - 导出、导入、审核
+- **用户指南**：[docs/USER_GUIDE.md](docs/USER_GUIDE.md) - 点赞、语言切换
+- **管理员指南**：[docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) - 导出、导入
 - **部署指南**：[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - 生产部署步骤
 - **监控指南**：[docs/MONITORING.md](docs/MONITORING.md) - 上线后监控
 - **测试指南**：[docs/TESTING.md](docs/TESTING.md) - 自动化测试

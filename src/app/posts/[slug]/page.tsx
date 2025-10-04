@@ -9,26 +9,40 @@ import prisma from "@/lib/prisma";
 import { generateBlogPostingSchema, generateAlternateLinks } from "@/lib/seo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { LikeButton } from "@/components/like-button";
-import { CommentsSection } from "@/components/comments-section";
+// Comments removed: only likes remain
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+// Prisma usage requires Node.js runtime in App Router
+export const runtime = "nodejs";
 
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const slug = safeDecode(params.slug);
-  const post = await prisma.post.findUnique({
+  const { slug: rawSlug } = await params;
+  const slug = safeDecode(rawSlug);
+
+  // Try EN, then ZH. Use findFirst to allow status filter
+  let post = await prisma.post.findFirst({
     where: {
-      locale_slug: {
-        locale: PostLocale.EN,
-        slug,
-      },
+      locale: PostLocale.EN,
+      slug,
       status: PostStatus.PUBLISHED,
     },
   });
+
+  // If not found in EN, try ZH locale
+  if (!post) {
+    post = await prisma.post.findFirst({
+      where: {
+        locale: PostLocale.ZH,
+        slug,
+        status: PostStatus.PUBLISHED,
+      },
+    });
+  }
 
   if (!post) {
     return {
@@ -49,8 +63,14 @@ export async function generateMetadata({
     alternateSlug = alternatePost?.slug;
   }
 
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL || ""}/posts/${slug}`;
-  const alternateLinks = generateAlternateLinks(PostLocale.EN, slug, alternateSlug);
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+  const url = `${baseUrl}/posts/${slug}`;
+  const alternateLinks = generateAlternateLinks(post.locale, slug, alternateSlug);
+
+  // Use post cover or fallback to default OG image
+  const ogImage = post.coverImagePath
+    ? `${baseUrl}${post.coverImagePath}`
+    : `${baseUrl}/images/placeholder-cover.svg`;
 
   return {
     title: post.title,
@@ -58,22 +78,33 @@ export async function generateMetadata({
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      images: post.coverImagePath ? [post.coverImagePath] : undefined,
+      images: [ogImage],
+      url,
+      type: "article",
+      locale: "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [ogImage],
     },
     alternates: {
+      canonical: url,
       languages: alternateLinks,
     },
   };
 }
 
-export default async function PostPage({ params }: { params: { slug: string } }) {
-  const slug = safeDecode(params.slug);
-  const post = await prisma.post.findUnique({
+export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug: rawSlug } = await params;
+  const slug = safeDecode(rawSlug);
+
+  // Try EN, then ZH. Use findFirst to allow status filter
+  let post = await prisma.post.findFirst({
     where: {
-      locale_slug: {
-        locale: PostLocale.EN,
-        slug,
-      },
+      locale: PostLocale.EN,
+      slug,
       status: PostStatus.PUBLISHED,
     },
     include: {
@@ -85,6 +116,25 @@ export default async function PostPage({ params }: { params: { slug: string } })
       },
     },
   });
+
+  // If not found in EN, try ZH locale
+  if (!post) {
+    post = await prisma.post.findFirst({
+      where: {
+        locale: PostLocale.ZH,
+        slug,
+        status: PostStatus.PUBLISHED,
+      },
+      include: {
+        author: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+  }
 
   if (!post) {
     notFound();
@@ -111,7 +161,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
         {/* Language Switcher */}
         <div className="mb-8">
           <LanguageSwitcher
-            currentLocale={PostLocale.EN}
+            currentLocale={post.locale}
             currentSlug={post.slug}
             groupId={post.groupId}
           />
@@ -170,8 +220,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
           </div>
         </article>
 
-        {/* Comments Section */}
-        <CommentsSection slug={slug} locale="EN" />
+        {/* Comments feature removed */}
       </div>
     </>
   );
@@ -179,8 +228,14 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
 function safeDecode(value: string): string {
   try {
-    return decodeURIComponent(value);
-  } catch {
+    const decoded = decodeURIComponent(value);
+    // Validate decoded slug format (alphanumeric, hyphens, underscores, and Chinese characters)
+    if (!/^[\w\u4e00-\u9fa5-]+$/.test(decoded)) {
+      console.warn(`[safeDecode] Invalid slug format: ${decoded}`);
+    }
+    return decoded;
+  } catch (error) {
+    console.error(`[safeDecode] Failed to decode slug: ${value}`, error);
     return value;
   }
 }

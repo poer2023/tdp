@@ -3,6 +3,9 @@ import { PostLocale } from "@prisma/client";
 import { createHash } from "crypto";
 import prisma from "@/lib/prisma";
 
+// Ensure Node.js runtime – Prisma is not supported on Edge
+export const runtime = "nodejs";
+
 // Simple in-memory rate limiter
 const rateLimitMap = new Map<string, number[]>();
 
@@ -30,15 +33,13 @@ export async function POST(
   const { locale = "EN" } = await request.json();
 
   // Rate limiting: 10 requests per minute per IP
-  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+  const ip =
+    request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
   const userAgent = request.headers.get("user-agent") || "unknown";
   const rateLimitKey = createHash("sha256").update(`${ip}:${userAgent}`).digest("hex");
 
   if (!checkRateLimit(rateLimitKey, 10, 60 * 1000)) {
-    return NextResponse.json(
-      { error: "Rate limit exceeded" },
-      { status: 429 }
-    );
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   // Find post
@@ -59,11 +60,9 @@ export async function POST(
   }
 
   // Get or create session key from cookie
-  let sessionKey = request.cookies.get("session_key")?.value;
+  let sessionKey = request.cookies.get("sessionKey")?.value;
   if (!sessionKey) {
-    sessionKey = createHash("sha256")
-      .update(`${Date.now()}:${Math.random()}`)
-      .digest("hex");
+    sessionKey = createHash("sha256").update(`${Date.now()}:${Math.random()}`).digest("hex");
   }
 
   const sessionKeyHash = createHash("sha256").update(sessionKey).digest("hex");
@@ -90,7 +89,7 @@ export async function POST(
       alreadyLiked: true,
     });
 
-    response.cookies.set("session_key", sessionKey, {
+    response.cookies.set("sessionKey", sessionKey, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -131,7 +130,7 @@ export async function POST(
     likeCount: aggregate?.likeCount || 1,
   });
 
-  response.cookies.set("session_key", sessionKey, {
+  response.cookies.set("sessionKey", sessionKey, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

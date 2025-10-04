@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/auth";
 import { UserRole, PostStatus, PostLocale } from "@prisma/client";
 import { exportContent } from "@/lib/content-export";
+
+// Ensure Node.js runtime for Prisma-backed export
+export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   // Check authentication and admin role
@@ -48,17 +51,17 @@ export async function GET(req: NextRequest) {
   try {
     // Generate export
     const zipBuffer = await exportContent({
-      from,
-      to,
-      statuses,
-      locales,
+      ...(from && { from }),
+      ...(to && { to }),
+      ...(statuses && { statuses }),
+      ...(locales && { locales }),
     });
 
     // Return zip file
     const timestamp = new Date().toISOString().split("T")[0];
     const filename = `content-export-${timestamp}.zip`;
 
-    return new NextResponse(zipBuffer, {
+    return new NextResponse(new Uint8Array(zipBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/zip",

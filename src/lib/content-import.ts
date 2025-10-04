@@ -52,52 +52,75 @@ export async function importContent(
   const parsedPosts: ParsedPost[] = [];
   const details: ImportDetail[] = [];
 
-  // Process content/en/ and content/zh/ directories
-  for (const locale of ["en", "zh"]) {
-    const files = Object.keys(zip.files).filter(
-      (path) => path.startsWith(`content/${locale}/`) && path.endsWith(".md")
-    );
+  // Process ALL .md files in the zip (not just content/en/ and content/zh/)
+  const allFiles = Object.keys(zip.files).filter(
+    (path) => path.endsWith(".md") && !zip.files[path].dir
+  );
 
-    for (const filepath of files) {
-      const file = zip.files[filepath];
-      if (file.dir) continue;
+  // Check for empty zip or no markdown files
+  if (allFiles.length === 0) {
+    return {
+      dryRun,
+      summary: { created: 0, updated: 0, skipped: 0, errors: 0 },
+      details: [
+        {
+          filename: "N/A",
+          action: "error",
+          error: "No markdown files found in zip archive",
+        },
+      ],
+    };
+  }
 
-      const filename = filepath.split("/").pop() || filepath;
+  for (const filepath of allFiles) {
+    const file = zip.files[filepath];
+    if (!file || file.dir) continue;
 
-      try {
-        const content = await file.async("string");
-        const { frontmatter, content: body } = parseMarkdown(content);
+    const filename = filepath.split("/").pop() || filepath;
 
-        // Validate frontmatter
-        const validation = validateFrontmatter(frontmatter);
-        if (!validation.valid) {
-          details.push({
-            filename,
-            action: "error",
-            error: `Invalid frontmatter: ${validation.errors.join(", ")}`,
-          });
-          continue;
-        }
+    try {
+      const content = await file.async("string");
+      const { frontmatter, content: body } = parseMarkdown(content);
 
-        parsedPosts.push({
-          filename,
-          frontmatter,
-          content: body,
-        });
-      } catch (error) {
+      // Validate frontmatter
+      const validation = validateFrontmatter(frontmatter);
+      if (!validation.valid) {
         details.push({
           filename,
           action: "error",
-          error: error instanceof Error ? error.message : "Parse error",
+          error: `Invalid frontmatter: ${validation.errors.join(", ")}`,
         });
+        continue;
       }
+
+      // Validate locale field is present
+      if (!frontmatter.locale || (frontmatter.locale !== "EN" && frontmatter.locale !== "ZH")) {
+        details.push({
+          filename,
+          action: "error",
+          error: `Invalid or missing locale field. Expected EN or ZH, got: ${frontmatter.locale}`,
+        });
+        continue;
+      }
+
+      parsedPosts.push({
+        filename,
+        frontmatter,
+        content: body,
+      });
+    } catch (error) {
+      details.push({
+        filename,
+        action: "error",
+        error: error instanceof Error ? error.message : "Parse error",
+      });
     }
   }
 
   // Process each post
   let created = 0;
   let updated = 0;
-  let skipped = 0;
+  const skipped = 0;
 
   for (const parsed of parsedPosts) {
     const { filename, frontmatter, content } = parsed;
@@ -158,14 +181,16 @@ export async function importContent(
         created++;
       }
     } catch (error) {
-      details.push({
+      const errorDetail: ImportDetail = {
         filename,
         action: "error",
         error: error instanceof Error ? error.message : "Unknown error",
-      });
+      };
+      details.push(errorDetail);
     }
   }
 
+  // Count errors from details (includes parsing errors AND processing errors)
   const errors = details.filter((d) => d.action === "error").length;
 
   return {
@@ -280,7 +305,7 @@ async function updatePost(
   postId: string,
   frontmatter: Record<string, unknown>,
   content: string,
-  adminId: string
+  _adminId?: string
 ): Promise<void> {
   const status = frontmatter.status as PostStatus;
   const tags = frontmatter.tags as string[];

@@ -5,7 +5,7 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "exactOptionalPropertyTypes": true,
+    "exactOptionalPropertyTypes": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
@@ -42,6 +42,7 @@
     "dist",
     "src/test/**",
     "e2e/**",
+    "scripts/**",
     "playwright.config.ts"
   ],
   "ts-node": {

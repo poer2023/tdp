@@ -107,27 +107,32 @@ export async function getGalleryImageById(id: string): Promise<GalleryImage | nu
   return toGalleryImage(image);
 }
 
-export async function getAdjacentImageIds(
-  id: string
-): Promise<{ prev: string | null; next: string | null }> {
+export async function getAdjacentImageIds(id: string): Promise<{
+  prev: string | null;
+  next: string | null;
+  prevPath?: string;
+  nextPath?: string;
+}> {
   const currentImage = await prisma.galleryImage.findUnique({ where: { id } });
   if (!currentImage) return { prev: null, next: null };
 
   const prevImage = await prisma.galleryImage.findFirst({
     where: { createdAt: { lt: currentImage.createdAt } },
     orderBy: { createdAt: "desc" },
-    select: { id: true },
+    select: { id: true, filePath: true },
   });
 
   const nextImage = await prisma.galleryImage.findFirst({
     where: { createdAt: { gt: currentImage.createdAt } },
     orderBy: { createdAt: "asc" },
-    select: { id: true },
+    select: { id: true, filePath: true },
   });
 
   return {
     prev: prevImage?.id || null,
     next: nextImage?.id || null,
+    prevPath: prevImage?.filePath,
+    nextPath: nextImage?.filePath,
   };
 }
 

@@ -39,6 +39,9 @@ async function main() {
     // Test 1: JSON-LD Schema Validation
     console.log("Test 1: JSON-LD BlogPosting Schema");
     const post = posts[0];
+    if (!post) {
+      throw new Error("No posts found for testing");
+    }
     const url = `${baseUrl}${post.locale === PostLocale.ZH ? "/zh" : ""}/posts/${post.slug}`;
     const schema = generateBlogPostingSchema(post, url);
 
@@ -49,7 +52,9 @@ async function main() {
     console.log(`    inLanguage: ${schema.inLanguage}`);
     console.log(`    datePublished: ${schema.datePublished}`);
     console.log(`    dateModified: ${schema.dateModified}`);
-    console.log(`    author.name: ${schema.author?.name || "N/A"}`);
+    console.log(
+      `    author.name: ${(schema.author as { name?: string } | undefined)?.name || "N/A"}`
+    );
     console.log(`    image: ${schema.image || "N/A"}`);
 
     // Validate required fields

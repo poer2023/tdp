@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { PostStatus, PostLocale } from "@prisma/client";
 
 export default function ExportPage() {
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState({
     from: "",
     to: "",
@@ -11,6 +13,31 @@ export default function ExportPage() {
     locales: [] as PostLocale[],
   });
   const [isExporting, setIsExporting] = useState(false);
+
+  // Read query parameters on mount
+  useEffect(() => {
+    const from = searchParams.get("from");
+    const to = searchParams.get("to");
+    const statusesParam = searchParams.get("statuses");
+    const localesParam = searchParams.get("locales");
+
+    setFilters({
+      from: from || "",
+      to: to || "",
+      statuses: statusesParam
+        ? statusesParam.split(",").map((s) => {
+            const upper = s.toUpperCase();
+            return upper === "DRAFT" ? PostStatus.DRAFT : PostStatus.PUBLISHED;
+          })
+        : [],
+      locales: localesParam
+        ? localesParam.split(",").map((l) => {
+            const upper = l.toUpperCase();
+            return upper === "ZH" ? PostLocale.ZH : PostLocale.EN;
+          })
+        : [],
+    });
+  }, [searchParams]);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -72,7 +99,7 @@ export default function ExportPage() {
     <div className="space-y-10">
       {/* Page Header */}
       <header className="max-w-3xl space-y-4">
-        <h1 className="text-4xl font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-4xl leading-tight font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
           Export
         </h1>
         <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
@@ -178,6 +205,7 @@ export default function ExportPage() {
           <button
             onClick={handleExport}
             disabled={isExporting}
+            data-testid="export-button"
             className="inline-flex items-center gap-2 border border-zinc-900 bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
           >
             {isExporting ? "Exporting..." : "Export Content"}
@@ -190,9 +218,7 @@ export default function ExportPage() {
 
       {/* Documentation */}
       <div className="max-w-3xl space-y-4 border-l-2 border-zinc-200 pl-6 dark:border-zinc-800">
-        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-          Export Format
-        </h2>
+        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Export Format</h2>
         <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
           <p>
             Exported files follow the Markdown format specification documented in{" "}

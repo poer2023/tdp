@@ -1,6 +1,6 @@
 # Blog i18n Upgrade Roadmap
 
-**Goal**: English-first internationalization with Chinese under `/zh`, SEO optimization, self-hosted engagement features (likes/comments), and standard Markdown content operations.
+**Goal**: English-first internationalization with Chinese under `/zh`, SEO optimization, self-hosted engagement features (likes), and standard Markdown content operations.
 
 **Timeline**: 3 weeks
 
@@ -17,8 +17,8 @@
   - [x] Create `PostAlias` model (id, locale, oldSlug, postId, createdAt)
   - [x] Create `ReactionAggregate` model (postId unique, likeCount, updatedAt)
   - [x] Create `Reaction` model (id, postId, sessionKeyHash, createdAt)
-  - [x] Create `Comment` model (id, postId, parentId?, authorId, content, status, ipHash?, ua?, locale, createdAt)
   - [ ] Optional: Create `Tag` and `TagTranslation` models for localized tags
+
 - [x] Run `npx prisma migrate dev` and verify schema
 - [x] Run `npx prisma generate`
 
@@ -72,7 +72,7 @@
 
 ---
 
-## Week 2: Features (Likes, Comments, SEO, Routing)
+## Week 2: Features (Likes, SEO, Routing)
 
 ### 2.1 i18n Routing Structure ✅
 
@@ -112,48 +112,6 @@
   - [x] Visual feedback (animation, color change)
 - [x] Integrate into article page (both EN and ZH post pages)
 - [ ] Test like functionality and rate limiting (ready for dev server testing)
-
-### 2.4 Comments Feature (Login Required) ✅
-
-- [x] Create comments API routes
-  - [x] `GET /api/posts/[slug]/comments?cursor=&limit=` → paginated list
-  - [x] `POST /api/posts/[slug]/comments` → create comment (auth required)
-  - [x] Body: `{ content: string, parentId?: string }`
-  - [x] Return 201 with comment status (pending/published)
-- [x] Implement content sanitization
-  - [x] XSS cleaning (Markdown subset or HTML whitelist)
-  - [x] Validate content length and format (2000 char limit)
-- [x] Implement rate limiting for comments
-  - [x] 3 comments per 5 minutes per user
-  - [x] 20 comments per day per user
-  - [x] Optional: CAPTCHA trigger on limit exceeded
-- [x] Create comment UI components
-  - [x] Logged out: "Sign in to comment" prompt
-  - [x] Logged in: comment form
-  - [x] Comment list with pagination ("Load more")
-  - [x] Threaded replies (one level deep)
-  - [x] Show "awaiting moderation" for pending comments
-- [x] Integrate into article page (both EN and ZH post pages)
-- [ ] Test comment flow (post, pagination, threading) (ready for dev server testing)
-
-### 2.5 Comment Moderation System ✅
-
-- [x] Create admin moderation API
-  - [x] `POST /api/admin/comments/:id/moderate`
-  - [x] Actions: approve, hide, delete
-  - [x] Auth: admin role only
-- [x] Create admin moderation UI (`/admin/comments`)
-  - [x] Status-based filtering (Pending/Published/Hidden/All)
-  - [x] List comments with full context
-  - [x] Approve/hide/delete buttons inline
-  - [x] Show comment content, author, post context
-  - [x] Display user trust signals (approved comment count)
-  - [x] Post link navigation
-  - [x] Reply count indicators
-- [x] Implement moderation logic
-  - [x] Default: require approval for first-time commenters
-  - [x] Auto-approve for users with approved history (configurable)
-- [ ] Test moderation workflow (ready for testing)
 
 ### 2.6 SEO Enhancements ✅
 

@@ -65,6 +65,7 @@ export function LivePhotoPlayer({ imageSrc, videoSrc, alt, className = "" }: Liv
         muted
         playsInline
         loop
+        aria-hidden="true"
       />
 
       {/* LIVE 标识 - 克制的存在感 */}
@@ -72,9 +73,9 @@ export function LivePhotoPlayer({ imageSrc, videoSrc, alt, className = "" }: Liv
         LIVE
       </div>
 
-      {/* 交互提示 - 仅在未播放时显示 */}
+      {/* 交互提示 - 仅在未播放且悬停时显示 */}
       {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity duration-150 group-hover:bg-black/5 group-hover:opacity-100">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity delay-300 duration-150 group-hover:bg-black/5 group-hover:opacity-100">
           <div className="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-medium text-zinc-900 shadow-sm backdrop-blur-sm">
             悬停播放
           </div>

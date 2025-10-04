@@ -116,7 +116,7 @@ NEXT_PUBLIC_ANALYTICS_ID="UA-XXXXX-X"
 #### Optional: Security
 
 ```bash
-# Enable IP and user agent hashing for comment spam prevention
+# Optional: Enable IP and user agent hashing for security
 ENABLE_IP_HASHING="true"
 ```
 
@@ -161,7 +161,7 @@ npx prisma migrate deploy
 Applying migration `20240101000000_add_i18n_support`
 Applying migration `20240101000001_add_post_alias`
 Applying migration `20240101000002_add_reactions`
-Applying migration `20240101000003_add_comments`
+
 ...
 ✔ Migrations applied successfully
 ```
@@ -216,8 +216,7 @@ SELECT locale, COUNT(*) FROM "Post" GROUP BY locale;
 # Check PostAlias entries
 SELECT COUNT(*) FROM "PostAlias";
 
-# Check comment counts
-SELECT status, COUNT(*) FROM "Comment" GROUP BY status;
+
 
 # Exit
 \q
@@ -469,26 +468,14 @@ curl https://yourdomain.com/robots.txt
 5. Reload page
 6. Verify button remains disabled
 
-### 6. Comment Functionality
-
-1. Sign in with Google
-2. Navigate to a post
-3. Post a comment
-4. Verify "awaiting moderation" message (first-time commenter)
-5. As admin, navigate to `/admin/comments`
-6. Approve the comment
-7. Verify comment appears on the post
-
 ### 7. Admin Dashboard
 
 1. Sign in as admin
 2. Navigate to `/admin`
 3. Verify metrics display correctly:
    - Post counts (EN/ZH)
-   - Comment counts (Pending/Published)
 4. Test export: `/admin/export`
 5. Test import: `/admin/import`
-6. Test comment moderation: `/admin/comments`
 
 ### 8. PostAlias Redirects
 
@@ -645,8 +632,7 @@ Set up alerts for:
 
 ### Short-term (Week 1)
 
-- [ ] Review comment moderation queue daily
-- [ ] Monitor like and comment engagement metrics
+- [ ] Monitor like engagement metrics
 - [ ] Check for broken links or redirect loops
 - [ ] Verify hreflang tags in search results
 - [ ] Test language switching on all posts

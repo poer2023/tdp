@@ -7,6 +7,9 @@ import remarkGfm from "remark-gfm";
 import prisma from "@/lib/prisma";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
+// Ensure Node.js runtime for Prisma
+export const runtime = "nodejs";
+
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
@@ -49,7 +52,7 @@ export default async function EnglishPostPage({ params }: PageProps) {
 
       {/* Header */}
       <header className="mb-12">
-        <h1 className="text-4xl font-bold leading-tight text-zinc-900 dark:text-zinc-100 md:text-5xl">
+        <h1 className="text-4xl leading-tight font-bold text-zinc-900 md:text-5xl dark:text-zinc-100">
           {post.title}
         </h1>
 
@@ -65,16 +68,12 @@ export default async function EnglishPostPage({ params }: PageProps) {
               })}
             </time>
           )}
-          {post.tags && (
-            <span className="text-blue-600 dark:text-blue-400">{post.tags}</span>
-          )}
+          {post.tags && <span className="text-blue-600 dark:text-blue-400">{post.tags}</span>}
         </div>
 
         {/* Excerpt */}
         {post.excerpt && (
-          <p className="mt-6 text-lg text-zinc-600 dark:text-zinc-400">
-            {post.excerpt}
-          </p>
+          <p className="mt-6 text-lg text-zinc-600 dark:text-zinc-400">{post.excerpt}</p>
         )}
       </header>
 
@@ -91,18 +90,13 @@ export default async function EnglishPostPage({ params }: PageProps) {
       )}
 
       {/* Content */}
-      <div className="prose prose-zinc max-w-none dark:prose-invert">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {post.content}
-        </ReactMarkdown>
+      <div className="prose prose-zinc dark:prose-invert max-w-none">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
       </div>
 
       {/* Footer */}
       <footer className="mt-16 border-t border-zinc-200 pt-8 dark:border-zinc-800">
-        <Link
-          href="/posts"
-          className="text-blue-600 hover:underline dark:text-blue-400"
-        >
+        <Link href="/posts" className="text-blue-600 hover:underline dark:text-blue-400">
           ← Back to posts
         </Link>
       </footer>

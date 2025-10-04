@@ -2,14 +2,16 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { PostLocale, PostStatus } from "@prisma/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { PostLocale, PostStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { generateBlogPostingSchema, generateAlternateLinks } from "@/lib/seo";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { LikeButton } from "@/components/like-button";
-import { CommentsSection } from "@/components/comments-section";
+
+// Ensure Node.js runtime for Prisma
+export const runtime = "nodejs";
 
 type PageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -18,29 +20,24 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
 
+  // Only Chinese locale is supported
   if (locale !== "zh") {
-    return {
-      title: "页面未找到",
-    };
+    return { title: "Not Found" };
   }
 
-  const post = await prisma.post.findUnique({
+  const post = await prisma.post.findFirst({
     where: {
-      locale_slug: {
-        locale: PostLocale.ZH,
-        slug,
-      },
+      locale: PostLocale.ZH,
+      slug,
       status: PostStatus.PUBLISHED,
     },
   });
 
   if (!post) {
-    return {
-      title: "文章未找到",
-    };
+    return { title: "Post Not Found" };
   }
 
-  // Find alternate language version
+  // Find alternate English version
   let alternateSlug: string | undefined;
   if (post.groupId) {
     const alternatePost = await prisma.post.findFirst({
@@ -53,8 +50,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     alternateSlug = alternatePost?.slug;
   }
 
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL || ""}/zh/posts/${slug}`;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+  const url = `${baseUrl}/zh/posts/${slug}`;
   const alternateLinks = generateAlternateLinks(PostLocale.ZH, slug, alternateSlug);
+
+  // Use post cover or fallback to default OG image
+  const ogImage = post.coverImagePath
+    ? `${baseUrl}${post.coverImagePath}`
+    : `${baseUrl}/images/placeholder-cover.svg`;
 
   return {
     title: post.title,
@@ -62,9 +65,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: post.title,
       description: post.excerpt,
-      images: post.coverImagePath ? [post.coverImagePath] : undefined,
+      images: [ogImage],
+      url,
+      type: "article",
+      locale: "zh_CN",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [ogImage],
     },
     alternates: {
+      canonical: url,
       languages: alternateLinks,
     },
   };
@@ -73,26 +86,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function LocalizedPostPage({ params }: PageProps) {
   const { locale, slug } = await params;
 
-  // Validate locale
+  // Only Chinese locale is supported under /[locale] namespace currently
   if (locale !== "zh") {
     notFound();
   }
 
-  // Fetch post
-  const post = await prisma.post.findUnique({
+  const post = await prisma.post.findFirst({
     where: {
-      locale_slug: {
-        locale: PostLocale.ZH,
-        slug,
-      },
+      locale: PostLocale.ZH,
+      slug,
       status: PostStatus.PUBLISHED,
     },
     include: {
       author: {
-        select: {
-          name: true,
-          image: true,
-        },
+        select: { name: true, image: true },
       },
     },
   });
@@ -101,16 +108,18 @@ export default async function LocalizedPostPage({ params }: PageProps) {
     notFound();
   }
 
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL || ""}/zh/posts/${slug}`;
-  const schema = generateBlogPostingSchema(post, url);
+  // Generate JSON-LD schema for SEO
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+  const schema = generateBlogPostingSchema(post, `${baseUrl}/zh/posts/${post.slug}`);
 
   return (
-    <>
+    <article className="mx-auto max-w-3xl px-6 py-16">
+      {/* JSON-LD Schema for SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <article className="mx-auto max-w-3xl px-6 py-16">
+
       {/* Language Switcher */}
       <div className="mb-8">
         <LanguageSwitcher
@@ -122,15 +131,12 @@ export default async function LocalizedPostPage({ params }: PageProps) {
 
       {/* Header */}
       <header className="mb-12">
-        <h1 className="text-4xl font-bold leading-tight text-zinc-900 dark:text-zinc-100 md:text-5xl">
+        <h1 className="text-4xl leading-tight font-bold text-zinc-900 md:text-5xl dark:text-zinc-100">
           {post.title}
         </h1>
 
-        {/* Metadata */}
         <div className="mt-6 flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
-          {post.author?.name && (
-            <span>{post.author.name}</span>
-          )}
+          {post.author?.name && <span>{post.author.name}</span>}
           {post.publishedAt && (
             <time dateTime={post.publishedAt.toISOString()}>
               {new Date(post.publishedAt).toLocaleDateString("zh-CN", {
@@ -140,24 +146,12 @@ export default async function LocalizedPostPage({ params }: PageProps) {
               })}
             </time>
           )}
-          {post.tags && (
-            <span className="text-blue-600 dark:text-blue-400">
-              {post.tags}
-            </span>
-          )}
+          {post.tags && <span className="text-blue-600 dark:text-blue-400">{post.tags}</span>}
         </div>
-
-        {/* Excerpt */}
-        {post.excerpt && (
-          <p className="mt-6 text-lg text-zinc-600 dark:text-zinc-400">
-            {post.excerpt}
-          </p>
-        )}
       </header>
 
-      {/* Cover Image */}
       {post.coverImagePath && (
-        <div className="mb-12 relative aspect-video">
+        <div className="relative mb-12 aspect-video">
           <Image
             src={post.coverImagePath}
             alt={post.title}
@@ -167,50 +161,16 @@ export default async function LocalizedPostPage({ params }: PageProps) {
         </div>
       )}
 
-      {/* Content */}
       <div className="prose prose-zinc dark:prose-invert max-w-none">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {post.content}
-        </ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
       </div>
 
-      {/* Engagement Section */}
-      <div className="mt-12 border-t border-zinc-200 pt-8 dark:border-zinc-800">
-        <LikeButton slug={slug} locale="ZH" />
-      </div>
+      <footer className="mt-16 flex items-center justify-between border-t border-zinc-200 pt-8 dark:border-zinc-800">
+        <Link href="/zh/posts" className="text-blue-600 hover:underline dark:text-blue-400">
+          ← 返回文章列表
+        </Link>
+        <LikeButton slug={post.slug} locale="ZH" />
+      </footer>
     </article>
-
-    {/* Comments Section */}
-    <div className="mx-auto max-w-3xl px-6 pb-16">
-      <CommentsSection slug={slug} locale="ZH" />
-    </div>
-
-    {/* Footer */}
-    <footer className="mx-auto max-w-3xl border-t border-zinc-200 px-6 pt-8 dark:border-zinc-800">
-      <Link
-        href="/zh/posts"
-        className="text-blue-600 hover:underline dark:text-blue-400"
-      >
-        ← 返回文章列表
-      </Link>
-    </footer>
-    </>
   );
-}
-
-export async function generateStaticParams() {
-  const posts = await prisma.post.findMany({
-    where: {
-      locale: PostLocale.ZH,
-      status: PostStatus.PUBLISHED,
-    },
-    select: {
-      slug: true,
-    },
-  });
-
-  return posts.map((post) => ({
-    locale: "zh",
-    slug: post.slug,
-  }));
 }

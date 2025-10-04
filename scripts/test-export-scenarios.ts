@@ -182,8 +182,12 @@ async function main() {
 
     // Test 7: Validate file content
     console.log("\nTest 7: Validating file content...");
-    if (enFiles.length > 0) {
-      const firstEnFile = await zip1.file(enFiles[0])!.async("string");
+    if (enFiles.length > 0 && enFiles[0]) {
+      const zipEntry = zip1.file(enFiles[0]);
+      if (!zipEntry) {
+        throw new Error(`❌ Could not read file: ${enFiles[0]}`);
+      }
+      const firstEnFile = await zipEntry.async("string");
       if (!firstEnFile.startsWith("---")) {
         throw new Error("❌ Markdown file missing frontmatter");
       }

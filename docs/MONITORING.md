@@ -229,7 +229,6 @@ LIMIT 10;
 
 - Comments per day
 - Comment spam rejection rate
-- Average time to first comment approval
 
 **Target**:
 
@@ -249,7 +248,7 @@ GROUP BY DATE("createdAt"), status
 ORDER BY date DESC
 LIMIT 30;
 
--- Pending comment age
+
 SELECT
   id,
   "content",
@@ -259,7 +258,7 @@ FROM "Comment"
 WHERE status = 'PENDING'
 ORDER BY "createdAt" ASC;
 
--- Spam rate (comments hidden within 24h of creation)
+
 SELECT
   COUNT(*) FILTER (WHERE status = 'HIDDEN') * 100.0 / COUNT(*) as spam_rate
 FROM "Comment"
@@ -268,7 +267,6 @@ WHERE "createdAt" > NOW() - INTERVAL '7 days';
 
 **Alert if**:
 
-- Pending comments >24 hours old
 - Spam rate >10%
 - Comment rate drops >50% week-over-week
 
@@ -276,7 +274,6 @@ WHERE "createdAt" > NOW() - INTERVAL '7 days';
 
 **What to measure**:
 
-- % of comments auto-approved (vs manual approval)
 - Returning user engagement
 
 **Target**: >70% auto-approved after 2 weeks
@@ -293,7 +290,7 @@ WHERE "createdAt" > NOW() - INTERVAL '7 days';
 -- Returning commenters
 SELECT
   "authorId",
-  COUNT(*) as comment_count
+
 FROM "Comment"
 WHERE status IN ('PUBLISHED', 'PENDING')
 GROUP BY "authorId"
@@ -304,7 +301,6 @@ ORDER BY comment_count DESC;
 **Alert if**:
 
 - Auto-approval rate <60% after 4 weeks
-- Returning commenter rate <20%
 
 ---
 
@@ -545,12 +541,6 @@ export function reportWebVitalsMetric(metric) {
 - **Channel**: Email + Slack
 - **Response**: Check database queries, optimize if needed
 
-#### Comment Moderation Queue Backlog
-
-- **Trigger**: >20 pending comments >24 hours old
-- **Channel**: Email
-- **Response**: Review and approve/hide comments
-
 #### SEO Issues
 
 - **Trigger**: Indexed pages drop >10%
@@ -649,7 +639,7 @@ export default async function MonitoringPage() {
     uptime,
     errorRate,
     likeCount,
-    commentCount,
+
     // ... fetch metrics
   ] = await Promise.all([/* queries */]);
 
@@ -672,7 +662,6 @@ export default async function MonitoringPage() {
 
 **SEV2 - High**
 
-- Partial outage (e.g., comments not working)
 - Major performance degradation
 - SEO critical issues (site de-indexed)
 - Response: Within 1 hour
@@ -745,20 +734,19 @@ export default async function MonitoringPage() {
 
 ### Daily
 
-- [ ] Check pending comment count (<10)
 - [ ] Review error logs for new issues
 - [ ] Check uptime status (>99.9%)
 
 ### Weekly
 
 - [ ] Review SEO metrics (Search Console)
-- [ ] Analyze engagement trends (likes, comments)
+- [ ] Analyze engagement trends (likes)
 - [ ] Check performance metrics (LCP, TTFB)
 - [ ] Review slow query log
 
 ### Monthly
 
-- [ ] Run full test suite (export/import, SEO, comments)
+- [ ] Run full test suite (export/import, SEO)
 - [ ] Review alert configuration and adjust thresholds
 - [ ] Analyze traffic trends and user behavior
 - [ ] Review and update documentation

@@ -94,7 +94,7 @@ export default function ImportPage() {
     <div className="space-y-10">
       {/* Page Header */}
       <header className="max-w-3xl space-y-4">
-        <h1 className="text-4xl font-semibold leading-tight tracking-tight text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-4xl leading-tight font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
           Import
         </h1>
         <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
@@ -114,6 +114,7 @@ export default function ImportPage() {
               onChange={handleFileChange}
               className="hidden"
               id="file-upload"
+              data-testid="zip-file-input"
             />
             <label
               htmlFor="file-upload"
@@ -134,6 +135,7 @@ export default function ImportPage() {
             <button
               onClick={handleDryRun}
               disabled={isProcessing}
+              data-testid="preview-import-button"
               className="inline-flex items-center gap-2 border border-zinc-900 bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
             >
               {isProcessing ? "Processing..." : "Preview Import"}
@@ -150,27 +152,39 @@ export default function ImportPage() {
         <div className="max-w-3xl space-y-6">
           <div className="border-l-2 border-zinc-900 pl-6 dark:border-zinc-100">
             <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Preview</h2>
-            <div className="mt-4 space-y-2 text-sm">
+            <div className="mt-4 space-y-2 text-sm" data-testid="import-stats">
               <p className="text-zinc-600 dark:text-zinc-400">
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <span
+                  className="font-medium text-zinc-900 dark:text-zinc-100"
+                  data-testid="created-count"
+                >
                   {dryRunResult.summary.created}
                 </span>{" "}
                 posts will be created
               </p>
               <p className="text-zinc-600 dark:text-zinc-400">
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <span
+                  className="font-medium text-zinc-900 dark:text-zinc-100"
+                  data-testid="updated-count"
+                >
                   {dryRunResult.summary.updated}
                 </span>{" "}
                 posts will be updated
               </p>
               <p className="text-zinc-600 dark:text-zinc-400">
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <span
+                  className="font-medium text-zinc-900 dark:text-zinc-100"
+                  data-testid="skipped-count"
+                >
                   {dryRunResult.summary.skipped}
                 </span>{" "}
                 files skipped
               </p>
               {dryRunResult.summary.errors > 0 && (
-                <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                <p
+                  className="font-medium text-zinc-900 dark:text-zinc-100"
+                  data-testid="error-count"
+                >
                   {dryRunResult.summary.errors} errors detected
                 </p>
               )}
@@ -182,15 +196,16 @@ export default function ImportPage() {
             <table className="w-full border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                  <th className="pb-3 pr-4 font-medium text-zinc-900 dark:text-zinc-100">File</th>
-                  <th className="pb-3 pr-4 font-medium text-zinc-900 dark:text-zinc-100">
-                    Action
-                  </th>
-                  <th className="pb-3 pr-4 font-medium text-zinc-900 dark:text-zinc-100">Title</th>
+                  <th className="pr-4 pb-3 font-medium text-zinc-900 dark:text-zinc-100">File</th>
+                  <th className="pr-4 pb-3 font-medium text-zinc-900 dark:text-zinc-100">Action</th>
+                  <th className="pr-4 pb-3 font-medium text-zinc-900 dark:text-zinc-100">Title</th>
                   <th className="pb-3 font-medium text-zinc-900 dark:text-zinc-100">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              <tbody
+                className="divide-y divide-zinc-200 dark:divide-zinc-800"
+                data-testid="file-list"
+              >
                 {dryRunResult.details.map((detail, idx) => (
                   <tr key={idx}>
                     <td className="py-3 pr-4 font-mono text-xs text-zinc-600 dark:text-zinc-400">
@@ -204,7 +219,10 @@ export default function ImportPage() {
                     </td>
                     <td className="py-3">
                       {detail.error ? (
-                        <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                        <span
+                          className="text-xs text-zinc-600 dark:text-zinc-400"
+                          data-testid="error"
+                        >
                           {detail.error}
                         </span>
                       ) : (
@@ -240,9 +258,7 @@ export default function ImportPage() {
       {/* Apply Results */}
       {applyResult && (
         <div className="max-w-3xl space-y-4 border-l-2 border-zinc-900 pl-6 dark:border-zinc-100">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-            Import Complete
-          </h2>
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Import Complete</h2>
           <div className="space-y-2 text-sm">
             <p className="text-zinc-600 dark:text-zinc-400">
               Created {applyResult.summary.created} posts
@@ -284,16 +300,30 @@ export default function ImportPage() {
 
 function ActionBadge({ action }: { action: string }) {
   const config = {
-    create: { label: "Create", className: "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" },
-    update: { label: "Update", className: "bg-zinc-200 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100" },
-    skip: { label: "Skip", className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400" },
-    error: { label: "Error", className: "bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100" },
+    create: {
+      label: "Create",
+      className: "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900",
+    },
+    update: {
+      label: "Update",
+      className: "bg-zinc-200 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100",
+    },
+    skip: {
+      label: "Skip",
+      className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400",
+    },
+    error: {
+      label: "Error",
+      className: "bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100",
+    },
   };
 
   const { label, className } = config[action as keyof typeof config] || config.skip;
 
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${className}`}>
+    <span
+      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${className}`}
+    >
       {label}
     </span>
   );

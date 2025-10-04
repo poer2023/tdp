@@ -1,11 +1,10 @@
 # Admin Guide
 
-Complete guide for administrators managing the blog content, comments, and operations.
+Complete guide for administrators managing the blog content and operations.
 
 ## Table of Contents
 
 - [Content Management](#content-management)
-- [Comment Moderation](#comment-moderation)
 - [Export Operations](#export-operations)
 - [Import Operations](#import-operations)
 - [Best Practices](#best-practices)
@@ -20,7 +19,6 @@ Complete guide for administrators managing the blog content, comments, and opera
 2. The dashboard displays:
    - Total posts (EN/ZH breakdown)
    - Published vs draft counts
-   - Comment moderation queue status
    - Quick action links
 
 ### Post Management
@@ -42,76 +40,7 @@ Posts are typically created through your content management workflow. For bulk o
 
 ---
 
-## Comment Moderation
-
-### Accessing the Moderation Queue
-
-Navigate to `/admin/comments` to view all comments.
-
-### Moderation Workflow
-
-#### First-Time Commenters
-
-1. New users' first comment automatically enters **PENDING** status
-2. You'll see "awaiting moderation" in the queue
-3. Review the comment content and author information
-4. Take action: **Approve**, **Hide**, or **Delete**
-
-#### Returning Users
-
-- Users with at least one approved comment have subsequent comments **auto-approved**
-- This reduces moderation load while maintaining quality
-- You can still hide or delete auto-approved comments if needed
-
-### Moderation Actions
-
-#### Approve (PENDING → PUBLISHED)
-
-```
-Action: Click "Approve" button
-Result: Comment becomes visible to all users
-Effect: User gains trusted status for future comments
-```
-
-#### Hide (any status → HIDDEN)
-
-```
-Action: Click "Hide" button
-Result: Comment hidden from public view
-Effect: User does not lose trusted status
-Use Case: Temporarily hide comments without permanent deletion
-```
-
-#### Delete
-
-```
-Action: Click "Delete" button (with confirmation)
-Result: Comment permanently removed from database
-Effect: Cannot be undone
-Use Case: Spam, abuse, or policy violations
-```
-
-### Status Filtering
-
-Use the tabs to filter comments:
-
-- **Pending**: New comments awaiting your review
-- **Published**: All visible comments (including auto-approved)
-- **Hidden**: Comments you've hidden
-- **All**: Complete list regardless of status
-
-### User Trust Signals
-
-Each comment displays trust indicators:
-
-- **Approved count**: Number of previously approved comments from this user
-- **Example**: "3 approved" means the user has 3 published comments
-
-**Interpreting Trust Signals:**
-
-- 0 approved = First-time commenter (requires review)
-- 1+ approved = Returning user (auto-approval enabled)
-- 10+ approved = Highly engaged, trusted user
+<!-- Comment moderation feature has been removed. -->
 
 ---
 
@@ -427,13 +356,6 @@ Verification: Language switcher appears on both EN and ZH posts
 3. **Tag strategically**: 3-5 tags per post, consistent vocabulary
 4. **Excerpt quality**: Write compelling 150-200 character excerpts
 
-### Moderation Workflow
-
-1. **Check daily**: Review pending comments at least once per day
-2. **Respond quickly**: Approve or hide within 24 hours
-3. **Consistent standards**: Apply the same moderation criteria to all comments
-4. **Trust signals**: Use approved count to identify valuable contributors
-
 ### Export/Import Operations
 
 1. **Regular exports**: Create weekly backups via export
@@ -453,7 +375,6 @@ Verification: Language switcher appears on both EN and ZH posts
 1. **Image optimization**: Compress images before upload
 2. **Content length**: Aim for 1000-3000 words per post
 3. **Tag cleanup**: Remove unused tags periodically
-4. **Comment archiving**: Hide old spam comments instead of deleting
 
 ---
 
@@ -473,11 +394,6 @@ Verification: Language switcher appears on both EN and ZH posts
 
 **Cause**: Duplicate slug in same locale
 **Solution**: System auto-resolves with -2 suffix, or manually edit slug
-
-### "Comments not appearing"
-
-**Cause**: Status is PENDING or HIDDEN
-**Solution**: Check `/admin/comments` and approve if needed
 
 ### "Export contains no files"
 

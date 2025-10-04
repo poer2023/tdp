@@ -16,13 +16,12 @@ When you sign in with Google, we collect:
 - **Email**: Your Google account email address
 - **Profile Picture**: Your Google account profile picture URL (optional)
 
-**Why we collect it**: To identify you as a commenter and display your identity with your comments.
+**Why we collect it**: To authenticate administrators for the dashboard and manage sessions.
 
 **How we use it**:
 
-- Display your name and picture with your comments
-- Identify returning commenters for auto-approval
-- Contact you if necessary regarding your comments
+- Verify admin access权限
+- Manage your authenticated session
 
 **Storage**: Stored in our secure database
 
@@ -49,32 +48,7 @@ When you like a post, we collect:
 
 **Anonymity**: We cannot link hashed session keys back to your identity or IP address.
 
-### 3. Comment Data
-
-When you post a comment, we collect:
-
-- **Comment Content**: The text of your comment
-- **Author Information**: Your name, email, and profile picture from Google
-- **Post Association**: Which post you commented on
-- **Parent Comment**: If replying, which comment you replied to
-- **Timestamp**: When you posted the comment
-- **Locale**: Language of the post you commented on (EN or ZH)
-- **Optional Security Data**:
-  - **IP Hash**: SHA-256 hash of your IP address (if enabled, for spam prevention)
-  - **User Agent Hash**: SHA-256 hash of your browser user agent (if enabled)
-
-**Why we collect it**: To display comments, moderate content, and prevent spam.
-
-**How we use it**:
-
-- Display your comments on the blog
-- Moderate comments for spam and abuse
-- Track returning commenters for auto-approval
-- Investigate spam and abuse patterns (hashed data only)
-
-**Storage**: Stored in our secure database
-
-**Hashed Data**: IP and user agent are one-way hashed. We cannot reverse the hash to obtain your original IP address or user agent.
+<!-- Comments feature removed. -->
 
 ### 4. Server Logs (Temporary)
 
@@ -108,15 +82,8 @@ Our web server may temporarily log:
 
 ### Authentication
 
-- Identify you as a signed-in user
-- Display your name and picture with your comments
+- Identify you as a signed-in administrator
 - Manage your session (keep you signed in)
-
-### Content Moderation
-
-- Review first-time comments for spam and abuse
-- Auto-approve comments from returning users with approved history
-- Hide or delete comments that violate our policies
 
 ### Like Functionality
 
@@ -125,7 +92,6 @@ Our web server may temporarily log:
 
 ### Security and Spam Prevention
 
-- Enforce rate limits (3 comments per 5 min, 20 per day)
 - Detect and prevent spam patterns (using hashed data)
 - Investigate abuse and malicious activity
 
@@ -177,7 +143,6 @@ We implement security measures to protect your data:
 ### Access Control
 
 - Only authorized administrators can access user data
-- Admin authentication required for comment moderation
 - Database access restricted to application services
 
 ### Monitoring
@@ -202,10 +167,7 @@ You can request deletion of your data:
 
 1. Contact us at: admin@example.com
 2. Provide your email address used for sign-in
-3. We will delete:
-   - All your comments
-   - Your profile information
-   - Associated hashed security data
+3. We will delete your profile information and associated hashed security data
 4. Processing time: Within 7 days
 
 **Note**: Deletion is permanent and cannot be undone.
@@ -213,7 +175,7 @@ You can request deletion of your data:
 ### Opt-Out
 
 - **Likes**: Don't click like buttons (no tracking if you don't interact)
-- **Comments**: Don't sign in or post comments
+
 - **Cookies**: You can clear cookies in your browser settings (will sign you out)
 
 ## Cookies
@@ -255,11 +217,6 @@ Our blog is not directed at children under 13 years of age. We do not knowingly 
 If you believe a child under 13 has provided us with personal information, please contact us immediately, and we will delete the information.
 
 ## Data Retention
-
-### Comments
-
-- Stored indefinitely unless you request deletion
-- Administrators may delete spam or policy-violating comments at any time
 
 ### Like Data
 
@@ -303,10 +260,9 @@ For questions, concerns, or data requests:
 
 **What we collect**:
 
-- Your Google name, email, and profile picture when you sign in
-- Your comments and when you posted them
+- Your Google name, email, and profile picture when you sign in (admins)
 - Hashed session keys for like tracking (anonymous)
-- Optional: Hashed IP and user agent for spam prevention
+- Optional: Hashed IP and user agent for security
 
 **What we don't collect**:
 
@@ -317,9 +273,8 @@ For questions, concerns, or data requests:
 
 **How we use it**:
 
-- Display your comments with your name and picture
+- Authenticate administrators and manage sessions
 - Prevent duplicate likes
-- Moderate comments for spam
 - Enforce rate limits
 
 **Your rights**:

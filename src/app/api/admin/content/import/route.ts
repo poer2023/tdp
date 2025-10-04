@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/auth";
 import { UserRole } from "@prisma/client";
 import { importContent } from "@/lib/content-import";
+
+// Ensure Node.js runtime for Prisma-backed import
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   // Check authentication and admin role

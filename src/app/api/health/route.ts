@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Health check hits the database – use Node runtime
+export const runtime = "nodejs";
+
 export async function GET() {
   try {
     // 执行简单的数据库查询来检查连接状态

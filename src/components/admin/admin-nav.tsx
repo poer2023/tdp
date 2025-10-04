@@ -24,17 +24,8 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "Engagement",
-    items: [
-      { label: "Comments", href: "/admin/comments", description: "Moderation queue" },
-    ],
-  },
-  {
     title: "Operations",
-    items: [
-      { label: "Export", href: "/admin/export", description: "Content export" },
-      { label: "Import", href: "/admin/import", description: "Content import" },
-    ],
+    items: [{ label: "Content I/O", href: "/admin/content-io", description: "Import & Export" }],
   },
 ];
 
@@ -61,7 +52,7 @@ export function AdminNav() {
           {navSections.map((section, idx) => (
             <div key={section.title} className={idx > 0 ? "mt-8" : ""}>
               {/* Section Title */}
-              <h2 className="px-3 text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <h2 className="px-3 text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
                 {section.title}
               </h2>
 
@@ -78,7 +69,7 @@ export function AdminNav() {
                         href={item.href}
                         className={`group block rounded-lg px-3 py-2.5 transition-all duration-150 ${
                           isActive
-                            ? "bg-zinc-100 dark:bg-zinc-900"
+                            ? "border-l-2 border-zinc-900 bg-zinc-50 dark:border-zinc-100 dark:bg-zinc-900/60"
                             : "hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
                         }`}
                       >

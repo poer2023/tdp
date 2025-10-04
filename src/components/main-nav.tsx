@@ -8,26 +8,27 @@ export function MainNav() {
 
   // Detect current locale from pathname
   const isZhLocale = pathname.startsWith("/zh");
-  const locale = isZhLocale ? "/zh" : "";
+  const locale = isZhLocale ? "zh" : "en";
 
   const links = [
     {
-      href: `${locale}/posts`,
+      href: `/${locale}/posts`,
       label: isZhLocale ? "博客" : "Blog",
       match: "/posts",
     },
     {
-      href: "/gallery",
+      href: `/${locale}/gallery`,
       label: isZhLocale ? "相册" : "Gallery",
       match: "/gallery",
     },
   ];
 
   return (
-    <nav className="flex items-center gap-8">
+    <nav className="flex items-center gap-8" role="navigation" aria-label="Main navigation">
       <Link
-        href={locale || "/"}
+        href={`/${locale}`}
         className="text-lg font-semibold text-zinc-900 dark:text-zinc-100"
+        aria-label="Home"
       >
         Hao
       </Link>
@@ -42,6 +43,7 @@ export function MainNav() {
                 ? "font-medium text-zinc-900 dark:text-zinc-100"
                 : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             }`}
+            aria-current={isActive ? "page" : undefined}
           >
             {link.label}
           </Link>

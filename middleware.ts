@@ -1,76 +1,87 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-import prisma from "@/lib/prisma";
-import { PostLocale } from "@prisma/client";
+import { pinyin } from "pinyin-pro";
 
-export async function middleware(req: NextRequest) {
-  const { pathname, searchParams } = req.nextUrl;
+// Unified middleware
+// - Adds `x-pathname` header for locale detection in layout
+// - Enforces ADMIN role for `/admin/*` pages
+export async function middleware(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
 
-  // Handle PostAlias redirects for old slugs
+  // Always attach pathname header for i18n html lang resolution
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathname);
+
+  // Handle Chinese slug redirects (PostAlias-like behavior) for posts
   // Matches: /posts/:slug or /zh/posts/:slug
   const postPathMatch = pathname.match(/^\/(zh\/)?posts\/([^/]+)$/);
   if (postPathMatch) {
-    const locale = postPathMatch[1] ? PostLocale.ZH : PostLocale.EN;
-    const slug = postPathMatch[2];
+    const hasZhPrefix = Boolean(postPathMatch[1]);
+    const rawSlug = postPathMatch[2] || "";
 
-    if (!slug) {
-      return NextResponse.next();
-    }
+    try {
+      const decoded = decodeURIComponent(rawSlug);
+      // If slug contains CJK characters, redirect to pinyin slug
+      if (/[\u4e00-\u9fa5]/.test(decoded)) {
+        // Basic slugify using pinyin-pro and ASCII cleanup
+        let ascii = decoded;
+        try {
+          ascii =
+            (pinyin(decoded, { toneType: "none", type: "string", v: true }) as string) || decoded;
+        } catch {
+          ascii = decoded;
+        }
+        const normalized = ascii
+          .toLowerCase()
+          .normalize("NFKD")
+          .replace(/[^\w\s-]/g, "")
+          .trim()
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-");
 
-    // Check if this is an old slug that needs redirect
-    const alias = await prisma.postAlias.findUnique({
-      where: {
-        locale_oldSlug: {
-          locale,
-          oldSlug: slug,
-        },
-      },
-      include: {
-        post: {
-          select: {
-            slug: true,
-          },
-        },
-      },
-    });
-
-    if (alias?.post) {
-      const newPath =
-        locale === PostLocale.ZH ? `/zh/posts/${alias.post.slug}` : `/posts/${alias.post.slug}`;
-
-      const redirectUrl = new URL(newPath, req.nextUrl.origin);
-
-      // Preserve query parameters
-      searchParams.forEach((value, key) => {
-        redirectUrl.searchParams.set(key, value);
-      });
-
-      // Log redirect for monitoring
-      console.log(`[PostAlias 301] ${pathname} → ${newPath}`);
-
-      return NextResponse.redirect(redirectUrl, { status: 301 });
+        if (normalized && normalized !== rawSlug) {
+          const newPath = hasZhPrefix ? `/zh/posts/${normalized}` : `/posts/${normalized}`;
+          const redirectUrl = new URL(newPath, request.nextUrl.origin);
+          // Preserve query parameters
+          searchParams.forEach((value, key) => redirectUrl.searchParams.set(key, value));
+          return NextResponse.redirect(redirectUrl, { status: 301 });
+        }
+      }
+    } catch {
+      // If decode fails, continue without redirect
     }
   }
 
-  // Admin authentication check
-  if (!pathname.startsWith("/admin")) {
-    return NextResponse.next();
+  // Protect admin routes
+  if (pathname.startsWith("/admin")) {
+    const token = await getToken({ req: request });
+
+    // Unauthenticated → redirect to login (tests accept 302 here)
+    if (!token) {
+      const redirectUrl = new URL("/login", request.nextUrl.origin);
+      const q = searchParams.toString();
+      redirectUrl.searchParams.set("callbackUrl", `${pathname}${q ? `?${q}` : ""}`);
+      return NextResponse.redirect(redirectUrl, { status: 302 });
+    }
+
+    // Authenticated but not ADMIN → return 403 (tests expect 401/403)
+    if ((token as { role?: string })?.role !== "ADMIN") {
+      return new NextResponse("Forbidden", { status: 403, headers: requestHeaders });
+    }
   }
 
-  const token = await getToken({ req });
-  if (!token) {
-    const redirectUrl = new URL("/login", req.nextUrl.origin);
-    redirectUrl.searchParams.set(
-      "callbackUrl",
-      `${pathname}${searchParams.toString() ? `?${searchParams}` : ""}`
-    );
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  return NextResponse.next();
+  // Default pass-through with augmented headers
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/posts/:slug*", "/zh/posts/:slug*"],
+  matcher: [
+    // Run on all pages except API/static/image assets
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };

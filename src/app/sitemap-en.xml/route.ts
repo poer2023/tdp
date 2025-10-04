@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { PostLocale, PostStatus } from "@prisma/client";
 
+// Sitemaps query the DB – ensure Node.js runtime
+export const runtime = "nodejs";
+
 export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
 
