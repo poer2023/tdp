@@ -152,6 +152,8 @@ open http://localhost:3000
 
 #### DevOps 文档
 
+- **分支管理策略**：[docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md) - GitHub Flow 工作流程
+- **分支保护配置**：[docs/BRANCH_PROTECTION_SETUP.md](docs/BRANCH_PROTECTION_SETUP.md) - 分支保护规则设置指南
 - **CI/CD 配置**：[claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md](claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md) - E2E CI/CD 完整配置指南
 - **部署指南**：[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - 生产部署步骤
 - **Docker 构建**：[docs/docker-build.md](docs/docker-build.md) - 本地构建与推送
@@ -195,7 +197,19 @@ open http://localhost:3000
 - **Playwright Config**：`playwright.config.ts` - 5 browser projects，自动启动服务器
 - **Critical Config**：`playwright.critical.config.ts` - Chromium only，快速验证
 
-## 生产部署
+## 开发与部署工作流
+
+### 分支管理策略
+
+本项目采用 **GitHub Flow** 分支策略：
+
+- **主分支**: `main` - 始终保持可部署状态，受分支保护
+- **功能分支**: `feature/xxx`, `fix/xxx` - 短期分支，完成后立即合并并删除
+- **工作流程**: 从 main 创建分支 → 开发 → PR → CI 验证 → 合并 → 删除分支
+
+详细说明见 [docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md)
+
+### 部署流程
 
 **推荐工作流**：分支开发 + PR 合并 + 受控发布
 
