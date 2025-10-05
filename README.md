@@ -106,12 +106,12 @@ open http://localhost:3000
 
 ### 测试
 
-- 单元测试：`npm run test`、`npm run test:run`
-- E2E 测试：`npm run test:e2e`
-- E2E 本地与 CI 最佳实践：见根目录文档
-  - 本地分阶段全量执行（方案 B）手册：`LOCAL_E2E_SCHEME_B_PLAYBOOK.md`
-  - 一次性全量执行与 CI/CD 最佳实践：`E2E_BEST_PRACTICES_CI_CD.md`
-- i18n 功能测试：
+- **单元测试**：`npm run test`、`npm run test:run`
+- **E2E 测试**：
+  - 全量测试：`npm run test:e2e` (314 tests)
+  - 关键路径：`npm run test:e2e:critical` (60-80 tests)
+  - 详细指南：见 [docs/E2E_TESTING_GUIDE.md](docs/E2E_TESTING_GUIDE.md)
+- **i18n 功能测试**：
   - 重定向测试：`npx tsx scripts/test-redirect.ts`
   - 点赞功能测试：`npx tsx scripts/test-likes.ts`
   - 导出场景测试：`npx tsx scripts/test-export-scenarios.ts`
@@ -137,27 +137,63 @@ open http://localhost:3000
 
 ### 文档
 
+#### 用户文档
+
 - **用户指南**：[docs/USER_GUIDE.md](docs/USER_GUIDE.md) - 点赞、语言切换
 - **管理员指南**：[docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) - 导出、导入
-- **部署指南**：[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - 生产部署步骤
-- **监控指南**：[docs/MONITORING.md](docs/MONITORING.md) - 上线后监控
-- **测试指南**：[docs/TESTING.md](docs/TESTING.md) - 自动化测试
-- **手动测试**：[docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) - 性能、安全、可访问性
-- **配置选项**：[docs/CONFIGURATION.md](docs/CONFIGURATION.md) - 功能配置
 - **隐私政策**：[docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) - 数据处理说明
+
+#### 开发者文档
+
+- **E2E 测试指南**：[docs/E2E_TESTING_GUIDE.md](docs/E2E_TESTING_GUIDE.md) - Playwright E2E 测试完整指南
+- **E2E 本地执行**：[LOCAL_E2E_SCHEME_B_PLAYBOOK.md](LOCAL_E2E_SCHEME_B_PLAYBOOK.md) - 本地分阶段执行方案
+- **测试指南**：[docs/TESTING.md](docs/TESTING.md) - 自动化测试概览
+- **手动测试**：[docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) - 性能、安全、可访问性
+
+#### DevOps 文档
+
+- **CI/CD 配置**：[claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md](claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md) - E2E CI/CD 完整配置指南
+- **部署指南**：[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - 生产部署步骤
+- **Docker 构建**：[docs/docker-build.md](docs/docker-build.md) - 本地构建与推送
+- **Docker 部署**：[docs/docker-deployment.md](docs/docker-deployment.md) - Docker 生产部署
+- **自托管部署**：[docs/self-host-deployment.md](docs/self-host-deployment.md) - 自托管部署指南
+- **监控指南**：[docs/MONITORING.md](docs/MONITORING.md) - 上线后监控
+
+#### 配置文档
+
+- **配置选项**：[docs/CONFIGURATION.md](docs/CONFIGURATION.md) - 功能配置
 - **内容格式**：[docs/CONTENT_FORMAT.md](docs/CONTENT_FORMAT.md) - Markdown 导入/导出规范
-- **完成总结**：[docs/i18n-COMPLETION-SUMMARY.md](docs/i18n-COMPLETION-SUMMARY.md) - i18n 项目总结
+
+#### 项目历史
+
+- **i18n 完成总结**：[docs/i18n-COMPLETION-SUMMARY.md](docs/i18n-COMPLETION-SUMMARY.md) - i18n 项目总结
+- **历史文档归档**：[docs/archive/](docs/archive/) - 已完成阶段的开发文档
 
 ### Docker 与部署
 
 - Docker 与编排：`Dockerfile`、`docker-compose.yml`、`docker/entrypoint.sh`
-- 部署文档：`docs/docker-deployment.md`、`docs/self-host-deployment.md`
-- Docker 构建：`docs/docker-build.md`
+- 部署文档：见上方"文档 → DevOps 文档"章节
 
-## CI / 测试
+## CI/CD 测试流程
 
-- CI 工作流：`.github/workflows/ci.yml`（Lint/TypeCheck/单测/构建）、`.github/workflows/e2e.yml`（Playwright）
-- E2E 启动器：`playwright.config.ts` 会在测试前构建并启动本地服务器
+### 工作流配置
+
+- **CI Critical Path** (`.github/workflows/ci-critical.yml`)：
+  - 触发：每次 PR 和 push
+  - 执行：Lint + TypeCheck + 单测 + 关键 E2E (~60-80 tests) + Build
+  - 用途：**阻塞式验证**，失败则阻止合并
+
+- **E2E Full Suite** (`.github/workflows/e2e.yml`)：
+  - 触发：main 分支 push（非文档变更） + 每日 2AM + 手动触发
+  - 执行：全量 314 tests，4-way sharding，Chromium only
+  - 用途：**非阻塞式检测**，失败创建 GitHub Issue
+
+详细配置说明见 [claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md](claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md)
+
+### 测试配置
+
+- **Playwright Config**：`playwright.config.ts` - 5 browser projects，自动启动服务器
+- **Critical Config**：`playwright.critical.config.ts` - Chromium only，快速验证
 
 ## 生产部署
 
@@ -290,14 +326,13 @@ gh run watch
 - Docker 部署说明：[`docs/docker-deployment.md`](docs/docker-deployment.md)
 - 自托管部署：[`docs/self-host-deployment.md`](docs/self-host-deployment.md)
 
-## 路线图 / 待办
+## 开发路线图
 
-详细的部署与改造待办清单见根目录 `codex.md`。其中包括：
+主要改进方向：
 
 - 健康检查接口与 Compose 健康探针
 - Docker 非 root 运行
-- 镜像构建与发布（CI/CD）、镜像安全扫描/签名
+- 镜像安全扫描/签名
 - `.env.example` 模板补充
-- （建议）Next.js `output: 'standalone'` 优化镜像体积
 
-如需部署到生产环境，请优先阅读 `docs/docker-deployment.md` 与 `docs/self-host-deployment.md`。
+如需部署到生产环境，请优先阅读 [docs/docker-deployment.md](docs/docker-deployment.md) 与 [docs/self-host-deployment.md](docs/self-host-deployment.md)。
