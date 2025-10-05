@@ -1,13 +1,20 @@
 name: E2E Full Suite (Non-blocking)
 
 on:
-  schedule:
-    - cron: "0 */6 * * *" # Every 6 hours
-  workflow_dispatch: # Allow manual trigger
+  # ⭐ Core trigger: Run when main branch has business code changes
   push:
     branches: [main]
-    paths:
-      - "e2e/**" # Only run when E2E tests change
+    paths-ignore:
+      - "**.md" # Ignore documentation changes
+      - "docs/**"
+      - ".github/workflows/**" # Ignore workflow configuration changes
+
+  # 🛡️ Safety net: Daily scheduled run at 2 AM Beijing time
+  schedule:
+    - cron: "0 18 * * *" # UTC 18:00 = Beijing 02:00
+
+  # 🔧 Manual trigger: Run on-demand when needed
+  workflow_dispatch:
 
 jobs:
   e2e-tests:
