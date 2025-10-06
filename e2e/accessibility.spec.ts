@@ -77,14 +77,9 @@ test.describe("Keyboard Navigation", () => {
     const firstLink = page.locator('a[href*="/posts/"]').first();
     await firstLink.focus();
 
-    // Press Enter
-    const navigationPromise = page.waitForNavigation();
+    // Press Enter and wait for URL change (SPA navigation)
     await page.keyboard.press("Enter");
-
-    await navigationPromise;
-
-    // Should navigate to post
-    expect(page.url()).toContain("/posts/");
+    await expect(page).toHaveURL(/\/(en|zh)?\/posts\//);
   });
 
   test("should not trap focus outside modals", async ({ page }) => {
