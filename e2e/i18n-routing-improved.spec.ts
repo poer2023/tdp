@@ -8,16 +8,10 @@ import { waitForNetworkIdle } from "./helpers/wait-helpers";
 test.describe("i18n Routing", () => {
   test("should redirect root path to locale-specific path", async ({ page }) => {
     await page.goto("/");
-    await waitForNetworkIdle(page);
-
-    // Root path should redirect to /en or /zh based on browser language
-    const url = page.url();
-    const hasLocale = url.includes("/zh") || url.includes("/en");
-    expect(hasLocale).toBe(true);
-
+    // Wait until URL reflects middleware redirect (/en or /zh)
+    await expect(page).toHaveURL(/\/(en|zh)(\/|$)/);
     // Verify page loaded successfully
-    const html = page.locator("html");
-    await expect(html).toBeVisible();
+    await expect(page.locator("html")).toBeVisible();
   });
 
   test("should serve Chinese content at /zh path", async ({ page }) => {
