@@ -154,33 +154,35 @@ export function ScrollSyncHero({
           ))}
         </div>
 
-        {/* 右列：图片列表 */}
+        {/* 右列：图片网格容器 */}
         <div
           ref={rightRef}
           className="no-scrollbar h-[60vh] snap-y snap-mandatory overflow-y-auto md:h-[72vh]"
           aria-label="Images"
         >
-          {items.map((item, i) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={[
-                "mb-4 block snap-start overflow-hidden transition-all duration-300 md:mb-6",
-                i === active ? "scale-[1.01] opacity-100" : "scale-100 opacity-70",
-              ].join(" ")}
-            >
-              <div className="aspect-[3/4] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  width={600}
-                  height={800}
-                  className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-                  draggable={false}
-                />
-              </div>
-            </Link>
-          ))}
+          <div className="grid grid-cols-2 gap-2">
+            {items.map((item, i) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={[
+                  "overflow-hidden transition-all duration-300",
+                  i === active ? "opacity-100" : "opacity-70",
+                ].join(" ")}
+              >
+                <div className="aspect-[3/4] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    width={600}
+                    height={800}
+                    className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                    draggable={false}
+                  />
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </section>
