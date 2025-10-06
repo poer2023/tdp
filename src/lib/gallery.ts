@@ -367,7 +367,7 @@ function toGalleryImage(image: {
 function extractFileName(filePath: string): string | null {
   try {
     const parts = filePath.split("/").filter(Boolean);
-    return parts.length ? parts[parts.length - 1] : null;
+    return parts.length ? (parts[parts.length - 1] ?? null) : null;
   } catch {
     return null;
   }
