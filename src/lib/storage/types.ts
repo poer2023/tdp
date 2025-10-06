@@ -1,5 +1,6 @@
 export interface StorageProvider {
   upload(file: Buffer, filename: string, mimeType: string): Promise<string>;
+  uploadBatch(files: { buffer: Buffer; filename: string; mimeType: string }[]): Promise<string[]>;
   delete(path: string): Promise<void>;
   getPublicUrl(path: string): string;
 }

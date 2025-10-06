@@ -180,14 +180,15 @@ const FuzzyText: React.FC<FuzzyTextProps> = ({
 
     init();
 
+    const canvasEl = canvasRef.current as
+      | (HTMLCanvasElement & { cleanupFuzzyText?: () => void })
+      | null;
+
     return () => {
       isCancelled = true;
       window.cancelAnimationFrame(animationFrameId);
-      const canvas = canvasRef.current as
-        | (HTMLCanvasElement & { cleanupFuzzyText?: () => void })
-        | null;
-      if (canvas?.cleanupFuzzyText) {
-        canvas.cleanupFuzzyText();
+      if (canvasEl?.cleanupFuzzyText) {
+        canvasEl.cleanupFuzzyText();
       }
     };
   }, [

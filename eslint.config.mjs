@@ -28,6 +28,24 @@ const eslintConfig = [
       "test-results/**",
     ],
   },
+  // Global tweaks
+  {
+    files: ["**/*.{ts,tsx,js,mjs}"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
+      ],
+    },
+  },
+  // Relax rules in tests and scripts
+  {
+    files: ["src/**/__tests__/**", "e2e/**", "scripts/**"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+      "@next/next/no-img-element": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

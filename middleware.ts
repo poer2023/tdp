@@ -47,6 +47,8 @@ export async function middleware(request: NextRequest) {
   // Always attach pathname header for i18n html lang resolution
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
+  // Derive locale from pathname for a reliable client navigation fallback
+  const currentLocale = pathname.startsWith("/zh") ? "zh" : "en";
 
   // Handle Chinese slug redirects (PostAlias-like behavior) for posts
   // Matches: /posts/:slug or /zh/posts/:slug
@@ -106,12 +108,21 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Default pass-through with augmented headers
-  return NextResponse.next({
+  // Default pass-through with augmented headers and locale cookie
+  const res = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+  try {
+    res.cookies.set("x-locale", currentLocale, {
+      path: "/",
+      httpOnly: false,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+  } catch {}
+  return res;
 }
 
 export const config = {

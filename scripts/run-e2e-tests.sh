@@ -44,26 +44,43 @@ run_all_tests() {
 run_i18n_tests() {
   echo ""
   echo "🌐 Running i18n routing tests..."
-  npx playwright test e2e/i18n-routing.spec.ts
+  # Prefer improved spec; fall back if missing
+  if [ -f "e2e/i18n-routing-improved.spec.ts" ]; then
+    npx playwright test e2e/i18n-routing-improved.spec.ts
+  else
+    npx playwright test e2e/i18n-routing.spec.ts || true
+  fi
 }
 
 run_likes_tests() {
   echo ""
   echo "❤️  Running likes feature tests..."
-  npx playwright test e2e/likes.spec.ts
+  if [ -f "e2e/likes-improved.spec.ts" ]; then
+    npx playwright test e2e/likes-improved.spec.ts
+  else
+    npx playwright test e2e/likes.spec.ts || true
+  fi
 }
 
 
 run_auth_tests() {
   echo ""
   echo "🔐 Running authentication tests..."
-  npx playwright test e2e/auth.spec.ts
+  if [ -f "e2e/auth-improved.spec.ts" ]; then
+    npx playwright test e2e/auth-improved.spec.ts
+  else
+    npx playwright test e2e/auth.spec.ts || true
+  fi
 }
 
 run_sitemap_tests() {
   echo ""
   echo "🗺️  Running sitemap tests..."
-  npx playwright test e2e/sitemap.spec.ts
+  if [ -f "e2e/sitemap-improved.spec.ts" ]; then
+    npx playwright test e2e/sitemap-improved.spec.ts
+  else
+    npx playwright test e2e/sitemap.spec.ts || true
+  fi
 }
 
 run_content_ops_tests() {

@@ -62,6 +62,8 @@ export default defineConfig({
 
   use: {
     baseURL: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+    // Ensure deterministic Accept-Language for middleware-based redirects
+    locale: "en-US",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure",

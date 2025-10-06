@@ -32,6 +32,8 @@
     "test:e2e:seed": "tsx e2e/utils/seed-test-data.ts",
     "test:e2e:cleanup": "tsx e2e/utils/seed-test-data.ts cleanup",
     "test:e2e:admin-tests": "playwright test e2e/content-operations.spec.ts --project=chromium",
+    "db:dedupe:gallery": "tsx scripts/dedupe-gallery.ts",
+    "db:generate-thumbs": "tsx scripts/generate-thumbnails.ts",
     "prepare": "husky || true"
   },
   "dependencies": {
@@ -55,7 +57,8 @@
     "react-dom": "19.1.0",
     "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "sharp": "^0.34.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -69,6 +72,7 @@
     "@types/node-geocoder": "^4.2.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sharp": "^0.32.0",
     "@types/xml2js": "^0.4.14",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.44.1",

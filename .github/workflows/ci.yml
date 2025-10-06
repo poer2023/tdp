@@ -1,10 +1,8 @@
-name: CI Pipeline
+name: CI Pipeline (manual)
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  # 改为仅手动触发，避免与 CI Critical Path 重复
+  workflow_dispatch:
 
 jobs:
   lint-and-format:

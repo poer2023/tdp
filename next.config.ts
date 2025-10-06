@@ -25,6 +25,34 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async headers() {
+    const securityHeaders = [
+      { key: "X-Frame-Options", value: "DENY" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      {
+        key: "Permissions-Policy",
+        // Limit powerful features by default; extend if needed
+        value: "geolocation=(self), camera=(), microphone=(), autoplay=()",
+      },
+    ];
+
+    // Apply HSTS only for production (avoid polluting localhost)
+    if (process.env.NODE_ENV === "production") {
+      securityHeaders.push({
+        key: "Strict-Transport-Security",
+        value: "max-age=31536000; includeSubDomains; preload",
+      });
+    }
+
+    return [
+      {
+        // Apply to all routes
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

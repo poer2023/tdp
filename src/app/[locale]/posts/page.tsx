@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { PostLocale, PostStatus } from "@prisma/client";
-import prisma from "@/lib/prisma";
+import { listPublishedPosts } from "@/lib/posts";
 
 // Querying Prisma – lock runtime to Node.js
 export const runtime = "nodejs";
@@ -22,23 +21,8 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
   const l = locale === "zh" ? "zh" : "en";
   const isZh = l === "zh";
 
-  // Fetch all published posts regardless of content locale - only UI language switches
-  const posts = await prisma.post.findMany({
-    where: {
-      status: PostStatus.PUBLISHED,
-    },
-    orderBy: {
-      publishedAt: "desc",
-    },
-    include: {
-      author: {
-        select: {
-          name: true,
-          image: true,
-        },
-      },
-    },
-  });
+  // Fetch all published posts via shared lib (supports E2E fallback)
+  const posts = await listPublishedPosts();
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
@@ -70,7 +54,7 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
               <div className="mt-4 flex items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
                 {post.author?.name && <span>{post.author.name}</span>}
                 {post.publishedAt && (
-                  <time dateTime={post.publishedAt.toISOString()}>
+                  <time dateTime={post.publishedAt}>
                     {new Date(post.publishedAt).toLocaleDateString(isZh ? "zh-CN" : "en-US", {
                       year: "numeric",
                       month: "long",
@@ -78,7 +62,9 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
                     })}
                   </time>
                 )}
-                {post.tags && <span className="text-blue-600 dark:text-blue-400">{post.tags}</span>}
+                {post.tags?.length ? (
+                  <span className="text-blue-600 dark:text-blue-400">{post.tags.join(", ")}</span>
+                ) : null}
               </div>
             </article>
           ))}

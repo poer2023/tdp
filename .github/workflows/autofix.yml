@@ -1,13 +1,8 @@
-name: Autofix
+name: Autofix (manual)
 
 on:
+  # 仅手动触发，避免在 push/PR 产生噪音
   workflow_dispatch:
-  push:
-    branches-ignore:
-      - main
-  pull_request:
-    branches:
-      - main
 
 permissions:
   contents: write
