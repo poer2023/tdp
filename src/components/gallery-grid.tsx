@@ -27,10 +27,10 @@ export function GalleryGrid({ images, locale = "zh" }: GalleryGridProps) {
         >
           <div className="relative aspect-square overflow-hidden">
             <Image
-              src={image.filePath}
+              src={image.smallThumbPath || image.microThumbPath || image.filePath}
               alt={image.title ?? "博客相册照片"}
               fill
-              sizes="(max-width: 768px) 50vw, 33vw"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 33vw"
               className="object-cover transition duration-500 group-hover:scale-105"
             />
           </div>

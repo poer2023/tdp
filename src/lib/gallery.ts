@@ -289,7 +289,7 @@ function toGalleryImage(image: {
   capturedAt: Date | null;
   storageType: string;
 }): GalleryImage {
-  return {
+  const mapped: GalleryImage = {
     id: image.id,
     title: image.title,
     description: image.description,
@@ -313,4 +313,36 @@ function toGalleryImage(image: {
     capturedAt: image.capturedAt?.toISOString() || null,
     storageType: image.storageType,
   };
+
+  // Runtime fallback: 如果 DB 尚未写入缩略图，但本地磁盘已有 *_micro.webp / *_small.webp / *_medium.webp，
+  // 则在返回给前端时补齐 URL，避免回退到原图，显著降低首页体积。
+  try {
+    if (!mapped.smallThumbPath || !mapped.microThumbPath || !mapped.mediumPath) {
+      const filename = extractFileName(mapped.filePath);
+      if (filename) {
+        const baseDir = path.join(process.cwd(), "public", "uploads", "gallery");
+        const ensure = (suffix: string) => {
+          const name = filename.replace(/\.[^.]+$/, "") + suffix + ".webp";
+          const onDisk = path.join(baseDir, name);
+          return fs.existsSync(onDisk) ? `/api/uploads/gallery/${name}` : null;
+        };
+        mapped.microThumbPath = mapped.microThumbPath || ensure("_micro");
+        mapped.smallThumbPath = mapped.smallThumbPath || ensure("_small");
+        mapped.mediumPath = mapped.mediumPath || ensure("_medium");
+      }
+    }
+  } catch {
+    // 非致命，忽略
+  }
+
+  return mapped;
+}
+
+function extractFileName(filePath: string): string | null {
+  try {
+    const parts = filePath.split("/").filter(Boolean);
+    return parts.length ? parts[parts.length - 1] : null;
+  } catch {
+    return null;
+  }
 }
