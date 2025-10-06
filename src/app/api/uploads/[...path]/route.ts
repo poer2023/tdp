@@ -58,7 +58,8 @@ async function resolveFile(request: NextRequest, params: string[]) {
 }
 
 export async function GET(request: NextRequest, { params }: Params) {
-  const resolved = await resolveFile(request, params.path);
+  const { path: pathSegments } = await params;
+  const resolved = await resolveFile(request, pathSegments);
   if (resolved.status !== 200) {
     return new NextResponse("Not Found", { status: resolved.status });
   }
@@ -114,7 +115,8 @@ export async function GET(request: NextRequest, { params }: Params) {
 }
 
 export async function HEAD(request: NextRequest, { params }: Params) {
-  const resolved = await resolveFile(request, params.path);
+  const { path: pathSegments } = await params;
+  const resolved = await resolveFile(request, pathSegments);
   if (resolved.status !== 200) {
     return new NextResponse("Not Found", { status: resolved.status });
   }
