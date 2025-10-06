@@ -1,27 +1,18 @@
 name: Docker Build and Push
 
 on:
+  # Trigger after CI Critical Path completes successfully
+  # This ensures code quality gates pass before building Docker image
   workflow_run:
     workflows: ["CI Critical Path"]
     types: [completed]
     branches: [main]
+
+  # Trigger on version tags for releases
+  # This allows manual releases with multi-arch builds
   push:
-    branches: [main]
     tags:
       - "v*"
-    paths:
-      - "Dockerfile"
-      - "docker-compose.yml"
-      - "package.json"
-      - "package-lock.json"
-      - "src/**"
-      - "public/**"
-      - "prisma/**"
-      - "next.config.ts"
-      - "tsconfig.json"
-      - "!**/*.md"
-      - "!.github/**"
-      - "!docs/**"
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -32,10 +23,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # 仅在 workflow_run 成功或 main push 场景执行，避免在 PR 中出现 "skipped" 噪音
+    # Only build if CI Critical Path succeeded or if pushing a version tag
     if: >-
       ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
-          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
           (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) }}
     concurrency: docker-build-${{ github.ref }}
     permissions:
@@ -75,24 +65,9 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
-      # Fast single-arch build for PRs and non-main branches (no push)
-      - name: Build (single-arch, no push)
-        if: github.event_name == 'pull_request' || github.ref != 'refs/heads/main'
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          load: true
-          platforms: linux/amd64
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=min
-          provenance: false
-
-      # Push single-arch on main (fast)
+      # Build and push for main branch (triggered via workflow_run)
       - name: Build and push (single-arch main)
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'workflow_run'
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -104,9 +79,9 @@ jobs:
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=min
           provenance: false
 
-      # Multi-arch only on tags (release)
+      # Multi-arch build for version tag releases
       - name: Build and push (multi-arch tags)
-        if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/')
         id: build-and-push
         uses: docker/build-push-action@v5
         with:
