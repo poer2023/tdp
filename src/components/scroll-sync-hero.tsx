@@ -121,38 +121,48 @@ export function ScrollSyncHero({
     };
 
     const onLeft = () => {
+      // 如果是右侧触发的同步，直接忽略左侧的滚动事件
       if (syncing === "right") {
-        syncing = null;
         return;
       }
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          syncing = "left";
-          sync("left");
-          ticking = false;
-          // 使用 setTimeout 确保在下一个事件循环才重置 syncing
-          setTimeout(() => {
-            syncing = null;
-          }, 0);
+          if (syncing !== "right") {
+            // 再次检查，避免竞态条件
+            syncing = "left";
+            sync("left");
+            ticking = false;
+            // 延迟50ms后重置，确保所有同步触发的滚动事件都被忽略
+            setTimeout(() => {
+              syncing = null;
+            }, 50);
+          } else {
+            ticking = false;
+          }
         });
         ticking = true;
       }
     };
 
     const onRight = () => {
+      // 如果是左侧触发的同步，直接忽略右侧的滚动事件
       if (syncing === "left") {
-        syncing = null;
         return;
       }
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          syncing = "right";
-          sync("right");
-          ticking = false;
-          // 使用 setTimeout 确保在下一个事件循环才重置 syncing
-          setTimeout(() => {
-            syncing = null;
-          }, 0);
+          if (syncing !== "left") {
+            // 再次检查，避免竞态条件
+            syncing = "right";
+            sync("right");
+            ticking = false;
+            // 延迟50ms后重置，确保所有同步触发的滚动事件都被忽略
+            setTimeout(() => {
+              syncing = null;
+            }, 50);
+          } else {
+            ticking = false;
+          }
         });
         ticking = true;
       }
