@@ -5,7 +5,8 @@ import { listGalleryImages } from "@/lib/gallery";
 import { GalleryGrid } from "@/components/gallery-grid";
 
 // Incremental Static Regeneration for localized homepage
-export const revalidate = Number(process.env.HOME_REVALIDATE_SECONDS ?? 60);
+// Next.js 15 段配置需为编译期常量
+export const revalidate = 60;
 
 type PageProps = {
   params: Promise<{ locale: string }>;

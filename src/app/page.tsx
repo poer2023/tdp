@@ -5,7 +5,8 @@ import { listGalleryImages } from "@/lib/gallery";
 import { GalleryGrid } from "@/components/gallery-grid";
 
 // Incremental Static Regeneration for homepage
-export const revalidate = Number(process.env.HOME_REVALIDATE_SECONDS ?? 60);
+// 注意：Next.js 15 要求段配置为静态常量，禁止调用表达式
+export const revalidate = 60;
 
 export default async function Home() {
   const [posts, gallery] = await Promise.all([listPublishedPosts(), listGalleryImages(6)]);
