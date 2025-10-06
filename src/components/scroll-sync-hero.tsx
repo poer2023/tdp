@@ -111,96 +111,92 @@ export function ScrollSyncHero({
 
   if (items.length === 0) {
     return (
-      <section className="rounded-3xl bg-zinc-100/60 p-3 ring-1 ring-zinc-200 dark:bg-zinc-900/40 dark:ring-zinc-800">
-        <div className="rounded-2xl bg-white p-12 text-center ring-1 ring-zinc-200 dark:bg-zinc-950 dark:ring-zinc-800">
-          <p className="text-zinc-500 dark:text-zinc-400">
-            {locale === "zh" ? "暂无内容更新" : "No recent updates"}
-          </p>
-        </div>
+      <section className="py-12 text-center">
+        <p className="text-zinc-500 dark:text-zinc-400">
+          {locale === "zh" ? "暂无内容更新" : "No recent updates"}
+        </p>
       </section>
     );
   }
 
   return (
-    <section className="rounded-3xl bg-zinc-100/60 p-3 ring-1 ring-zinc-200 dark:bg-zinc-900/40 dark:ring-zinc-800">
-      <div className="rounded-2xl bg-white ring-1 ring-zinc-200 dark:bg-zinc-950 dark:ring-zinc-800">
-        {/* 隐藏滚动条 */}
-        <style>{`
-          .no-scrollbar::-webkit-scrollbar { display: none; }
-          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+    <section>
+      {/* 隐藏滚动条 */}
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
-        <div className="grid grid-cols-1 gap-6 p-6 md:grid-cols-2 md:gap-10 md:p-8">
-          {/* 左列：标题列表 */}
-          <div
-            ref={leftRef}
-            className="no-scrollbar h-[60vh] snap-y snap-mandatory overflow-y-auto pr-2 md:h-[72vh] md:pr-4"
-            aria-label="Titles"
-          >
-            {items.map((item, i) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToIndex(i)}
-                aria-current={i === active ? "true" : "false"}
-                className={[
-                  "group w-full snap-start py-6 text-left transition-all md:py-8",
-                  i === active ? "scale-[1.02]" : "opacity-60 hover:opacity-90",
-                ].join(" ")}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">{item.type === "post" ? "📝" : "📸"}</span>
-                  <div className="flex-1">
-                    <div className="text-xl leading-tight font-semibold tracking-tight text-zinc-900 md:text-2xl dark:text-zinc-50">
-                      {item.title}
-                    </div>
-                    <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                      {item.subtitle}
-                    </div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-10">
+        {/* 左列：标题列表 */}
+        <div
+          ref={leftRef}
+          className="no-scrollbar h-[60vh] snap-y snap-mandatory overflow-y-auto md:h-[72vh]"
+          aria-label="Titles"
+        >
+          {items.map((item, i) => (
+            <button
+              key={item.id}
+              onClick={() => scrollToIndex(i)}
+              aria-current={i === active ? "true" : "false"}
+              className={[
+                "group w-full snap-start py-6 text-left transition-all md:py-8",
+                i === active ? "scale-[1.02]" : "opacity-60 hover:opacity-90",
+              ].join(" ")}
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">{item.type === "post" ? "📝" : "📸"}</span>
+                <div className="flex-1">
+                  <div className="text-xl leading-tight font-semibold tracking-tight text-zinc-900 md:text-2xl dark:text-zinc-50">
+                    {item.title}
+                  </div>
+                  <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                    {item.subtitle}
                   </div>
                 </div>
-                <div
-                  className={[
-                    "mt-4 h-px",
-                    i === active
-                      ? "bg-zinc-900/70 dark:bg-zinc-100/70"
-                      : "bg-zinc-300 dark:bg-zinc-700",
-                  ].join(" ")}
-                />
-              </button>
-            ))}
-          </div>
-
-          {/* 右列：图片列表 */}
-          <div
-            ref={rightRef}
-            className="no-scrollbar h-[60vh] snap-y snap-mandatory overflow-y-auto md:h-[72vh]"
-            aria-label="Images"
-          >
-            {items.map((item, i) => (
-              <Link
-                key={item.id}
-                href={item.href}
+              </div>
+              <div
                 className={[
-                  "mb-4 block snap-start overflow-hidden rounded-2xl transition-transform md:mb-6",
-                  i === active ? "scale-[1.01]" : "scale-100",
+                  "mt-4 h-px",
+                  i === active
+                    ? "bg-zinc-900/70 dark:bg-zinc-100/70"
+                    : "bg-zinc-300 dark:bg-zinc-700",
                 ].join(" ")}
-              >
-                <div className="aspect-[16/9] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    width={800}
-                    height={450}
-                    className={[
-                      "h-full w-full object-cover transition-transform duration-500",
-                      i === active ? "scale-[1.02]" : "group-hover:scale-105",
-                    ].join(" ")}
-                    draggable={false}
-                  />
-                </div>
-              </Link>
-            ))}
-          </div>
+              />
+            </button>
+          ))}
+        </div>
+
+        {/* 右列：图片列表 */}
+        <div
+          ref={rightRef}
+          className="no-scrollbar h-[60vh] snap-y snap-mandatory overflow-y-auto md:h-[72vh]"
+          aria-label="Images"
+        >
+          {items.map((item, i) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={[
+                "mb-4 block snap-start overflow-hidden rounded-2xl transition-transform md:mb-6",
+                i === active ? "scale-[1.01]" : "scale-100",
+              ].join(" ")}
+            >
+              <div className="aspect-[16/9] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  width={800}
+                  height={450}
+                  className={[
+                    "h-full w-full object-cover transition-transform duration-500",
+                    i === active ? "scale-[1.02]" : "group-hover:scale-105",
+                  ].join(" ")}
+                  draggable={false}
+                />
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>
