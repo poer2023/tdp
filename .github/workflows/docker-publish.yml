@@ -3,11 +3,10 @@ name: Docker Build and Push
 on:
   workflow_run:
     workflows: ["CI Critical Path"]
-    types:
-      - completed
-    branches:
-      - main
+    types: [completed]
+    branches: [main]
   push:
+    branches: [main]
     tags:
       - "v*"
     paths:
@@ -23,19 +22,6 @@ on:
       - "!**/*.md"
       - "!.github/**"
       - "!docs/**"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "Dockerfile"
-      - "docker-compose.yml"
-      - "package.json"
-      - "package-lock.json"
-      - "src/**"
-      - "public/**"
-      - "prisma/**"
-      - "next.config.ts"
-      - "tsconfig.json"
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -46,8 +32,11 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Only run if critical CI passed
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+    # 仅在 workflow_run 成功或 main push 场景执行，避免在 PR 中出现 "skipped" 噪音
+    if: >-
+      ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) }}
     concurrency: docker-build-${{ github.ref }}
     permissions:
       contents: read
