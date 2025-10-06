@@ -109,7 +109,7 @@ export async function bulkUploadGalleryAction(
       const thumbnails = await generateThumbnails(imageBuf);
 
       // Upload original + 3 thumbnails in batch
-      const [imgPath, microPath, smallPath, mediumPath] = await storage.uploadBatch([
+      const [imgPath, microPath, smallPath, mediumPath] = (await storage.uploadBatch([
         {
           buffer: imageBuf,
           filename: imgKey,
@@ -130,7 +130,7 @@ export async function bulkUploadGalleryAction(
           filename: getThumbnailFilename(imgKey, "medium"),
           mimeType: "image/webp",
         },
-      ]);
+      ])) as [string, string, string, string];
 
       let videoPublic: string | null = null;
       if (pair.video) {

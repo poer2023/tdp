@@ -75,7 +75,7 @@ export async function listGalleryImages(limit?: number): Promise<GalleryImage[]>
     const images = await prisma.galleryImage.findMany(args);
     return images.map(toGalleryImage);
   } catch (_e) {
-    if (!SKIP_DB) throw e;
+    if (!SKIP_DB) throw _e;
     try {
       const base = path.join(process.cwd(), "public", "uploads", "gallery");
       const files = fs.existsSync(base)

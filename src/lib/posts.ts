@@ -58,7 +58,7 @@ export async function listPublishedPosts(): Promise<PublicPost[]> {
     return posts.map(toPublicPost);
   } catch (_e) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("DB unavailable in listPublishedPosts, returning empty list.", e);
+      console.warn("DB unavailable in listPublishedPosts, returning empty list.", _e);
     }
     return [];
   }
@@ -74,7 +74,7 @@ export async function listAllPosts(): Promise<PublicPost[]> {
     return posts.map(toPublicPost);
   } catch (_e) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("DB unavailable in listAllPosts, returning empty list.", e);
+      console.warn("DB unavailable in listAllPosts, returning empty list.", _e);
     }
     return [];
   }
@@ -100,7 +100,7 @@ export async function listPostSummaries(): Promise<PostSummary[]> {
     }));
   } catch (_e) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("DB unavailable in listPostSummaries, returning empty list.", e);
+      console.warn("DB unavailable in listPostSummaries, returning empty list.", _e);
     }
     return [];
   }
@@ -124,7 +124,7 @@ export async function getPostBySlug(
     return post ? toPublicPost(post) : null;
   } catch (_e) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("DB unavailable in getPostBySlug, returning null.", e);
+      console.warn("DB unavailable in getPostBySlug, returning null.", _e);
     }
     return null;
   }
@@ -140,7 +140,7 @@ export async function getPostById(id: string): Promise<PublicPost | null> {
     return post ? toPublicPost(post) : null;
   } catch (_e) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("DB unavailable in getPostById, returning null.", e);
+      console.warn("DB unavailable in getPostById, returning null.", _e);
     }
     return null;
   }
