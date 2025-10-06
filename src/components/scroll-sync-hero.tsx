@@ -130,6 +130,10 @@ export function ScrollSyncHero({
           syncing = "left";
           sync("left");
           ticking = false;
+          // 使用 setTimeout 确保在下一个事件循环才重置 syncing
+          setTimeout(() => {
+            syncing = null;
+          }, 0);
         });
         ticking = true;
       }
@@ -145,6 +149,10 @@ export function ScrollSyncHero({
           syncing = "right";
           sync("right");
           ticking = false;
+          // 使用 setTimeout 确保在下一个事件循环才重置 syncing
+          setTimeout(() => {
+            syncing = null;
+          }, 0);
         });
         ticking = true;
       }
