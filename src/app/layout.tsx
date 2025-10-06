@@ -10,6 +10,7 @@ import { GlobalLanguageSwitcher } from "@/components/global-language-switcher";
 import { Search } from "@/components/search";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
+import { HtmlLangSync } from "@/components/html-lang-sync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,6 +57,8 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
       >
+        {/* Keep <html lang> consistent on client navigations */}
+        <HtmlLangSync />
         {/* Early theme applier to avoid FOUC */}
         <script
           dangerouslySetInnerHTML={{
