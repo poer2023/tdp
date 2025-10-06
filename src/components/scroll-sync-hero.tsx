@@ -140,29 +140,16 @@ export function ScrollSyncHero({
               onClick={() => scrollToIndex(i)}
               aria-current={i === active ? "true" : "false"}
               className={[
-                "group w-full snap-start py-6 text-left transition-all md:py-8",
-                i === active ? "scale-[1.02]" : "opacity-60 hover:opacity-90",
+                "group w-full snap-start py-6 text-left transition-all duration-300 md:py-8",
+                i === active ? "opacity-100" : "opacity-40 hover:opacity-70",
               ].join(" ")}
             >
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">{item.type === "post" ? "📝" : "📸"}</span>
-                <div className="flex-1">
-                  <div className="text-xl leading-tight font-semibold tracking-tight text-zinc-900 md:text-2xl dark:text-zinc-50">
-                    {item.title}
-                  </div>
-                  <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                    {item.subtitle}
-                  </div>
+              <div className="space-y-1">
+                <div className="text-xl leading-tight font-semibold tracking-tight text-zinc-900 md:text-2xl dark:text-zinc-50">
+                  {item.title}
                 </div>
+                <div className="text-sm text-zinc-500 dark:text-zinc-400">{item.subtitle}</div>
               </div>
-              <div
-                className={[
-                  "mt-4 h-px",
-                  i === active
-                    ? "bg-zinc-900/70 dark:bg-zinc-100/70"
-                    : "bg-zinc-300 dark:bg-zinc-700",
-                ].join(" ")}
-              />
             </button>
           ))}
         </div>
@@ -178,20 +165,17 @@ export function ScrollSyncHero({
               key={item.id}
               href={item.href}
               className={[
-                "mb-4 block snap-start overflow-hidden rounded-2xl transition-transform md:mb-6",
-                i === active ? "scale-[1.01]" : "scale-100",
+                "mb-4 block snap-start overflow-hidden transition-all duration-300 md:mb-6",
+                i === active ? "scale-[1.01] opacity-100" : "scale-100 opacity-70",
               ].join(" ")}
             >
-              <div className="aspect-[16/9] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+              <div className="aspect-[3/4] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                 <Image
                   src={item.image}
                   alt={item.title}
-                  width={800}
-                  height={450}
-                  className={[
-                    "h-full w-full object-cover transition-transform duration-500",
-                    i === active ? "scale-[1.02]" : "group-hover:scale-105",
-                  ].join(" ")}
+                  width={600}
+                  height={800}
+                  className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                   draggable={false}
                 />
               </div>
