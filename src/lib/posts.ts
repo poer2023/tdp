@@ -29,6 +29,7 @@ export type RecentActivity = {
   slug?: string;
   id: string;
   date: string;
+  image: string;
 };
 
 export type CreatePostInput = {
@@ -315,12 +316,19 @@ export async function getRecentActivities(limit = 4): Promise<RecentActivity[]> 
     const [posts, images] = await Promise.all([
       prisma.post.findMany({
         where: { status: PostStatus.PUBLISHED },
-        select: { id: true, title: true, slug: true, publishedAt: true },
+        select: { id: true, title: true, slug: true, publishedAt: true, coverImagePath: true },
         orderBy: { publishedAt: "desc" },
         take: limit,
       }),
       prisma.galleryImage.findMany({
-        select: { id: true, title: true, createdAt: true },
+        select: {
+          id: true,
+          title: true,
+          createdAt: true,
+          smallThumbPath: true,
+          microThumbPath: true,
+          filePath: true,
+        },
         orderBy: { createdAt: "desc" },
         take: limit,
       }),
@@ -333,12 +341,14 @@ export async function getRecentActivities(limit = 4): Promise<RecentActivity[]> 
         slug: p.slug,
         id: p.id,
         date: p.publishedAt ? p.publishedAt.toISOString() : new Date().toISOString(),
+        image: p.coverImagePath ?? "/images/placeholder-cover.svg",
       })),
       ...images.map((img) => ({
         type: "gallery" as const,
         title: img.title || "Untitled Photo",
         id: img.id,
         date: img.createdAt.toISOString(),
+        image: img.smallThumbPath ?? img.microThumbPath ?? img.filePath,
       })),
     ];
 

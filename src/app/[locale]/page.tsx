@@ -3,6 +3,7 @@ import Image from "next/image";
 import { listPublishedPosts, getRecentActivities } from "@/lib/posts";
 import { listGalleryImages } from "@/lib/gallery";
 import { GalleryGrid } from "@/components/gallery-grid";
+import { ScrollSyncHero } from "@/components/scroll-sync-hero";
 
 // Incremental Static Regeneration for localized homepage
 // Next.js 15 段配置需为编译期常量
@@ -25,7 +26,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-28 px-6 py-16 sm:px-8 md:px-12">
-      <IntroSection activities={activities} locale={l} />
+      <ScrollSyncHero activities={activities} locale={l} />
 
       <section className="space-y-8" id="posts">
         <div className="flex items-end justify-between">
@@ -101,130 +102,6 @@ export default async function LocalizedHomePage({ params }: PageProps) {
         </div>
       </section>
     </div>
-  );
-}
-
-function IntroSection({
-  activities,
-  locale,
-}: {
-  activities: Awaited<ReturnType<typeof getRecentActivities>>;
-  locale: "zh" | "en";
-}) {
-  const formatRelativeTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return locale === "zh" ? "刚刚" : "just now";
-    if (diffInSeconds < 3600)
-      return locale === "zh"
-        ? `${Math.floor(diffInSeconds / 60)} 分钟前`
-        : `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400)
-      return locale === "zh"
-        ? `${Math.floor(diffInSeconds / 3600)} 小时前`
-        : `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800)
-      return locale === "zh"
-        ? `${Math.floor(diffInSeconds / 86400)} 天前`
-        : `${Math.floor(diffInSeconds / 86400)}d ago`;
-    if (diffInSeconds < 2592000)
-      return locale === "zh"
-        ? `${Math.floor(diffInSeconds / 604800)} 周前`
-        : `${Math.floor(diffInSeconds / 604800)}w ago`;
-
-    return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }).format(date);
-  };
-
-  return (
-    <section className="rounded-3xl bg-zinc-100/60 p-3 ring-1 ring-zinc-200 dark:bg-zinc-900/40 dark:ring-zinc-800">
-      <div className="rounded-2xl bg-white p-8 ring-1 ring-zinc-200 md:p-12 dark:bg-zinc-950 dark:ring-zinc-800">
-        <div className="mx-auto max-w-3xl space-y-8 text-center">
-          <div className="mx-auto h-32 w-32 overflow-hidden rounded-full bg-gradient-to-br from-zinc-200 to-zinc-300 ring-4 ring-zinc-100 dark:from-zinc-700 dark:to-zinc-800 dark:ring-zinc-900">
-            <div className="flex h-full items-center justify-center text-5xl text-zinc-600 dark:text-zinc-400">
-              👤
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
-              {locale === "zh" ? "张三" : "Your Name"}
-            </h1>
-            <p className="text-lg text-zinc-600 dark:text-zinc-400">
-              {locale === "zh" ? "前端工程师 & 摄影爱好者" : "Frontend Engineer & Photographer"}
-            </p>
-          </div>
-
-          <p className="mx-auto max-w-xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-            {locale === "zh"
-              ? "专注于 Web 性能优化与用户体验设计，用代码和镜头记录生活与思考。"
-              : "Focused on Web performance optimization and UX design, documenting life and thoughts through code and lens."}
-          </p>
-
-          <div className="flex items-center justify-center gap-6 text-sm">
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              <span>⚡</span>
-              <span>GitHub</span>
-            </a>
-            <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              <span>🐦</span>
-              <span>Twitter</span>
-            </a>
-            <a
-              href="mailto:hello@example.com"
-              className="flex items-center gap-1.5 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            >
-              <span>✉️</span>
-              <span>Email</span>
-            </a>
-          </div>
-        </div>
-
-        {activities.length > 0 && (
-          <div className="mx-auto mt-12 max-w-2xl">
-            <h2 className="mb-4 text-sm font-medium text-zinc-900 dark:text-zinc-50">
-              {locale === "zh" ? "最近更新" : "Recent Activity"}
-            </h2>
-            <div className="space-y-3">
-              {activities.map((activity) => (
-                <Link
-                  key={activity.id}
-                  href={
-                    activity.type === "post"
-                      ? `/${locale}/posts/${activity.slug}`
-                      : `/${locale}/gallery#${activity.id}`
-                  }
-                  className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                >
-                  <span className="text-lg">{activity.type === "post" ? "📝" : "📸"}</span>
-                  <span className="flex-1 truncate text-sm text-zinc-900 dark:text-zinc-100">
-                    {activity.title}
-                  </span>
-                  <time className="text-xs text-zinc-500 dark:text-zinc-400">
-                    {formatRelativeTime(activity.date)}
-                  </time>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </section>
   );
 }
 
