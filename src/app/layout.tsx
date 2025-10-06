@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
 import { AuthHeader } from "@/components/auth-header";
@@ -45,7 +45,10 @@ export default async function RootLayout({
   // Get current pathname to determine locale
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "/";
-  const locale = getLocaleFromPathname(pathname);
+  // Fallback to cookie in case middleware header is unavailable in client navigations
+  const cookieStore = await cookies();
+  const cookieLocale = (cookieStore.get("x-locale")?.value as "zh" | "en" | undefined) || undefined;
+  const locale = getLocaleFromPathname(pathname) ?? cookieLocale;
   const htmlLang = getHtmlLang(locale);
 
   return (
