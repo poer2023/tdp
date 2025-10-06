@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { RecentActivity } from "@/lib/posts";
@@ -25,18 +25,22 @@ export function ScrollSyncHero({
   const rightRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(0);
 
-  // 将 activities 转换为展示项
-  const items: ScrollSyncItem[] = activities.map((activity) => ({
-    id: activity.id,
-    title: activity.title,
-    subtitle: formatRelativeTime(activity.date, locale),
-    image: activity.image,
-    href:
-      activity.type === "post"
-        ? `/${locale}/posts/${activity.slug}`
-        : `/${locale}/gallery#${activity.id}`,
-    type: activity.type,
-  }));
+  // 将 activities 转换为展示项 (使用 useMemo 避免每次渲染都创建新数组)
+  const items = useMemo<ScrollSyncItem[]>(
+    () =>
+      activities.map((activity) => ({
+        id: activity.id,
+        title: activity.title,
+        subtitle: formatRelativeTime(activity.date, locale),
+        image: activity.image,
+        href:
+          activity.type === "post"
+            ? `/${locale}/posts/${activity.slug}`
+            : `/${locale}/gallery#${activity.id}`,
+        type: activity.type,
+      })),
+    [activities, locale]
+  );
 
   // 双向滚动同步 + 模糊效果
   useEffect(() => {
@@ -153,7 +157,7 @@ export function ScrollSyncHero({
       left.removeEventListener("scroll", onLeft);
       right.removeEventListener("scroll", onRight);
     };
-  }, [items.length]);
+  }, [items]);
 
   const scrollToIndex = (i: number) => {
     const left = leftRef.current;
