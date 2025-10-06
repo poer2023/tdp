@@ -1,57 +1,35 @@
 import { notFound } from "next/navigation";
-import type { Metadata } from "next/types";
-import { getGalleryImageById, getAdjacentImageIds } from "@/lib/gallery";
+import { getAdjacentImageIds, getGalleryImageById, listGalleryImages } from "@/lib/gallery";
 import { PhotoViewer } from "@/components/photo-viewer";
 
-type Props = {
+export const runtime = "nodejs";
+
+type PageProps = {
   params: Promise<{ locale: string; id: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export default async function LocalizedGalleryDetailPage({ params }: PageProps) {
   const { locale, id } = await params;
   const l = locale === "zh" ? "zh" : "en";
+
   const image = await getGalleryImageById(id);
-
-  if (!image) {
-    return {
-      title: l === "zh" ? "照片未找到" : "Photo Not Found",
-    };
-  }
-
-  return {
-    title: image.title || (l === "zh" ? "未命名照片" : "Untitled Photo"),
-    description: image.description || undefined,
-    openGraph: {
-      title: image.title || (l === "zh" ? "未命名照片" : "Untitled Photo"),
-      description: image.description || undefined,
-      images: [{ url: image.filePath }],
-    },
-  };
-}
-
-export default async function LocalizedPhotoDetailPage({ params }: Props) {
-  const { locale, id } = await params;
-  const l = locale === "zh" ? "zh" : "en";
-  const image = await getGalleryImageById(id);
-
   if (!image) {
     notFound();
   }
 
-  const { prev, next, prevPath, nextPath } = await getAdjacentImageIds(id);
+  const adjacent = await getAdjacentImageIds(id);
+  const thumbs = (await listGalleryImages(60)).map((g) => ({ id: g.id, filePath: g.filePath }));
 
   return (
     <PhotoViewer
       image={image}
-      prevId={prev || null}
-      nextId={next || null}
-      {...(prevPath && { prevPath })}
-      {...(nextPath && { nextPath })}
+      prevId={adjacent.prev}
+      nextId={adjacent.next}
+      prevPath={adjacent.prevPath}
+      nextPath={adjacent.nextPath}
       locale={l}
+      thumbnails={thumbs}
+      currentId={id}
     />
   );
-}
-
-export function generateStaticParams() {
-  return [{ locale: "en" }, { locale: "zh" }];
 }

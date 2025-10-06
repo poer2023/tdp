@@ -5,8 +5,13 @@ async function globalTeardown(config: FullConfig) {
   console.log("\n🧹 Running global E2E teardown...");
 
   try {
-    // Cleanup test data
-    await cleanupTestData();
+    const skipDb = process.env.E2E_SKIP_DB === "1" || process.env.E2E_SKIP_DB === "true";
+    if (!skipDb) {
+      // Cleanup test data
+      await cleanupTestData();
+    } else {
+      console.log("Skipping DB cleanup (E2E_SKIP_DB=1)");
+    }
 
     console.log("✅ Global teardown complete\n");
   } catch (error) {

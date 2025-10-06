@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listGalleryImages } from "@/lib/gallery";
-import { GalleryCard } from "@/components/gallery-card";
+import { GalleryMasonry } from "@/components/gallery-masonry";
 
 export const revalidate = 0;
 
@@ -49,22 +49,10 @@ export default async function LocalizedGalleryPage({ params }: PageProps) {
         </nav>
       )}
 
-      {/* Grid */}
-      {images.length ? (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {images.map((image) => (
-            <GalleryCard key={image.id} image={image} locale={l} />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-lg border border-dashed border-zinc-300 px-6 py-16 text-center dark:border-zinc-700">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {l === "zh"
-              ? "相册暂时没有内容，登录后台上传你的第一张照片吧。"
-              : "No photos yet. Log in to the dashboard to upload your first photo."}
-          </p>
-        </div>
-      )}
+      {/* Masonry grid with whitespace margins */}
+      <section className="rounded-xl bg-white p-0 dark:bg-transparent">
+        <GalleryMasonry images={images} locale={l} />
+      </section>
 
       {/* Footer */}
       {images.length > 0 && (

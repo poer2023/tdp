@@ -9,12 +9,29 @@ export class LocalStorage implements StorageProvider {
     this.uploadRoot = path.join(process.cwd(), "public", "uploads");
   }
 
-  async upload(buffer: Buffer, filename: string): Promise<string> {
+  async upload(buffer: Buffer, filename: string, _mimeType: string): Promise<string> {
     const dir = path.join(this.uploadRoot, "gallery");
     await mkdir(dir, { recursive: true });
     const filePath = path.join(dir, filename);
     await writeFile(filePath, buffer);
     return `/api/uploads/gallery/${filename}`;
+  }
+
+  async uploadBatch(
+    files: { buffer: Buffer; filename: string; mimeType: string }[]
+  ): Promise<string[]> {
+    const dir = path.join(this.uploadRoot, "gallery");
+    await mkdir(dir, { recursive: true });
+
+    const results = await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(dir, file.filename);
+        await writeFile(filePath, file.buffer);
+        return `/api/uploads/gallery/${file.filename}`;
+      })
+    );
+
+    return results;
   }
 
   async delete(relativePath: string): Promise<void> {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listGalleryImages } from "@/lib/gallery";
-import { GalleryCard } from "@/components/gallery-card";
+import { GalleryMasonry } from "@/components/gallery-masonry";
 
 export const revalidate = 0;
 
@@ -40,20 +40,10 @@ export default async function GalleryPage() {
         </nav>
       )}
 
-      {/* 网格 - 编辑部式卡片排版 */}
-      {images.length ? (
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {images.map((image) => (
-            <GalleryCard key={image.id} image={image} />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-lg border border-dashed border-zinc-300 px-6 py-16 text-center dark:border-zinc-700">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            相册暂时没有内容，登录后台上传你的第一张照片吧。
-          </p>
-        </div>
-      )}
+      {/* Masonry grid with orderly gutters */}
+      <section className="rounded-xl bg-white p-0 dark:bg-transparent">
+        <GalleryMasonry images={images} locale="zh" />
+      </section>
 
       {/* Footer - 元信息说明 */}
       {images.length > 0 && (

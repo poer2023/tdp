@@ -115,6 +115,9 @@ model GalleryImage {
   title              String?
   description        String?
   filePath           String
+  microThumbPath     String?
+  smallThumbPath     String?
+  mediumPath         String?
   postId             String?
   createdAt          DateTime  @default(now())
   capturedAt         DateTime?

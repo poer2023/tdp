@@ -232,8 +232,8 @@ fi
 # ============================================================================
 echo -e "\n${BLUE}[8/8] Checking File System...${NC}"
 
-# Check for required files
-REQUIRED_FILES=("package.json" "prisma/schema.prisma" "next.config.js")
+# Check for required files (support TS or JS next config)
+REQUIRED_FILES=("package.json" "prisma/schema.prisma")
 
 for file in "${REQUIRED_FILES[@]}"; do
     if [ -f "$file" ]; then
@@ -242,6 +242,12 @@ for file in "${REQUIRED_FILES[@]}"; do
         check_fail "Missing $file"
     fi
 done
+
+if [ -f "next.config.ts" ] || [ -f "next.config.js" ]; then
+    check_pass "Found Next.js config (ts/js)"
+else
+    check_fail "Missing next.config.ts/js"
+fi
 
 # Check for .env in production
 if [ -f ".env" ] && [ "$NODE_ENV" = "production" ]; then

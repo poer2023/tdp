@@ -7,6 +7,8 @@ import { AuthHeader } from "@/components/auth-header";
 import { MainNav } from "@/components/main-nav";
 import { Footer } from "@/components/footer";
 import { GlobalLanguageSwitcher } from "@/components/global-language-switcher";
+import { Search } from "@/components/search";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
 
 const geistSans = Geist({
@@ -49,8 +51,15 @@ export default async function RootLayout({
   return (
     <html lang={htmlLang}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
       >
+        {/* Early theme applier to avoid FOUC */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(()=>{try{const t=localStorage.getItem('theme');const d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;const useDark=t? t==='dark': d;document.documentElement.classList[useDark?'add':'remove']('dark');}catch(e){}})()",
+          }}
+        />
         <SessionProvider>
           {/* Skip to content link for accessibility */}
           <a
@@ -60,11 +69,13 @@ export default async function RootLayout({
             Skip to content
           </a>
 
-          <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
+          <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
               <MainNav />
               <div className="flex items-center gap-4">
                 <GlobalLanguageSwitcher />
+                <Search />
+                <ThemeToggle />
                 <AuthHeader />
               </div>
             </div>
