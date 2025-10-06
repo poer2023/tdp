@@ -34,6 +34,14 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
+# Copy full node_modules for runtime scripts (sharp, prisma, etc.)
+# Standalone mode excludes devDependencies but we need sharp for thumbnail generation
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy scripts for maintenance operations (thumbnail generation, etc.)
+COPY scripts ./scripts
+COPY package.json ./
+
 # Copy health check and entrypoint scripts
 COPY docker/healthcheck.js ./docker/healthcheck.js
 COPY docker/entrypoint.sh ./docker/entrypoint.sh

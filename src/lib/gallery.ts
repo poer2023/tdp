@@ -316,16 +316,42 @@ function toGalleryImage(image: {
 
   // Runtime fallback: 如果 DB 尚未写入缩略图，但本地磁盘已有 *_micro.webp / *_small.webp / *_medium.webp，
   // 则在返回给前端时补齐 URL，避免回退到原图，显著降低首页体积。
+  // 注意：生产环境可能使用 S3/CDN，服务进程本地并不存在缩略图文件。
+  // 为此我们在 S3/CDN 情况下根据原图 URL 直接推导出缩略图 URL（相同目录 + 后缀 + .webp）。
   try {
     if (!mapped.smallThumbPath || !mapped.microThumbPath || !mapped.mediumPath) {
       const filename = extractFileName(mapped.filePath);
       if (filename) {
-        const baseDir = path.join(process.cwd(), "public", "uploads", "gallery");
-        const ensure = (suffix: string) => {
-          const name = filename.replace(/\.[^.]+$/, "") + suffix + ".webp";
+        const ensureFromLocal = (name: string) => {
+          // 本地存储：仅当文件真实存在时才返回，避免 404
+          const baseDir = path.join(process.cwd(), "public", "uploads", "gallery");
           const onDisk = path.join(baseDir, name);
           return fs.existsSync(onDisk) ? `/api/uploads/gallery/${name}` : null;
         };
+
+        const ensureFromOrigin = (suffix: "_micro" | "_small" | "_medium") => {
+          // 通用：基于原图 URL 直接推导（适配 S3/CDN 与本地 /api/uploads）
+          try {
+            const withoutQuery = mapped.filePath.split("?")[0] || mapped.filePath;
+            const lastSlash = withoutQuery.lastIndexOf("/");
+            if (lastSlash === -1) return null;
+            const dir = withoutQuery.slice(0, lastSlash + 1);
+            const base = withoutQuery.slice(lastSlash + 1).replace(/\.[^.]+$/, "");
+            return `${dir}${base}${suffix}.webp`;
+          } catch {
+            return null;
+          }
+        };
+
+        // 选择策略：S3/CDN 直接推导；本地优先校验存在，否则不返回
+        const ensure = (suffix: "_micro" | "_small" | "_medium") => {
+          if (mapped.storageType && mapped.storageType !== "local") {
+            return ensureFromOrigin(suffix);
+          }
+          const name = filename.replace(/\.[^.]+$/, "") + suffix + ".webp";
+          return ensureFromLocal(name);
+        };
+
         mapped.microThumbPath = mapped.microThumbPath || ensure("_micro");
         mapped.smallThumbPath = mapped.smallThumbPath || ensure("_small");
         mapped.mediumPath = mapped.mediumPath || ensure("_medium");
