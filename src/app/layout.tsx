@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
@@ -8,16 +7,6 @@ import { MainNav } from "@/components/main-nav";
 import { Footer } from "@/components/footer";
 import { GlobalLanguageSwitcher } from "@/components/global-language-switcher";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -48,9 +37,7 @@ export default async function RootLayout({
 
   return (
     <html lang={htmlLang}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100`}
-      >
+      <body className="bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100">
         <SessionProvider>
           {/* Skip to content link for accessibility */}
           <a

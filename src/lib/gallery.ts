@@ -1,5 +1,21 @@
 import prisma from "@/lib/prisma";
 
+let hasWarnedForMissingDatabase = false;
+
+function isGalleryDatabaseAvailable(): boolean {
+  const url = process.env.DATABASE_URL?.trim();
+  if (url) {
+    return true;
+  }
+
+  if (!hasWarnedForMissingDatabase && process.env.NODE_ENV !== "production") {
+    console.warn("DATABASE_URL is not configured – gallery data queries will be skipped.");
+    hasWarnedForMissingDatabase = true;
+  }
+
+  return false;
+}
+
 export type GalleryImage = {
   id: string;
   title: string | null;
@@ -55,6 +71,10 @@ export type CreateGalleryImageInput = {
 };
 
 export async function listGalleryImages(limit?: number): Promise<GalleryImage[]> {
+  if (!isGalleryDatabaseAvailable()) {
+    return [];
+  }
+
   const args = (
     typeof limit === "number"
       ? { orderBy: { createdAt: "desc" }, take: limit }
@@ -66,6 +86,10 @@ export async function listGalleryImages(limit?: number): Promise<GalleryImage[]>
 }
 
 export async function addGalleryImage(input: CreateGalleryImageInput): Promise<GalleryImage> {
+  if (!isGalleryDatabaseAvailable()) {
+    throw new Error("Gallery database connection is not configured.");
+  }
+
   const image = await prisma.galleryImage.create({
     data: {
       title: input.title?.trim() || null,
@@ -98,10 +122,18 @@ export async function addGalleryImage(input: CreateGalleryImageInput): Promise<G
 }
 
 export async function deleteGalleryImage(id: string): Promise<void> {
+  if (!isGalleryDatabaseAvailable()) {
+    throw new Error("Gallery database connection is not configured.");
+  }
+
   await prisma.galleryImage.delete({ where: { id } });
 }
 
 export async function getGalleryImageById(id: string): Promise<GalleryImage | null> {
+  if (!isGalleryDatabaseAvailable()) {
+    return null;
+  }
+
   const image = await prisma.galleryImage.findUnique({ where: { id } });
   if (!image) return null;
   return toGalleryImage(image);
@@ -113,6 +145,10 @@ export async function getAdjacentImageIds(id: string): Promise<{
   prevPath?: string;
   nextPath?: string;
 }> {
+  if (!isGalleryDatabaseAvailable()) {
+    return { prev: null, next: null };
+  }
+
   const currentImage = await prisma.galleryImage.findUnique({ where: { id } });
   if (!currentImage) return { prev: null, next: null };
 

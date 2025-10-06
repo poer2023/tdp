@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import {
   listGalleryImages,
   getGalleryImageById,
@@ -23,9 +23,20 @@ vi.mock("../prisma", () => ({
 
 import prisma from "../prisma";
 
+const ORIGINAL_DATABASE_URL = process.env.DATABASE_URL;
+
 describe("Gallery Data Operations", () => {
   beforeEach(() => {
+    process.env.DATABASE_URL = ORIGINAL_DATABASE_URL ?? "postgresql://test";
     vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    if (ORIGINAL_DATABASE_URL) {
+      process.env.DATABASE_URL = ORIGINAL_DATABASE_URL;
+    } else {
+      delete process.env.DATABASE_URL;
+    }
   });
 
   describe("listGalleryImages", () => {
@@ -136,6 +147,22 @@ describe("Gallery Data Operations", () => {
 
       expect(result[0].createdAt).toContain("2024-01-15");
       expect(result[0].capturedAt).toContain("2024-01-14");
+    });
+  });
+
+  describe("when database configuration is missing", () => {
+    it("should return safe fallbacks instead of throwing", async () => {
+      delete process.env.DATABASE_URL;
+
+      const images = await listGalleryImages();
+      const image = await getGalleryImageById("any");
+      const adjacent = await getAdjacentImageIds("any");
+
+      expect(images).toEqual([]);
+      expect(image).toBeNull();
+      expect(adjacent).toEqual({ prev: null, next: null });
+      expect(prisma.galleryImage.findMany).not.toHaveBeenCalled();
+      expect(prisma.galleryImage.findUnique).not.toHaveBeenCalled();
     });
   });
 
