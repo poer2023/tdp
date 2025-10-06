@@ -59,13 +59,16 @@ docs/docker-deployment.md
 docs/self-host-deployment.md
 docs/user-configuration-checklist.md
 e2e/accessibility.spec.ts
+e2e/admin-gallery-ui.spec.ts
 e2e/auth-improved.spec.ts
 e2e/content-export-improved.spec.ts
 e2e/content-import-improved.spec.ts
 e2e/content-operations.spec.ts
+e2e/dark-mode.spec.ts
 e2e/error-handling.spec.ts
 e2e/fixtures/authenticated.ts
 e2e/fixtures/test-data.ts
+e2e/gallery-ui.spec.ts
 e2e/global-setup.ts
 e2e/global-teardown.ts
 e2e/helpers/assertion-helpers.ts
@@ -82,6 +85,7 @@ e2e/pages/post-page.ts
 e2e/pages/posts-list-page.ts
 e2e/performance.spec.ts
 e2e/public-tests.spec.ts
+e2e/search-ui.spec.ts
 e2e/seo-metadata-improved.spec.ts
 e2e/sitemap-improved.spec.ts
 e2e/uploads.spec.ts
