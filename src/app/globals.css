@@ -102,41 +102,93 @@ select:focus-visible {
    让常见的 dark:bg-* 和 dark:border/ring-* 更柔和
 ----------------------------------------- */
 :root {
-  --ios-bg: #1c1c1e;     /* System background */
+  --ios-bg: #1c1c1e; /* System background */
   --ios-elev-1: #2c2c2e; /* Secondary background / separators */
   --ios-elev-2: #3a3a3c; /* Tertiary background */
-  --ios-label: #f2f2f7;  /* Primary text */
+  --ios-label: #f2f2f7; /* Primary text */
   --ios-secondary-label: #d1d1d6; /* Secondary text */
   --ios-tertiary-label: #8e8e93; /* Tertiary text */
 }
 
-.dark .dark\:bg-zinc-950 { background-color: var(--ios-bg) !important; }
-.dark .dark\:bg-zinc-900 { background-color: var(--ios-bg) !important; }
-.dark .dark\:bg-zinc-900\/40 { background-color: rgba(28,28,30,0.40) !important; }
-.dark .dark\:bg-zinc-900\/60 { background-color: rgba(28,28,30,0.60) !important; }
-.dark .dark\:bg-zinc-900\/70 { background-color: rgba(28,28,30,0.70) !important; }
-.dark .dark\:bg-zinc-900\/80 { background-color: rgba(28,28,30,0.80) !important; }
-.dark .dark\:border-zinc-800 { border-color: var(--ios-elev-1) !important; }
-.dark .dark\:ring-zinc-800 { --tw-ring-color: var(--ios-elev-1) !important; }
+.dark .dark\:bg-zinc-950 {
+  background-color: var(--ios-bg) !important;
+}
+.dark .dark\:bg-zinc-900 {
+  background-color: var(--ios-bg) !important;
+}
+.dark .dark\:bg-zinc-900\/40 {
+  background-color: rgba(28, 28, 30, 0.4) !important;
+}
+.dark .dark\:bg-zinc-900\/60 {
+  background-color: rgba(28, 28, 30, 0.6) !important;
+}
+.dark .dark\:bg-zinc-900\/70 {
+  background-color: rgba(28, 28, 30, 0.7) !important;
+}
+.dark .dark\:bg-zinc-900\/80 {
+  background-color: rgba(28, 28, 30, 0.8) !important;
+}
+.dark .dark\:border-zinc-800 {
+  border-color: var(--ios-elev-1) !important;
+}
+.dark .dark\:ring-zinc-800 {
+  --tw-ring-color: var(--ios-elev-1) !important;
+}
 
 /* Fallback mappings to make more of the UI dark by default */
-.dark .bg-white { background-color: var(--ios-elev-1) !important; }
-.dark .bg-white\/90 { background-color: rgba(44,44,46,0.90) !important; }
-.dark .bg-white\/80 { background-color: rgba(44,44,46,0.80) !important; }
-.dark .bg-white\/70 { background-color: rgba(44,44,46,0.70) !important; }
-.dark .bg-white\/60 { background-color: rgba(44,44,46,0.60) !important; }
-.dark .bg-zinc-50 { background-color: var(--ios-bg) !important; }
-.dark .bg-zinc-100 { background-color: var(--ios-elev-2) !important; }
-.dark .bg-zinc-100\/60 { background-color: rgba(58,58,60,0.60) !important; }
-.dark .border-zinc-200 { border-color: var(--ios-elev-1) !important; }
-.dark .text-zinc-900 { color: var(--ios-label) !important; }
-.dark .text-zinc-800 { color: var(--ios-label) !important; }
-.dark .text-zinc-700 { color: var(--ios-secondary-label) !important; }
-.dark .text-zinc-600 { color: var(--ios-secondary-label) !important; }
-.dark .text-zinc-500 { color: var(--ios-tertiary-label) !important; }
-.dark .text-zinc-400 { color: var(--ios-tertiary-label) !important; }
-.dark .text-black { color: var(--ios-label) !important; }
+.dark .bg-white {
+  background-color: var(--ios-elev-1) !important;
+}
+.dark .bg-white\/90 {
+  background-color: rgba(44, 44, 46, 0.9) !important;
+}
+.dark .bg-white\/80 {
+  background-color: rgba(44, 44, 46, 0.8) !important;
+}
+.dark .bg-white\/70 {
+  background-color: rgba(44, 44, 46, 0.7) !important;
+}
+.dark .bg-white\/60 {
+  background-color: rgba(44, 44, 46, 0.6) !important;
+}
+.dark .bg-zinc-50 {
+  background-color: var(--ios-bg) !important;
+}
+.dark .bg-zinc-100 {
+  background-color: var(--ios-elev-2) !important;
+}
+.dark .bg-zinc-100\/60 {
+  background-color: rgba(58, 58, 60, 0.6) !important;
+}
+.dark .border-zinc-200 {
+  border-color: var(--ios-elev-1) !important;
+}
+.dark .text-zinc-900 {
+  color: var(--ios-label) !important;
+}
+.dark .text-zinc-800 {
+  color: var(--ios-label) !important;
+}
+.dark .text-zinc-700 {
+  color: var(--ios-secondary-label) !important;
+}
+.dark .text-zinc-600 {
+  color: var(--ios-secondary-label) !important;
+}
+.dark .text-zinc-500 {
+  color: var(--ios-tertiary-label) !important;
+}
+.dark .text-zinc-400 {
+  color: var(--ios-tertiary-label) !important;
+}
+.dark .text-black {
+  color: var(--ios-label) !important;
+}
 
 /* Inform UA for form controls, scrollbars, etc. */
-html { color-scheme: light; }
-html.dark { color-scheme: dark; }
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
