@@ -3,6 +3,7 @@ import { listGalleryImages } from "@/lib/gallery";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { ScrollSyncHero } from "@/components/scroll-sync-hero";
 import { getRecentActivities } from "@/lib/posts";
+import { MomentStrip } from "@/components/moments/moment-strip";
 
 export const revalidate = 60;
 
@@ -13,6 +14,7 @@ export default async function Home() {
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-28 px-6 py-16 sm:px-8 md:px-12">
       <ScrollSyncHero activities={activities} locale="en" />
+      <MomentStrip locale="en" />
 
       <section className="space-y-8" id="gallery">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

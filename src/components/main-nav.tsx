@@ -18,9 +18,19 @@ export function MainNav() {
       match: "/posts",
     },
     {
+      href: localePath(locale, "/m"),
+      label: locale === "zh" ? "瞬间" : "Moments",
+      match: "/m",
+    },
+    {
       href: localePath(locale, "/gallery"),
       label: locale === "zh" ? "相册" : "Gallery",
       match: "/gallery",
+    },
+    {
+      href: localePath(locale, "/about"),
+      label: locale === "zh" ? "关于" : "About",
+      match: "/about",
     },
   ];
 

@@ -6,6 +6,7 @@ import { SessionProvider } from "@/components/session-provider";
 import { AuthHeader } from "@/components/auth-header";
 import { MainNav } from "@/components/main-nav";
 import { Footer } from "@/components/footer";
+import { MomentComposerBottomSheet } from "@/components/moments/moment-composer";
 import { GlobalLanguageSwitcher } from "@/components/global-language-switcher";
 import { Search } from "@/components/search";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -100,6 +101,9 @@ export default async function RootLayout({
           </header>
 
           <main id="main-content">{children}</main>
+
+          {/* Global mobile composer FAB (hidden on admin) */}
+          {!isAdminRoute && <MomentComposerBottomSheet />}
 
           {!isAdminRoute && <Footer />}
         </SessionProvider>

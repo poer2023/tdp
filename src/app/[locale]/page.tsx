@@ -3,6 +3,7 @@ import { getRecentActivities } from "@/lib/posts";
 import { listGalleryImages } from "@/lib/gallery";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { ScrollSyncHero } from "@/components/scroll-sync-hero";
+import { MomentStrip } from "@/components/moments/moment-strip";
 import { localePath } from "@/lib/locale-path";
 
 // Incremental Static Regeneration for localized homepage
@@ -23,6 +24,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-28 px-6 py-16 sm:px-8 md:px-12">
       <ScrollSyncHero activities={activities} locale={l} />
+      <MomentStrip locale={l} />
 
       <section className="space-y-8" id="gallery">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

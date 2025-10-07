@@ -17,6 +17,7 @@ model User {
   accounts      Account[]
   posts         Post[]
   sessions      Session[]
+  moments       Moment[]
 }
 
 model Account {
@@ -134,6 +135,43 @@ model GalleryImage {
   storageType        String    @default("local")
   width              Int?
   post               Post?     @relation(fields: [postId], references: [id])
+}
+
+// Moments (short notes)
+model Moment {
+  id          String           @id @default(cuid())
+  authorId    String
+  content     String           @db.Text
+  images      Json?
+  visibility  MomentVisibility @default(PUBLIC)
+  slug        String?          @unique
+  tags        String[]
+  location    Json?
+  lang        String           @default("en-US")
+  status      MomentStatus     @default(PUBLISHED)
+  scheduledAt DateTime?
+  replyToId   String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  author   User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replyTo  Moment? @relation("MomentThread", fields: [replyToId], references: [id])
+  replies  Moment[] @relation("MomentThread")
+
+  @@index([createdAt, visibility, lang])
+  @@index([status])
+}
+
+enum MomentVisibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum MomentStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
 }
 
 enum UserRole {
