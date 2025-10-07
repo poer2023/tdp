@@ -209,6 +209,24 @@ export function MomentComposerBottomSheet() {
                   {pending ? "发布中…" : "发布"}
                 </button>
               </div>
+              {/* Advanced options: tags, location, schedule */}
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <input
+                  name="tags"
+                  placeholder="标签（逗号分隔，最多5个）"
+                  className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+                />
+                <input
+                  name="locationName"
+                  placeholder="地点（可选）"
+                  className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+                />
+                <input
+                  type="datetime-local"
+                  name="scheduledAt"
+                  className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+                />
+              </div>
               {state.status === "error" && <p className="text-xs text-red-600">{state.message}</p>}
             </form>
             {/* end form */}

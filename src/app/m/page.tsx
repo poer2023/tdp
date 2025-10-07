@@ -24,6 +24,8 @@ export default async function MomentsPage() {
             images={m.images}
             createdAt={m.createdAt}
             visibility={m.visibility}
+            tags={m.tags}
+            locationName={(m.location as unknown as { name?: string } | null)?.name ?? null}
             locale="en"
           />
         ))}

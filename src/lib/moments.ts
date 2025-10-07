@@ -32,8 +32,10 @@ export async function listMoments(options?: {
 }): Promise<MomentListItem[]> {
   const limit = options?.limit ?? 20;
   const cursor = options?.cursor ?? null;
+  const now = new Date();
   const where: Prisma.MomentWhereInput = {
-    status: "PUBLISHED",
+    deletedAt: null,
+    OR: [{ status: "PUBLISHED" }, { status: "SCHEDULED", scheduledAt: { lte: now } }],
   };
   if (options?.visibility) where.visibility = options.visibility;
   else where.visibility = { in: ["PUBLIC", "UNLISTED"] };
@@ -63,9 +65,14 @@ export async function listMoments(options?: {
 }
 
 export async function getMomentByIdOrSlug(idOrSlug: string) {
+  const now = new Date();
   const m = await prisma.moment.findFirst({
     where: {
-      OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      deletedAt: null,
+      AND: [
+        { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+        { OR: [{ status: "PUBLISHED" }, { status: "SCHEDULED", scheduledAt: { lte: now } }] },
+      ],
     },
   });
   if (!m) return null;

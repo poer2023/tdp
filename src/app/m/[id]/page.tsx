@@ -57,6 +57,8 @@ export default async function MomentDetailPage({ params }: Props) {
         images={(m.images as unknown as MomentImage[]) ?? []}
         createdAt={m.createdAt}
         visibility={m.visibility as MomentVisibility}
+        tags={(m.tags as string[]) || []}
+        locationName={(m.location as unknown as { name?: string } | null)?.name ?? null}
         locale="en"
       />
     </div>

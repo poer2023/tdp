@@ -9,6 +9,8 @@ export function MomentCard({
   images = [],
   createdAt,
   visibility,
+  tags = [],
+  locationName,
   locale = "en",
 }: {
   id: string;
@@ -17,6 +19,8 @@ export function MomentCard({
   images?: MomentImage[] | null;
   createdAt: string | Date;
   visibility: "PUBLIC" | "UNLISTED" | "PRIVATE";
+  tags?: string[];
+  locationName?: string | null;
   locale?: "en" | "zh";
 }) {
   const href = localePath(locale, `/m/${slug || id}`);
@@ -74,7 +78,15 @@ export function MomentCard({
         </div>
       )}
 
-      <div className="mt-3 text-right">
+      <div className="mt-3 flex items-center justify-between">
+        <div className="flex flex-wrap items-center gap-1 text-[11px] text-zinc-500">
+          {locationName && <span>📍 {locationName}</span>}
+          {tags.slice(0, 5).map((t) => (
+            <span key={t} className="rounded bg-zinc-100 px-1.5 py-0.5 dark:bg-zinc-800">
+              #{t}
+            </span>
+          ))}
+        </div>
         <Link
           href={href}
           className="text-xs font-medium text-zinc-600 underline underline-offset-2 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"

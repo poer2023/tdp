@@ -153,6 +153,7 @@ model Moment {
   replyToId   String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
 
   author   User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   replyTo  Moment? @relation("MomentThread", fields: [replyToId], references: [id])
@@ -172,6 +173,14 @@ enum MomentStatus {
   DRAFT
   PUBLISHED
   SCHEDULED
+}
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }
 
 enum UserRole {
