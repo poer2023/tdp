@@ -22,10 +22,12 @@ export function ScrollSyncHero({
   locale: "zh" | "en";
 }) {
   const leftRef = useRef<HTMLDivElement | null>(null);
+  const leftContentRef = useRef<HTMLDivElement | null>(null);
   const rightRef = useRef<HTMLDivElement | null>(null);
+  const rightContentRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(0);
 
-  // 将 activities 转换为展示项 (使用 useMemo 避免每次渲染都创建新数组)
+  // 将 activities 转换为展示项
   const items = useMemo<ScrollSyncItem[]>(
     () =>
       activities.map((activity) => ({
@@ -42,164 +44,103 @@ export function ScrollSyncHero({
     [activities, locale]
   );
 
-  // 双向滚动同步 + 模糊效果
+  // 右侧滚动 + 同步左侧内容
   useEffect(() => {
-    const left = leftRef.current;
-    const right = rightRef.current;
-    if (!left || !right || items.length === 0) return;
+    const rightContainer = rightRef.current;
+    const leftContainer = leftRef.current;
+    const leftContentWrapper = leftContentRef.current;
+    if (!rightContainer || !leftContainer || !leftContentWrapper || items.length === 0) return;
 
     let ticking = false;
-    let syncing: "left" | "right" | null = null;
 
-    const updateBlur = () => {
-      const containerRect = left.getBoundingClientRect();
+    const updateActiveItem = () => {
+      const containerRect = leftContainer.getBoundingClientRect();
       const centerY = containerRect.height / 2;
-      const buttons = left.querySelectorAll("button");
+
+      // 获取所有标题按钮
+      const buttons = leftContainer.querySelectorAll("[data-item-index]");
       let closestIdx = 0;
       let minDistance = Infinity;
 
-      buttons.forEach((btn, idx) => {
+      buttons.forEach((btn) => {
+        const idx = parseInt(btn.getAttribute("data-item-index") || "0", 10);
         const btnRect = btn.getBoundingClientRect();
-        // 计算按钮中心相对于容器顶部的位置
         const btnCenterY = btnRect.top + btnRect.height / 2 - containerRect.top;
         const distance = Math.abs(btnCenterY - centerY);
 
-        // 找到最接近中心的标题
         if (distance < minDistance) {
           minDistance = distance;
           closestIdx = idx;
         }
 
-        // 计算模糊比例（基于容器高度的一半）
+        // 更新模糊效果
         const maxDistance = containerRect.height / 2;
         const ratio = Math.min(distance / maxDistance, 1);
-
-        // 模糊值: 中心0px, 边缘6px（降低最大模糊）
         const blurValue = ratio * 6;
-        // 透明度: 中心1, 边缘0.4（提高最小透明度）
         const opacityValue = 1 - ratio * 0.6;
 
         (btn as HTMLElement).style.filter = `blur(${blurValue}px)`;
         (btn as HTMLElement).style.opacity = `${opacityValue}`;
       });
 
-      return closestIdx;
+      setActive(closestIdx);
     };
 
-    const sync = (from: "left" | "right") => {
-      if (from === "left") {
-        // 左侧滚动时：找到最接近视口中心的标题
-        const activeIdx = updateBlur();
-        setActive(activeIdx);
-
-        // 同步右侧滚动到对应图片
-        const rightTotal = right.scrollHeight - right.clientHeight;
-        const rightTop = (activeIdx / Math.max(items.length - 1, 1)) * rightTotal;
-        right.scrollTo({ top: rightTop });
-      } else {
-        // 右侧滚动时：计算应该激活的索引
-        const ra = right.scrollTop / Math.max(right.scrollHeight - right.clientHeight, 1);
-        const activeIdx = Math.round(ra * (items.length - 1));
-        const clampedIdx = Math.min(Math.max(activeIdx, 0), items.length - 1);
-        setActive(clampedIdx);
-
-        // 同步左侧：将对应标题滚动到视口中心
-        const buttons = left.querySelectorAll("button");
-        const targetBtn = buttons[clampedIdx] as HTMLElement;
-        if (targetBtn) {
-          const targetRect = targetBtn.getBoundingClientRect();
-          const leftRect = left.getBoundingClientRect();
-          const targetCenter = targetRect.top - leftRect.top + targetRect.height / 2;
-          const containerCenter = left.clientHeight / 2;
-          const offset = targetCenter - containerCenter;
-          left.scrollTo({ top: left.scrollTop + offset });
-        }
-
-        // 更新模糊效果
-        updateBlur();
-      }
-    };
-
-    const onLeft = () => {
-      // 如果是右侧触发的同步，直接忽略左侧的滚动事件
-      if (syncing === "right") {
-        return;
-      }
+    const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          if (syncing !== "right") {
-            // 再次检查，避免竞态条件
-            syncing = "left";
-            sync("left");
-            ticking = false;
-            // 延迟50ms后重置，确保所有同步触发的滚动事件都被忽略
-            setTimeout(() => {
-              syncing = null;
-            }, 50);
-          } else {
-            ticking = false;
-          }
+          // 同步左侧transform（反向缩小比例）
+          const leftItemHeight = 60 + 8;
+          const rightItemHeight = 400 + 24;
+          const ratio = leftItemHeight / rightItemHeight;
+          const translateY = -rightContainer.scrollTop * ratio;
+          leftContentWrapper.style.transform = `translateY(${translateY}px)`;
+
+          // 更新blur效果
+          updateActiveItem();
+
+          ticking = false;
         });
         ticking = true;
       }
     };
 
-    const onRight = () => {
-      // 如果是左侧触发的同步，直接忽略右侧的滚动事件
-      if (syncing === "left") {
-        return;
-      }
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          if (syncing !== "left") {
-            // 再次检查，避免竞态条件
-            syncing = "right";
-            sync("right");
-            ticking = false;
-            // 延迟50ms后重置，确保所有同步触发的滚动事件都被忽略
-            setTimeout(() => {
-              syncing = null;
-            }, 50);
-          } else {
-            ticking = false;
-          }
-        });
-        ticking = true;
-      }
-    };
+    rightContainer.addEventListener("scroll", handleScroll, { passive: true });
 
-    left.addEventListener("scroll", onLeft, { passive: true });
-    right.addEventListener("scroll", onRight, { passive: true });
+    // 初始化
+    updateActiveItem();
 
     return () => {
-      left.removeEventListener("scroll", onLeft);
-      right.removeEventListener("scroll", onRight);
+      rightContainer.removeEventListener("scroll", handleScroll);
     };
   }, [items]);
 
   const scrollToIndex = (i: number) => {
-    const left = leftRef.current;
-    const right = rightRef.current;
-    if (!left || !right) return;
+    const rightContainer = rightRef.current;
+    const leftContainer = leftRef.current;
+    if (!rightContainer || !leftContainer) return;
 
-    // 将目标标题滚动到视口中心
-    const buttons = left.querySelectorAll("button");
+    const buttons = leftContainer.querySelectorAll("[data-item-index]");
     const targetBtn = buttons[i] as HTMLElement;
-    if (targetBtn) {
-      const targetRect = targetBtn.getBoundingClientRect();
-      const leftRect = left.getBoundingClientRect();
-      const targetCenter = targetRect.top - leftRect.top + targetRect.height / 2;
-      const containerCenter = left.clientHeight / 2;
-      const offset = targetCenter - containerCenter;
-      left.scrollTo({ top: left.scrollTop + offset, behavior: "smooth" });
-    }
+    if (!targetBtn) return;
 
-    // 右侧同步滚动
-    const rightTotal = right.scrollHeight - right.clientHeight;
-    const rightTop = (i / Math.max(items.length - 1, 1)) * rightTotal;
-    right.scrollTo({ top: rightTop, behavior: "smooth" });
+    const containerRect = leftContainer.getBoundingClientRect();
+    const targetRect = targetBtn.getBoundingClientRect();
+    const targetCenter = targetRect.top - containerRect.top + targetRect.height / 2;
+    const containerCenter = leftContainer.clientHeight / 2;
+    const leftOffset = targetCenter - containerCenter;
 
-    setActive(i);
+    // 转换为右侧的滚动距离（放大比例）
+    const leftItemHeight = 60 + 8;
+    const rightItemHeight = 400 + 24;
+    const ratio = rightItemHeight / leftItemHeight;
+    const rightOffset = leftOffset * ratio;
+
+    // 滚动右侧容器（原生滚动）
+    rightContainer.scrollBy({
+      top: rightOffset,
+      behavior: "smooth",
+    });
   };
 
   if (items.length === 0) {
@@ -214,68 +155,116 @@ export function ScrollSyncHero({
 
   return (
     <section className="relative">
-      {/* 隐藏滚动条 */}
+      {/* 样式定义 */}
       <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .scroll-container {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .scroll-container::-webkit-scrollbar {
+          display: none;
+        }
+
+        /* 视口渐变遮罩 */
+        .viewport-mask {
+          mask-image: linear-gradient(
+            to bottom,
+            transparent 0%,
+            black 15%,
+            black 85%,
+            transparent 100%
+          );
+          -webkit-mask-image: linear-gradient(
+            to bottom,
+            transparent 0%,
+            black 15%,
+            black 85%,
+            transparent 100%
+          );
+        }
+
+        /* 标题容器顶部优化遮罩 */
+        .viewport-mask-top {
+          mask-image: linear-gradient(
+            to bottom,
+            transparent 0%,
+            black 10%,
+            black 85%,
+            transparent 100%
+          );
+          -webkit-mask-image: linear-gradient(
+            to bottom,
+            transparent 0%,
+            black 10%,
+            black 85%,
+            transparent 100%
+          );
+        }
       `}</style>
 
-      {/* 大容器约束区域 */}
+      {/* 固定视口容器 */}
       <div className="relative h-[80vh] overflow-hidden md:h-[85vh]">
-        <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-2 md:gap-10">
-          {/* 左列：标题列表 */}
+        {/* 双容器布局 */}
+        <div className="absolute inset-0 flex gap-5">
+          {/* 左侧：通过transform同步的标题容器 */}
           <div
             ref={leftRef}
-            className="no-scrollbar h-full overflow-y-auto py-12"
-            aria-label="Titles"
+            className="scroll-container viewport-mask-top flex-1 overflow-hidden"
+            style={{ paddingTop: "40vh", paddingBottom: "40vh" }}
           >
-            {items.map((item, i) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToIndex(i)}
-                aria-current={i === active ? "true" : "false"}
-                className="group w-full py-8 text-left transition-all duration-200 md:py-12"
-              >
-                <div className="space-y-1">
-                  <div className="text-xl leading-tight font-semibold tracking-tight text-zinc-900 md:text-2xl dark:text-zinc-50">
-                    {item.title}
+            <div ref={leftContentRef} className="space-y-2 will-change-transform">
+              {items.map((item, i) => (
+                <button
+                  key={item.id}
+                  data-item-index={i}
+                  type="button"
+                  onClick={() => scrollToIndex(i)}
+                  aria-current={i === active ? "true" : "false"}
+                  className="group h-[60px] w-full text-left transition-all duration-200"
+                >
+                  <div className="space-y-0.5">
+                    <div className="text-xl leading-snug font-semibold tracking-tight text-zinc-900 md:text-2xl md:leading-tight dark:text-zinc-50">
+                      {item.title}
+                    </div>
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400">{item.subtitle}</div>
                   </div>
-                  <div className="text-sm text-zinc-500 dark:text-zinc-400">{item.subtitle}</div>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* 右列：图片纵向列表 */}
+          {/* 右侧：可滚动的图片容器 */}
           <div
             ref={rightRef}
-            className="no-scrollbar h-full overflow-x-hidden overflow-y-auto"
-            aria-label="Images"
+            className="scroll-container viewport-mask flex-1 overflow-y-auto"
+            style={{ paddingTop: "40vh", paddingBottom: "40vh" }}
           >
-            {items.map((item, i) => (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={[
-                  "mb-4 block overflow-hidden transition-transform duration-300 md:mb-6",
-                  i === active ? "scale-[1.01]" : "scale-100",
-                ].join(" ")}
-              >
-                <div className="aspect-[16/9] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    width={800}
-                    height={450}
-                    className={[
-                      "h-full w-full object-cover transition-transform duration-500",
-                      i === active ? "scale-[1.02]" : "",
-                    ].join(" ")}
-                    draggable={false}
-                  />
-                </div>
-              </Link>
-            ))}
+            <div ref={rightContentRef} className="space-y-6">
+              {items.map((item, i) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={[
+                    "block h-[400px] overflow-hidden transition-transform duration-300",
+                    i === active ? "scale-[1.01]" : "scale-100",
+                  ].join(" ")}
+                >
+                  <div className="h-full w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      width={800}
+                      height={450}
+                      className={[
+                        "h-full w-full object-cover transition-transform duration-500 select-none",
+                        i === active ? "scale-[1.02]" : "",
+                      ].join(" ")}
+                      draggable={false}
+                    />
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
