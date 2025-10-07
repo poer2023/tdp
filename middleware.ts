@@ -13,35 +13,34 @@ function pickPreferredLocale(acceptLanguage: string | null): "zh" | "en" {
 // Unified middleware
 // - Adds `x-pathname` header for locale detection in layout
 // - Enforces ADMIN role for `/admin/*` pages
-// - Auto-redirects `/` to `/{locale}` based on browser language
-// - Migrates old routes to new i18n routes
+// - Localized routing rules:
+//   · English is default (no /en prefix). Keep `/` as English.
+//   · Chinese uses /zh prefix. Redirect `/` → `/zh` only when browser prefers Chinese.
+//   · Redirect any `/en` or `/en/*` URL to the prefix-free path to hide /en.
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  // 1) Root path redirect: / → /zh or /en based on Accept-Language
+  // 1) Root path: redirect only when Chinese is preferred
   if (pathname === "/") {
-    const target = pickPreferredLocale(request.headers.get("accept-language"));
-    const url = new URL(`/${target}`, request.nextUrl.origin);
-    searchParams.forEach((v, k) => url.searchParams.set(k, v));
-    return NextResponse.redirect(url, { status: 302 });
+    const pref = pickPreferredLocale(request.headers.get("accept-language"));
+    if (pref === "zh") {
+      const url = new URL(`/zh`, request.nextUrl.origin);
+      searchParams.forEach((v, k) => url.searchParams.set(k, v));
+      return NextResponse.redirect(url, { status: 302 });
+    }
   }
 
-  // 2) Old route migration: /posts → /{preferred}/posts (301 permanent)
-  if (pathname === "/posts" || pathname.startsWith("/posts/")) {
-    const pref = pickPreferredLocale(request.headers.get("accept-language"));
-    const rest = pathname.slice("/posts".length); // preserve /:slug if any
-    const url = new URL(`/${pref}/posts${rest}`, request.nextUrl.origin);
+  // 2) Hide /en prefix: permanently redirect to prefix-free path
+  if (pathname === "/en" || pathname === "/en/") {
+    const url = new URL(`/`, request.nextUrl.origin);
     searchParams.forEach((v, k) => url.searchParams.set(k, v));
-    return NextResponse.redirect(url, { status: 301 });
+    return NextResponse.redirect(url, { status: 308 });
   }
-
-  // 3) Old route migration: /gallery → /{preferred}/gallery (301 permanent)
-  if (pathname === "/gallery" || pathname.startsWith("/gallery/")) {
-    const pref = pickPreferredLocale(request.headers.get("accept-language"));
-    const rest = pathname.slice("/gallery".length);
-    const url = new URL(`/${pref}/gallery${rest}`, request.nextUrl.origin);
+  if (pathname.startsWith("/en/")) {
+    const rest = pathname.slice("/en".length);
+    const url = new URL(rest || "/", request.nextUrl.origin);
     searchParams.forEach((v, k) => url.searchParams.set(k, v));
-    return NextResponse.redirect(url, { status: 301 });
+    return NextResponse.redirect(url, { status: 308 });
   }
 
   // Always attach pathname header for i18n html lang resolution

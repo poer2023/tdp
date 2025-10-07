@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { RecentActivity } from "@/lib/posts";
+import { localePath } from "@/lib/locale-path";
 
 type ScrollSyncItem = {
   id: string;
@@ -37,8 +38,8 @@ export function ScrollSyncHero({
         image: activity.image,
         href:
           activity.type === "post"
-            ? `/${locale}/posts/${activity.slug}`
-            : `/${locale}/gallery#${activity.id}`,
+            ? localePath(locale, `/posts/${activity.slug}`)
+            : `${localePath(locale, "/gallery")}#${activity.id}`,
         type: activity.type,
       })),
     [activities, locale]

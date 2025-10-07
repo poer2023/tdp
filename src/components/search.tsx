@@ -15,7 +15,7 @@ type Result = {
   authorName: string | null;
 };
 
-export function Search() {
+export function Search({ size = "md" }: { size?: "sm" | "md" }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
@@ -261,7 +261,9 @@ export function Search() {
           type="button"
           aria-label="Search"
           onClick={() => setOpen((v) => !v)}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-300 hover:text-zinc-900 focus:ring-0 focus:outline-none dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-300"
+          className={`flex items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-300 hover:text-zinc-900 focus:ring-0 focus:outline-none dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-300 ${
+            size === "sm" ? "h-7 w-7" : "h-9 w-9"
+          }`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -269,7 +271,7 @@ export function Search() {
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
-            className="h-4 w-4"
+            className={size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"}
           >
             <circle cx="11" cy="11" r="7"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>

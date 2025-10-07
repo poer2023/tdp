@@ -3,6 +3,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import Image from "next/image";
 import Link from "next/link";
+import { localePath } from "@/lib/locale-path";
 import "leaflet/dist/leaflet.css";
 import type { GalleryImage } from "@/lib/gallery";
 import { useEffect } from "react";
@@ -144,7 +145,7 @@ export function GalleryMap({ images, locale = "zh" }: GalleryMapProps) {
 
                 {/* 返回相册链接 */}
                 <Link
-                  href={`/${locale}/gallery/${image.id}`}
+                  href={localePath(locale, `/gallery/${image.id}`)}
                   className="inline-flex items-center gap-1 text-xs font-medium text-zinc-900 underline underline-offset-2 transition-colors hover:text-zinc-600"
                 >
                   {locale === "zh" ? "查看详情" : "View Details"}

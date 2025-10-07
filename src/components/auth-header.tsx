@@ -78,18 +78,18 @@ export function AuthHeader() {
           aria-haspopup="menu"
           aria-expanded={isMenuOpen}
           aria-label="User menu"
-          className="flex items-center gap-2 rounded-full border border-zinc-200 p-1 pr-3 transition-colors hover:border-zinc-300 focus:ring-2 focus:ring-zinc-400 focus:outline-none dark:border-zinc-800 dark:hover:border-zinc-700"
+          className="flex items-center gap-1.5 rounded-full border border-zinc-200 p-0.5 pr-2 transition-colors hover:border-zinc-300 focus:ring-2 focus:ring-zinc-400 focus:outline-none dark:border-zinc-800 dark:hover:border-zinc-700"
         >
           {session.user.image ? (
             <Image
               src={session.user.image}
               alt={session.user.name || "User"}
-              width={32}
-              height={32}
+              width={28}
+              height={28}
               className="rounded-full"
             />
           ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 text-sm font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
               {session.user.name?.charAt(0).toUpperCase() || "U"}
             </div>
           )}
@@ -97,7 +97,7 @@ export function AuthHeader() {
             {session.user.name || "User"}
           </span>
           <svg
-            className={`h-4 w-4 text-zinc-500 transition-transform ${isMenuOpen ? "rotate-180" : ""}`}
+            className={`h-3.5 w-3.5 text-zinc-500 transition-transform ${isMenuOpen ? "rotate-180" : ""}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

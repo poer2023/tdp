@@ -52,6 +52,8 @@ export default async function RootLayout({
   const locale = getLocaleFromPathname(pathname) ?? cookieLocale;
   const htmlLang = getHtmlLang(locale);
 
+  const isAdminRoute = pathname.startsWith("/admin");
+
   return (
     <html lang={htmlLang}>
       <body
@@ -76,12 +78,22 @@ export default async function RootLayout({
           </a>
 
           <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
-            <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-              <MainNav />
+            <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
+              {/* Left cluster: brand + links + search */}
               <div className="flex items-center gap-4">
+                <MainNav />
+                <div className="hidden sm:block">
+                  <Search size="sm" />
+                </div>
+              </div>
+              {/* Right cluster: compact controls */}
+              <div className="flex items-center gap-3">
+                <ThemeToggle size="sm" />
                 <GlobalLanguageSwitcher />
-                <Search />
-                <ThemeToggle />
+                {/* Mobile search fallback */}
+                <div className="sm:hidden">
+                  <Search size="sm" />
+                </div>
                 <AuthHeader />
               </div>
             </div>
@@ -89,7 +101,7 @@ export default async function RootLayout({
 
           <main id="main-content">{children}</main>
 
-          <Footer />
+          {!isAdminRoute && <Footer />}
         </SessionProvider>
       </body>
     </html>

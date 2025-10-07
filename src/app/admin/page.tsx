@@ -1,5 +1,4 @@
 // Admin dashboard home
-import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { PostStatus } from "@prisma/client";
 import { MetricCard } from "@/components/admin/metric-card";
@@ -13,7 +12,6 @@ export const revalidate = 0;
 export const runtime = "nodejs";
 
 export default async function AdminHomePage() {
-  const session = await auth();
   const locale = await getAdminLocale();
 
   // Fetch content statistics and recent activity in parallel
@@ -45,13 +43,13 @@ export default async function AdminHomePage() {
   ]);
 
   return (
-    <div className="space-y-8 md:space-y-12">
+    <div className="space-y-10">
       {/* Page Header - Simplified */}
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
           {t(locale, "overview")}
         </h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
           {t(locale, "contentDashboard")}
         </p>
       </header>
@@ -137,12 +135,7 @@ export default async function AdminHomePage() {
         </div>
       </section>
 
-      {/* System Info - Footer */}
-      <footer className="border-t border-zinc-200 pt-6 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
-        <p>
-          {t(locale, "loggedInAs")} {session?.user?.email}
-        </p>
-      </footer>
+      {/* No page footer for admin dashboard */}
     </div>
   );
 }

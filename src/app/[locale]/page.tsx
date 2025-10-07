@@ -3,6 +3,7 @@ import { getRecentActivities } from "@/lib/posts";
 import { listGalleryImages } from "@/lib/gallery";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { ScrollSyncHero } from "@/components/scroll-sync-hero";
+import { localePath } from "@/lib/locale-path";
 
 // Incremental Static Regeneration for localized homepage
 // Next.js 15 段配置需为编译期常量
@@ -17,7 +18,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   const l = locale === "zh" ? "zh" : "en";
 
   // Fetch data for homepage
-  const [gallery, activities] = await Promise.all([listGalleryImages(6), getRecentActivities(4)]);
+  const [gallery, activities] = await Promise.all([listGalleryImages(6), getRecentActivities(10)]);
 
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col gap-28 px-6 py-16 sm:px-8 md:px-12">
@@ -36,7 +37,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
             </p>
           </div>
           <Link
-            href={`/${l}/gallery`}
+            href={localePath(l, "/gallery")}
             className="text-sm font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600 dark:text-zinc-100"
           >
             {l === "zh" ? "查看相册" : "View gallery"}

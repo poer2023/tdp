@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { localePath } from "@/lib/locale-path";
 import type { GalleryImage } from "@/lib/gallery";
 import { PhotoMetadataPanel } from "@/components/photo-metadata-panel";
 import { LivePhotoPlayer } from "@/components/live-photo-player";
@@ -57,11 +58,11 @@ export function PhotoViewer({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        router.push(`/${locale}/gallery`);
+        router.push(localePath(locale, "/gallery"));
       } else if (e.key === "ArrowLeft" && prevId) {
-        router.push(`/${locale}/gallery/${prevId}`);
+        router.push(localePath(locale, `/gallery/${prevId}`));
       } else if (e.key === "ArrowRight" && nextId) {
-        router.push(`/${locale}/gallery/${nextId}`);
+        router.push(localePath(locale, `/gallery/${nextId}`));
       }
     };
 
@@ -315,7 +316,7 @@ export function PhotoViewer({
         {/* Close */}
         <Link
           ref={backButtonRef}
-          href={`/${locale}/gallery`}
+          href={localePath(locale, "/gallery")}
           className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
           aria-label={locale === "zh" ? "返回相册页面" : "Back to Gallery"}
           title={locale === "zh" ? "返回相册" : "Back"}
@@ -335,7 +336,7 @@ export function PhotoViewer({
       <div className="pointer-events-none fixed top-1/2 left-4 z-[62] -translate-y-1/2 lg:left-6">
         {prevId && (
           <Link
-            href={`/${locale}/gallery/${prevId}`}
+            href={localePath(locale, `/gallery/${prevId}`)}
             className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
             title="上一张"
             aria-label="上一张"
@@ -438,7 +439,7 @@ export function PhotoViewer({
             {thumbnails.map((t) => (
               <Link
                 key={t.id}
-                href={`/${locale}/gallery/${t.id}`}
+                href={localePath(locale, `/gallery/${t.id}`)}
                 className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-md ring-1 ${
                   currentId === t.id ? "ring-blue-500" : "ring-zinc-200 dark:ring-zinc-700"
                 }`}
