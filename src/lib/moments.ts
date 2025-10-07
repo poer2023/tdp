@@ -22,6 +22,7 @@ export type MomentListItem = {
   location: unknown | null;
   tags: string[];
   lang: string;
+  authorId: string;
 };
 
 export async function listMoments(options?: {
@@ -29,6 +30,8 @@ export async function listMoments(options?: {
   cursor?: string | null;
   visibility?: MomentVisibility;
   lang?: string | null;
+  tag?: string | null;
+  q?: string | null;
 }): Promise<MomentListItem[]> {
   const limit = options?.limit ?? 20;
   const cursor = options?.cursor ?? null;
@@ -40,6 +43,19 @@ export async function listMoments(options?: {
   if (options?.visibility) where.visibility = options.visibility;
   else where.visibility = { in: ["PUBLIC", "UNLISTED"] };
   if (options?.lang) where.lang = options.lang;
+  const extraAnd: Prisma.MomentWhereInput[] = [];
+  if (options?.tag) extraAnd.push({ tags: { has: options.tag } });
+  if (options?.q) extraAnd.push({ content: { contains: options.q, mode: "insensitive" } });
+  if (extraAnd.length) {
+    if (Array.isArray((where as Prisma.MomentWhereInput).AND)) {
+      (where as Prisma.MomentWhereInput).AND = [
+        ...((where as Prisma.MomentWhereInput).AND as Prisma.MomentWhereInput[]),
+        ...extraAnd,
+      ];
+    } else {
+      (where as Prisma.MomentWhereInput).AND = extraAnd;
+    }
+  }
 
   const items = await prisma.moment.findMany({
     where,
@@ -56,6 +72,7 @@ export async function listMoments(options?: {
       location: true,
       tags: true,
       lang: true,
+      authorId: true,
     },
   });
   return items.map((m) => ({
@@ -77,6 +94,39 @@ export async function getMomentByIdOrSlug(idOrSlug: string) {
   });
   if (!m) return null;
   return { ...m, images: (m.images as MomentImage[] | null) ?? [] };
+}
+
+export async function softDeleteMoment(id: string, requester: { id: string; role?: string }) {
+  const m = await prisma.moment.findUnique({ where: { id } });
+  if (!m) throw new Error("not found");
+  const can = requester.role === "ADMIN" || requester.id === m.authorId;
+  if (!can) throw new Error("forbidden");
+  await prisma.moment.update({ where: { id }, data: { deletedAt: new Date() } });
+}
+
+export async function restoreMoment(id: string, requester: { id: string; role?: string }) {
+  const m = await prisma.moment.findUnique({ where: { id } });
+  if (!m) throw new Error("not found");
+  const can = requester.role === "ADMIN" || requester.id === m.authorId;
+  if (!can) throw new Error("forbidden");
+  await prisma.moment.update({ where: { id }, data: { deletedAt: null } });
+}
+
+export async function purgeMoment(id: string, requester: { id: string; role?: string }) {
+  const m = await prisma.moment.findUnique({ where: { id } });
+  if (!m) return;
+  const can = requester.role === "ADMIN" || requester.id === m.authorId;
+  if (!can) throw new Error("forbidden");
+  await prisma.moment.delete({ where: { id } });
+}
+
+export async function publishDueScheduled(): Promise<number> {
+  const now = new Date();
+  const res = await prisma.moment.updateMany({
+    where: { status: "SCHEDULED", scheduledAt: { lte: now }, deletedAt: null },
+    data: { status: "PUBLISHED" },
+  });
+  return res.count;
 }
 
 export async function createMoment(input: {
