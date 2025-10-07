@@ -65,16 +65,30 @@ export async function createMomentAction(
       files.map(async (f) => {
         try {
           const buf = Buffer.from(await f.arrayBuffer());
-          const key = `${cryptoRandom()}.${(f.name.split(".").pop() || "jpg").toLowerCase()}`;
+          const base = cryptoRandom();
+          const ext = (f.name.split(".").pop() || "jpg").toLowerCase();
+          const key = `${base}.${ext}`;
           const path = await storage.upload(buf, key, f.type || "image/jpeg");
+          // generate webp preview (max width 1280)
           let w: number | null = null;
           let h: number | null = null;
+          let previewUrl: string | undefined = undefined;
           try {
-            const meta = await sharp(buf).metadata();
+            const img = sharp(buf);
+            const meta = await img.metadata();
             w = meta.width ?? null;
             h = meta.height ?? null;
+            const resized = await img
+              .resize({ width: 1280, withoutEnlargement: true })
+              .webp({ quality: 82 })
+              .toBuffer();
+            const previewKey = `${base}.webp`;
+            const previewPath = await storage.upload(resized, previewKey, "image/webp");
+            previewUrl = storage.getPublicUrl(previewPath);
           } catch {}
-          return { url: storage.getPublicUrl(path), w, h } as MomentImage;
+          return { url: storage.getPublicUrl(path), w, h, previewUrl } as MomentImage & {
+            previewUrl?: string;
+          };
         } catch {
           return null;
         }

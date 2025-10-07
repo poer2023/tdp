@@ -10,6 +10,7 @@ export type MomentImage = {
   w?: number | null;
   h?: number | null;
   alt?: string | null;
+  previewUrl?: string | null;
 };
 
 export type MomentListItem = {

@@ -3,6 +3,7 @@ import { MomentCard } from "@/components/moments/moment-card";
 import { OpenComposerButton } from "@/components/moments/open-composer-button";
 import { auth } from "@/auth";
 import { softDeleteMomentAction } from "./manage-actions";
+import { DeleteIcon } from "@/components/moments/delete-icon";
 import Link from "next/link";
 
 export const revalidate = 0;
@@ -13,6 +14,7 @@ export default async function MomentsPage({ searchParams }: Props) {
   const { tag, q } = await searchParams;
   const session = await auth();
   const userId = session?.user?.id;
+  const isAdmin = (session?.user as { role?: string } | undefined)?.role === "ADMIN";
   const moments = await listMoments({ limit: 20, tag: tag || null, q: q || null });
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
@@ -44,9 +46,9 @@ export default async function MomentsPage({ searchParams }: Props) {
           </Link>
         )}
       </form>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {moments.map((m) => (
-          <div key={m.id} className="space-y-2">
+          <div key={m.id} className="relative space-y-2">
             <MomentCard
               id={m.id}
               slug={m.slug}
@@ -58,12 +60,7 @@ export default async function MomentsPage({ searchParams }: Props) {
               locationName={(m.location as unknown as { name?: string } | null)?.name ?? null}
               locale="en"
             />
-            {userId && userId === m.authorId && (
-              <form action={softDeleteMomentAction} className="text-right">
-                <input type="hidden" name="id" value={m.id} />
-                <button className="text-xs text-red-600 hover:underline">Delete</button>
-              </form>
-            )}
+            {isAdmin && <DeleteIcon id={m.id} />}
           </div>
         ))}
       </div>
