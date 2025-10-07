@@ -1,0 +1,44 @@
+<svg width="960" height="720" viewBox="0 0 960 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="echo-bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(480 360) rotate(90) scale(360 480)">
+      <stop offset="0" stop-color="#20244F" />
+      <stop offset="0.45" stop-color="#2D2D5A" />
+      <stop offset="1" stop-color="#05070F" />
+    </radialGradient>
+    <linearGradient id="echo-wave" x1="240" y1="540" x2="720" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4AE5FF" stop-opacity="0.85" />
+      <stop offset="1" stop-color="#FF63CE" stop-opacity="0.45" />
+    </linearGradient>
+  </defs>
+  <rect width="960" height="720" rx="48" fill="url(#echo-bg)" />
+  <g filter="url(#innerGlow)">
+    <rect x="220" y="200" width="520" height="320" rx="32" fill="#11162F" />
+  </g>
+  <path
+    d="M256 480C304 420 368 396 432 420C496 444 560 528 640 504C688 490 712 452 720 420"
+    stroke="url(#echo-wave)"
+    stroke-width="22"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <g opacity="0.45">
+    <rect x="280" y="240" width="52" height="52" rx="12" fill="#4AE5FF" />
+    <rect x="356" y="240" width="52" height="52" rx="12" fill="#63B3FF" />
+    <rect x="432" y="240" width="52" height="52" rx="12" fill="#7C6BFF" />
+    <rect x="508" y="240" width="52" height="52" rx="12" fill="#B253FF" />
+    <rect x="584" y="240" width="52" height="52" rx="12" fill="#FF63CE" />
+  </g>
+  <circle cx="704" cy="248" r="36" fill="#FF63CE" />
+  <circle cx="256" cy="504" r="28" fill="#4AE5FF" />
+  <circle cx="704" cy="472" r="28" fill="#7C6BFF" />
+  <text x="256" y="188" fill="#E0F4FF" font-family="'Inter', 'Helvetica Neue', Arial" font-size="30" letter-spacing="0.25em">
+    ECHO PARCEL
+  </text>
+  <defs>
+    <filter id="innerGlow" x="210" y="190" width="540" height="340" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix" />
+      <feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+      <feGaussianBlur stdDeviation="12" result="effect1_foregroundBlur" />
+    </filter>
+  </defs>
+</svg>

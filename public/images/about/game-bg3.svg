@@ -1,0 +1,35 @@
+<svg width="840" height="1050" viewBox="0 0 840 1050" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg3-bg" x1="120" y1="120" x2="720" y2="930" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1D0F1F" />
+      <stop offset="0.5" stop-color="#2E1733" />
+      <stop offset="1" stop-color="#4A2647" />
+    </linearGradient>
+    <linearGradient id="bg3-flame" x1="240" y1="280" x2="620" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8B500" />
+      <stop offset="0.5" stop-color="#F55A3A" />
+      <stop offset="1" stop-color="#A62361" />
+    </linearGradient>
+  </defs>
+  <rect width="840" height="1050" rx="48" fill="url(#bg3-bg)" />
+  <path
+    d="M420 260C480 360 520 420 520 520C520 640 460 720 420 760C380 720 320 640 320 520C320 420 360 360 420 260Z"
+    fill="url(#bg3-flame)"
+    opacity="0.8"
+  />
+  <path
+    d="M420 560C436 560 448 572 448 588C448 604 436 616 420 616C404 616 392 604 392 588C392 572 404 560 420 560Z"
+    fill="#FFD782"
+  />
+  <path
+    d="M220 780C300 700 360 740 420 780C480 820 540 860 620 780"
+    stroke="#F8B500"
+    stroke-width="20"
+    stroke-linecap="round"
+  />
+  <circle cx="260" cy="380" r="34" fill="#A62361" opacity="0.5" />
+  <circle cx="600" cy="380" r="42" fill="#F55A3A" opacity="0.4" />
+  <text x="220" y="220" fill="#FFE7D1" font-family="'Cinzel', 'Times New Roman', serif" font-size="44" letter-spacing="0.24em">
+    BALDUR'S GATE III
+  </text>
+</svg>

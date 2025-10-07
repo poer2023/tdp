@@ -1,5 +1,6 @@
 import { listMoments } from "@/lib/moments";
 import { MomentCard } from "@/components/moments/moment-card";
+import { OpenComposerButton } from "@/components/moments/open-composer-button";
 
 export const revalidate = 0;
 
@@ -11,12 +12,7 @@ export default async function MomentsPageZh() {
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
           瞬间
         </h1>
-        <button
-          className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
-          onClick={() => window.dispatchEvent(new CustomEvent("open-moment-composer"))}
-        >
-          + 发布
-        </button>
+        <OpenComposerButton label="+ 发布" />
       </header>
       <div className="space-y-4">
         {moments.map((m) => (

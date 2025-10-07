@@ -1,0 +1,32 @@
+<svg width="960" height="720" viewBox="0 0 960 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pantry-bg" x1="120" y1="120" x2="840" y2="660" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#071B2C" />
+      <stop offset="0.5" stop-color="#0E3B2F" />
+      <stop offset="1" stop-color="#1E6042" />
+    </linearGradient>
+    <linearGradient id="pantry-arc" x1="220" y1="240" x2="740" y2="540" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B3FFE2" stop-opacity="0.8" />
+      <stop offset="1" stop-color="#59F2FF" stop-opacity="0.35" />
+    </linearGradient>
+  </defs>
+  <rect width="960" height="720" rx="48" fill="url(#pantry-bg)" />
+  <g opacity="0.6">
+    <circle cx="320" cy="360" r="150" stroke="#6BFBD0" stroke-width="14" stroke-dasharray="24 32" />
+    <circle cx="640" cy="320" r="120" stroke="#90F7FF" stroke-width="10" stroke-dasharray="18 24" />
+  </g>
+  <path
+    d="M220 500C320 380 420 340 520 360C620 380 660 460 740 520"
+    stroke="url(#pantry-arc)"
+    stroke-width="20"
+    stroke-linecap="round"
+  />
+  <rect x="260" y="240" width="180" height="220" rx="32" fill="#102F2D" opacity="0.8" />
+  <rect x="520" y="240" width="180" height="160" rx="32" fill="#143F34" opacity="0.8" />
+  <rect x="520" y="420" width="220" height="80" rx="28" fill="#0B5145" opacity="0.9" />
+  <circle cx="360" cy="520" r="36" fill="#D2FFE6" />
+  <circle cx="680" cy="244" r="28" fill="#59F2FF" />
+  <text x="260" y="196" fill="#CFFFF3" font-family="'Space Grotesk', 'Inter', sans-serif" font-size="28" letter-spacing="0.35em">
+    ORBITAL PANTRY
+  </text>
+</svg>

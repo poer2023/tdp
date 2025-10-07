@@ -1,5 +1,6 @@
 import { listMoments } from "@/lib/moments";
 import { MomentCard } from "@/components/moments/moment-card";
+import { OpenComposerButton } from "@/components/moments/open-composer-button";
 
 export const revalidate = 0;
 
@@ -11,12 +12,7 @@ export default async function MomentsPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
           Moments
         </h1>
-        <button
-          className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
-          onClick={() => window.dispatchEvent(new CustomEvent("open-moment-composer"))}
-        >
-          + New
-        </button>
+        <OpenComposerButton label="+ New" />
       </header>
       <div className="space-y-4">
         {moments.map((m) => (

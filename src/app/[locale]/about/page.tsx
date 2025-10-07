@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { aboutContent, aboutLayoutClass, resolveAboutLocale } from "@/lib/about-content";
 import { localePath } from "@/lib/locale-path";
@@ -68,22 +69,48 @@ export default async function LocalizedAboutPage({ params }: PageProps) {
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-baseline md:justify-between">
           <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            {data.journeyLabel}
+            {data.projectsLabel}
           </h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{data.journeySubtitle}</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">{data.projectsSubtitle}</p>
         </div>
-        <div className="space-y-6 border-l border-zinc-200 pl-6 dark:border-zinc-800">
-          {data.timeline.map((item) => (
-            <div key={item.period} className="space-y-2">
-              <span className="text-xs font-medium tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
-                {item.period}
-              </span>
-              <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-                {item.title}
-              </h3>
-              <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-                {item.description}
-              </p>
+        <div className="grid gap-6 md:grid-cols-2">
+          {data.projects.map((item) => (
+            <div
+              key={item.period}
+              className="overflow-hidden rounded-3xl border border-zinc-200 bg-white/70 shadow-[0_18px_40px_-24px_rgba(39,39,42,0.45)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/70"
+            >
+              <div className="relative aspect-[4/3]">
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="object-cover"
+                  sizes="(min-width: 1024px) 380px, (min-width: 768px) 45vw, 100vw"
+                />
+              </div>
+              <div className="space-y-4 p-6">
+                <div className="flex items-center gap-3 text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+                  <span>{item.period}</span>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+                    {item.title}
+                  </h3>
+                  <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+                    {item.description}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {item.stack.map((tech) => (
+                    <span
+                      key={tech}
+                      className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -92,22 +119,37 @@ export default async function LocalizedAboutPage({ params }: PageProps) {
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-baseline md:justify-between">
           <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            {data.valuesLabel}
+            {data.gamesLabel}
           </h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{data.valuesSubtitle}</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">{data.gamesSubtitle}</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {data.values.map((item) => (
+        <div className="grid gap-6 md:grid-cols-3">
+          {data.games.map((item) => (
             <div
               key={item.title}
-              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-800 dark:bg-zinc-900/40"
+              className="flex flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white/70 shadow-[0_18px_40px_-24px_rgba(39,39,42,0.45)] backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/70"
             >
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                {item.title}
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                {item.description}
-              </p>
+              <div className="relative aspect-[4/5]">
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="object-cover"
+                  sizes="(min-width: 1024px) 320px, (min-width: 768px) 32vw, 100vw"
+                />
+              </div>
+              <div className="flex flex-1 flex-col gap-3 p-6">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+                  <span>{item.status}</span>
+                  <span>{item.progress}</span>
+                </div>
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                  {item.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                  {item.description}
+                </p>
+              </div>
             </div>
           ))}
         </div>
