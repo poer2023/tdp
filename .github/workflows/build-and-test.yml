@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - feature/ui-optimization
   pull_request:
     branches:
       - main
