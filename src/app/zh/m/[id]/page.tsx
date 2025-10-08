@@ -41,8 +41,8 @@ export default async function MomentDetailPageZh({ params, searchParams }: Props
       {Array.isArray(m.images) && (m.images as unknown as MomentImage[]).length > 1 && (
         <div className="mb-4 grid grid-cols-6 gap-2">
           {(m.images as MomentImage[]).map((im, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
             <a key={i} href={`?image=${i}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={im.previewUrl || im.url}
                 alt={im.alt || ""}
