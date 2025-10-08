@@ -22,6 +22,11 @@ export function ScrollSyncHero({
   activities: RecentActivity[];
   locale: "zh" | "en";
 }) {
+  const heroTitle = locale === "zh" ? "清新简约的个人博客" : "Clean & Minimalist Personal Blog";
+  const heroSubtitle =
+    locale === "zh"
+      ? "记录创作灵感、旅途与生活瞬间的双语空间。"
+      : "A bilingual space for stories, journeys, and creative moments.";
   const leftRef = useRef<HTMLDivElement | null>(null);
   const leftContentRef = useRef<HTMLDivElement | null>(null);
   const rightRef = useRef<HTMLDivElement | null>(null);
@@ -144,18 +149,34 @@ export function ScrollSyncHero({
     });
   };
 
-  if (items.length === 0) {
-    return (
-      <section className="py-12 text-center">
-        <p className="text-zinc-500 dark:text-zinc-400">
-          {locale === "zh" ? "暂无内容更新" : "No recent updates"}
-        </p>
-      </section>
-    );
-  }
-
   return (
     <section className="relative">
+      <header className="mx-auto mb-10 flex max-w-5xl flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div className="space-y-4">
+          <p className="text-sm font-semibold tracking-[0.3em] text-zinc-400 uppercase">
+            {locale === "zh" ? "最新动态" : "Latest Updates"}
+          </p>
+          <h1 className="text-4xl leading-tight font-bold text-zinc-900 md:text-6xl dark:text-zinc-50">
+            {heroTitle}
+          </h1>
+          <p className="max-w-xl text-base text-zinc-600 dark:text-zinc-400">{heroSubtitle}</p>
+        </div>
+        <div className="flex flex-wrap gap-3 md:justify-end">
+          <Link
+            href="#posts"
+            className="inline-flex items-center rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 transition hover:border-zinc-400 hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:border-zinc-700 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
+          >
+            {locale === "zh" ? "查看最新文章" : "View Latest Posts"}
+          </Link>
+          <Link
+            href="#gallery"
+            className="inline-flex items-center rounded-full border border-transparent bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            {locale === "zh" ? "浏览相册" : "Browse Gallery"}
+          </Link>
+        </div>
+      </header>
+
       {/* 样式定义 */}
       <style>{`
         .scroll-container {
@@ -214,23 +235,31 @@ export function ScrollSyncHero({
             style={{ paddingTop: "40vh", paddingBottom: "40vh" }}
           >
             <div ref={leftContentRef} className="space-y-2 will-change-transform">
-              {items.map((item, i) => (
-                <button
-                  key={item.id}
-                  data-item-index={i}
-                  type="button"
-                  onClick={() => scrollToIndex(i)}
-                  aria-current={i === active ? "true" : "false"}
-                  className="group h-[60px] w-full text-left transition-all duration-200"
-                >
-                  <div className="space-y-0.5">
-                    <div className="text-xl leading-snug font-semibold tracking-tight text-zinc-900 md:text-2xl md:leading-tight dark:text-zinc-50">
-                      {item.title}
+              {items.length > 0 ? (
+                items.map((item, i) => (
+                  <button
+                    key={item.id}
+                    data-item-index={i}
+                    type="button"
+                    onClick={() => scrollToIndex(i)}
+                    aria-current={i === active ? "true" : "false"}
+                    className="group h-[60px] w-full text-left transition-all duration-200"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="text-xl leading-snug font-semibold tracking-tight text-zinc-900 md:text-2xl md:leading-tight dark:text-zinc-50">
+                        {item.title}
+                      </div>
+                      <div className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {item.subtitle}
+                      </div>
                     </div>
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400">{item.subtitle}</div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+                  {locale === "zh" ? "暂无内容更新" : "No recent updates yet — stay tuned!"}
+                </div>
+              )}
             </div>
           </div>
 
@@ -241,30 +270,38 @@ export function ScrollSyncHero({
             style={{ paddingTop: "40vh", paddingBottom: "40vh" }}
           >
             <div ref={rightContentRef} className="space-y-6">
-              {items.map((item, i) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={[
-                    "block h-[400px] overflow-hidden transition-transform duration-300",
-                    i === active ? "scale-[1.01]" : "scale-100",
-                  ].join(" ")}
-                >
-                  <div className="h-full w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      width={800}
-                      height={450}
-                      className={[
-                        "h-full w-full object-cover transition-transform duration-500 select-none",
-                        i === active ? "scale-[1.02]" : "",
-                      ].join(" ")}
-                      draggable={false}
-                    />
-                  </div>
-                </Link>
-              ))}
+              {items.length > 0 ? (
+                items.map((item, i) => (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className={[
+                      "block h-[400px] overflow-hidden transition-transform duration-300",
+                      i === active ? "scale-[1.01]" : "scale-100",
+                    ].join(" ")}
+                  >
+                    <div className="h-full w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        width={800}
+                        height={450}
+                        className={[
+                          "h-full w-full object-cover transition-transform duration-500 select-none",
+                          i === active ? "scale-[1.02]" : "",
+                        ].join(" ")}
+                        draggable={false}
+                      />
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="flex h-[400px] items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white text-sm text-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-500">
+                  {locale === "zh"
+                    ? "上传首批照片即可开启时间轴"
+                    : "Add your first post or photo to populate this timeline."}
+                </div>
+              )}
             </div>
           </div>
         </div>

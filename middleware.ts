@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { decode } from "next-auth/jwt";
 import { pinyin } from "pinyin-pro";
 
 // Language preference detection helper
@@ -43,11 +43,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, { status: 308 });
   }
 
+  // Derive locale from pathname for a reliable client navigation fallback
+  const currentLocale = pathname.startsWith("/zh") ? "zh" : "en";
+
   // Always attach pathname header for i18n html lang resolution
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
-  // Derive locale from pathname for a reliable client navigation fallback
-  const currentLocale = pathname.startsWith("/zh") ? "zh" : "en";
+  requestHeaders.set("x-locale", currentLocale);
 
   // Handle Chinese slug redirects (PostAlias-like behavior) for posts
   // Matches: /posts/:slug or /zh/posts/:slug
@@ -91,10 +93,26 @@ export async function middleware(request: NextRequest) {
 
   // Protect admin routes
   if (pathname.startsWith("/admin")) {
-    const token = await getToken({ req: request });
+    const sessionToken =
+      request.cookies.get("next-auth.session-token")?.value ??
+      request.cookies.get("__Secure-next-auth.session-token")?.value ??
+      null;
+    let role: string | null = null;
+
+    if (sessionToken) {
+      try {
+        const decoded = await decode({
+          token: sessionToken,
+          secret: process.env.NEXTAUTH_SECRET || "",
+        });
+        role = (decoded?.role as string | undefined) ?? null;
+      } catch {
+        role = null;
+      }
+    }
 
     // Unauthenticated → redirect to login (tests accept 302 here)
-    if (!token) {
+    if (!sessionToken) {
       const redirectUrl = new URL("/login", request.nextUrl.origin);
       const q = searchParams.toString();
       redirectUrl.searchParams.set("callbackUrl", `${pathname}${q ? `?${q}` : ""}`);
@@ -102,8 +120,31 @@ export async function middleware(request: NextRequest) {
     }
 
     // Authenticated but not ADMIN → return 403 (tests expect 401/403)
-    if ((token as { role?: string })?.role !== "ADMIN") {
-      return new NextResponse("Forbidden", { status: 403, headers: requestHeaders });
+    if (role !== "ADMIN") {
+      const forbiddenHtml = `<!DOCTYPE html><html lang="${currentLocale}">
+        <head>
+          <meta charset="utf-8" />
+          <title>403 Forbidden</title>
+          <style>
+            body{font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;margin:0;padding:0;background:#f4f4f5;color:#18181b;}
+            main{display:flex;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;}
+            h1{font-size:3rem;margin-bottom:1rem;}
+            p{color:#52525b;margin-bottom:1.5rem;}
+            a{color:#2563eb;text-decoration:none;font-weight:600;}
+          </style>
+        </head>
+        <body>
+          <main>
+            <h1>403</h1>
+            <p>Forbidden - Admin access required</p>
+            <a href="/">Return to Home</a>
+          </main>
+        </body>
+      </html>`;
+      return new NextResponse(forbiddenHtml, {
+        status: 403,
+        headers: { "Content-Type": "text/html" },
+      });
     }
   }
 

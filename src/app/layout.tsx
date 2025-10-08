@@ -12,6 +12,7 @@ import { Search } from "@/components/search";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
 import { HtmlLangSync } from "@/components/html-lang-sync";
+import { auth } from "@/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,11 +48,13 @@ export default async function RootLayout({
   // Get current pathname to determine locale
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "/";
+  const headerLocale = headersList.get("x-locale") as "zh" | "en" | null;
   // Fallback to cookie in case middleware header is unavailable in client navigations
   const cookieStore = await cookies();
   const cookieLocale = (cookieStore.get("x-locale")?.value as "zh" | "en" | undefined) || undefined;
-  const locale = getLocaleFromPathname(pathname) ?? cookieLocale;
+  const locale = headerLocale ?? getLocaleFromPathname(pathname) ?? cookieLocale;
   const htmlLang = getHtmlLang(locale);
+  const session = await auth();
 
   const isAdminRoute = pathname.startsWith("/admin");
 
@@ -60,8 +63,6 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
       >
-        {/* Keep <html lang> consistent on client navigations */}
-        <HtmlLangSync />
         {/* Early theme applier to avoid FOUC */}
         <script
           dangerouslySetInnerHTML={{
@@ -69,7 +70,9 @@ export default async function RootLayout({
               "(()=>{try{const t=localStorage.getItem('theme');const d=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;const useDark=t? t==='dark': d;document.documentElement.classList[useDark?'add':'remove']('dark');}catch(e){}})()",
           }}
         />
-        <SessionProvider>
+        {/* Keep <html lang> consistent on client navigations */}
+        <HtmlLangSync />
+        <SessionProvider session={session}>
           {/* Skip to content link for accessibility */}
           <a
             href="#main-content"
