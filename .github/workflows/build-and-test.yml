@@ -1,0 +1,85 @@
+name: build-and-test
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tdp_ci
+          POSTGRES_PASSWORD: tdp_ci_password
+          POSTGRES_DB: tdp_ci
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgresql://tdp_ci:tdp_ci_password@localhost:5432/tdp_ci?schema=public
+      NEXTAUTH_SECRET: build-secret
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: build-client-id
+      GOOGLE_CLIENT_SECRET: build-client-secret
+      CI: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create log directory
+        run: mkdir -p ci
+
+      - name: Apply database migrations
+        run: |
+          set -o pipefail
+          npx prisma migrate deploy 2>&1 | tee ci/migrate.log
+
+      - name: Lint
+        run: |
+          set -o pipefail
+          npm run lint 2>&1 | tee ci/lint.log
+
+      - name: Type check
+        run: |
+          set -o pipefail
+          npm run type-check 2>&1 | tee ci/typecheck.log
+
+      - name: Unit tests
+        run: |
+          set -o pipefail
+          npm run test:run 2>&1 | tee ci/test.log
+
+      - name: Build
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee ci/build.log
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-failure-logs
+          path: ci/*.log
+          retention-days: 7

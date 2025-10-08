@@ -1,51 +1,50 @@
-# Repository Guidelines
+# Agent Operations Guide
 
-## Project Structure & Module Organization
+## Environment
 
-- `src/app`: Next.js App Router pages and admin UI (e.g., `src/app/admin/gallery`).
-- `src/lib`: Domain logic and utilities (gallery, uploads, storage, EXIF, geocoding).
+- Node.js 20.x (set via `actions/setup-node` or your local toolchain).
+- Package manager: npm (`npm ci` is required before any command).
+- PostgreSQL is required for migrations/tests; set `DATABASE_URL=postgresql://user:pass@host:port/db?schema=public`.
+- Playwright browsers are needed for E2E work (`npx playwright install chromium --with-deps` on fresh runners).
+
+## Setup Checklist
+
+1. `npm ci`
+2. `npx prisma migrate deploy` (whenever database access is needed).
+3. If running E2E, seed data with `npm run test:e2e:seed` and clean via `npm run test:e2e:cleanup` when done.
+
+## Diagnosis & Repair Strategy
+
+1. Read `ci/last-failure.log` for the failing job context.
+2. Reproduce locally in this order: ESLint/Prettier → TypeScript → Unit tests → Build → E2E (critical scenarios only).
+3. After every code change, run until all pass:
+   - `npm run lint`
+   - `npm run type-check`
+   - `npm run test:run`
+   - `npm run build`
+4. Keep diffs surgical; avoid unrelated formatting or refactors.
+
+## Core Commands
+
+- Install dependencies: `npm ci`
+- Lint: `npm run lint`
+- Format check: `npm run format:check`
+- Type check: `npm run type-check`
+- Unit tests: `npm run test:run`
+- E2E smoke: `npm run test:e2e:critical` (full suite: `npm run test:e2e`)
+- Build: `npm run build`
+
+## Code & Dependency Policy
+
+- Respect existing ESLint/Prettier configuration; do not add new dependencies without necessity and PR justification.
+- Components follow PascalCase; files prefer kebab-case; Tailwind utilities handle styling.
+- Implement changes in TypeScript/React idioms used in nearby modules.
+
+## Project Reference
+
+- `src/app`: Next.js App Router pages and the admin UI (e.g., `src/app/admin/gallery`).
+- `src/lib`: Domain logic, uploads, storage, EXIF, and geocoding utilities.
 - `prisma`: `schema.prisma` and migrations.
 - `e2e`: Playwright tests, fixtures, and page objects.
-- `docs` and `scripts`: Developer docs and helper scripts.
+- `docs` / `scripts`: Developer documentation and helper scripts.
 - `public/uploads`: Runtime media (`covers/`, `gallery/`).
-
-## Build, Test, and Development Commands
-
-- Install deps: `npm ci`
-- Dev server: `npm run dev` (http://localhost:3000)
-- Build & start: `npm run build && npm run start`
-- DB migrate: `npm run db:migrate`
-- Unit tests (Vitest): `npm run test`
-- E2E tests (Playwright): `npm run test:e2e` or `npm run test:e2e:critical`
-- Single E2E file: `npx playwright test e2e/<file>.spec.ts --project=chromium`
-
-## Coding Style & Naming Conventions
-
-- TypeScript, React 19, Next.js 15 (App Router, Server Actions).
-- Lint/format: ESLint + Prettier. Run `npm run lint` and `npm run format`.
-- Files: kebab-case (`admin-gallery-grid.tsx`), components PascalCase, CSS via Tailwind.
-- Prefer small, pure functions; match nearby patterns; avoid unnecessary comments.
-
-## Testing Guidelines
-
-- Unit: Vitest; name files `*.test.ts` or place under `__tests__/`.
-- E2E: Playwright (`playwright.config.ts`), auth helpers in `e2e/utils/auth.ts`.
-- Add tests for changed behavior; run relevant suites locally before PR.
-
-## Commit & Pull Request Guidelines
-
-- Use Conventional Commits: `feat:`, `fix:`, `docs:`, `refactor:`.
-- One logical change per PR. Include description, screenshots for UI, and a test plan.
-- Link related issues; update docs when behavior/config changes.
-
-## Security & Configuration Tips
-
-- Never commit secrets. Configure `.env` using `.env.example` as reference.
-- Key env vars: `DATABASE_URL`, `NEXTAUTH_SECRET`, Google OAuth, `MAX_UPLOAD_SIZE_MB`.
-- Uploads default to local `public/uploads`; for S3 set `STORAGE_TYPE=s3` and `S3_*` vars.
-
-## Agent-Specific Instructions
-
-- Make surgical changes; respect existing structure and naming.
-- Run unit/E2E tests for impacted areas; don’t fix unrelated issues.
-- Keep patches minimal and documented; update or create tests when behavior changes.

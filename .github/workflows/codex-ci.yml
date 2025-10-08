@@ -1,0 +1,117 @@
+name: codex-ci
+
+on:
+  workflow_run:
+    workflows: ["build-and-test"]
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: write
+
+jobs:
+  codex-diagnose-and-fix:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: codex
+          POSTGRES_PASSWORD: codex_password
+          POSTGRES_DB: codex
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgresql://codex:codex_password@localhost:5432/codex?schema=public
+      NEXTAUTH_SECRET: codex-ci-secret
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: codex-test-client
+      GOOGLE_CLIENT_SECRET: codex-test-secret
+      CI: true
+    steps:
+      - name: Checkout failing commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare database schema
+        run: npx prisma migrate deploy
+
+      - name: Install Codex CLI
+        run: |
+          npm install -g @openai/codex
+          codex --version
+
+      - name: Download failure logs
+        uses: actions/download-artifact@v4
+        with:
+          name: ci-failure-logs
+          path: ci/raw
+          run-id: ${{ github.event.workflow_run.id }}
+        continue-on-error: true
+
+      - name: Prepare failure log
+        run: |
+          mkdir -p ci
+          if ls ci/raw/*.log 1>/dev/null 2>&1; then
+            cat ci/raw/*.log > ci/last-failure.log
+            echo "Captured logs from artifacts."
+          else
+            echo "No log artifacts found; storing workflow URL." >&2
+            echo "See upstream logs: ${{ github.event.workflow_run.html_url }}" > ci/last-failure.log
+          fi
+
+      - name: Let Codex fix based on logs
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          codex --mode auto-edit \
+            "Read ci/last-failure.log and follow AGENTS.md. \
+             Reproduce failures with npm run lint, npm run type-check, npm run test:run, npm run build. \
+             Apply minimal fixes, rerun these commands until they pass, and keep changes scoped."
+
+      - name: Re-run project checks
+        run: |
+          npm ci
+          npx prisma migrate deploy
+          npm run lint
+          npm run type-check
+          npm run test:run
+          npm run build
+
+      - name: Create PR with Codex summary if fixed
+        if: ${{ success() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "codex-bot"
+          git config user.email "codex-bot@users.noreply.github.com"
+          CHANGES="$(git status --porcelain)"
+          if [ -z "$CHANGES" ]; then
+            echo "Codex made no changes; skipping PR creation."
+            exit 0
+          fi
+          BRANCH="codex/fix-${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "fix(ci): auto-repair by Codex"
+          git push origin "$BRANCH"
+          gh pr create --title "Fix CI failures via Codex" --body "Automated fix by Codex."
