@@ -445,7 +445,7 @@ export function PhotoViewer({
     } else {
       setSlideContext(null);
     }
-  }, [image.id, image.mediumPath, image.filePath, startSlide, clearStoredDirection]);
+  }, [image.id, image.mediumPath, image.filePath, image.title, startSlide, clearStoredDirection]);
 
   // Cleanup download artefacts on unmount
   useEffect(() => {

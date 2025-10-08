@@ -94,21 +94,21 @@ jobs:
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=min
           provenance: false
 
-      # Run Trivy vulnerability scanner on tags only
-      - name: Run Trivy vulnerability scanner (tags only)
-        if: github.event_name != 'pull_request' && startsWith(github.ref, 'refs/tags/')
-        continue-on-error: true
+      # Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner
+        if: github.event_name != 'pull_request'
+        continue-on-error: ${{ github.event_name == 'workflow_run' }}
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           format: "sarif"
           output: "trivy-results.sarif"
           severity: "HIGH,CRITICAL"
-          exit-code: "1"
+          exit-code: ${{ startsWith(github.ref, 'refs/tags/') && '1' || '0' }}
 
       # Upload Trivy scan results to GitHub Security tab
       - name: Upload Trivy scan results to GitHub Security tab
-        if: github.event_name != 'pull_request' && !github.event.repository.private
+        if: github.event_name != 'pull_request' && !github.event.repository.private && hashFiles('trivy-results.sarif') != ''
         continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
@@ -116,7 +116,7 @@ jobs:
 
       # Always keep a copy as artifact so结果可下载查看
       - name: Upload Trivy SARIF artifact
-        if: always()
+        if: always() && hashFiles('trivy-results.sarif') != ''
         uses: actions/upload-artifact@v4
         with:
           name: trivy-results.sarif

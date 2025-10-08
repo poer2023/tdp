@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { MomentImage } from "@/lib/moments";
 import { localePath } from "@/lib/locale-path";
 
@@ -78,11 +79,19 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
     const im = images[0]!;
 
     return (
-      <a href={im.url} target="_blank" rel="noopener">
-        <img
+      <a
+        href={im.url}
+        target="_blank"
+        rel="noopener"
+        className="relative block aspect-[4/3] w-full"
+      >
+        <Image
           src={im.previewUrl || im.url}
           alt={im.alt || ""}
-          className="h-auto w-full object-cover"
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          className="object-cover"
+          loading="lazy"
         />
       </a>
     );
@@ -92,11 +101,20 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
     return (
       <div className="grid grid-cols-2 gap-2">
         {images.slice(0, 2).map((im, i) => (
-          <a key={i} href={im.url} target="_blank" rel="noopener">
-            <img
+          <a
+            key={i}
+            href={im.url}
+            target="_blank"
+            rel="noopener"
+            className="relative block h-48 overflow-hidden rounded-lg"
+          >
+            <Image
               src={im.previewUrl || im.url}
               alt={im.alt || ""}
-              className="h-48 w-full rounded-lg object-cover"
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover"
+              loading="lazy"
             />
           </a>
         ))}
@@ -111,29 +129,53 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
       <div className="grid grid-cols-3 gap-2">
         <div className="col-span-2">
           {}
-          <a href={a!.url} target="_blank" rel="noopener">
-            <img
+          <a
+            href={a!.url}
+            target="_blank"
+            rel="noopener"
+            className="relative block h-48 overflow-hidden rounded-lg"
+          >
+            <Image
               src={a!.previewUrl || a!.url}
               alt={a!.alt || ""}
-              className="h-48 w-full rounded-lg object-cover"
+              fill
+              sizes="(max-width: 768px) 66vw, 33vw"
+              className="object-cover"
+              loading="lazy"
             />
           </a>
         </div>
         <div className="flex flex-col gap-2">
           {}
-          <a href={b!.url} target="_blank" rel="noopener">
-            <img
+          <a
+            href={b!.url}
+            target="_blank"
+            rel="noopener"
+            className="relative block h-24 overflow-hidden rounded-lg"
+          >
+            <Image
               src={b!.previewUrl || b!.url}
               alt={b!.alt || ""}
-              className="h-24 w-full rounded-lg object-cover"
+              fill
+              sizes="(max-width: 768px) 34vw, 17vw"
+              className="object-cover"
+              loading="lazy"
             />
           </a>
           {}
-          <a href={c!.url} target="_blank" rel="noopener">
-            <img
+          <a
+            href={c!.url}
+            target="_blank"
+            rel="noopener"
+            className="relative block h-24 overflow-hidden rounded-lg"
+          >
+            <Image
               src={c!.previewUrl || c!.url}
               alt={c!.alt || ""}
-              className="h-24 w-full rounded-lg object-cover"
+              fill
+              sizes="(max-width: 768px) 34vw, 17vw"
+              className="object-cover"
+              loading="lazy"
             />
           </a>
         </div>
@@ -147,19 +189,22 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
   return (
     <div className="grid grid-cols-2 gap-2">
       {first4.map((im, i) => (
-        <div key={i} className="relative">
+        <div key={i} className="relative h-36 overflow-hidden rounded-lg">
           {}
-          <a href={im.url} target="_blank" rel="noopener">
-            <img
+          <a href={im.url} target="_blank" rel="noopener" className="relative block h-full w-full">
+            <Image
               src={im.previewUrl || im.url}
               alt={im.alt || ""}
-              className="h-36 w-full rounded-lg object-cover"
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover"
+              loading="lazy"
             />
           </a>
           {i === 3 && more > 0 && (
             <Link
               href={`${detailHref}?image=3`}
-              className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 text-lg font-semibold text-white"
+              className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-black/50 text-lg font-semibold text-white"
             >
               +{more}
             </Link>
