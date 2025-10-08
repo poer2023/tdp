@@ -3,13 +3,6 @@ import type { NextRequest } from "next/server";
 import { decode } from "next-auth/jwt";
 import { pinyin } from "pinyin-pro";
 
-// Language preference detection helper
-function pickPreferredLocale(acceptLanguage: string | null): "zh" | "en" {
-  const al = (acceptLanguage || "").toLowerCase();
-  // Match zh, zh-cn, zh-hans, etc.
-  return /\bzh\b|zh-cn|zh-hans/.test(al) ? "zh" : "en";
-}
-
 // Unified middleware
 // - Adds `x-pathname` header for locale detection in layout
 // - Enforces ADMIN role for `/admin/*` pages

@@ -20,7 +20,7 @@ test.describe("Open Graph Metadata", () => {
     // Required OG tags
     expect(ogTags.title).toBeTruthy();
     expect(ogTags.type).toBe("article");
-    expect(ogTags.url).toContain(`/posts/${TEST_POST_IDS.enPost1}`);
+    expect(ogTags.url).toContain(`/en/posts/${TEST_POST_IDS.enPost1}`);
 
     // Optional but recommended OG tags
     if (ogTags.description) {
@@ -190,7 +190,7 @@ test.describe("JSON-LD Schema Markup", () => {
 
     if (schema.mainEntityOfPage) {
       expect(schema.mainEntityOfPage["@type"]).toBe("WebPage");
-      expect(schema.mainEntityOfPage["@id"]).toContain(`/posts/${TEST_POST_IDS.enPost1}`);
+      expect(schema.mainEntityOfPage["@id"]).toContain(`/en/posts/${TEST_POST_IDS.enPost1}`);
     }
   });
 });
@@ -215,7 +215,7 @@ test.describe("Canonical URLs", () => {
 
     // Canonical should be absolute URL
     expect(canonicalUrl).toMatch(/^https?:\/\//);
-    expect(canonicalUrl).toContain(`/posts/${TEST_POST_IDS.enPost1}`);
+    expect(canonicalUrl).toContain(`/en/posts/${TEST_POST_IDS.enPost1}`);
 
     // Should not contain query parameters
     expect(canonicalUrl).not.toContain("?");
@@ -237,7 +237,7 @@ test.describe("Canonical URLs", () => {
   });
 
   test("should strip query parameters from canonical URL", async ({ page }) => {
-    await page.goto(`/posts/${TEST_POST_IDS.enPost1}?ref=test&utm_source=twitter`);
+    await page.goto(`/en/posts/${TEST_POST_IDS.enPost1}?ref=test&utm_source=twitter`);
     await waitForNetworkIdle(page);
 
     const canonicalUrl = await postPage.getCanonicalUrl();

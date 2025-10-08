@@ -126,7 +126,7 @@ export function AuthHeader() {
             role="menu"
             aria-orientation="vertical"
             onKeyDown={handleMenuKeyDown}
-            className="absolute right-0 mt-2 w-48 rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
+            className="absolute left-0 mt-2 w-48 rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
           >
             <Link
               href="/admin"
@@ -134,7 +134,7 @@ export function AuthHeader() {
               onClick={() => setIsMenuOpen(false)}
               className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 focus:bg-zinc-100 focus:outline-none dark:text-zinc-300 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800"
             >
-              📊 Dashboard
+              Dashboard
             </Link>
             <button
               role="menuitem"
@@ -144,7 +144,7 @@ export function AuthHeader() {
               }}
               className="w-full px-4 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-100 focus:bg-zinc-100 focus:outline-none dark:text-zinc-300 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800"
             >
-              🚪 Sign out
+              Sign out
             </button>
           </div>
         )}

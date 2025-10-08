@@ -24,7 +24,7 @@ export function RecentUploads({ images }: RecentUploadsProps) {
               className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900"
             >
               <Image
-                src={image.filePath}
+                src={image.smallThumbPath ?? image.mediumPath ?? image.filePath}
                 alt={image.title || "Untitled"}
                 fill
                 className="object-cover transition-transform duration-200 group-hover:scale-105"

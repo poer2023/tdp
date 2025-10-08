@@ -27,6 +27,7 @@ public/uploads/*
 # Local tooling and reports (do not format)
 .claude/
 playwright-report/
+trivy-results.sarif
 
 # Logs
 npm-debug.log*

@@ -19,7 +19,7 @@ export class PostPage extends BasePage {
    * Navigate to a specific post
    */
   async gotoPost(slug: string, locale?: "en" | "zh") {
-    const path = locale === "zh" ? `/zh/posts/${slug}` : `/posts/${slug}`;
+    const path = locale === "zh" ? `/zh/posts/${slug}` : `/en/posts/${slug}`;
     await this.goto(path);
   }
 

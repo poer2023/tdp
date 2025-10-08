@@ -98,7 +98,7 @@ test.describe("Language Switching", () => {
       await waitForNetworkIdle(page);
 
       // Should be back on English version
-      expect(page.url()).not.toContain("/zh/");
+      await expectUrlContains(page, "/en/posts/");
       await expect(page.locator("html")).toHaveAttribute("lang", /^en/);
     } else {
       test.skip(true, "Post does not have translation");
@@ -139,7 +139,7 @@ test.describe("Language Switching", () => {
     await waitForNetworkIdle(page);
 
     // Should still be on post detail page (not redirected to list)
-    await expectUrlContains(page, "/posts/");
+    expect(page.url()).toMatch(/\/(en|zh)\/posts\//);
 
     // Should be on the translated version of the same post
     const translatedTitle = await postPage.title.textContent();
@@ -151,7 +151,7 @@ test.describe("Language Switching", () => {
 test.describe("Locale-specific Routing", () => {
   test("should handle Chinese slug redirects via PostAlias", async ({ page }) => {
     // Test Chinese characters in URL - may redirect or render directly
-    const response = await page.goto("/posts/测试文章", { waitUntil: "domcontentloaded" });
+    const response = await page.goto("/en/posts/测试文章", { waitUntil: "domcontentloaded" });
 
     if (response && (response.status() === 301 || response.status() === 302)) {
       // Redirected to pinyin slug
@@ -249,7 +249,7 @@ test.describe("Locale Edge Cases", () => {
       expect(await postPage.languageSwitcher.count()).toBe(0);
 
       // Direct navigation to /zh version should handle gracefully
-      const currentSlug = page.url().split("/posts/")[1];
+      const currentSlug = page.url().split("/en/posts/")[1];
       const zhResponse = await page.goto(`/zh/posts/${currentSlug}`);
 
       // Should either show 404 or redirect to valid page
@@ -261,7 +261,7 @@ test.describe("Locale Edge Cases", () => {
     const postPage = new PostPage(page);
 
     // Navigate with query parameter
-    await page.goto(`/posts/${TEST_POST_IDS.enPost1}?ref=test`);
+    await page.goto(`/en/posts/${TEST_POST_IDS.enPost1}?ref=test`);
     await postPage.expectPostLoaded();
 
     const hasTranslation = await postPage.hasTranslation();
