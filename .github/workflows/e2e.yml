@@ -1,27 +1,14 @@
 name: E2E Full Suite (Non-blocking)
 
 on:
-  # ⭐ Core trigger: Run when main branch has business code changes
-  push:
-    branches: [main]
-    paths-ignore:
-      - "**.md" # Ignore documentation changes
-      - "docs/**"
-      - ".github/workflows/**" # Ignore workflow configuration changes
-
-  # 🛡️ Safety net: Daily scheduled run at 2 AM Beijing time
   schedule:
-    - cron: "0 18 * * *" # UTC 18:00 = Beijing 02:00
-
-  # 🔧 Manual trigger: Run on-demand when needed
-  workflow_dispatch:
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
 
 jobs:
-  e2e-tests:
-    name: Full E2E Test Suite (314 tests)
+  e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    continue-on-error: true # Don't block on failure
     strategy:
       fail-fast: false
       matrix:
@@ -31,95 +18,57 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: tdp
-          POSTGRES_PASSWORD: tdp_password
-          POSTGRES_DB: tdp
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          POSTGRES_DB: app
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         ports:
-          - 5432:5432
+          - "5432:5432"
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      NODE_ENV: test
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: 20
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm i -g pnpm
+          pnpm i --frozen-lockfile
 
-      - name: Run database migrations
-        run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+      - name: Prepare database
+        run: |
+          npx prisma migrate deploy
+          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then pnpm prisma db seed || true; fi
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        run: npx playwright install --with-deps
 
       - name: Run Playwright tests (Shard ${{ matrix.shard }})
         run: |
-          npx playwright test \
-            --project=chromium \
-            --shard=${{ matrix.shard }} \
-            --reporter=line,html
-        env:
-          DATABASE_URL: "postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public"
-          NEXTAUTH_SECRET: "test-secret"
-          NEXTAUTH_URL: "http://localhost:3000"
-          GOOGLE_CLIENT_ID: "test-client-id"
-          GOOGLE_CLIENT_SECRET: "test-client-secret"
+          set -o pipefail
+          SAFE="${{ matrix.shard }}/"
+          SAFE=${SAFE//\//_}
+          npx playwright test --reporter=line --shard=${{ matrix.shard }} 2>&1 | tee "ci_e2e_${SAFE}.log"
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
+      - name: Upload shard logs & reports
         if: always()
-        with:
-          name: playwright-report-shard-${{ matrix.shard }}
-          path: playwright-report/
-          retention-days: 7
-
-      - name: Upload test artifacts
         uses: actions/upload-artifact@v4
-        if: failure()
         with:
-          name: playwright-videos
-          path: test-results/
-          retention-days: 7
-
-      - name: Create issue on failure
-        if: failure()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const passRate = 87; // Update with actual rate
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `E2E Tests Failure - ${new Date().toISOString().split('T')[0]}`,
-              body: `## E2E Full Suite Failure\n\n` +
-                    `- **Pass Rate**: ~${passRate}%\n` +
-                    `- **Run**: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\n` +
-                    `Please investigate and fix failing tests.\n\n` +
-                    `Note: This does NOT block deployment. Critical tests passed in CI.`,
-              labels: ['e2e', 'test-failure', 'non-blocking'],
-            })
-
-      - name: Comment on PR if triggered by PR
-        if: failure() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: `⚠️ Full E2E suite has failures, but **deployment is not blocked**.\n\n` +
-                    `Critical tests passed in main CI pipeline.\n\n` +
-                    `View full results: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
-            })
+          name: ci-e2e-logs-${{ matrix.shard }}
+          path: |
+            ci_e2e_*.log
+            playwright-report/**
+            test-results/**
+          retention-days: 5

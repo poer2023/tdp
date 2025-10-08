@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll, afterEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { PhotoViewer } from "../photo-viewer";
 import type { GalleryImage } from "@/lib/gallery";
 
@@ -59,6 +59,102 @@ vi.mock("../live-photo-player", () => ({
   ),
 }));
 
+class MockXHR {
+  static instances: MockXHR[] = [];
+  responseType = "";
+  status = 200;
+  response: Blob | null = null;
+  onload: ((this: XMLHttpRequest, ev: Event) => unknown) | null = null;
+  onprogress:
+    | ((
+        this: XMLHttpRequest,
+        ev: Event & { loaded?: number; total?: number; lengthComputable?: boolean }
+      ) => unknown)
+    | null = null;
+  onerror: ((this: XMLHttpRequest, ev: Event) => unknown) | null = null;
+  onabort: ((this: XMLHttpRequest, ev: Event) => unknown) | null = null;
+  open = vi.fn();
+  send = vi.fn(() => {
+    MockXHR.instances.push(this);
+  });
+  abort = vi.fn(() => {
+    this.onabort?.(new Event("abort"));
+  });
+}
+
+let originalXHR: typeof XMLHttpRequest | undefined;
+let originalCreateObjectURL: typeof URL.createObjectURL | undefined;
+let originalRevokeObjectURL: typeof URL.revokeObjectURL | undefined;
+let originalSessionStorage: Storage | undefined;
+const createObjectURLSpy = vi.fn(() => "blob:mock-url");
+const revokeObjectURLSpy = vi.fn();
+const storageMock = (() => {
+  let data: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => (key in data ? data[key] : null)),
+    setItem: vi.fn((key: string, value: string) => {
+      data[key] = value;
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete data[key];
+    }),
+    clear: vi.fn(() => {
+      data = {};
+    }),
+  };
+})();
+
+beforeAll(() => {
+  originalXHR = window.XMLHttpRequest;
+  Object.defineProperty(window, "XMLHttpRequest", {
+    configurable: true,
+    writable: true,
+    value: MockXHR,
+  });
+
+  originalCreateObjectURL = URL.createObjectURL;
+  Object.defineProperty(URL, "createObjectURL", {
+    configurable: true,
+    writable: true,
+    value: createObjectURLSpy,
+  });
+
+  originalRevokeObjectURL = URL.revokeObjectURL;
+  Object.defineProperty(URL, "revokeObjectURL", {
+    configurable: true,
+    writable: true,
+    value: revokeObjectURLSpy,
+  });
+
+  originalSessionStorage = window.sessionStorage;
+  Object.defineProperty(window, "sessionStorage", {
+    configurable: true,
+    writable: true,
+    value: storageMock as unknown as Storage,
+  });
+});
+
+afterAll(() => {
+  Object.defineProperty(window, "XMLHttpRequest", {
+    value: originalXHR,
+  });
+  if (originalCreateObjectURL) {
+    Object.defineProperty(URL, "createObjectURL", {
+      value: originalCreateObjectURL,
+    });
+  }
+  if (originalRevokeObjectURL) {
+    Object.defineProperty(URL, "revokeObjectURL", {
+      value: originalRevokeObjectURL,
+    });
+  }
+  if (originalSessionStorage) {
+    Object.defineProperty(window, "sessionStorage", {
+      value: originalSessionStorage,
+    });
+  }
+});
+
 describe("PhotoViewer", () => {
   const baseImage: GalleryImage = {
     id: "img-001",
@@ -84,6 +180,45 @@ describe("PhotoViewer", () => {
 
   beforeEach(() => {
     mockPush.mockClear();
+    MockXHR.instances = [];
+    createObjectURLSpy.mockClear();
+    revokeObjectURLSpy.mockClear();
+    storageMock.clear();
+    storageMock.setItem.mockClear();
+    storageMock.getItem.mockClear();
+    storageMock.removeItem.mockClear();
+    storageMock.clear.mockClear();
+  });
+
+  afterEach(() => {
+    MockXHR.instances = [];
+  });
+
+  it("prefers webp thumbnails in the film strip when available", () => {
+    render(
+      <PhotoViewer
+        image={baseImage}
+        prevId={null}
+        nextId={null}
+        thumbnails={[
+          {
+            id: "img-001",
+            filePath: "/uploads/test.jpg",
+            smallThumbPath: "/uploads/test_small.webp",
+          },
+          {
+            id: "img-002",
+            filePath: "/uploads/second.jpg",
+          },
+        ]}
+        currentId="img-001"
+      />
+    );
+
+    const thumbs = screen.getAllByAltText("thumb");
+    expect(thumbs[0]).toHaveAttribute("src", "/uploads/test_small.webp");
+    expect(thumbs[0]).toHaveAttribute("loading", "lazy");
+    expect(thumbs[1]).toHaveAttribute("src", "/uploads/second.jpg");
   });
 
   it("should render photo viewer with image", () => {
@@ -92,6 +227,74 @@ describe("PhotoViewer", () => {
     const image = screen.getByAlt("Test Photo");
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute("src", "/uploads/test.jpg");
+  });
+
+  it("promotes medium image to original once download finishes", async () => {
+    render(
+      <PhotoViewer
+        image={{
+          ...baseImage,
+          mediumPath: "/uploads/test_medium.webp",
+        }}
+        prevId={null}
+        nextId={null}
+      />
+    );
+
+    const image = screen.getByAlt("Test Photo");
+    expect(image).toHaveAttribute("src", "/uploads/test_medium.webp");
+
+    await waitFor(() => expect(MockXHR.instances.length).toBeGreaterThan(0));
+    const instance = MockXHR.instances.at(-1);
+    expect(instance).toBeDefined();
+    expect(instance?.open).toHaveBeenCalledWith("GET", "/uploads/test.jpg", true);
+    if (instance) {
+      instance.onprogress?.({
+        lengthComputable: true,
+        loaded: 350000,
+        total: 700000,
+      } as Event & { loaded: number; total: number; lengthComputable: boolean });
+      instance.response = new Blob([new Uint8Array(10)], { type: "image/jpeg" });
+      instance.onload?.(new Event("load"));
+    }
+
+    await waitFor(() => {
+      expect(image.getAttribute("src")).toBe("blob:mock-url");
+    });
+    expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURLSpy).not.toHaveBeenCalled();
+  });
+
+  it("shows progress indicator while original is downloading", async () => {
+    render(
+      <PhotoViewer
+        image={{
+          ...baseImage,
+          mediumPath: "/uploads/test_medium.webp",
+        }}
+        prevId={null}
+        nextId={null}
+      />
+    );
+
+    await waitFor(() => expect(MockXHR.instances.length).toBeGreaterThan(0));
+    const instance = MockXHR.instances.at(-1);
+    expect(instance).toBeDefined();
+    instance?.onprogress?.({
+      lengthComputable: true,
+      loaded: 102400,
+      total: 204800,
+    } as Event & { loaded: number; total: number; lengthComputable: boolean });
+
+    expect(screen.getByText(/正在加载图片/)).toHaveTextContent("50%");
+    expect(screen.getByText("0.10 MB / 0.20 MB")).toBeInTheDocument();
+
+    instance!.response = new Blob([new Uint8Array(10)], { type: "image/jpeg" });
+    instance!.onload?.(new Event("load"));
+
+    return waitFor(() => {
+      expect(screen.queryByText(/正在加载图片/)).not.toBeInTheDocument();
+    });
   });
 
   it("should render metadata panel", () => {
@@ -153,7 +356,7 @@ describe("PhotoViewer", () => {
   it("should render previous navigation button when prevId exists", () => {
     render(<PhotoViewer image={baseImage} prevId="img-prev" nextId={null} />);
 
-    const prevButton = screen.getByTitle("上一张 (←)");
+    const prevButton = screen.getByTitle("上一张");
     expect(prevButton).toBeInTheDocument();
     expect(prevButton).toHaveAttribute("href", "/gallery/img-prev");
   });
@@ -161,7 +364,7 @@ describe("PhotoViewer", () => {
   it("should render disabled previous button when prevId is null", () => {
     render(<PhotoViewer image={baseImage} prevId={null} nextId={null} />);
 
-    const prevButton = screen.queryByTitle("上一张 (←)");
+    const prevButton = screen.queryByTitle("上一张");
     expect(prevButton).not.toBeInTheDocument();
 
     // Should show disabled button instead
@@ -172,23 +375,38 @@ describe("PhotoViewer", () => {
   it("should render next navigation button when nextId exists", () => {
     render(<PhotoViewer image={baseImage} prevId={null} nextId="img-next" />);
 
-    const nextButton = screen.getByTitle("下一张 (→)");
+    const nextButton = screen.getByTitle("下一张");
     expect(nextButton).toBeInTheDocument();
     expect(nextButton).toHaveAttribute("href", "/gallery/img-next");
+  });
+
+  it("stores slide direction when navigating forward", () => {
+    render(<PhotoViewer image={baseImage} prevId={null} nextId="img-next" />);
+
+    fireEvent.click(screen.getByTitle("下一张"));
+
+    expect(storageMock.setItem).toHaveBeenCalledWith("gallery-slide-direction", expect.any(String));
+    const storedValue = storageMock.setItem.mock.calls.at(-1)?.[1];
+    expect(storedValue).toBeDefined();
+    const parsed = JSON.parse(storedValue as string);
+    expect(parsed).toMatchObject({
+      direction: "next",
+      fromSrc: "/uploads/test.jpg",
+    });
   });
 
   it("should render disabled next button when nextId is null", () => {
     render(<PhotoViewer image={baseImage} prevId={null} nextId={null} />);
 
-    const nextButton = screen.queryByTitle("下一张 (→)");
+    const nextButton = screen.queryByTitle("下一张");
     expect(nextButton).not.toBeInTheDocument();
   });
 
   it("should render both navigation buttons when both IDs exist", () => {
     render(<PhotoViewer image={baseImage} prevId="img-prev" nextId="img-next" />);
 
-    expect(screen.getByTitle("上一张 (←)")).toBeInTheDocument();
-    expect(screen.getByTitle("下一张 (→)")).toBeInTheDocument();
+    expect(screen.getByTitle("上一张")).toBeInTheDocument();
+    expect(screen.getByTitle("下一张")).toBeInTheDocument();
   });
 
   it("should render LivePhotoPlayer for Live Photos", () => {

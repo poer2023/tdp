@@ -227,18 +227,18 @@ export async function getAdjacentImageIds(id: string): Promise<{
     const prevImage = await prisma.galleryImage.findFirst({
       where: { createdAt: { lt: currentImage.createdAt } },
       orderBy: { createdAt: "desc" },
-      select: { id: true, filePath: true },
+      select: { id: true, filePath: true, mediumPath: true },
     });
     const nextImage = await prisma.galleryImage.findFirst({
       where: { createdAt: { gt: currentImage.createdAt } },
       orderBy: { createdAt: "asc" },
-      select: { id: true, filePath: true },
+      select: { id: true, filePath: true, mediumPath: true },
     });
     return {
       prev: prevImage?.id || null,
       next: nextImage?.id || null,
-      prevPath: prevImage?.filePath ?? undefined,
-      nextPath: nextImage?.filePath ?? undefined,
+      prevPath: prevImage?.mediumPath ?? prevImage?.filePath ?? undefined,
+      nextPath: nextImage?.mediumPath ?? nextImage?.filePath ?? undefined,
     };
   } catch (_e) {
     if (!SKIP_DB) return { prev: null, next: null };
@@ -253,11 +253,22 @@ export async function getAdjacentImageIds(id: string): Promise<{
       if (idx === -1) return { prev: null, next: null };
       const prevIdx = idx > 0 ? idx - 1 : -1;
       const nextIdx = idx < ids.length - 1 ? idx + 1 : -1;
+      const resolveMediumUrl = (filename: string | null | undefined) => {
+        if (!filename) return undefined;
+        const baseName = filename.replace(/\.[^.]+$/, "");
+        const mediumFile = `${baseName}_medium.webp`;
+        const mediumPath = path.join(base, mediumFile);
+        if (fs.existsSync(mediumPath)) {
+          return `/api/uploads/gallery/${mediumFile}`;
+        }
+        return `/uploads/gallery/${filename}`;
+      };
+
       return {
         prev: prevIdx >= 0 ? (ids[prevIdx] as string) : null,
         next: nextIdx >= 0 ? (ids[nextIdx] as string) : null,
-        prevPath: prevIdx >= 0 ? `/uploads/gallery/${files[prevIdx]}` : undefined,
-        nextPath: nextIdx >= 0 ? `/uploads/gallery/${files[nextIdx]}` : undefined,
+        prevPath: prevIdx >= 0 ? resolveMediumUrl(files[prevIdx]) : undefined,
+        nextPath: nextIdx >= 0 ? resolveMediumUrl(files[nextIdx]) : undefined,
       };
     } catch {
       return { prev: null, next: null };

@@ -2,7 +2,9 @@ name: codex-ci
 
 on:
   workflow_run:
-    workflows: ["build-and-test"]
+    workflows:
+      - "E2E Full Suite (Non-blocking)"
+      - "build-and-test"
     types:
       - completed
 
@@ -12,31 +14,29 @@ permissions:
   pull-requests: write
 
 jobs:
-  codex-diagnose-and-fix:
+  codex:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: codex
-          POSTGRES_PASSWORD: codex_password
-          POSTGRES_DB: codex
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          POSTGRES_DB: app
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         ports:
-          - 5432:5432
+          - "5432:5432"
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     env:
-      DATABASE_URL: postgresql://codex:codex_password@localhost:5432/codex?schema=public
-      NEXTAUTH_SECRET: codex-ci-secret
-      NEXTAUTH_URL: http://localhost:3000
-      NEXT_PUBLIC_SITE_URL: http://localhost:3000
-      GOOGLE_CLIENT_ID: codex-test-client
-      GOOGLE_CLIENT_SECRET: codex-test-secret
-      CI: true
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      NODE_ENV: test
+
     steps:
       - name: Checkout failing commit
         uses: actions/checkout@v4
@@ -46,72 +46,62 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: 20
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Prepare database schema
-        run: npx prisma migrate deploy
-
-      - name: Install Codex CLI
         run: |
-          npm install -g @openai/codex
-          codex --version
+          npm i -g pnpm
+          pnpm i --frozen-lockfile
 
-      - name: Download failure logs
+      - name: Prepare database
+        run: |
+          npx prisma migrate deploy
+          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then pnpm prisma db seed || true; fi
+
+      - name: Download artifacts from failed run
         uses: actions/download-artifact@v4
         with:
-          name: ci-failure-logs
-          path: ci/raw
+          pattern: ci-*
+          merge-multiple: true
           run-id: ${{ github.event.workflow_run.id }}
         continue-on-error: true
 
-      - name: Prepare failure log
+      - name: Merge logs for Codex
         run: |
           mkdir -p ci
-          if ls ci/raw/*.log 1>/dev/null 2>&1; then
-            cat ci/raw/*.log > ci/last-failure.log
-            echo "Captured logs from artifacts."
-          else
-            echo "No log artifacts found; storing workflow URL." >&2
-            echo "See upstream logs: ${{ github.event.workflow_run.html_url }}" > ci/last-failure.log
-          fi
+          find . -type f -name "ci_*.log" -print0 | xargs -0 cat > ci/last-failure.log || echo "no logs" > ci/last-failure.log
+          head -n 60 ci/last-failure.log || true
 
-      - name: Let Codex fix based on logs
+      - name: Setup Codex CLI
+        run: |
+          npm i -g @openai/codex
+          codex --version
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Autofix with Codex
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           codex --mode auto-edit \
-            "Read ci/last-failure.log and follow AGENTS.md. \
-             Reproduce failures with npm run lint, npm run type-check, npm run test:run, npm run build. \
-             Apply minimal fixes, rerun these commands until they pass, and keep changes scoped."
+            "Read ci/last-failure.log; reproduce locally per AGENTS.md; fix only what's needed for failing specs; run pnpm lint && pnpm typecheck && npx playwright test --reporter=line; keep changes minimal and explain in PR body."
 
-      - name: Re-run project checks
+      - name: Verify after edits
         run: |
-          npm ci
-          npx prisma migrate deploy
-          npm run lint
-          npm run type-check
-          npm run test:run
-          npm run build
+          pnpm lint
+          pnpm run type-check
+          npx playwright install --with-deps
+          npx playwright test --reporter=line
+          pnpm build
 
-      - name: Create PR with Codex summary if fixed
-        if: ${{ success() }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "codex-bot"
-          git config user.email "codex-bot@users.noreply.github.com"
-          CHANGES="$(git status --porcelain)"
-          if [ -z "$CHANGES" ]; then
-            echo "Codex made no changes; skipping PR creation."
-            exit 0
-          fi
-          BRANCH="codex/fix-${{ github.run_id }}"
-          git checkout -b "$BRANCH"
-          git add -A
-          git commit -m "fix(ci): auto-repair by Codex"
-          git push origin "$BRANCH"
-          gh pr create --title "Fix CI failures via Codex" --body "Automated fix by Codex."
+      - name: Open PR if changes exist
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: codex/fix-${{ github.run_id }}
+          title: "Autofix failing E2E via Codex"
+          commit-message: "fix(e2e): autofix by Codex"
+          body: |
+            Autofix by Codex.
+            Based on logs from run ${{ github.event.workflow_run.id }}.
+            See AGENTS.md and ci/last-failure.log for context.
+          author: codex-bot <codex-bot@users.noreply.github.com>

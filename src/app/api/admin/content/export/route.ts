@@ -15,6 +15,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  console.log("export route session role", session.user.role);
+
   if (session.user.role !== UserRole.ADMIN) {
     return NextResponse.json({ error: "Admin access required" }, { status: 403 });
   }

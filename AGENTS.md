@@ -5,13 +5,21 @@
 - Node.js 20.x (set via `actions/setup-node` or your local toolchain).
 - Package manager: npm (`npm ci` is required before any command).
 - PostgreSQL is required for migrations/tests; set `DATABASE_URL=postgresql://user:pass@host:port/db?schema=public`.
-- Playwright browsers are needed for E2E work (`npx playwright install chromium --with-deps` on fresh runners).
+- Playwright browsers are needed for E2E work (`npx playwright install --with-deps` on fresh runners).
 
 ## Setup Checklist
 
 1. `npm ci`
 2. `npx prisma migrate deploy` (whenever database access is needed).
 3. If running E2E, seed data with `npm run test:e2e:seed` and clean via `npm run test:e2e:cleanup` when done.
+
+## Reproduce Failing E2E
+
+1. `pnpm i --frozen-lockfile` (use `npm ci` if pnpm is unavailable).
+2. `npx prisma migrate deploy` (run `pnpm prisma db seed` when seeding scripts exist).
+3. Install Playwright browsers: `npx playwright install --with-deps`.
+4. Run full suite: `npx playwright test --reporter=line`.
+   - For shards: `npx playwright test --shard=1/4 --reporter=line` (adjust shard index as needed).
 
 ## Diagnosis & Repair Strategy
 
@@ -23,6 +31,12 @@
    - `npm run test:run`
    - `npm run build`
 4. Keep diffs surgical; avoid unrelated formatting or refactors.
+
+## Fix Strategy
+
+- Prefer strengthening Playwright locators (e.g., `data-testid`, semantic roles) instead of weakening assertions.
+- Keep dependency changes minimal; if new packages are required, document the rationale.
+- Before handoff, ensure `pnpm lint && pnpm typecheck && npx playwright test && pnpm build` all pass (use npm equivalents if pnpm unavailable).
 
 ## Core Commands
 
