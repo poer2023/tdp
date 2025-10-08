@@ -1,16 +1,20 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { restoreMomentAction, purgeMomentAction } from "../../../m/manage-actions";
+import { restoreMomentAction, purgeMomentAction } from "../manage-actions";
 
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-export default async function MomentsTrashPageZh() {
+type Props = { params: Promise<{ locale: string }> };
+
+export default async function LocalizedMomentsTrashPage({ params }: Props) {
+  const { locale } = await params;
+  const l = locale === "zh" ? "zh" : "en";
   const session = await auth();
   if (!session?.user?.id) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-10 text-sm text-zinc-600 dark:text-zinc-400">
-        请登录查看回收站。
+        {l === "zh" ? "请登录以查看回收站。" : "Please sign in to view trash."}
       </div>
     );
   }
@@ -22,7 +26,9 @@ export default async function MomentsTrashPageZh() {
   });
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">回收站</h1>
+      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+        {l === "zh" ? "回收站" : "Trash"}
+      </h1>
       <ul className="mt-6 space-y-3">
         {items.map((m) => (
           <li
@@ -33,11 +39,15 @@ export default async function MomentsTrashPageZh() {
             <div className="flex items-center justify-end gap-3 text-xs">
               <form action={restoreMomentAction}>
                 <input type="hidden" name="id" value={m.id} />
-                <button className="text-emerald-600 hover:underline">恢复</button>
+                <button className="text-emerald-600 hover:underline">
+                  {l === "zh" ? "恢复" : "Restore"}
+                </button>
               </form>
               <form action={purgeMomentAction}>
                 <input type="hidden" name="id" value={m.id} />
-                <button className="text-red-600 hover:underline">彻底删除</button>
+                <button className="text-red-600 hover:underline">
+                  {l === "zh" ? "永久删除" : "Delete permanently"}
+                </button>
               </form>
             </div>
           </li>
@@ -45,4 +55,8 @@ export default async function MomentsTrashPageZh() {
       </ul>
     </div>
   );
+}
+
+export function generateStaticParams() {
+  return [{ locale: "en" }, { locale: "zh" }];
 }

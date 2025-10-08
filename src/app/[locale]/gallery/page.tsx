@@ -20,14 +20,16 @@ export default async function LocalizedGalleryPage({ params }: PageProps) {
     <div className="mx-auto max-w-[1200px] space-y-10 px-6 py-12 md:px-8 md:py-16">
       {/* Header */}
       <header className="max-w-3xl space-y-3">
-        <p className="text-xs font-medium tracking-[0.2em] text-zinc-400 uppercase">Gallery</p>
+        <p className="text-xs font-medium tracking-[0.2em] text-zinc-400 uppercase">
+          {l === "zh" ? "相册" : "COLLECTED IMAGES"}
+        </p>
         <h1 className="text-4xl leading-tight font-bold text-zinc-900 md:text-5xl dark:text-zinc-50">
-          {l === "zh" ? "灵感相册" : "Photo Gallery"}
+          {l === "zh" ? "图像日志" : "Image Journal"}
         </h1>
         <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
           {l === "zh"
-            ? "每一张照片都记录了创作过程中的清新瞬间。图像元数据自动提取，位置信息可追溯。"
-            : "Each photo captures a moment during the creative process. Metadata is automatically extracted, and location information is traceable."}
+            ? "拍的、生成的、喜欢的，都在这里。"
+            : "A mix of photography, found visuals, and machine dreams."}
         </p>
       </header>
 

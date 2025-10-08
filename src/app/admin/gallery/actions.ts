@@ -55,6 +55,7 @@ export async function uploadGalleryImageAction(
   const title = (formData.get("title") as string | null)?.trim() ?? null;
   const description = (formData.get("description") as string | null)?.trim() ?? null;
   const relatedPostId = ((formData.get("postId") as string | null) ?? "").trim() || null;
+  const category = (formData.get("category") as string | null) ?? "REPOST";
 
   // 验证关联文章
   if (relatedPostId) {
@@ -113,6 +114,7 @@ export async function uploadGalleryImageAction(
       description,
       filePath: storage.getPublicUrl(imagePath),
       postId: relatedPostId,
+      category: category as "REPOST" | "ORIGINAL" | "AI",
 
       // 地理位置
       latitude: latitude || null,

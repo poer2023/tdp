@@ -41,7 +41,7 @@ export function MainNav() {
         className="text-lg font-semibold text-zinc-900 dark:text-zinc-100"
         aria-label="Home"
       >
-        Hao
+        ZHI
       </Link>
       {links.map((link) => {
         const isActive = pathname.includes(link.match);

@@ -29,12 +29,12 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Hao · 全栈博客",
-    template: "%s · Hao 的全栈博客",
+    default: "ZHI·Soft Hours",
+    template: "%s · ZHI·Soft Hours",
   },
   description: "使用最新 Next.js 15、React 19 与 Tailwind CSS 4 打造的全栈个人博客示例。",
   openGraph: {
-    title: "Hao · 全栈博客",
+    title: "ZHI·Soft Hours",
     description: "使用最新 Next.js 15、React 19 与 Tailwind CSS 4 打造的全栈个人博客示例。",
     type: "website",
   },

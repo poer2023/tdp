@@ -56,14 +56,6 @@ export function GalleryGrid({ images, locale = "zh" }: GalleryGridProps) {
           </figcaption>
         </figure>
       ))}
-      {images.length >= 6 && (
-        <Link
-          href={`/${locale}/gallery`}
-          className="flex items-center justify-center border border-dashed border-zinc-300 text-sm font-medium text-zinc-900 underline underline-offset-4 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-100"
-        >
-          {locale === "zh" ? "查看更多照片" : "View more photos"}
-        </Link>
-      )}
     </div>
   );
 }

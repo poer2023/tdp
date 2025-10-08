@@ -4,6 +4,8 @@ import path from "path";
 
 const SKIP_DB = process.env.E2E_SKIP_DB === "1" || process.env.E2E_SKIP_DB === "true";
 
+export type GalleryCategory = "REPOST" | "ORIGINAL" | "AI";
+
 export type GalleryImage = {
   id: string;
   title: string | null;
@@ -13,6 +15,7 @@ export type GalleryImage = {
   smallThumbPath?: string | null;
   mediumPath?: string | null;
   postId: string | null;
+  category: GalleryCategory;
   createdAt: string;
 
   // 地理位置
@@ -43,6 +46,7 @@ export type CreateGalleryImageInput = {
   smallThumbPath?: string | null;
   mediumPath?: string | null;
   postId?: string | null;
+  category?: GalleryCategory;
 
   // 地理位置
   latitude?: number | null;
@@ -64,13 +68,23 @@ export type CreateGalleryImageInput = {
   storageType?: string;
 };
 
-export async function listGalleryImages(limit?: number): Promise<GalleryImage[]> {
+export async function listGalleryImages(
+  limit?: number,
+  category?: GalleryCategory
+): Promise<GalleryImage[]> {
   // Prefer DB; if DB not reachable, fallback to filesystem (for E2E only)
   try {
     const args = (
       typeof limit === "number"
-        ? { orderBy: { createdAt: "desc" }, take: limit }
-        : { orderBy: { createdAt: "desc" } }
+        ? {
+            where: category ? { category } : undefined,
+            orderBy: { createdAt: "desc" },
+            take: limit,
+          }
+        : {
+            where: category ? { category } : undefined,
+            orderBy: { createdAt: "desc" },
+          }
     ) as Parameters<typeof prisma.galleryImage.findMany>[0];
     const images = await prisma.galleryImage.findMany(args);
     return images.map(toGalleryImage);

@@ -112,7 +112,7 @@ model Reaction {
 
 
 model GalleryImage {
-  id                 String    @id @default(cuid())
+  id                 String          @id @default(cuid())
   title              String?
   description        String?
   filePath           String
@@ -120,21 +120,22 @@ model GalleryImage {
   smallThumbPath     String?
   mediumPath         String?
   postId             String?
-  createdAt          DateTime  @default(now())
+  category           GalleryCategory @default(REPOST)
+  createdAt          DateTime        @default(now())
   capturedAt         DateTime?
   city               String?
   country            String?
   fileSize           Int?
   height             Int?
-  isLivePhoto        Boolean   @default(false)
+  isLivePhoto        Boolean         @default(false)
   latitude           Float?
   livePhotoVideoPath String?
   locationName       String?
   longitude          Float?
   mimeType           String?
-  storageType        String    @default("local")
+  storageType        String          @default("local")
   width              Int?
-  post               Post?     @relation(fields: [postId], references: [id])
+  post               Post?           @relation(fields: [postId], references: [id])
 }
 
 // Moments (short notes)
@@ -197,4 +198,10 @@ enum PostStatus {
 enum PostLocale {
   EN
   ZH
+}
+
+enum GalleryCategory {
+  REPOST
+  ORIGINAL
+  AI
 }

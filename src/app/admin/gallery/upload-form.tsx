@@ -60,6 +60,18 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
             />
           </Field>
 
+          <Field label="分类">
+            <select
+              name="category"
+              defaultValue="REPOST"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            >
+              <option value="REPOST">转载</option>
+              <option value="ORIGINAL">原创</option>
+              <option value="AI">AI</option>
+            </select>
+          </Field>
+
           <Field label="关联文章 (可选)">
             <select
               name="postId"

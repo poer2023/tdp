@@ -22,11 +22,8 @@ export function ScrollSyncHero({
   activities: RecentActivity[];
   locale: "zh" | "en";
 }) {
-  const heroTitle = locale === "zh" ? "清新简约的个人博客" : "Clean & Minimalist Personal Blog";
-  const heroSubtitle =
-    locale === "zh"
-      ? "记录创作灵感、旅途与生活瞬间的双语空间。"
-      : "A bilingual space for stories, journeys, and creative moments.";
+  const heroTitle = locale === "zh" ? "留住\n柔软瞬间" : "Moments that\nstay soft";
+  const heroSubtitle = locale === "zh" ? "个人笔记。简单心情。" : "Personal notes. Simple moods.";
   const leftRef = useRef<HTMLDivElement | null>(null);
   const leftContentRef = useRef<HTMLDivElement | null>(null);
   const rightRef = useRef<HTMLDivElement | null>(null);
@@ -156,7 +153,7 @@ export function ScrollSyncHero({
           <p className="text-sm font-semibold tracking-[0.3em] text-zinc-400 uppercase">
             {locale === "zh" ? "最新动态" : "Latest Updates"}
           </p>
-          <h1 className="text-4xl leading-tight font-bold text-zinc-900 md:text-6xl dark:text-zinc-50">
+          <h1 className="text-4xl leading-tight font-bold whitespace-pre-line text-zinc-900 md:text-6xl dark:text-zinc-50">
             {heroTitle}
           </h1>
           <p className="max-w-xl text-base text-zinc-600 dark:text-zinc-400">{heroSubtitle}</p>
@@ -170,7 +167,7 @@ export function ScrollSyncHero({
           </Link>
           <Link
             href="#gallery"
-            className="inline-flex items-center rounded-full border border-transparent bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="inline-flex items-center rounded-full border border-transparent bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 [&]:!text-white [&]:dark:!text-zinc-900"
           >
             {locale === "zh" ? "浏览相册" : "Browse Gallery"}
           </Link>

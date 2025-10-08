@@ -8,7 +8,10 @@ import { MomentCard } from "@/components/moments/moment-card";
 
 export const revalidate = 0;
 
-type Props = { params: Promise<{ id: string }>; searchParams?: Promise<{ image?: string }> };
+type Props = {
+  params: Promise<{ locale: string; id: string }>;
+  searchParams?: Promise<{ image?: string }>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -19,17 +22,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title, robots };
 }
 
-export default async function MomentDetailPage({ params, searchParams }: Props) {
-  const { id } = await params;
+export default async function LocalizedMomentDetailPage({ params, searchParams }: Props) {
+  const { locale, id } = await params;
   const sp = (await searchParams) || {};
+  const l = locale === "zh" ? "zh" : "en";
+
   const m = await getMomentByIdOrSlug(id);
   if (!m) notFound();
+
   // Access control for private
   if (m.visibility === "PRIVATE") {
     const session = await auth();
     const can = session?.user && (session.user.id === m.authorId || session.user.role === "ADMIN");
     if (!can) notFound();
   }
+
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
       <div className="mb-4">
@@ -61,8 +68,8 @@ export default async function MomentDetailPage({ params, searchParams }: Props) 
             "@type": "SocialMediaPosting",
             headline: m.content.slice(0, 60),
             datePublished: new Date(m.createdAt).toISOString(),
-            inLanguage: m.lang || "en-US",
-            url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/m/${m.slug || m.id}`,
+            inLanguage: m.lang || (l === "zh" ? "zh-CN" : "en-US"),
+            url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}${l === "zh" ? "/zh" : ""}/m/${m.slug || m.id}`,
             image: Array.isArray(m.images)
               ? (m.images as MomentImage[]).slice(0, 3).map((im) => ({
                   "@type": "ImageObject",
@@ -83,8 +90,12 @@ export default async function MomentDetailPage({ params, searchParams }: Props) 
         visibility={m.visibility as MomentVisibility}
         tags={(m.tags as string[]) || []}
         locationName={(m.location as unknown as { name?: string } | null)?.name ?? null}
-        locale="en"
+        locale={l}
       />
     </div>
   );
+}
+
+export function generateStaticParams() {
+  return [{ locale: "en" }, { locale: "zh" }];
 }
