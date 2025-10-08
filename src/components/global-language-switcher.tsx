@@ -8,10 +8,10 @@ export function GlobalLanguageSwitcher() {
   const pathname = usePathname();
   const currentLocale = getLocaleFromPathname(pathname) ?? "en";
 
-  // Generate alternate URL (English has no /en prefix)
+  // Generate alternate URL (both locales use explicit prefixes)
   const pathWithoutLocale = pathname.replace(/^\/(en|zh)(?=\/|$)/, "");
   const alternateUrl =
-    currentLocale === "zh" ? pathWithoutLocale || "/" : `/zh${pathWithoutLocale || ""}`;
+    currentLocale === "zh" ? `/en${pathWithoutLocale || ""}` : `/zh${pathWithoutLocale || ""}`;
   const alternateLocale = currentLocale === "zh" ? "en" : "zh";
   const alternateLabel = currentLocale === "zh" ? "EN" : "中";
 

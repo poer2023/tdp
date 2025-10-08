@@ -161,7 +161,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
 
             <div className="relative aspect-square overflow-hidden">
               <Image
-                src={image.filePath}
+                src={image.smallThumbPath ?? image.mediumPath ?? image.filePath}
                 alt={image.title ?? "相册照片"}
                 fill
                 sizes="(max-width: 768px) 50vw, 33vw"

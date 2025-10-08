@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getRecentActivities } from "@/lib/posts";
 import { listGalleryImages } from "@/lib/gallery";
 import { GalleryGrid } from "@/components/gallery-grid";
@@ -9,6 +10,7 @@ import { localePath } from "@/lib/locale-path";
 // Incremental Static Regeneration for localized homepage
 // Next.js 15 段配置需为编译期常量
 export const revalidate = 60;
+export const dynamicParams = false; // Only allow 'en' and 'zh'
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -16,6 +18,12 @@ type PageProps = {
 
 export default async function LocalizedHomePage({ params }: PageProps) {
   const { locale } = await params;
+
+  // Only allow 'en' or 'zh' as locale
+  if (locale !== "en" && locale !== "zh") {
+    notFound();
+  }
+
   const l = locale === "zh" ? "zh" : "en";
 
   // Fetch data for homepage
@@ -116,7 +124,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
 }
 
 export function generateStaticParams() {
-  // Only generate static params for /zh
-  // English content is served from root / (no prefix per i18n rules)
-  return [{ locale: "zh" }];
+  // Generate both locales for [locale] route
+  // /zh served directly, /en served via middleware rewrite (hidden from URL)
+  return [{ locale: "en" }, { locale: "zh" }];
 }

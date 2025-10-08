@@ -40,7 +40,7 @@ export async function LanguageSwitcher({
   const alternateLanguage = alternateLocale === PostLocale.EN ? "English" : "中文";
   const alternateUrl =
     alternateLocale === PostLocale.EN
-      ? `/posts/${alternatePost.slug}` // English has no /en prefix
+      ? `/en/posts/${alternatePost.slug}`
       : `/zh/posts/${alternatePost.slug}`;
 
   return (

@@ -23,21 +23,7 @@ export async function middleware(request: NextRequest) {
   // Always attach pathname header for i18n html lang resolution
   const requestHeaders = new Headers(request.headers);
 
-  // 1) Hide /en prefix: permanently redirect to prefix-free path
-  if (pathname === "/en" || pathname === "/en/") {
-    const url = new URL(`/`, request.nextUrl.origin);
-    searchParams.forEach((v, k) => url.searchParams.set(k, v));
-    return NextResponse.redirect(url, { status: 308 });
-  }
-  if (pathname.startsWith("/en/")) {
-    const rest = pathname.slice("/en".length);
-    const url = new URL(rest || "/", request.nextUrl.origin);
-    searchParams.forEach((v, k) => url.searchParams.set(k, v));
-    return NextResponse.redirect(url, { status: 308 });
-  }
-
-  // Derive locale from pathname for a reliable client navigation fallback
-  // Root path "/" is handled by src/app/page.tsx and serves English content
+  // Derive locale from pathname
   const currentLocale = pathname.startsWith("/zh") ? "zh" : "en";
   requestHeaders.set("x-pathname", pathname);
   requestHeaders.set("x-locale", currentLocale);
@@ -158,7 +144,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Run on all pages except API/static/image assets
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    // Run on all pages except API/static assets
+    "/((?!api|_next|favicon.ico|icon.png).*)",
   ],
 };

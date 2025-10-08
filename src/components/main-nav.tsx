@@ -37,7 +37,7 @@ export function MainNav() {
   return (
     <nav className="flex items-center gap-6" role="navigation" aria-label="Main navigation">
       <Link
-        href={locale === "zh" ? "/zh" : "/"}
+        href={locale === "zh" ? "/zh" : "/en"}
         className="text-lg font-semibold text-zinc-900 dark:text-zinc-100"
         aria-label="Home"
       >
