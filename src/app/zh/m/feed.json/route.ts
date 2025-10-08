@@ -1,1 +1,1 @@
-export { GET, runtime } from "../../../m/feed.json/route";
+export { GET, runtime, dynamic } from "../../../m/feed.json/route";

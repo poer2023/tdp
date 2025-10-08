@@ -1,1 +1,1 @@
-export { GET, runtime } from "../../../m/sitemap.xml/route";
+export { GET, runtime, dynamic } from "../../../m/sitemap.xml/route";

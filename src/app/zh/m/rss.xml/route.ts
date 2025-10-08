@@ -1,1 +1,1 @@
-export { GET, runtime } from "../../../m/rss.xml/route";
+export { GET, runtime, dynamic } from "../../../m/rss.xml/route";
