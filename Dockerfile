@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-ARG NODE_VERSION=20.19.0
+ARG NODE_VERSION=20
 
 FROM node:${NODE_VERSION}-alpine AS base
 ENV NEXT_TELEMETRY_DISABLED=1
