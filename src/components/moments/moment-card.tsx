@@ -73,11 +73,10 @@ export function MomentCard({
 
 function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
   const count = images.length;
-  const show = Math.min(count, 4); // 按 Twitter 规则，最多显示 4 张，最后一张可叠加 +N
 
   if (count === 1) {
     const im = images[0]!;
-    // eslint-disable-next-line @next/next/no-img-element
+
     return (
       <a href={im.url} target="_blank" rel="noopener">
         <img
@@ -93,7 +92,6 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
     return (
       <div className="grid grid-cols-2 gap-2">
         {images.slice(0, 2).map((im, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
           <a key={i} href={im.url} target="_blank" rel="noopener">
             <img
               src={im.previewUrl || im.url}
@@ -112,7 +110,7 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
     return (
       <div className="grid grid-cols-3 gap-2">
         <div className="col-span-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {}
           <a href={a!.url} target="_blank" rel="noopener">
             <img
               src={a!.previewUrl || a!.url}
@@ -122,7 +120,7 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
           </a>
         </div>
         <div className="flex flex-col gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {}
           <a href={b!.url} target="_blank" rel="noopener">
             <img
               src={b!.previewUrl || b!.url}
@@ -130,7 +128,7 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
               className="h-24 w-full rounded-lg object-cover"
             />
           </a>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {}
           <a href={c!.url} target="_blank" rel="noopener">
             <img
               src={c!.previewUrl || c!.url}
@@ -150,7 +148,7 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
     <div className="grid grid-cols-2 gap-2">
       {first4.map((im, i) => (
         <div key={i} className="relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {}
           <a href={im.url} target="_blank" rel="noopener">
             <img
               src={im.previewUrl || im.url}

@@ -108,9 +108,12 @@ export function PhotoViewer({
     // Visual order: index 0 = newest (left), index N = oldest (right)
     // prev = left = newer = index - 1
     // next = right = older = index + 1
+    const prevThumbnail = currentIndex > 0 ? thumbnails[currentIndex - 1] : null;
+    const nextThumbnail =
+      currentIndex < thumbnails.length - 1 ? thumbnails[currentIndex + 1] : null;
     visualAdjacentIds.current = {
-      prev: currentIndex > 0 ? thumbnails[currentIndex - 1].id : null,
-      next: currentIndex < thumbnails.length - 1 ? thumbnails[currentIndex + 1].id : null,
+      prev: prevThumbnail?.id ?? null,
+      next: nextThumbnail?.id ?? null,
     };
   }, [thumbnails, currentId]);
 

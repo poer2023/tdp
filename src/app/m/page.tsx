@@ -2,7 +2,6 @@ import { listMoments } from "@/lib/moments";
 import { MomentCard } from "@/components/moments/moment-card";
 import { OpenComposerButton } from "@/components/moments/open-composer-button";
 import { auth } from "@/auth";
-import { softDeleteMomentAction } from "./manage-actions";
 import { DeleteIcon } from "@/components/moments/delete-icon";
 import Link from "next/link";
 
@@ -13,7 +12,6 @@ type Props = { searchParams: Promise<{ tag?: string; q?: string }> };
 export default async function MomentsPage({ searchParams }: Props) {
   const { tag, q } = await searchParams;
   const session = await auth();
-  const userId = session?.user?.id;
   const isAdmin = (session?.user as { role?: string } | undefined)?.role === "ADMIN";
   const moments = await listMoments({ limit: 20, tag: tag || null, q: q || null });
   return (
