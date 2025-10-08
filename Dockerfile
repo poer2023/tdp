@@ -1,56 +1,61 @@
 # syntax=docker/dockerfile:1.7
 
-ARG NODE_VERSION=20
-
-FROM node:${NODE_VERSION}-alpine AS base
-ENV NEXT_TELEMETRY_DISABLED=1
+# === Dependencies Stage: Install production dependencies ===
+FROM cgr.dev/chainguard/node:latest-dev AS deps
 WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
 
-FROM base AS deps
 COPY package.json package-lock.json ./
-RUN --mount=type=cache,id=npm-cache,target=/root/.npm npm ci
+RUN npm ci --omit=dev
 
-FROM base AS builder
+# === Builder Stage: Build application ===
+FROM cgr.dev/chainguard/node:latest-dev AS builder
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Ensure Prisma Client is generated with the actual schema before building
+
+# Generate Prisma Client and build Next.js application
 RUN npx prisma generate && npm run build
 
-# Migration stage - used for database migrations only
-FROM base AS migrator
+# === Migration Stage: Database migrations ===
+FROM cgr.dev/chainguard/node:latest-dev AS migrator
+WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 # Prisma CLI is available in node_modules for migrations
 CMD ["npx", "prisma", "migrate", "deploy"]
 
-FROM base AS runner
+# === Production Stage: Runtime environment ===
+FROM cgr.dev/chainguard/node:latest AS runner
 ENV NODE_ENV=production
 ENV HUSKY=0
 ENV HOSTNAME=0.0.0.0
+WORKDIR /app
 
 # Copy the standalone server build
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+COPY --from=builder --chown=node:node /app/public ./public
 
-# Copy specific dependencies for runtime scripts (sharp for image processing, tsx for script execution)
-# Standalone mode bundles most dependencies, but some native modules and dev tools are needed
-COPY --from=deps /app/node_modules/sharp ./node_modules/sharp
-COPY --from=deps /app/node_modules/tsx ./node_modules/tsx
+# Copy specific dependencies for runtime scripts
+# (sharp for image processing, tsx for script execution)
+COPY --from=deps --chown=node:node /app/node_modules/sharp ./node_modules/sharp
+COPY --from=deps --chown=node:node /app/node_modules/tsx ./node_modules/tsx
 
 # Copy scripts for maintenance operations (thumbnail generation, etc.)
-COPY scripts ./scripts
-COPY package.json ./
+COPY --chown=node:node scripts ./scripts
+COPY --chown=node:node package.json ./
 
 # Copy health check and entrypoint scripts
-COPY docker/healthcheck.js ./docker/healthcheck.js
-COPY docker/entrypoint.sh ./docker/entrypoint.sh
-RUN chmod +x ./docker/entrypoint.sh ./docker/healthcheck.js
+COPY --chown=node:node docker/healthcheck.js ./docker/healthcheck.js
+COPY --chown=node:node docker/entrypoint.sh ./docker/entrypoint.sh
 
-# Set ownership to node user and switch to non-root user
-RUN chown -R node:node /app
-USER node
+# Chainguard node image runs as node user (UID 65532) by default
+# No need for USER directive or chmod (scripts must be executable in repo)
 
 EXPOSE 3000
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
