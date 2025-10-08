@@ -18,7 +18,13 @@ export default async function LocalizedGalleryDetailPage({ params }: PageProps) 
   }
 
   const adjacent = await getAdjacentImageIds(id);
-  const thumbs = (await listGalleryImages(60)).map((g) => ({ id: g.id, filePath: g.filePath }));
+  const thumbs = (await listGalleryImages(60)).map((g) => ({
+    id: g.id,
+    filePath: g.filePath,
+    microThumbPath: g.microThumbPath ?? undefined,
+    smallThumbPath: g.smallThumbPath ?? undefined,
+    mediumPath: g.mediumPath ?? undefined,
+  }));
 
   return (
     <PhotoViewer
