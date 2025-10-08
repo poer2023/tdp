@@ -20,41 +20,23 @@ export function GalleryGrid({ images, locale = "zh" }: GalleryGridProps) {
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
       {images.map((image) => (
-        <figure
+        <Link
           key={image.id}
-          className="group overflow-hidden border border-zinc-200 bg-white transition dark:border-zinc-800 dark:bg-zinc-900"
+          href={localePath(locale, `/gallery/${image.id}`)}
+          className="group block overflow-hidden rounded-xl"
         >
-          <Link href={localePath(locale, `/gallery/${image.id}`)} className="block">
-            <div className="relative aspect-square overflow-hidden">
-              <Image
-                src={image.smallThumbPath || image.microThumbPath || image.filePath}
-                alt={image.title ?? (locale === "zh" ? "博客相册照片" : "Gallery photo")}
-                fill
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 33vw"
-                className="object-cover transition duration-500 group-hover:scale-105"
-              />
-            </div>
-          </Link>
-          <figcaption className="space-y-2 p-6">
-            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              {image.title ?? (locale === "zh" ? "未命名照片" : "Untitled Photo")}
-            </p>
-            {image.description && (
-              <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                {image.description}
-              </p>
-            )}
-            <p className="text-xs text-zinc-500 dark:text-zinc-500">
-              {new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              }).format(new Date(image.createdAt))}
-            </p>
-          </figcaption>
-        </figure>
+          <div className="relative aspect-square overflow-hidden">
+            <Image
+              src={image.smallThumbPath || image.microThumbPath || image.filePath}
+              alt={image.title ?? (locale === "zh" ? "博客相册照片" : "Gallery photo")}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 33vw"
+              className="object-cover transition duration-500 group-hover:scale-105"
+            />
+          </div>
+        </Link>
       ))}
     </div>
   );

@@ -104,6 +104,7 @@ export async function listGalleryImages(
         description: null,
         filePath: `/uploads/gallery/${f}`,
         postId: null,
+        category: "ORIGINAL" as GalleryCategory,
         createdAt: new Date(Date.now() - idx * 60_000).toISOString(),
         latitude: null,
         longitude: null,
@@ -208,6 +209,7 @@ export async function getGalleryImageById(id: string): Promise<GalleryImage | nu
         description: null,
         filePath: `/uploads/gallery/${target}`,
         postId: null,
+        category: "ORIGINAL" as GalleryCategory,
         createdAt: new Date().toISOString(),
         latitude: null,
         longitude: null,
@@ -299,6 +301,7 @@ function toGalleryImage(image: {
   smallThumbPath: string | null;
   mediumPath: string | null;
   postId: string | null;
+  category: GalleryCategory;
   createdAt: Date;
   latitude: number | null;
   longitude: number | null;
@@ -323,6 +326,7 @@ function toGalleryImage(image: {
     smallThumbPath: image.smallThumbPath,
     mediumPath: image.mediumPath,
     postId: image.postId,
+    category: image.category,
     createdAt: image.createdAt.toISOString(),
     latitude: image.latitude,
     longitude: image.longitude,

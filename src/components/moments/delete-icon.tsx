@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { softDeleteMomentAction } from "@/app/m/manage-actions";
+import { softDeleteMomentAction } from "@/app/[locale]/m/manage-actions";
 
 export function DeleteIcon({ id }: { id: string }) {
   const formRef = useRef<HTMLFormElement>(null);

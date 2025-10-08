@@ -12,8 +12,9 @@ export async function softDeleteMomentAction(form: FormData) {
     id: session.user.id,
     role: (session.user as { role?: string }).role,
   });
-  revalidatePath("/m");
-  revalidatePath("/zh/m");
+  // Revalidate both English (no prefix) and Chinese (/zh) routes
+  revalidatePath("/m", "page");
+  revalidatePath("/zh/m", "page");
   return;
 }
 
@@ -22,8 +23,9 @@ export async function restoreMomentAction(form: FormData) {
   if (!session?.user) throw new Error("Unauthorized");
   const id = (form.get("id") as string) || "";
   await restoreMoment(id, { id: session.user.id, role: (session.user as { role?: string }).role });
-  revalidatePath("/m/trash");
-  revalidatePath("/zh/m/trash");
+  // Revalidate both English (no prefix) and Chinese (/zh) routes
+  revalidatePath("/m/trash", "page");
+  revalidatePath("/zh/m/trash", "page");
   return;
 }
 
@@ -32,7 +34,8 @@ export async function purgeMomentAction(form: FormData) {
   if (!session?.user) throw new Error("Unauthorized");
   const id = (form.get("id") as string) || "";
   await purgeMoment(id, { id: session.user.id, role: (session.user as { role?: string }).role });
-  revalidatePath("/m/trash");
-  revalidatePath("/zh/m/trash");
+  // Revalidate both English (no prefix) and Chinese (/zh) routes
+  revalidatePath("/m/trash", "page");
+  revalidatePath("/zh/m/trash", "page");
   return;
 }

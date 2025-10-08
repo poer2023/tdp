@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef, useState, startTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { createMomentAction, type CreateMomentState } from "@/app/m/actions";
+import { createMomentAction, type CreateMomentState } from "@/app/[locale]/m/actions";
 import { useSession } from "next-auth/react";
 
 type LocalImage = { file: File; url: string };

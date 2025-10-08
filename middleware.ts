@@ -15,22 +15,15 @@ function pickPreferredLocale(acceptLanguage: string | null): "zh" | "en" {
 // - Enforces ADMIN role for `/admin/*` pages
 // - Localized routing rules:
 //   · English is default (no /en prefix). Keep `/` as English.
-//   · Chinese uses /zh prefix. Redirect `/` → `/zh` only when browser prefers Chinese.
+//   · Chinese uses /zh prefix. Root `/` handles detection and redirects to `/zh` for Chinese browsers.
 //   · Redirect any `/en` or `/en/*` URL to the prefix-free path to hide /en.
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  // 1) Root path: redirect only when Chinese is preferred
-  if (pathname === "/") {
-    const pref = pickPreferredLocale(request.headers.get("accept-language"));
-    if (pref === "zh") {
-      const url = new URL(`/zh`, request.nextUrl.origin);
-      searchParams.forEach((v, k) => url.searchParams.set(k, v));
-      return NextResponse.redirect(url, { status: 302 });
-    }
-  }
+  // Always attach pathname header for i18n html lang resolution
+  const requestHeaders = new Headers(request.headers);
 
-  // 2) Hide /en prefix: permanently redirect to prefix-free path
+  // 1) Hide /en prefix: permanently redirect to prefix-free path
   if (pathname === "/en" || pathname === "/en/") {
     const url = new URL(`/`, request.nextUrl.origin);
     searchParams.forEach((v, k) => url.searchParams.set(k, v));
@@ -44,10 +37,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Derive locale from pathname for a reliable client navigation fallback
+  // Root path "/" is handled by src/app/page.tsx and serves English content
   const currentLocale = pathname.startsWith("/zh") ? "zh" : "en";
-
-  // Always attach pathname header for i18n html lang resolution
-  const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", pathname);
   requestHeaders.set("x-locale", currentLocale);
 
