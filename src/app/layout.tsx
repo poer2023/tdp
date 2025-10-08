@@ -8,7 +8,8 @@ import { MainNav } from "@/components/main-nav";
 import { Footer } from "@/components/footer";
 import { MomentComposerBottomSheet } from "@/components/moments/moment-composer";
 import { GlobalLanguageSwitcher } from "@/components/global-language-switcher";
-import { Search } from "@/components/search";
+import { GlobalSearchProvider } from "@/components/global-search-provider";
+import { CommandPaletteTrigger } from "@/components/command-palette-trigger";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
 import { HtmlLangSync } from "@/components/html-lang-sync";
@@ -73,42 +74,44 @@ export default async function RootLayout({
         {/* Keep <html lang> consistent on client navigations */}
         <HtmlLangSync />
         <SessionProvider session={session}>
-          {/* Skip to content link for accessibility */}
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          >
-            Skip to content
-          </a>
+          <GlobalSearchProvider>
+            {/* Skip to content link for accessibility */}
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              Skip to content
+            </a>
 
-          <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
-            <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
-              {/* Left cluster: brand + links + search */}
-              <div className="flex items-center gap-4">
-                <MainNav />
-                <div className="hidden sm:block">
-                  <Search size="sm" />
+            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
+              <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
+                {/* Left cluster: brand + links + search */}
+                <div className="flex items-center gap-4">
+                  <MainNav />
+                  <div className="hidden sm:block">
+                    <CommandPaletteTrigger size="sm" />
+                  </div>
+                </div>
+                {/* Right cluster: compact controls */}
+                <div className="flex items-center gap-3">
+                  <ThemeToggle size="sm" />
+                  <GlobalLanguageSwitcher />
+                  {/* Mobile search fallback */}
+                  <div className="sm:hidden">
+                    <CommandPaletteTrigger size="sm" />
+                  </div>
+                  <AuthHeader />
                 </div>
               </div>
-              {/* Right cluster: compact controls */}
-              <div className="flex items-center gap-3">
-                <ThemeToggle size="sm" />
-                <GlobalLanguageSwitcher />
-                {/* Mobile search fallback */}
-                <div className="sm:hidden">
-                  <Search size="sm" />
-                </div>
-                <AuthHeader />
-              </div>
-            </div>
-          </header>
+            </header>
 
-          <main id="main-content">{children}</main>
+            <main id="main-content">{children}</main>
 
-          {/* Global mobile composer FAB (hidden on admin) */}
-          {!isAdminRoute && <MomentComposerBottomSheet />}
+            {/* Global mobile composer FAB (hidden on admin) */}
+            {!isAdminRoute && <MomentComposerBottomSheet />}
 
-          {!isAdminRoute && <Footer />}
+            {!isAdminRoute && <Footer />}
+          </GlobalSearchProvider>
         </SessionProvider>
       </body>
     </html>
