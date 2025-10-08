@@ -192,8 +192,16 @@ describe("Gallery Data Operations", () => {
         createdAt: new Date("2024-01-15"),
       };
 
-      const prevImage = { id: "img1", filePath: "/uploads/img1.jpg" };
-      const nextImage = { id: "img3", filePath: "/uploads/img3.jpg" };
+      const prevImage = {
+        id: "img1",
+        filePath: "/uploads/img1.jpg",
+        mediumPath: "/uploads/img1_medium.webp",
+      };
+      const nextImage = {
+        id: "img3",
+        filePath: "/uploads/img3.jpg",
+        mediumPath: "/uploads/img3_medium.webp",
+      };
 
       vi.mocked(prisma.galleryImage.findUnique).mockResolvedValue(
         currentImage as unknown as { id: string; createdAt: Date }
@@ -207,20 +215,20 @@ describe("Gallery Data Operations", () => {
       expect(result).toEqual({
         prev: "img1",
         next: "img3",
-        prevPath: "/uploads/img1.jpg",
-        nextPath: "/uploads/img3.jpg",
+        prevPath: "/uploads/img1_medium.webp",
+        nextPath: "/uploads/img3_medium.webp",
       });
 
       expect(prisma.galleryImage.findFirst).toHaveBeenNthCalledWith(1, {
         where: { createdAt: { lt: currentImage.createdAt } },
         orderBy: { createdAt: "desc" },
-        select: { id: true, filePath: true },
+        select: { id: true, filePath: true, mediumPath: true },
       });
 
       expect(prisma.galleryImage.findFirst).toHaveBeenNthCalledWith(2, {
         where: { createdAt: { gt: currentImage.createdAt } },
         orderBy: { createdAt: "asc" },
-        select: { id: true, filePath: true },
+        select: { id: true, filePath: true, mediumPath: true },
       });
     });
 
@@ -241,7 +249,11 @@ describe("Gallery Data Operations", () => {
         createdAt: new Date("2024-01-01"),
       };
 
-      const nextImage = { id: "img2", filePath: "/uploads/img2.jpg" };
+      const nextImage = {
+        id: "img2",
+        filePath: "/uploads/img2.jpg",
+        mediumPath: "/uploads/img2_medium.webp",
+      };
 
       vi.mocked(prisma.galleryImage.findUnique).mockResolvedValue(
         currentImage as unknown as { id: string; createdAt: Date }
@@ -256,7 +268,7 @@ describe("Gallery Data Operations", () => {
         prev: null,
         next: "img2",
         prevPath: undefined,
-        nextPath: "/uploads/img2.jpg",
+        nextPath: "/uploads/img2_medium.webp",
       });
     });
 
@@ -266,7 +278,11 @@ describe("Gallery Data Operations", () => {
         createdAt: new Date("2024-12-31"),
       };
 
-      const prevImage = { id: "img2", filePath: "/uploads/img2.jpg" };
+      const prevImage = {
+        id: "img2",
+        filePath: "/uploads/img2.jpg",
+        mediumPath: "/uploads/img2_medium.webp",
+      };
 
       vi.mocked(prisma.galleryImage.findUnique).mockResolvedValue(
         currentImage as unknown as { id: string; createdAt: Date }
@@ -280,7 +296,7 @@ describe("Gallery Data Operations", () => {
       expect(result).toEqual({
         prev: "img2",
         next: null,
-        prevPath: "/uploads/img2.jpg",
+        prevPath: "/uploads/img2_medium.webp",
         nextPath: undefined,
       });
     });

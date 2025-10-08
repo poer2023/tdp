@@ -29,11 +29,9 @@ function invalidateCaches() {
   // Homepages
   revalidatePath("/");
   revalidatePath("/zh");
-  revalidatePath("/en");
   // Galleries
   revalidatePath("/gallery");
   revalidatePath("/zh/gallery");
-  revalidatePath("/en/gallery");
   revalidatePath("/admin/gallery");
 }
 

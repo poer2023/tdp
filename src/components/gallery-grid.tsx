@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { GalleryImage } from "@/lib/gallery";
+import { localePath } from "@/lib/locale-path";
 
 interface GalleryGridProps {
   images: GalleryImage[];
@@ -25,15 +26,17 @@ export function GalleryGrid({ images, locale = "zh" }: GalleryGridProps) {
           key={image.id}
           className="group overflow-hidden border border-zinc-200 bg-white transition dark:border-zinc-800 dark:bg-zinc-900"
         >
-          <div className="relative aspect-square overflow-hidden">
-            <Image
-              src={image.smallThumbPath || image.microThumbPath || image.filePath}
-              alt={image.title ?? "博客相册照片"}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 33vw"
-              className="object-cover transition duration-500 group-hover:scale-105"
-            />
-          </div>
+          <Link href={localePath(locale, `/gallery/${image.id}`)} className="block">
+            <div className="relative aspect-square overflow-hidden">
+              <Image
+                src={image.smallThumbPath || image.microThumbPath || image.filePath}
+                alt={image.title ?? (locale === "zh" ? "博客相册照片" : "Gallery photo")}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 33vw"
+                className="object-cover transition duration-500 group-hover:scale-105"
+              />
+            </div>
+          </Link>
           <figcaption className="space-y-2 p-6">
             <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               {image.title ?? (locale === "zh" ? "未命名照片" : "Untitled Photo")}

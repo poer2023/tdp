@@ -97,22 +97,22 @@ export default function ExportPage() {
 
   return (
     <div className="space-y-10">
-      {/* Page Header */}
-      <header className="max-w-3xl space-y-4">
-        <h1 className="text-4xl leading-tight font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Export
-        </h1>
-        <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-          Download posts as Markdown files with frontmatter. Useful for version control, backup, or
-          migration to other platforms.
+      {/* Page Header - unified style */}
+      <header className="space-y-3">
+        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Operations</p>
+        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">内容导出</h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          将文章导出为带 YAML Frontmatter 的 Markdown，用于备份或迁移。
         </p>
       </header>
 
-      {/* Export Form */}
-      <div className="max-w-3xl space-y-8">
+      {/* Export Form - unified card */}
+      <section className="space-y-6 rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
         {/* Date Range */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Date Range</h2>
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+            日期范围
+          </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label htmlFor="from" className="block text-sm text-zinc-600 dark:text-zinc-400">
@@ -123,7 +123,7 @@ export default function ExportPage() {
                 id="from"
                 value={filters.from}
                 onChange={(e) => setFilters((prev) => ({ ...prev, from: e.target.value }))}
-                className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors duration-150 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-100"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
               />
             </div>
             <div className="space-y-2">
@@ -135,18 +135,18 @@ export default function ExportPage() {
                 id="to"
                 value={filters.to}
                 onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))}
-                className="w-full border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 transition-colors duration-150 focus:border-zinc-900 focus:outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100 dark:focus:border-zinc-100"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
               />
             </div>
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">
-            Leave empty to export all posts regardless of date
-          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-500">留空表示不限制日期</p>
         </div>
 
         {/* Status Filter */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Status</h2>
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+            状态
+          </h2>
           <div className="flex gap-4">
             <label className="flex items-center gap-2">
               <input
@@ -167,14 +167,14 @@ export default function ExportPage() {
               <span className="text-sm text-zinc-900 dark:text-zinc-100">Draft</span>
             </label>
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">
-            Leave unchecked to export all statuses
-          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-500">不勾选表示导出所有状态</p>
         </div>
 
         {/* Locale Filter */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Language</h2>
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+            语言
+          </h2>
           <div className="flex gap-4">
             <label className="flex items-center gap-2">
               <input
@@ -195,34 +195,34 @@ export default function ExportPage() {
               <span className="text-sm text-zinc-900 dark:text-zinc-100">Chinese</span>
             </label>
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">
-            Leave unchecked to export all languages
-          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-500">不勾选表示导出所有语言</p>
         </div>
 
         {/* Export Button */}
-        <div className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
+        <div>
           <button
             onClick={handleExport}
             disabled={isExporting}
             data-testid="export-button"
-            className="inline-flex items-center gap-2 border border-zinc-900 bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-900 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
           >
-            {isExporting ? "Exporting..." : "Export Content"}
+            {isExporting ? "Exporting..." : "导出内容"}
           </button>
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-            Downloads a ZIP file containing Markdown files and manifest.json
+          <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400">
+            下载包含 Markdown 与 manifest.json 的 ZIP
           </p>
         </div>
-      </div>
+      </section>
 
-      {/* Documentation */}
-      <div className="max-w-3xl space-y-4 border-l-2 border-zinc-200 pl-6 dark:border-zinc-800">
-        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Export Format</h2>
+      {/* Documentation - unified card */}
+      <section className="space-y-4 rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
+        <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+          导出格式
+        </h2>
         <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
           <p>
-            Exported files follow the Markdown format specification documented in{" "}
-            <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-900">
+            Exported files follow the Markdown format specification documented in
+            <code className="ml-1 rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-900">
               docs/CONTENT_FORMAT.md
             </code>
           </p>
@@ -248,7 +248,7 @@ export default function ExportPage() {
             </li>
           </ul>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

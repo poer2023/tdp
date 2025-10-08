@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listGalleryImages } from "@/lib/gallery";
 import { GalleryMasonry } from "@/components/gallery-masonry";
+import { localePath } from "@/lib/locale-path";
 
 export const revalidate = 0;
 
@@ -34,13 +35,13 @@ export default async function LocalizedGalleryPage({ params }: PageProps) {
       {imagesWithLocation.length > 0 && (
         <nav className="flex items-center gap-6 border-b border-zinc-200 pb-3 dark:border-zinc-800">
           <Link
-            href={`/${l}/gallery`}
+            href={localePath(l, "/gallery")}
             className="text-sm font-medium text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-4 dark:text-zinc-50"
           >
             {l === "zh" ? "全部照片" : "All Photos"}
           </Link>
           <Link
-            href={`/${l}/gallery/map`}
+            href={localePath(l, "/gallery/map")}
             className="text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
           >
             {l === "zh" ? "地图视图" : "Map View"}

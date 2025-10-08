@@ -75,7 +75,11 @@ export abstract class BasePage {
    */
   async waitForLoad() {
     await this.page.waitForLoadState("domcontentloaded");
-    await this.page.waitForLoadState("networkidle");
+    try {
+      await this.page.waitForLoadState("networkidle", { timeout: 5000 });
+    } catch {
+      // Some pages keep background requests alive (e.g., Next.js polling). Ignore timeouts here.
+    }
   }
 
   /**

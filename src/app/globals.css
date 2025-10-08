@@ -192,3 +192,24 @@ html {
 html.dark {
   color-scheme: dark;
 }
+
+/* Admin: subtle, divider-free scrollbars on inner panes */
+.admin-scroll {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(113, 113, 122, 0.35) transparent; /* thumb, track */
+}
+.admin-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.admin-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(113, 113, 122, 0.35); /* zinc-500 @ ~35% */
+  border-radius: 9999px;
+  border: 2px solid transparent; /* avoid a visible divider line */
+  background-clip: padding-box;
+}
+.admin-scroll:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(113, 113, 122, 0.5);
+}
+.admin-scroll::-webkit-scrollbar-track {
+  background: transparent; /* no track divider */
+}

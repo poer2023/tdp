@@ -18,7 +18,12 @@ export async function waitForNetworkIdle(page: Page) {
   } catch (_) {
     // ignore if already past this state
   }
-  await page.waitForLoadState("networkidle");
+  try {
+    await page.waitForLoadState("networkidle", { timeout: 5000 });
+  } catch {
+    // Some background requests (e.g., Next.js probes) can keep the network busy.
+    // Ignore networkidle timeouts to avoid flakiness.
+  }
 }
 
 /**

@@ -1,0 +1,107 @@
+name: codex-ci
+
+on:
+  workflow_run:
+    workflows:
+      - "E2E Full Suite (Non-blocking)"
+      - "build-and-test"
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: write
+
+jobs:
+  codex:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: app
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout failing commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: |
+          npm i -g pnpm
+          pnpm i --frozen-lockfile
+
+      - name: Prepare database
+        run: |
+          npx prisma migrate deploy
+          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then pnpm prisma db seed || true; fi
+
+      - name: Download artifacts from failed run
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ci-*
+          merge-multiple: true
+          run-id: ${{ github.event.workflow_run.id }}
+        continue-on-error: true
+
+      - name: Merge logs for Codex
+        run: |
+          mkdir -p ci
+          find . -type f -name "ci_*.log" -print0 | xargs -0 cat > ci/last-failure.log || echo "no logs" > ci/last-failure.log
+          head -n 60 ci/last-failure.log || true
+
+      - name: Setup Codex CLI
+        run: |
+          npm i -g @openai/codex
+          codex --version
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Autofix with Codex
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          codex --mode auto-edit \
+            "Read ci/last-failure.log; reproduce locally per AGENTS.md; fix only what's needed for failing specs; run pnpm lint && pnpm typecheck && npx playwright test --reporter=line; keep changes minimal and explain in PR body."
+
+      - name: Verify after edits
+        run: |
+          pnpm lint
+          pnpm run type-check
+          npx playwright install --with-deps
+          npx playwright test --reporter=line
+          pnpm build
+
+      - name: Open PR if changes exist
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: codex/fix-${{ github.run_id }}
+          title: "Autofix failing E2E via Codex"
+          commit-message: "fix(e2e): autofix by Codex"
+          body: |
+            Autofix by Codex.
+            Based on logs from run ${{ github.event.workflow_run.id }}.
+            See AGENTS.md and ci/last-failure.log for context.
+          author: codex-bot <codex-bot@users.noreply.github.com>

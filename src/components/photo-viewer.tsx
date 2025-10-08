@@ -3,10 +3,15 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { localePath } from "@/lib/locale-path";
 import type { GalleryImage } from "@/lib/gallery";
 import { PhotoMetadataPanel } from "@/components/photo-metadata-panel";
 import { LivePhotoPlayer } from "@/components/live-photo-player";
 import Image from "next/image";
+import { useImageCache } from "@/hooks/use-image-cache";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+const SLIDE_STORAGE_KEY = "gallery-slide-direction";
 
 type PhotoViewerProps = {
   image: GalleryImage;
@@ -15,8 +20,20 @@ type PhotoViewerProps = {
   prevPath?: string;
   nextPath?: string;
   locale?: "zh" | "en";
-  thumbnails?: { id: string; filePath: string; microThumbPath?: string | null }[];
+  thumbnails?: {
+    id: string;
+    filePath: string;
+    microThumbPath?: string | null;
+    smallThumbPath?: string | null;
+    mediumPath?: string | null;
+  }[];
   currentId?: string;
+};
+
+type OriginalLoadState = {
+  status: "idle" | "loading" | "success" | "error";
+  loadedBytes: number;
+  totalBytes: number | null;
 };
 
 export function PhotoViewer({
@@ -30,22 +47,162 @@ export function PhotoViewer({
   currentId,
 }: PhotoViewerProps) {
   const router = useRouter();
-  const [showInfoDrawer, setShowInfoDrawer] = useState(false);
-  const [copyToast, setCopyToast] = useState(false);
+  const imageCache = useImageCache();
   const backButtonRef = useRef<HTMLAnchorElement>(null);
+  const thumbnailStripRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const imgWrapRef = useRef<HTMLDivElement>(null);
   const [showHint, setShowHint] = useState(true);
+  const [showZoomIndicator, setShowZoomIndicator] = useState(false);
+  const zoomHideTimerRef = useRef<number | null>(null);
   const [containerSize, setContainerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
-  const [drag, setDrag] = useState<{
+  const dragRef = useRef<{
     active: boolean;
     startX: number;
     startY: number;
     originX: number;
     originY: number;
   }>({ active: false, startX: 0, startY: 0, originX: 0, originY: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [displaySrc, setDisplaySrc] = useState<string>(image.mediumPath || image.filePath);
+  const [originalState, setOriginalState] = useState<OriginalLoadState>({
+    status: "idle",
+    loadedBytes: 0,
+    totalBytes: null,
+  });
+  const [showProgress, setShowProgress] = useState(true);
+  const progressHideTimerRef = useRef<number | null>(null);
+  const xhrRef = useRef<XMLHttpRequest | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const pendingDirectionRef = useRef<"prev" | "next" | null>(null);
+  const previousSnapshotRef = useRef<{ id: string; src: string; alt: string } | null>({
+    id: image.id,
+    src: image.mediumPath || image.filePath,
+    alt: image.title || "未命名照片",
+  });
+  const slideTimeoutRef = useRef<number | null>(null);
+  const [slideContext, setSlideContext] = useState<{
+    direction: "left" | "right";
+    fromSrc: string;
+    fromAlt: string;
+    phase: "pre" | "animating";
+  } | null>(null);
+
+  // Calculate visual adjacent IDs from thumbnails array (not timeline)
+  const visualAdjacentIds = useRef<{ prev: string | null; next: string | null }>({
+    prev: null,
+    next: null,
+  });
+  useEffect(() => {
+    if (!thumbnails || !currentId) {
+      visualAdjacentIds.current = { prev: null, next: null };
+      return;
+    }
+    const currentIndex = thumbnails.findIndex((t) => t.id === currentId);
+    if (currentIndex === -1) {
+      visualAdjacentIds.current = { prev: null, next: null };
+      return;
+    }
+    // Visual order: index 0 = newest (left), index N = oldest (right)
+    // prev = left = newer = index - 1
+    // next = right = older = index + 1
+    const prevThumbnail = currentIndex > 0 ? thumbnails[currentIndex - 1] : null;
+    const nextThumbnail =
+      currentIndex < thumbnails.length - 1 ? thumbnails[currentIndex + 1] : null;
+    visualAdjacentIds.current = {
+      prev: prevThumbnail?.id ?? null,
+      next: nextThumbnail?.id ?? null,
+    };
+  }, [thumbnails, currentId]);
+
+  const markPendingDirection = useCallback(
+    (direction: "prev" | "next") => {
+      pendingDirectionRef.current = direction;
+      const fromSrc = image.mediumPath || image.filePath;
+      const payload = {
+        direction,
+        ts: Date.now(),
+        fromSrc,
+        fromAlt: image.title || "未命名照片",
+        fromId: image.id,
+      };
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.setItem(SLIDE_STORAGE_KEY, JSON.stringify(payload));
+        } catch {
+          // sessionStorage unavailable
+        }
+      }
+    },
+    [image.filePath, image.id, image.mediumPath, image.title]
+  );
+
+  const clearStoredDirection = useCallback(() => {
+    pendingDirectionRef.current = null;
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.removeItem(SLIDE_STORAGE_KEY);
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }, []);
+
+  const handleThumbnailClick = useCallback(
+    (targetId: string) => {
+      if (!thumbnails || !currentId || targetId === currentId) {
+        clearStoredDirection();
+        return;
+      }
+      const currentIndex = thumbnails.findIndex((t) => t.id === currentId);
+      const targetIndex = thumbnails.findIndex((t) => t.id === targetId);
+      if (currentIndex === -1 || targetIndex === -1) {
+        clearStoredDirection();
+        return;
+      }
+      if (targetIndex > currentIndex) {
+        markPendingDirection("next");
+      } else if (targetIndex < currentIndex) {
+        markPendingDirection("prev");
+      } else {
+        clearStoredDirection();
+      }
+    },
+    [thumbnails, currentId, markPendingDirection, clearStoredDirection]
+  );
+
+  const startSlide = useCallback(
+    (direction: "left" | "right", from: { src: string; alt: string }) => {
+      if (typeof window === "undefined") {
+        setSlideContext(null);
+        return;
+      }
+      if (slideTimeoutRef.current) {
+        window.clearTimeout(slideTimeoutRef.current);
+        slideTimeoutRef.current = null;
+      }
+      setSlideContext({ direction, fromSrc: from.src, fromAlt: from.alt, phase: "pre" });
+      requestAnimationFrame(() => {
+        setSlideContext((prev) => (prev ? { ...prev, phase: "animating" } : prev));
+      });
+      slideTimeoutRef.current = window.setTimeout(() => {
+        setSlideContext(null);
+        slideTimeoutRef.current = null;
+      }, 320);
+    },
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      if (slideTimeoutRef.current) {
+        window.clearTimeout(slideTimeoutRef.current);
+        slideTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Focus management
   useEffect(() => {
@@ -53,33 +210,356 @@ export function PhotoViewer({
     backButtonRef.current?.focus();
   }, []);
 
-  // Keyboard navigation
+  // Auto-hide progress indicator when 100%
+  useEffect(() => {
+    // Clear existing timer
+    if (progressHideTimerRef.current) {
+      window.clearTimeout(progressHideTimerRef.current);
+      progressHideTimerRef.current = null;
+    }
+
+    // Show progress when loading starts
+    if (originalState.status === "loading") {
+      setShowProgress(true);
+    }
+
+    // Hide after 2s when successfully loaded (100%)
+    if (
+      originalState.status === "success" &&
+      originalState.loadedBytes > 0 &&
+      originalState.totalBytes &&
+      originalState.loadedBytes >= originalState.totalBytes
+    ) {
+      progressHideTimerRef.current = window.setTimeout(() => {
+        setShowProgress(false);
+        progressHideTimerRef.current = null;
+      }, 2000);
+    }
+
+    return () => {
+      if (progressHideTimerRef.current) {
+        window.clearTimeout(progressHideTimerRef.current);
+        progressHideTimerRef.current = null;
+      }
+    };
+  }, [originalState]);
+
+  // Auto-hide zoom indicator when scale is 100%
+  useEffect(() => {
+    // Clear existing timer
+    if (zoomHideTimerRef.current) {
+      window.clearTimeout(zoomHideTimerRef.current);
+      zoomHideTimerRef.current = null;
+    }
+
+    // Show indicator when scale changes
+    setShowZoomIndicator(true);
+
+    // Hide after 2s if scale is 100% (scale === 1)
+    if (scale === 1) {
+      zoomHideTimerRef.current = window.setTimeout(() => {
+        setShowZoomIndicator(false);
+        zoomHideTimerRef.current = null;
+      }, 2000);
+    }
+
+    return () => {
+      if (zoomHideTimerRef.current) {
+        window.clearTimeout(zoomHideTimerRef.current);
+        zoomHideTimerRef.current = null;
+      }
+    };
+  }, [scale]);
+
+  // Auto-scroll thumbnail strip to current image with manual calculation
+  useEffect(() => {
+    if (!currentId || !thumbnailStripRef.current || !thumbnails) return;
+
+    const container = thumbnailStripRef.current;
+    const currentIndex = thumbnails.findIndex((t) => t.id === currentId);
+    if (currentIndex === -1) return;
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      const currentThumb = container.querySelector(`a[href*="${currentId}"]`) as HTMLElement;
+      if (!currentThumb) return;
+
+      const containerWidth = container.clientWidth;
+      const scrollWidth = container.scrollWidth;
+      const maxScroll = scrollWidth - containerWidth;
+
+      // If content fits in container, no need to scroll
+      if (maxScroll <= 0) return;
+
+      // Calculate thumb position (using gap-2 = 8px between items)
+      const thumbWidth = 56; // h-14 w-14
+      const gap = 8;
+      const padding = 16; // px-4
+      const thumbLeft = padding + currentIndex * (thumbWidth + gap);
+
+      // Pre-calculate target scroll position based on boundary detection
+      let targetScrollLeft: number;
+
+      // Check if at start boundary (first few items)
+      if (currentIndex < 3) {
+        targetScrollLeft = 0;
+      }
+      // Check if at end boundary (last few items)
+      else if (currentIndex >= thumbnails.length - 3) {
+        targetScrollLeft = maxScroll;
+      }
+      // Middle position: center the thumbnail
+      else {
+        const centerPosition = thumbLeft - containerWidth / 2 + thumbWidth / 2;
+        targetScrollLeft = Math.max(0, Math.min(centerPosition, maxScroll));
+      }
+
+      // Only scroll if target position is different from current
+      if (Math.abs(container.scrollLeft - targetScrollLeft) > 1) {
+        container.scrollTo({
+          left: targetScrollLeft,
+          behavior: "smooth",
+        });
+      }
+    });
+  }, [currentId, thumbnails]);
+
+  // Mouse wheel horizontal scroll support for thumbnail strip
+  useEffect(() => {
+    const thumbnailStrip = thumbnailStripRef.current;
+    if (!thumbnailStrip) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Prevent default vertical scroll
+      e.preventDefault();
+      // Scroll horizontally based on wheel delta
+      thumbnailStrip.scrollLeft += e.deltaY;
+    };
+
+    thumbnailStrip.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      thumbnailStrip.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
+
+  // Keyboard navigation with proactive preloading
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        router.push(`/${locale}/gallery`);
+        router.push(localePath(locale, "/gallery"));
       } else if (e.key === "ArrowLeft" && prevId) {
-        router.push(`/${locale}/gallery/${prevId}`);
+        markPendingDirection("prev");
+        // Proactively preload before navigation
+        if (prevPath && !imageCache.has(prevId)) {
+          imageCache.preload(prevId, prevPath);
+        }
+        router.push(localePath(locale, `/gallery/${prevId}`));
       } else if (e.key === "ArrowRight" && nextId) {
-        router.push(`/${locale}/gallery/${nextId}`);
+        markPendingDirection("next");
+        // Proactively preload before navigation
+        if (nextPath && !imageCache.has(nextId)) {
+          imageCache.preload(nextId, nextPath);
+        }
+        router.push(localePath(locale, `/gallery/${nextId}`));
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [router, prevId, nextId, locale]);
+  }, [router, prevId, nextId, prevPath, nextPath, locale, markPendingDirection, imageCache]);
 
-  // Preload adjacent images
+  // Preload adjacent images (cache-aware)
   useEffect(() => {
-    if (prevPath) {
-      const img = new window.Image();
-      img.src = prevPath;
+    if (prevId && prevPath && !imageCache.has(prevId)) {
+      imageCache.preload(prevId, prevPath);
     }
-    if (nextPath) {
-      const img = new window.Image();
-      img.src = nextPath;
+    if (nextId && nextPath && !imageCache.has(nextId)) {
+      imageCache.preload(nextId, nextPath);
     }
-  }, [prevPath, nextPath]);
+  }, [prevId, prevPath, nextId, nextPath, imageCache]);
+
+  // Reset zoom and prepare slide animation when image changes
+  useEffect(() => {
+    const prevSnapshot = previousSnapshotRef.current;
+    let pending = pendingDirectionRef.current;
+    let storedSnapshot: {
+      direction: "prev" | "next";
+      fromSrc: string;
+      fromAlt: string;
+      fromId?: string;
+    } | null = null;
+
+    if (typeof window !== "undefined") {
+      try {
+        const stored = sessionStorage.getItem(SLIDE_STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored) as {
+            direction?: "prev" | "next";
+            ts?: number;
+            fromSrc?: string;
+            fromAlt?: string;
+            fromId?: string;
+          };
+          if (parsed.direction && parsed.ts && Date.now() - parsed.ts < 1500) {
+            storedSnapshot = {
+              direction: parsed.direction,
+              fromSrc: parsed.fromSrc || "",
+              fromAlt: parsed.fromAlt || image.title || "未命名照片",
+              fromId: parsed.fromId,
+            };
+            if (!pending) {
+              pending = parsed.direction;
+            }
+          }
+        }
+      } catch {
+        // ignore storage errors
+      }
+    }
+
+    clearStoredDirection();
+
+    const baseSrc = image.mediumPath || image.filePath;
+
+    setScale(1);
+    setOffset({ x: 0, y: 0 });
+    setNaturalSize(null);
+    setShowHint(true);
+    setDisplaySrc(baseSrc);
+
+    const fallbackSnapshot =
+      storedSnapshot && storedSnapshot.fromSrc
+        ? {
+            id: storedSnapshot.fromId || "stored",
+            src: storedSnapshot.fromSrc,
+            alt: storedSnapshot.fromAlt,
+          }
+        : null;
+
+    const snapshotToUse =
+      prevSnapshot && prevSnapshot.id !== image.id ? prevSnapshot : fallbackSnapshot;
+
+    if (snapshotToUse && pending) {
+      const direction = pending === "next" ? "left" : "right";
+      startSlide(direction, snapshotToUse);
+    } else {
+      setSlideContext(null);
+    }
+  }, [image.id, image.mediumPath, image.filePath, startSlide, clearStoredDirection]);
+
+  // Cleanup download artefacts on unmount
+  useEffect(() => {
+    return () => {
+      xhrRef.current?.abort();
+      xhrRef.current = null;
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  // Fetch original image with progress once visible (with caching)
+  useEffect(() => {
+    xhrRef.current?.abort();
+    xhrRef.current = null;
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+
+    // No mediumPath or already using full resolution
+    if (!image.mediumPath || image.mediumPath === image.filePath) {
+      setDisplaySrc(image.filePath);
+      setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
+      return;
+    }
+
+    // Check cache first
+    const cachedUrl = imageCache.get(image.id);
+    if (cachedUrl) {
+      setDisplaySrc(cachedUrl);
+      setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
+      return;
+    }
+
+    // SSR guard
+    if (typeof window === "undefined" || typeof window.XMLHttpRequest === "undefined") {
+      setOriginalState({ status: "idle", loadedBytes: 0, totalBytes: null });
+      return;
+    }
+
+    // Start loading original image
+    const xhr = new window.XMLHttpRequest();
+    xhrRef.current = xhr;
+    setOriginalState({ status: "loading", loadedBytes: 0, totalBytes: null });
+
+    xhr.open("GET", image.filePath, true);
+    xhr.responseType = "blob";
+
+    xhr.onprogress = (event) => {
+      setOriginalState((prev) => ({
+        status: "loading",
+        loadedBytes: event.loaded,
+        totalBytes: event.lengthComputable ? event.total : prev.totalBytes,
+      }));
+    };
+
+    const handleFailure = () => {
+      if (xhrRef.current === xhr) {
+        xhrRef.current = null;
+      }
+      setOriginalState({ status: "error", loadedBytes: 0, totalBytes: null });
+      setDisplaySrc(image.filePath);
+    };
+
+    xhr.onerror = handleFailure;
+    xhr.onabort = () => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+      if (xhrRef.current === xhr) {
+        xhrRef.current = null;
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300 && xhr.response instanceof Blob) {
+        const blob = xhr.response as Blob;
+        const url = imageCache.set(image.id, blob);
+        setDisplaySrc(url);
+        setOriginalState({ status: "success", loadedBytes: blob.size, totalBytes: blob.size });
+        if (xhrRef.current === xhr) {
+          xhrRef.current = null;
+        }
+      } else {
+        handleFailure();
+      }
+    };
+
+    try {
+      xhr.send();
+    } catch {
+      handleFailure();
+    }
+
+    return () => {
+      xhr.abort();
+      if (xhrRef.current === xhr) {
+        xhrRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [image.id, image.filePath, image.mediumPath]);
+
+  useEffect(() => {
+    previousSnapshotRef.current = {
+      id: image.id,
+      src: displaySrc,
+      alt: image.title || "未命名照片",
+    };
+  }, [image.id, displaySrc, image.title]);
 
   // Helper: clamp offset so image stays within bounds based on scale
   const clampOffset = useCallback(
@@ -122,12 +602,16 @@ export function PhotoViewer({
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const cr = entry.contentRect;
-        setContainerSize({ w: cr.width, h: cr.height });
+        setContainerSize((prev) => {
+          // Only update if size actually changed to avoid unnecessary re-renders
+          if (prev.w === cr.width && prev.h === cr.height) return prev;
+          return { w: cr.width, h: cr.height };
+        });
       }
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, [clampOffset]);
+  }, []); // Remove clampOffset from dependencies
 
   // Wheel zoom (center-based)
   useEffect(() => {
@@ -167,37 +651,91 @@ export function PhotoViewer({
     return () => el.removeEventListener("dblclick", onDbl);
   }, [clampOffset]);
 
-  // Drag to pan when scale > 1
+  // Drag to pan (when zoomed) or swipe to switch images (when not zoomed)
   useEffect(() => {
     const el = imgWrapRef.current;
     if (!el) return;
+
+    const SWIPE_THRESHOLD = 100; // pixels to trigger image switch
+
     const onDown = (e: MouseEvent) => {
-      if (scale <= 1) return;
-      setDrag({
-        active: true,
-        startX: e.clientX,
-        startY: e.clientY,
-        originX: offset.x,
-        originY: offset.y,
+      setOffset((currentOffset) => {
+        dragRef.current = {
+          active: true,
+          startX: e.clientX,
+          startY: e.clientY,
+          originX: currentOffset.x,
+          originY: currentOffset.y,
+        };
+        return currentOffset;
       });
+      setIsDragging(true);
     };
+
     const onMove = (e: MouseEvent) => {
-      if (!drag.active) return;
-      const dx = e.clientX - drag.startX;
-      const dy = e.clientY - drag.startY;
-      const next = { x: drag.originX + dx, y: drag.originY + dy };
-      setOffset(clampOffset(next, scale));
+      if (!dragRef.current.active) return;
+
+      const dx = e.clientX - dragRef.current.startX;
+      const dy = e.clientY - dragRef.current.startY;
+
+      if (scale > 1) {
+        // Zoomed: pan the image
+        const next = { x: dragRef.current.originX + dx, y: dragRef.current.originY + dy };
+        setOffset(clampOffset(next, scale));
+      } else {
+        // Not zoomed: horizontal swipe for navigation
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
+
+        // Only apply horizontal offset if dragging horizontally
+        if (absDx > absDy && absDx > 10) {
+          setOffset({ x: dx * 0.3, y: 0 }); // Apply damping for visual feedback
+        }
+      }
     };
-    const end = () => setDrag((d) => ({ ...d, active: false }));
+
+    const end = (e: MouseEvent) => {
+      if (!dragRef.current.active) return;
+
+      // Calculate actual drag distance from start position
+      const dragDistance = e.clientX - dragRef.current.startX;
+
+      // Check if swipe threshold met for navigation
+      if (scale === 1 && Math.abs(dragDistance) > SWIPE_THRESHOLD) {
+        // Use visual adjacent IDs (thumbnail array order)
+        const visualNext = visualAdjacentIds.current.next;
+        const visualPrev = visualAdjacentIds.current.prev;
+
+        if (dragDistance < 0 && visualNext) {
+          // Swiped left -> next image (right in thumbnails, older)
+          markPendingDirection("next");
+          router.push(localePath(locale, `/gallery/${visualNext}`));
+        } else if (dragDistance > 0 && visualPrev) {
+          // Swiped right -> previous image (left in thumbnails, newer)
+          markPendingDirection("prev");
+          router.push(localePath(locale, `/gallery/${visualPrev}`));
+        }
+      }
+
+      // Reset offset if not zoomed (bounce back animation)
+      if (scale === 1) {
+        setOffset({ x: 0, y: 0 });
+      }
+
+      dragRef.current.active = false;
+      setIsDragging(false);
+    };
+
     el.addEventListener("mousedown", onDown);
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", end);
+
     return () => {
       el.removeEventListener("mousedown", onDown);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", end);
     };
-  }, [scale, offset, drag, containerSize, naturalSize, clampOffset]);
+  }, [scale, offset.x, clampOffset, nextId, prevId, router, locale, markPendingDirection]);
 
   // Pinch zoom for touch devices
   useEffect(() => {
@@ -238,84 +776,16 @@ export function PhotoViewer({
     };
   }, [scale, clampOffset]);
 
-  const handleShare = async () => {
-    const shareData = {
-      title: image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo"),
-      text: image.description || "",
-      url: window.location.href,
-    };
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch {
-        // User cancelled or error occurred
-      }
-    } else {
-      // Fallback: copy link
-      navigator.clipboard.writeText(window.location.href);
-      setCopyToast(true);
-      setTimeout(() => setCopyToast(false), 2000);
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-[60] bg-white dark:bg-zinc-950" role="dialog" aria-modal="true">
       {/* Minimal floating toolbar (no full-width header) */}
       <div className="fixed top-4 right-4 z-[62] flex items-center gap-2">
-        {/* Info (mobile) */}
-        <button
-          onClick={() => setShowInfoDrawer(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
-          title="查看信息"
-          aria-label="查看照片信息"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </button>
-        {/* Download */}
-        <a
-          href={image.filePath}
-          download
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
-          title="下载照片"
-          aria-label="下载照片"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
-        </a>
-        {/* Share */}
-        <button
-          onClick={handleShare}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
-          title="分享照片"
-          aria-label="分享照片"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-            />
-          </svg>
-        </button>
+        {/* Theme Toggle */}
+        <ThemeToggle />
         {/* Close */}
         <Link
           ref={backButtonRef}
-          href={`/${locale}/gallery`}
+          href={localePath(locale, "/gallery")}
           className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
           aria-label={locale === "zh" ? "返回相册页面" : "Back to Gallery"}
           title={locale === "zh" ? "返回相册" : "Back"}
@@ -331,14 +801,15 @@ export function PhotoViewer({
         </Link>
       </div>
 
-      {/* Side navigation arrows */}
+      {/* Side navigation arrows - vertically centered */}
       <div className="pointer-events-none fixed top-1/2 left-4 z-[62] -translate-y-1/2 lg:left-6">
-        {prevId && (
+        {visualAdjacentIds.current.prev && (
           <Link
-            href={`/${locale}/gallery/${prevId}`}
+            href={localePath(locale, `/gallery/${visualAdjacentIds.current.prev}`)}
             className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
             title="上一张"
             aria-label="上一张"
+            onClick={() => markPendingDirection("prev")}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -351,13 +822,15 @@ export function PhotoViewer({
           </Link>
         )}
       </div>
-      <div className="pointer-events-none fixed top-1/2 right-4 z-[62] -translate-y-1/2 lg:right-6">
-        {nextId && (
+      {/* Right arrow: avoid right sidebar on desktop, stay within thumbnail area */}
+      <div className="pointer-events-none fixed top-1/2 right-4 z-[62] -translate-y-1/2 lg:right-[calc(380px+1.5rem)] xl:right-[calc(420px+1.5rem)]">
+        {visualAdjacentIds.current.next && (
           <Link
-            href={`/${locale}/gallery/${nextId}`}
+            href={localePath(locale, `/gallery/${visualAdjacentIds.current.next}`)}
             className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
             title="下一张"
             aria-label="下一张"
+            onClick={() => markPendingDirection("next")}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -365,13 +838,6 @@ export function PhotoViewer({
           </Link>
         )}
       </div>
-
-      {/* Copy toast */}
-      {copyToast && (
-        <div className="fixed top-20 right-6 z-[62] rounded-lg bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-lg dark:bg-zinc-900 dark:text-zinc-100">
-          已复制链接
-        </div>
-      )}
 
       {/* Main content */}
       <div className="flex h-full flex-col lg:flex-row">
@@ -391,31 +857,74 @@ export function PhotoViewer({
               ref={imgWrapRef}
               className={`relative h-full w-full ${scale > 1 ? "cursor-grab" : ""}`}
             >
-              <div
-                className="absolute inset-0"
-                style={{
-                  transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-                  transformOrigin: "50% 50%",
-                  transition: "transform 120ms ease-out",
-                  willChange: "transform",
-                  cursor: scale > 1 ? (drag.active ? "grabbing" : "grab") : "zoom-in",
-                }}
-              >
-                <Image
-                  src={scale > 2 ? image.filePath : image.mediumPath || image.filePath}
-                  alt={image.title || "未命名照片"}
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 1024px) 100vw, 65vw"
-                  priority
-                  onLoadingComplete={(img) =>
-                    setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight })
-                  }
-                />
+              <div className="absolute inset-0 overflow-hidden">
+                {slideContext && (
+                  <div
+                    className={`pointer-events-none absolute inset-0 transition-transform duration-300 ease-out ${
+                      slideContext.direction === "left"
+                        ? slideContext.phase === "pre"
+                          ? "translate-x-0"
+                          : "-translate-x-full"
+                        : slideContext.phase === "pre"
+                          ? "translate-x-0"
+                          : "translate-x-full"
+                    }`}
+                    style={{ willChange: "transform" }}
+                  >
+                    <Image
+                      src={slideContext.fromSrc}
+                      alt={slideContext.fromAlt}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 1024px) 100vw, 65vw"
+                      unoptimized
+                    />
+                  </div>
+                )}
+                <div
+                  className={`absolute inset-0 transition-transform duration-300 ease-out ${
+                    slideContext
+                      ? slideContext.direction === "left"
+                        ? slideContext.phase === "pre"
+                          ? "translate-x-full"
+                          : "translate-x-0"
+                        : slideContext.phase === "pre"
+                          ? "-translate-x-full"
+                          : "translate-x-0"
+                      : "translate-x-0"
+                  }`}
+                  style={{ willChange: "transform" }}
+                >
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`,
+                      transformOrigin: "50% 50%",
+                      transition: isDragging && scale === 1 ? "none" : "transform 200ms ease-out",
+                      willChange: "transform",
+                      cursor: isDragging ? "grabbing" : "grab",
+                    }}
+                  >
+                    <Image
+                      src={displaySrc}
+                      alt={image.title || "未命名照片"}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 1024px) 100vw, 65vw"
+                      unoptimized
+                      onLoad={(e) => {
+                        const img = e.currentTarget;
+                        setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="pointer-events-none absolute top-4 right-4 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300">
-                {(scale * 100).toFixed(0)}%
-              </div>
+              {showZoomIndicator && (
+                <div className="pointer-events-none absolute top-4 right-4 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300">
+                  {(scale * 100).toFixed(0)}%
+                </div>
+              )}
               {showHint && (
                 <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs text-zinc-600 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
                   滚轮缩放 · 双击重置
@@ -425,68 +934,92 @@ export function PhotoViewer({
           )}
         </div>
 
+        {originalState.status === "loading" && showProgress && (
+          <div className="pointer-events-none absolute right-6 bottom-6 z-[63] flex items-center gap-3 rounded-xl bg-black/75 px-4 py-2 text-xs text-white shadow-lg backdrop-blur">
+            <svg
+              className="h-4 w-4 animate-spin text-white/80"
+              fill="none"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle
+                className="opacity-20"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="3"
+              />
+              <path
+                className="opacity-90"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z"
+              />
+            </svg>
+            <div>
+              <div className="font-medium">
+                {`正在加载图片${formatProgress(originalState.loadedBytes, originalState.totalBytes)}`}
+              </div>
+              <div className="text-[11px] text-white/70">
+                {formatBytes(originalState.loadedBytes)}
+                {typeof originalState.totalBytes === "number"
+                  ? ` / ${formatBytes(originalState.totalBytes)}`
+                  : ""}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Metadata panel - desktop only */}
         <aside className="hidden w-full overflow-y-auto border-l border-zinc-200 bg-white lg:block lg:max-w-[480px] lg:flex-none lg:basis-[380px] xl:basis-[420px] dark:border-zinc-800 dark:bg-[#0b0b0d]">
           <PhotoMetadataPanel image={image} />
         </aside>
       </div>
 
-      {/* Bottom film strip */}
+      {/* Bottom film strip - exclude right sidebar on desktop */}
       {Array.isArray(thumbnails) && thumbnails.length > 0 && (
-        <div className="pointer-events-auto fixed right-0 bottom-0 left-0 z-[61] border-t border-zinc-200 bg-white/75 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">
-          <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-3">
+        <div className="pointer-events-auto fixed right-0 bottom-0 left-0 z-[61] border-t border-zinc-200 bg-white/75 backdrop-blur lg:right-[380px] xl:right-[420px] dark:border-zinc-800 dark:bg-zinc-900/60">
+          <div
+            ref={thumbnailStripRef}
+            className="flex items-center gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
             {thumbnails.map((t) => (
               <Link
                 key={t.id}
-                href={`/${locale}/gallery/${t.id}`}
+                href={localePath(locale, `/gallery/${t.id}`)}
                 className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-md ring-1 ${
                   currentId === t.id ? "ring-blue-500" : "ring-zinc-200 dark:ring-zinc-700"
                 }`}
                 title={image.title || ""}
+                onClick={() => handleThumbnailClick(t.id)}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={t.microThumbPath || t.filePath}
+                  src={t.smallThumbPath ?? t.microThumbPath ?? t.mediumPath ?? t.filePath}
                   alt="thumb"
                   className="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
               </Link>
             ))}
           </div>
         </div>
       )}
-
-      {/* Mobile info drawer */}
-      {showInfoDrawer && (
-        <div
-          className="fixed inset-0 z-[62] bg-black/30 lg:hidden"
-          onClick={() => setShowInfoDrawer(false)}
-        >
-          <div
-            className="fixed right-0 bottom-0 left-0 max-h-[70vh] overflow-y-auto rounded-t-2xl bg-white p-6 dark:bg-[#0b0b0d]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">照片信息</h2>
-              <button
-                onClick={() => setShowInfoDrawer(false)}
-                className="flex h-8 w-8 items-center justify-center rounded text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                aria-label="关闭"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-            <PhotoMetadataPanel image={image} />
-          </div>
-        </div>
-      )}
     </div>
   );
+}
+
+function formatBytes(bytes: number): string {
+  if (!bytes) return "0.00 MB";
+  const mb = bytes / (1024 * 1024);
+  if (mb >= 100) return `${mb.toFixed(0)} MB`;
+  if (mb >= 10) return `${mb.toFixed(1)} MB`;
+  return `${mb.toFixed(2)} MB`;
+}
+
+function formatProgress(loaded: number, total: number | null): string {
+  if (!total || total <= 0) return "";
+  const pct = Math.min(100, Math.round((loaded / total) * 100));
+  return ` ${pct}%`;
 }

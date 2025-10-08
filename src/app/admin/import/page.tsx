@@ -92,114 +92,109 @@ export default function ImportPage() {
 
   return (
     <div className="space-y-10">
-      {/* Page Header */}
-      <header className="max-w-3xl space-y-4">
-        <h1 className="text-4xl leading-tight font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-          Import
-        </h1>
-        <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-          Upload a ZIP file containing Markdown posts to create or update content. The system will
-          validate and preview changes before applying.
+      {/* Page Header - unified style */}
+      <header className="space-y-3">
+        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Operations</p>
+        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">内容导入</h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          上传一个包含 Markdown 文章的 ZIP，先预览再应用更改。
         </p>
       </header>
 
-      {/* Upload Section */}
-      <div className="max-w-3xl space-y-6">
-        <div className="space-y-4">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Upload File</h2>
-          <div className="border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-800">
-            <input
-              type="file"
-              accept=".zip"
-              onChange={handleFileChange}
-              className="hidden"
-              id="file-upload"
-              data-testid="zip-file-input"
-            />
-            <label
-              htmlFor="file-upload"
-              className="inline-flex cursor-pointer items-center gap-2 border border-zinc-900 bg-white px-6 py-3 text-sm font-medium text-zinc-900 transition-colors duration-150 hover:bg-zinc-50 dark:border-zinc-100 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900"
-            >
-              Choose ZIP File
-            </label>
-            {file && (
-              <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-                Selected: {file.name} ({(file.size / 1024).toFixed(1)} KB)
-              </p>
-            )}
-          </div>
+      {/* Upload Section - unified card */}
+      <section className="rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
+        <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+          上传文件
+        </h2>
+        <div className="mt-4 rounded-2xl border border-dashed border-zinc-300/80 p-8 text-center dark:border-zinc-700/70">
+          <input
+            type="file"
+            accept=".zip"
+            onChange={handleFileChange}
+            className="hidden"
+            id="file-upload"
+            data-testid="zip-file-input"
+          />
+          <label
+            htmlFor="file-upload"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+          >
+            选择 ZIP 文件
+          </label>
+          {file && (
+            <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+              已选择：{file.name} ({(file.size / 1024).toFixed(1)} KB)
+            </p>
+          )}
         </div>
 
         {file && !dryRunResult && !applyResult && (
-          <div className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
+          <div className="mt-6">
             <button
               onClick={handleDryRun}
               disabled={isProcessing}
               data-testid="preview-import-button"
-              className="inline-flex items-center gap-2 border border-zinc-900 bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+              className="inline-flex items-center gap-2 rounded-lg border border-zinc-900 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
             >
-              {isProcessing ? "Processing..." : "Preview Import"}
+              {isProcessing ? "Processing..." : "预览导入"}
             </button>
-            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-              Validates the file and shows what will be created or updated
+            <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400">
+              验证文件并显示将要新增或更新的内容
             </p>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Dry-Run Results */}
+      {/* Dry-Run Results - unified card */}
       {dryRunResult && (
-        <div className="max-w-3xl space-y-6">
-          <div className="border-l-2 border-zinc-900 pl-6 dark:border-zinc-100">
-            <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Preview</h2>
-            <div className="mt-4 space-y-2 text-sm" data-testid="import-stats">
-              <p className="text-zinc-600 dark:text-zinc-400">
-                <span
-                  className="font-medium text-zinc-900 dark:text-zinc-100"
-                  data-testid="created-count"
-                >
-                  {dryRunResult.summary.created}
-                </span>{" "}
-                posts will be created
+        <section className="space-y-6 rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
+          <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+            预览
+          </h2>
+          <div className="space-y-2 text-sm" data-testid="import-stats">
+            <p className="text-zinc-600 dark:text-zinc-400">
+              <span
+                className="font-medium text-zinc-900 dark:text-zinc-100"
+                data-testid="created-count"
+              >
+                {dryRunResult.summary.created}
+              </span>{" "}
+              posts will be created
+            </p>
+            <p className="text-zinc-600 dark:text-zinc-400">
+              <span
+                className="font-medium text-zinc-900 dark:text-zinc-100"
+                data-testid="updated-count"
+              >
+                {dryRunResult.summary.updated}
+              </span>{" "}
+              posts will be updated
+            </p>
+            <p className="text-zinc-600 dark:text-zinc-400">
+              <span
+                className="font-medium text-zinc-900 dark:text-zinc-100"
+                data-testid="skipped-count"
+              >
+                {dryRunResult.summary.skipped}
+              </span>{" "}
+              files skipped
+            </p>
+            {dryRunResult.summary.errors > 0 && (
+              <p className="font-medium text-zinc-900 dark:text-zinc-100" data-testid="error-count">
+                {dryRunResult.summary.errors} errors detected
               </p>
-              <p className="text-zinc-600 dark:text-zinc-400">
-                <span
-                  className="font-medium text-zinc-900 dark:text-zinc-100"
-                  data-testid="updated-count"
-                >
-                  {dryRunResult.summary.updated}
-                </span>{" "}
-                posts will be updated
-              </p>
-              <p className="text-zinc-600 dark:text-zinc-400">
-                <span
-                  className="font-medium text-zinc-900 dark:text-zinc-100"
-                  data-testid="skipped-count"
-                >
-                  {dryRunResult.summary.skipped}
-                </span>{" "}
-                files skipped
-              </p>
-              {dryRunResult.summary.errors > 0 && (
-                <p
-                  className="font-medium text-zinc-900 dark:text-zinc-100"
-                  data-testid="error-count"
-                >
-                  {dryRunResult.summary.errors} errors detected
-                </p>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Details Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead>
-                <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                  <th className="pr-4 pb-3 font-medium text-zinc-900 dark:text-zinc-100">File</th>
-                  <th className="pr-4 pb-3 font-medium text-zinc-900 dark:text-zinc-100">Action</th>
-                  <th className="pr-4 pb-3 font-medium text-zinc-900 dark:text-zinc-100">Title</th>
-                  <th className="pb-3 font-medium text-zinc-900 dark:text-zinc-100">Status</th>
+          <div className="overflow-hidden rounded-2xl border border-zinc-200/60 bg-white/60 dark:border-zinc-800/60 dark:bg-zinc-900/60">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-zinc-100/70 text-xs tracking-[0.2em] text-zinc-500 uppercase dark:bg-zinc-800/50 dark:text-zinc-400">
+                <tr>
+                  <th className="px-4 py-3">File</th>
+                  <th className="px-4 py-3">Action</th>
+                  <th className="px-4 py-3">Title</th>
+                  <th className="px-4 py-3">Status</th>
                 </tr>
               </thead>
               <tbody
@@ -208,16 +203,16 @@ export default function ImportPage() {
               >
                 {dryRunResult.details.map((detail, idx) => (
                   <tr key={idx}>
-                    <td className="py-3 pr-4 font-mono text-xs text-zinc-600 dark:text-zinc-400">
+                    <td className="px-4 py-3 font-mono text-xs text-zinc-600 dark:text-zinc-400">
                       {detail.filename}
                     </td>
-                    <td className="py-3 pr-4">
+                    <td className="px-4 py-3">
                       <ActionBadge action={detail.action} />
                     </td>
-                    <td className="py-3 pr-4 text-zinc-900 dark:text-zinc-100">
+                    <td className="px-4 py-3 text-zinc-900 dark:text-zinc-100">
                       {detail.post?.title || "-"}
                     </td>
-                    <td className="py-3">
+                    <td className="px-4 py-3">
                       {detail.error ? (
                         <span
                           className="text-xs text-zinc-600 dark:text-zinc-400"
@@ -239,27 +234,27 @@ export default function ImportPage() {
 
           {/* Apply Button */}
           {dryRunResult.summary.errors === 0 && (
-            <div className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
+            <div>
               <button
                 onClick={handleApply}
                 disabled={isProcessing}
-                className="inline-flex items-center gap-2 border border-zinc-900 bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition-colors duration-150 hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                className="inline-flex items-center gap-2 rounded-lg border border-zinc-900 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
               >
-                {isProcessing ? "Importing..." : "Apply Import"}
+                {isProcessing ? "Importing..." : "应用导入"}
               </button>
-              <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-                Execute the import and create/update posts in the database
-              </p>
+              <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400">将更改写入数据库</p>
             </div>
           )}
-        </div>
+        </section>
       )}
 
-      {/* Apply Results */}
+      {/* Apply Results - unified card */}
       {applyResult && (
-        <div className="max-w-3xl space-y-4 border-l-2 border-zinc-900 pl-6 dark:border-zinc-100">
-          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Import Complete</h2>
-          <div className="space-y-2 text-sm">
+        <section className="space-y-2 rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
+          <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+            导入完成
+          </h2>
+          <div className="text-sm">
             <p className="text-zinc-600 dark:text-zinc-400">
               Created {applyResult.summary.created} posts
             </p>
@@ -272,16 +267,18 @@ export default function ImportPage() {
               </p>
             )}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Documentation */}
-      <div className="max-w-3xl space-y-4 border-l-2 border-zinc-200 pl-6 dark:border-zinc-800">
-        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Import Format</h2>
+      {/* Documentation - unified card */}
+      <section className="space-y-4 rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
+        <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+          导入格式
+        </h2>
         <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
           <p>
-            ZIP files must follow the structure documented in{" "}
-            <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-900">
+            ZIP files must follow the structure documented in
+            <code className="ml-1 rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-900">
               docs/CONTENT_FORMAT.md
             </code>
           </p>
@@ -293,7 +290,7 @@ export default function ImportPage() {
             <li>Duplicate slugs get -2, -3 suffix</li>
           </ul>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

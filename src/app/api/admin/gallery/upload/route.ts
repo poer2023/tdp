@@ -103,11 +103,9 @@ export async function POST(req: Request) {
     // Revalidate root and localized homepages to reflect new uploads immediately
     revalidatePath("/");
     revalidatePath("/zh");
-    revalidatePath("/en");
     // Optionally refresh gallery listings
     revalidatePath("/gallery");
     revalidatePath("/zh/gallery");
-    revalidatePath("/en/gallery");
     revalidatePath("/admin/gallery");
 
     return NextResponse.json({ ok: true, image: created }, { status: 200 });

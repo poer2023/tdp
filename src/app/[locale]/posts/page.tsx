@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { listPublishedPosts } from "@/lib/posts";
+import { localePath } from "@/lib/locale-path";
 
 // Querying Prisma – lock runtime to Node.js
 export const runtime = "nodejs";
@@ -45,7 +46,7 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
         <div className="space-y-12">
           {posts.map((post) => (
             <article key={post.id} className="border-b border-zinc-200 pb-12 dark:border-zinc-800">
-              <Link href={`/${locale}/posts/${post.slug}`} className="group">
+              <Link href={localePath(l, `/posts/${post.slug}`)} className="group">
                 <h2 className="text-2xl font-bold text-zinc-900 group-hover:text-blue-600 dark:text-zinc-100 dark:group-hover:text-blue-400">
                   {post.title}
                 </h2>

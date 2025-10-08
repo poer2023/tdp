@@ -14,7 +14,9 @@ export function HtmlLangSync() {
   const pathname = usePathname() || "/";
 
   useEffect(() => {
-    const locale = getLocaleFromPathname(pathname) || "en";
+    const resolvedPath =
+      pathname === "/" && typeof window !== "undefined" ? window.location.pathname : pathname;
+    const locale = getLocaleFromPathname(resolvedPath || "/") || "en";
     const lang = getHtmlLang(locale);
     try {
       document.documentElement.setAttribute("lang", lang);

@@ -1,0 +1,33 @@
+<svg width="960" height="720" viewBox="0 0 960 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="loom-bg" x1="120" y1="60" x2="840" y2="660" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1A2A6C" />
+      <stop offset="0.5" stop-color="#B21F1F" />
+      <stop offset="1" stop-color="#FDBB2D" />
+    </linearGradient>
+    <linearGradient id="loom-accent" x1="260" y1="120" x2="700" y2="540" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFEFD3" stop-opacity="0.85" />
+      <stop offset="1" stop-color="#FFE6F7" stop-opacity="0.3" />
+    </linearGradient>
+    <linearGradient id="loom-lines" x1="480" y1="120" x2="480" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.8" />
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.1" />
+    </linearGradient>
+  </defs>
+  <rect width="960" height="720" rx="48" fill="url(#loom-bg)" />
+  <g opacity="0.6">
+    <path d="M192 144H768V240C768 318.274 704.274 382 626 382H334C255.726 382 192 318.274 192 240V144Z" fill="url(#loom-accent)" />
+  </g>
+  <g stroke="url(#loom-lines)" stroke-width="6" stroke-linecap="round">
+    <line x1="240" y1="180" x2="240" y2="600" />
+    <line x1="320" y1="180" x2="320" y2="600" />
+    <line x1="400" y1="180" x2="400" y2="600" />
+    <line x1="560" y1="180" x2="560" y2="600" />
+    <line x1="640" y1="180" x2="640" y2="600" />
+    <line x1="720" y1="180" x2="720" y2="600" />
+  </g>
+  <circle cx="480" cy="420" r="96" fill="#101820" fill-opacity="0.78" />
+  <path d="M432 384H474C490.569 384 504 397.431 504 414V504H462C445.431 504 432 490.569 432 474V384Z" fill="#FFF5EC" />
+  <path d="M522 336H564C580.569 336 594 349.431 594 366V456H552C535.431 456 522 442.569 522 426V336Z" fill="#FFE3C2" />
+  <text x="240" y="130" fill="#FFF5EC" font-family="'Fira Code', 'Menlo', monospace" font-size="32" letter-spacing="0.3em">HIKARI LOOM</text>
+</svg>

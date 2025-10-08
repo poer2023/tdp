@@ -23,6 +23,15 @@ export type PublicPost = {
 
 export type PostSummary = Pick<PublicPost, "id" | "title" | "slug" | "status">;
 
+export type RecentActivity = {
+  type: "post" | "gallery";
+  title: string;
+  slug?: string;
+  id: string;
+  date: string;
+  image: string;
+};
+
 export type CreatePostInput = {
   title: string;
   excerpt: string;
@@ -299,4 +308,57 @@ function toPublicPost(post: PostWithAuthor): PublicPost {
         }
       : null,
   };
+}
+
+export async function getRecentActivities(limit = 4): Promise<RecentActivity[]> {
+  if (SKIP_DB) return [];
+  try {
+    const [posts, images] = await Promise.all([
+      prisma.post.findMany({
+        where: { status: PostStatus.PUBLISHED },
+        select: { id: true, title: true, slug: true, publishedAt: true, coverImagePath: true },
+        orderBy: { publishedAt: "desc" },
+        take: limit,
+      }),
+      prisma.galleryImage.findMany({
+        select: {
+          id: true,
+          title: true,
+          createdAt: true,
+          smallThumbPath: true,
+          microThumbPath: true,
+          filePath: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+      }),
+    ]);
+
+    const activities: RecentActivity[] = [
+      ...posts.map((p) => ({
+        type: "post" as const,
+        title: p.title,
+        slug: p.slug,
+        id: p.id,
+        date: p.publishedAt ? p.publishedAt.toISOString() : new Date().toISOString(),
+        image: p.coverImagePath ?? "/images/placeholder-cover.svg",
+      })),
+      ...images.map((img) => ({
+        type: "gallery" as const,
+        title: img.title || "Untitled Photo",
+        id: img.id,
+        date: img.createdAt.toISOString(),
+        image: img.smallThumbPath ?? img.microThumbPath ?? img.filePath,
+      })),
+    ];
+
+    return activities
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, limit);
+  } catch (_e) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("DB unavailable in getRecentActivities, returning empty list.", _e);
+    }
+    return [];
+  }
 }
