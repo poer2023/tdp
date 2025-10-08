@@ -13,11 +13,12 @@ FROM cgr.dev/chainguard/node:latest-dev AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+# Install all dependencies (including devDependencies for build)
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Generate Prisma Client and build Next.js application
+# Copy source code and build
+COPY . .
 RUN npx prisma generate && npm run build
 
 # === Migration Stage: Database migrations ===
