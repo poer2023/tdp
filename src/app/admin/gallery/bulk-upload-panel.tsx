@@ -140,6 +140,9 @@ export function BulkUploadPanel({}: { posts?: PostSummary[] }) {
     const description =
       (formRef.current?.querySelector('textarea[name="description"]') as HTMLTextAreaElement | null)
         ?.value || "";
+    const category =
+      (formRef.current?.querySelector('select[name="category"]') as HTMLSelectElement | null)
+        ?.value || "ORIGINAL";
     const postId =
       selectedPostId ||
       (formRef.current?.querySelector('select[name="postId"]') as HTMLSelectElement | null)
@@ -147,6 +150,7 @@ export function BulkUploadPanel({}: { posts?: PostSummary[] }) {
       "";
     if (title) fd.append("title", title);
     if (description) fd.append("description", description);
+    if (category) fd.append("category", category);
     if (postId) fd.append("postId", postId);
 
     await new Promise<void>((resolve) => {
@@ -331,6 +335,17 @@ export function BulkUploadPanel({}: { posts?: PostSummary[] }) {
               placeholder="批量设置一个统一描述"
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             />
+          </Field>
+          <Field label="分类">
+            <select
+              name="category"
+              defaultValue="ORIGINAL"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            >
+              <option value="REPOST">转发</option>
+              <option value="ORIGINAL">拍照</option>
+              <option value="AI">AI</option>
+            </select>
           </Field>
           <Field label="关联文章 (可选)">
             <div className="relative">
