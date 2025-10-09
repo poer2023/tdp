@@ -62,7 +62,7 @@ export default async function RootLayout({
   return (
     <html lang={htmlLang}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
       >
         {/* Early theme applier to avoid FOUC */}
         <script
@@ -105,7 +105,9 @@ export default async function RootLayout({
               </div>
             </header>
 
-            <main id="main-content">{children}</main>
+            <main id="main-content" className="flex-1">
+              {children}
+            </main>
 
             {/* Global mobile composer FAB (hidden on admin) */}
             {!isAdminRoute && <MomentComposerBottomSheet />}
