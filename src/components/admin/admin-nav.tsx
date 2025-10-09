@@ -84,7 +84,7 @@ export function AdminNav({
                       className={`group block rounded-lg px-3 py-2.5 transition-all duration-150 ${
                         isActive
                           ? "bg-zinc-100 dark:bg-zinc-900/60"
-                          : "hover:bg-zinc-100 dark:hover:bg-zinc-900/50"
+                          : "hover:bg-zinc-100 dark:hover:bg-zinc-900/30"
                       }`}
                     >
                       <div className="flex items-center justify-between">

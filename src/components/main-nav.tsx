@@ -3,15 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
 
 export function MainNav() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Detect current locale from pathname using utility function
   const locale = getLocaleFromPathname(pathname) ?? "en";
+
+  // Ensure component is mounted (for SSR compatibility)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const links = [
     {
@@ -108,73 +115,53 @@ export function MainNav() {
         </button>
       </nav>
 
-      {/* Mobile Menu Drawer */}
-      {mobileMenuOpen && (
-        <>
-          {/* Backdrop overlay */}
-          <div
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-            aria-hidden="true"
-          />
+      {/* Mobile Menu Drawer - rendered via Portal to document.body */}
+      {mounted &&
+        createPortal(
+          <>
+            {/* Backdrop overlay */}
+            <div
+              className={`fixed inset-0 z-[9998] bg-black/15 transition-opacity duration-300 ease-out md:hidden dark:bg-black/25 ${
+                mobileMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
 
-          {/* Drawer panel */}
-          <div
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-white p-6 shadow-xl md:hidden dark:bg-zinc-950"
-            role="dialog"
-            aria-modal="true"
-            aria-label={locale === "zh" ? "导航菜单" : "Navigation menu"}
-          >
-            {/* Close button */}
-            <div className="mb-8 flex items-center justify-between">
-              <Link
-                href={locale === "zh" ? "/zh" : "/en"}
-                className="text-lg font-semibold text-zinc-900 dark:text-zinc-100"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                ZHI
-              </Link>
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                onClick={() => setMobileMenuOpen(false)}
-                aria-label={locale === "zh" ? "关闭菜单" : "Close menu"}
-              >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+            {/* Drawer panel */}
+            <div
+              className={`fixed top-0 right-0 left-0 z-[9999] overflow-y-auto overscroll-contain bg-white/30 px-4 py-3 shadow-lg backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 ease-out md:hidden dark:bg-zinc-900/30 ${
+                mobileMenuOpen ? "translate-y-0" : "-translate-y-full"
+              }`}
+              role="dialog"
+              aria-modal="true"
+              aria-label={locale === "zh" ? "导航菜单" : "Navigation menu"}
+            >
+              {/* Mobile navigation links */}
+              <nav className="flex flex-col gap-2 pb-2">
+                {links.map((link) => {
+                  const isActive = pathname.includes(link.match);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`rounded-lg px-4 py-3 text-base font-medium transition-all ${
+                        isActive
+                          ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
+                          : "text-zinc-700 hover:bg-zinc-100/70 hover:text-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100"
+                      }`}
+                      aria-current={isActive ? "page" : undefined}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </nav>
             </div>
-
-            {/* Mobile navigation links */}
-            <nav className="flex flex-col gap-2">
-              {links.map((link) => {
-                const isActive = pathname.includes(link.match);
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`rounded-lg px-4 py-3 text-base font-medium transition-colors ${
-                      isActive
-                        ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
-                        : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
-                    }`}
-                    aria-current={isActive ? "page" : undefined}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        </>
-      )}
+          </>,
+          document.body
+        )}
     </>
   );
 }

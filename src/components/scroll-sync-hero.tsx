@@ -28,7 +28,9 @@ export function ScrollSyncHero({
   const leftContentRef = useRef<HTMLDivElement | null>(null);
   const rightRef = useRef<HTMLDivElement | null>(null);
   const rightContentRef = useRef<HTMLDivElement | null>(null);
+  const mobileScrollRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(0);
+  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
 
   // 将 activities 转换为展示项
   const items = useMemo<ScrollSyncItem[]>(
@@ -146,6 +148,22 @@ export function ScrollSyncHero({
     });
   };
 
+  // 移动端横向滚动监听
+  useEffect(() => {
+    const container = mobileScrollRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const scrollLeft = container.scrollLeft;
+      const cardWidth = container.clientWidth * 0.9 + 16; // 90vw + gap
+      const index = Math.round(scrollLeft / cardWidth);
+      setMobileActiveIndex(index);
+    };
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <section className="relative">
       <header className="mx-auto mb-10 flex max-w-5xl flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -219,43 +237,86 @@ export function ScrollSyncHero({
             transparent 100%
           );
         }
+
+        /* 横向滚动容器边缘渐变 */
+        .horizontal-mask {
+          mask-image: linear-gradient(
+            to right,
+            transparent 0%,
+            black 3%,
+            black 97%,
+            transparent 100%
+          );
+          -webkit-mask-image: linear-gradient(
+            to right,
+            transparent 0%,
+            black 3%,
+            black 97%,
+            transparent 100%
+          );
+        }
       `}</style>
 
       {/* 固定视口容器 - 桌面端双栏滚动同步 */}
       <div className="relative h-[80vh] overflow-hidden md:h-[85vh]">
-        {/* Mobile: 单列卡片堆叠 */}
-        <div className="scroll-container h-full overflow-y-auto md:hidden">
-          <div className="space-y-4 pb-8">
-            {items.length > 0 ? (
-              items.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className="group block overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
-                >
-                  <div className="relative h-48 overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      fill
-                      sizes="100vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="space-y-1.5 p-4">
-                    <h3 className="text-lg leading-snug font-semibold text-zinc-900 dark:text-zinc-50">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">{item.subtitle}</p>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                {locale === "zh" ? "暂无内容更新" : "No recent updates yet — stay tuned!"}
+        {/* Mobile: 横向滚动轮播 */}
+        <div className="relative h-full md:hidden">
+          {items.length > 0 ? (
+            <>
+              <div
+                ref={mobileScrollRef}
+                className="scroll-container horizontal-mask flex h-[calc(100%-3rem)] snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-[5vw]"
+                style={{ scrollPaddingLeft: "5vw" }}
+              >
+                {items.map((item, i) => (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className="group relative h-full w-[90vw] flex-shrink-0 snap-center overflow-hidden rounded-2xl"
+                  >
+                    {/* 大图背景 */}
+                    <div className="relative h-full w-full">
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        sizes="90vw"
+                        className="object-cover transition-transform duration-500 group-active:scale-105"
+                        priority={i < 3}
+                      />
+                    </div>
+
+                    {/* 渐变遮罩 + 信息叠加 */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute right-0 bottom-0 left-0 p-6">
+                      <h3 className="text-2xl leading-tight font-bold text-white drop-shadow-lg">
+                        {item.title}
+                      </h3>
+                      <p className="mt-2 text-sm text-white/90 drop-shadow">{item.subtitle}</p>
+                    </div>
+                  </Link>
+                ))}
               </div>
-            )}
-          </div>
+
+              {/* 页面指示器 */}
+              <div className="flex h-12 items-center justify-center gap-2">
+                {items.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      i === mobileActiveIndex
+                        ? "w-8 bg-zinc-900 dark:bg-zinc-100"
+                        : "w-2 bg-zinc-300 dark:bg-zinc-700"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+              {locale === "zh" ? "暂无内容更新" : "No recent updates yet — stay tuned!"}
+            </div>
+          )}
         </div>
 
         {/* Desktop: 双容器布局 (原滚动同步效果) */}

@@ -62,7 +62,7 @@ export default async function RootLayout({
   return (
     <html lang={htmlLang}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
+        className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
       >
         {/* Early theme applier to avoid FOUC */}
         <script
