@@ -10,7 +10,7 @@ type MetricCardProps = {
 
 export function MetricCard({ label, value, meta, href, alert }: MetricCardProps) {
   const content = (
-    <div className="flex min-h-[96px] flex-col gap-2 rounded-xl border border-zinc-200 bg-white p-5 transition-all duration-200 focus-within:border-zinc-400 focus-within:ring-2 focus-within:ring-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:focus-within:border-zinc-600 dark:focus-within:ring-zinc-800 dark:hover:border-zinc-700">
+    <div className="flex min-h-[96px] flex-col gap-2 rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200 focus-within:border-zinc-400 focus-within:ring-2 focus-within:ring-zinc-200 hover:border-zinc-300 sm:p-5 dark:border-zinc-800 dark:bg-zinc-950 dark:focus-within:border-zinc-600 dark:focus-within:ring-zinc-800 dark:hover:border-zinc-700">
       <div className="flex items-start justify-between">
         <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{label}</span>
         {href && (
@@ -20,7 +20,7 @@ export function MetricCard({ label, value, meta, href, alert }: MetricCardProps)
         )}
       </div>
       <div className="space-y-1">
-        <p className="text-3xl font-semibold text-zinc-900 tabular-nums dark:text-zinc-100">
+        <p className="text-2xl font-semibold text-zinc-900 tabular-nums sm:text-3xl dark:text-zinc-100">
           {value}
         </p>
         {meta && (

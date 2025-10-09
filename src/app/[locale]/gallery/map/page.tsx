@@ -16,16 +16,16 @@ export default async function LocalizedGalleryMapPage({ params }: PageProps) {
   const imagesWithLocation = images.filter((img) => img.latitude && img.longitude);
 
   return (
-    <div className="mx-auto max-w-[1200px] space-y-10 px-6 py-12 md:px-8 md:py-16">
+    <div className="mx-auto max-w-[1200px] space-y-8 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-12 md:px-8 md:py-16">
       {/* Header */}
-      <header className="max-w-3xl space-y-3">
+      <header className="max-w-3xl space-y-2.5 sm:space-y-3">
         <p className="text-xs font-medium tracking-[0.2em] text-zinc-400 uppercase">
           Gallery / Map View
         </p>
-        <h1 className="text-4xl leading-tight font-bold text-zinc-900 md:text-5xl dark:text-zinc-50">
+        <h1 className="text-3xl leading-tight font-bold text-zinc-900 sm:text-4xl md:text-5xl dark:text-zinc-50">
           {l === "zh" ? "地图视图" : "Map View"}
         </h1>
-        <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm leading-relaxed text-zinc-600 sm:text-base dark:text-zinc-400">
           {l === "zh"
             ? "基于 EXIF GPS 数据的地理位置可视化。坐标信息通过 OpenStreetMap 逆地理编码服务转换为可读地址。点击标记查看照片详情。"
             : "Geographic visualization based on EXIF GPS data. Coordinates are converted to readable addresses via OpenStreetMap reverse geocoding service. Click markers to view photo details."}

@@ -65,7 +65,7 @@ export function AdminFrame({ locale, children }: AdminFrameProps) {
         <div className="h-full overflow-hidden p-[5px]">
           <div className="h-full rounded-2xl bg-zinc-50 shadow-sm dark:bg-zinc-900">
             {/* Scrolling Content Container Inside Card */}
-            <div className="admin-scroll h-full overflow-y-auto overscroll-contain px-6 py-6 md:px-8 md:py-8">
+            <div className="admin-scroll h-full overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8">
               <div className="mx-auto max-w-[1200px]">{children}</div>
             </div>
           </div>

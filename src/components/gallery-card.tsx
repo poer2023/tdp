@@ -44,21 +44,21 @@ export function GalleryCard({ image, locale = "zh" }: GalleryCardProps) {
         </div>
 
         {/* 元数据区域 - 编辑部式信息层级 */}
-        <div className="space-y-2 p-5">
+        <div className="space-y-2 p-4 sm:p-5">
           {/* 标题 */}
-          <h3 className="text-base leading-snug font-semibold text-zinc-900 dark:text-zinc-50">
+          <h3 className="text-sm leading-snug font-semibold text-zinc-900 sm:text-base dark:text-zinc-50">
             {image.title || "未命名照片"}
           </h3>
 
           {/* 描述 */}
           {image.description && (
-            <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            <p className="line-clamp-2 text-xs leading-relaxed text-zinc-600 sm:text-sm dark:text-zinc-400">
               {image.description}
             </p>
           )}
 
           {/* 元信息 - 可追溯的证据链 */}
-          <div className="space-y-1 border-t border-zinc-100 pt-3 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+          <div className="space-y-1 border-t border-zinc-100 pt-2.5 text-xs text-zinc-500 sm:pt-3 dark:border-zinc-800 dark:text-zinc-400">
             {/* 地理位置 */}
             {hasLocation && (
               <div className="flex items-start gap-1.5">
@@ -113,9 +113,9 @@ export function GalleryCard({ image, locale = "zh" }: GalleryCardProps) {
               </time>
             </div>
 
-            {/* 图像尺寸（可选显示） */}
+            {/* 图像尺寸（移动端隐藏） */}
             {image.width && image.height && (
-              <div className="flex items-start gap-1.5">
+              <div className="hidden items-start gap-1.5 sm:flex">
                 <svg
                   className="mt-0.5 h-3 w-3 flex-shrink-0"
                   fill="none"

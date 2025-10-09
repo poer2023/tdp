@@ -26,12 +26,12 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
   const posts = await listPublishedPosts();
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-16">
-      <header className="mb-12">
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12 md:py-16">
+      <header className="mb-8 sm:mb-12">
+        <h1 className="text-3xl font-bold text-zinc-900 sm:text-4xl dark:text-zinc-100">
           {isZh ? "博客文章" : "Blog Posts"}
         </h1>
-        <p className="mt-4 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-3 text-sm text-zinc-600 sm:mt-4 sm:text-base dark:text-zinc-400">
           {isZh
             ? `共 ${posts.length} 篇文章`
             : `${posts.length} post${posts.length !== 1 ? "s" : ""}`}

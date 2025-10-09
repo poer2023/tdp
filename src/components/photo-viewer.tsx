@@ -842,7 +842,7 @@ export function PhotoViewer({
       {/* Main content */}
       <div className="flex h-full flex-col lg:flex-row">
         {/* Image area */}
-        <div className="relative flex flex-1 items-center justify-center overflow-hidden p-6">
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4 sm:p-6">
           {image.isLivePhoto && image.livePhotoVideoPath ? (
             <div className="relative h-full w-full">
               <LivePhotoPlayer

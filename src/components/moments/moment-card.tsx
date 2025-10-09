@@ -99,14 +99,14 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
 
   if (count === 2) {
     return (
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
         {images.slice(0, 2).map((im, i) => (
           <a
             key={i}
             href={im.url}
             target="_blank"
             rel="noopener"
-            className="relative block h-48 overflow-hidden rounded-lg"
+            className="relative block h-40 overflow-hidden rounded-lg sm:h-48"
           >
             <Image
               src={im.previewUrl || im.url}
@@ -126,14 +126,14 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
     // 左侧大图，右侧上下两个
     const [a, b, c] = images;
     return (
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
         <div className="col-span-2">
           {}
           <a
             href={a!.url}
             target="_blank"
             rel="noopener"
-            className="relative block h-48 overflow-hidden rounded-lg"
+            className="relative block h-40 overflow-hidden rounded-lg sm:h-48"
           >
             <Image
               src={a!.previewUrl || a!.url}
@@ -145,13 +145,13 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
             />
           </a>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5 sm:gap-2">
           {}
           <a
             href={b!.url}
             target="_blank"
             rel="noopener"
-            className="relative block h-24 overflow-hidden rounded-lg"
+            className="relative block h-[calc(50%-0.375rem)] overflow-hidden rounded-lg sm:h-[calc(50%-0.25rem)]"
           >
             <Image
               src={b!.previewUrl || b!.url}
@@ -167,7 +167,7 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
             href={c!.url}
             target="_blank"
             rel="noopener"
-            className="relative block h-24 overflow-hidden rounded-lg"
+            className="relative block h-[calc(50%-0.375rem)] overflow-hidden rounded-lg sm:h-[calc(50%-0.25rem)]"
           >
             <Image
               src={c!.previewUrl || c!.url}
@@ -187,9 +187,9 @@ function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
   const first4 = images.slice(0, 4);
   const more = count - 4;
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
       {first4.map((im, i) => (
-        <div key={i} className="relative h-36 overflow-hidden rounded-lg">
+        <div key={i} className="relative h-32 overflow-hidden rounded-lg sm:h-36">
           {}
           <a href={im.url} target="_blank" rel="noopener" className="relative block h-full w-full">
             <Image

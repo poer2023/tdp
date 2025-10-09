@@ -221,10 +221,45 @@ export function ScrollSyncHero({
         }
       `}</style>
 
-      {/* 固定视口容器 */}
+      {/* 固定视口容器 - 桌面端双栏滚动同步 */}
       <div className="relative h-[80vh] overflow-hidden md:h-[85vh]">
-        {/* 双容器布局 */}
-        <div className="absolute inset-0 flex gap-5">
+        {/* Mobile: 单列卡片堆叠 */}
+        <div className="scroll-container h-full overflow-y-auto md:hidden">
+          <div className="space-y-4 pb-8">
+            {items.length > 0 ? (
+              items.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="group block overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
+                >
+                  <div className="relative h-48 overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      sizes="100vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="space-y-1.5 p-4">
+                    <h3 className="text-lg leading-snug font-semibold text-zinc-900 dark:text-zinc-50">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">{item.subtitle}</p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+                {locale === "zh" ? "暂无内容更新" : "No recent updates yet — stay tuned!"}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop: 双容器布局 (原滚动同步效果) */}
+        <div className="absolute inset-0 hidden gap-5 md:flex">
           {/* 左侧：通过transform同步的标题容器 */}
           <div
             ref={leftRef}

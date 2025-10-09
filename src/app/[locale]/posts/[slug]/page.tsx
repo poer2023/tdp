@@ -110,7 +110,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
   const schema = generateBlogPostingSchema(post, `${baseUrl}/${l}/posts/${post.slug}`);
 
   return (
-    <article className="mx-auto max-w-3xl px-6 py-16">
+    <article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12 md:py-16">
       {/* JSON-LD Schema for SEO */}
       <script
         type="application/ld+json"
@@ -118,7 +118,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
       />
 
       {/* Language Switcher */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <LanguageSwitcher
           currentLocale={postLocale}
           currentSlug={post.slug}
@@ -127,7 +127,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
       </div>
 
       {/* Header */}
-      <header className="mb-12">
+      <header className="mb-8 sm:mb-10 md:mb-12">
         <h1 className="text-4xl leading-tight font-bold text-zinc-900 md:text-5xl dark:text-zinc-100">
           {post.title}
         </h1>
@@ -148,7 +148,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
       </header>
 
       {post.coverImagePath && (
-        <div className="relative mb-12 aspect-video">
+        <div className="relative mb-8 aspect-video sm:mb-10 md:mb-12">
           <Image
             src={post.coverImagePath}
             alt={post.title}
@@ -162,7 +162,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
       </div>
 
-      <footer className="mt-16 flex items-center justify-between border-t border-zinc-200 pt-8 dark:border-zinc-800">
+      <footer className="mt-8 flex items-center justify-between border-t border-zinc-200 pt-6 sm:mt-12 sm:pt-8 md:mt-16 dark:border-zinc-800">
         <Link href={`/${l}/posts`} className="text-blue-600 hover:underline dark:text-blue-400">
           {l === "zh" ? "← 返回文章列表" : "← Back to posts"}
         </Link>
