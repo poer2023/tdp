@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { searchPosts } from "@/lib/search";
+import { searchPosts, searchGalleryImages, searchMoments } from "@/lib/search";
 
 export const runtime = "nodejs";
 
@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = (searchParams.get("q") || "").trim();
   const localeParam = searchParams.get("locale");
+  const mode = searchParams.get("mode") || "full"; // quick | full
   const locale =
     localeParam && ["EN", "ZH"].includes(localeParam.toUpperCase())
       ? (localeParam.toUpperCase() as "EN" | "ZH")
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
   }
 
   if (!q) {
-    return NextResponse.json({ results: [] }, { status: 200 });
+    return NextResponse.json({ posts: [], images: [], moments: [] }, { status: 200 });
   }
 
   try {
@@ -31,9 +32,22 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 
-    const results = await searchPosts(q, { locale, limit: 12 });
-    return NextResponse.json({ results }, { status: 200 });
-  } catch {
+    // Quick mode: only return posts for instant feedback
+    if (mode === "quick") {
+      const posts = await searchPosts(q, { locale, limit: 8 });
+      return NextResponse.json({ posts, images: [], moments: [] }, { status: 200 });
+    }
+
+    // Full mode: parallel search across all content types
+    const [posts, images, moments] = await Promise.all([
+      searchPosts(q, { locale, limit: 5 }),
+      searchGalleryImages(q, { limit: 6 }),
+      searchMoments(q, { lang: locale === "ZH" ? "zh-CN" : "en-US", limit: 4 }),
+    ]);
+
+    return NextResponse.json({ posts, images, moments }, { status: 200 });
+  } catch (error) {
+    console.error("Search error:", error);
     return NextResponse.json({ error: "Search failed" }, { status: 500 });
   }
 }

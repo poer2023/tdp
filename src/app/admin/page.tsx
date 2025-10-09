@@ -5,6 +5,7 @@ import { MetricCard } from "@/components/admin/metric-card";
 import { ActionCard } from "@/components/admin/action-card";
 import { RecentPosts } from "@/components/admin/recent-posts";
 import { RecentUploads } from "@/components/admin/recent-uploads";
+import { PostStatsTop } from "@/components/admin/post-stats-top";
 import { getAdminLocale, t } from "@/lib/admin-i18n";
 
 export const revalidate = 0;
@@ -129,9 +130,10 @@ export default async function AdminHomePage() {
         <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
           {t(locale, "recentActivity")}
         </h2>
-        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
           <RecentPosts posts={recentPosts} />
           <RecentUploads images={recentUploads} />
+          <PostStatsTop locale={locale} />
         </div>
       </section>
 

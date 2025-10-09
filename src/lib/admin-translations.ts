@@ -58,6 +58,16 @@ export const adminTranslations = {
     // Error pages
     forbidden: "Forbidden - Admin access required",
     returnToHome: "Return to Home",
+
+    // Post Analytics
+    topPosts: "Top Posts",
+    views: "views",
+    view: "View",
+    totalPostsShort: "Total",
+    totalViewsShort: "Views",
+    avgViewsShort: "Avg",
+    noPostsYet: "No posts yet",
+    failedToLoadStats: "Failed to load stats",
   },
   zh: {
     // Layout
@@ -108,6 +118,16 @@ export const adminTranslations = {
     // Error pages
     forbidden: "禁止访问 - 需要管理员权限",
     returnToHome: "返回首页",
+
+    // Post Analytics
+    topPosts: "热门文章",
+    views: "次浏览",
+    view: "查看",
+    totalPostsShort: "总数",
+    totalViewsShort: "浏览",
+    avgViewsShort: "平均",
+    noPostsYet: "暂无文章",
+    failedToLoadStats: "加载统计失败",
   },
 } as const;
 

@@ -1,5 +1,11 @@
 # TDP 博客与相册平台（Next.js 15 + React 19）
 
+[![CI Status](https://github.com/poer2023/tdp/workflows/CI%20Critical%20Path/badge.svg)](https://github.com/poer2023/tdp/actions)
+[![Unit Tests](https://img.shields.io/badge/unit%20tests-passing-brightgreen)](https://github.com/poer2023/tdp/actions)
+[![Integration Tests](https://img.shields.io/badge/integration%20tests-27%20passing-brightgreen)](https://github.com/poer2023/tdp/actions)
+[![E2E Tests](https://img.shields.io/badge/e2e%20tests-critical%20path-brightgreen)](https://github.com/poer2023/tdp/actions)
+[![Coverage](https://img.shields.io/badge/coverage-75%25-green)](https://github.com/poer2023/tdp/actions)
+
 一个基于 Next.js 15 的全栈博客/相册项目，内置文章管理、图片上传、Google 登录与后台管理，支持 Docker 一键部署与 PostgreSQL 持久化存储。
 
 ## 特性
@@ -106,11 +112,13 @@ open http://localhost:3000
 
 ### 测试
 
-- **单元测试**：`npm run test`、`npm run test:run`
+- **单元测试**：`npm run test`、`npm run test:run`、`npm run test:coverage`
+- **集成测试**：`npm run test:integration`、`npm run test:integration:watch`
 - **E2E 测试**：
   - 全量测试：`npm run test:e2e` (314 tests)
   - 关键路径：`npm run test:e2e:critical` (60-80 tests)
   - 详细指南：见 [docs/E2E_TESTING_GUIDE.md](docs/E2E_TESTING_GUIDE.md)
+- **所有测试**：`npm run test:all` - 运行单元 + 集成 + E2E关键路径
 - **i18n 功能测试**：
   - 重定向测试：`npx tsx scripts/test-redirect.ts`
   - 点赞功能测试：`npx tsx scripts/test-likes.ts`
@@ -121,6 +129,169 @@ open http://localhost:3000
 ### 部署
 
 - 部署前检查：`./scripts/deploy-checklist.sh`
+
+## 测试策略 | Testing Strategy
+
+### 测试金字塔 | Test Pyramid
+
+我们遵循行业标准的测试金字塔方法：
+
+```
+       /\
+      /E2E\      10% - 关键用户旅程 (8-10 files)
+     /------\
+    / Integration \  20% - API + DB + Services (10-15 files)
+   /----------\
+  /   Unit Tests  \  70% - 业务逻辑 + 工具函数 (30+ files)
+ /--------------\
+```
+
+### 覆盖率标准 | Coverage Standards
+
+| 测试类型           | 最低要求 | 目标 | 企业标准 |
+| ------------------ | -------- | ---- | -------- |
+| Unit Tests         | 60%      | 75%  | **80%**  |
+| Integration Tests  | 40%      | 50%  | **60%**  |
+| E2E Critical Paths | 100%     | 100% | **100%** |
+| Overall            | 70%      | 80%  | **85%**  |
+
+### 何时添加测试 | When to Add Tests
+
+**单元测试** (`src/**/*.test.ts`)：
+
+- ✅ 纯函数和工具函数
+- ✅ 业务逻辑计算
+- ✅ 数据验证和转换
+- ❌ 复杂UI交互 (使用E2E)
+- ❌ 路由和导航 (使用E2E)
+
+**集成测试** (`src/tests/integration/**/*.integration.test.ts`)：
+
+- ✅ API路由 + 数据库操作
+- ✅ 第三方服务集成
+- ✅ 认证流程
+- ✅ 文件上传和处理
+
+**E2E测试** (`e2e/**/*.spec.ts`)：
+
+- ✅ 关键业务流程 (登录、发布)
+- ✅ 跨页面用户旅程
+- ✅ 性能关键路径
+- ❌ 边界情况和错误处理 (使用单元测试)
+
+### 运行测试 | Running Tests
+
+```bash
+# 单元测试
+npm run test              # Watch模式
+npm run test:run          # 运行一次
+npm run test:coverage     # 带覆盖率
+
+# 集成测试
+npm run test:integration         # 运行一次
+npm run test:integration:watch   # Watch模式
+
+# E2E测试
+npm run test:e2e                 # 完整E2E套件
+npm run test:e2e:critical        # 关键路径 (CI使用)
+npm run test:e2e:headed          # 带浏览器UI
+
+# 所有测试
+npm run test:all          # 单元 + 集成 + E2E关键路径
+```
+
+### 质量门禁 | Quality Gates
+
+**Pre-commit** (通过Husky自动执行)：
+
+- ESLint检查
+- TypeScript编译
+- 单元测试覆盖率 ≥ 80%
+
+**CI Pipeline** (GitHub Actions)：
+
+- Lint + Format检查
+- Type检查
+- 单元测试 (覆盖率 ≥ 80%)
+- 集成测试 (覆盖率 ≥ 60%)
+- E2E关键测试 (100%通过)
+- 构建成功
+
+**Pre-merge要求**：
+
+- 所有CI检查通过 ✅
+- 代码审查批准 (需要1人)
+- 无失败测试
+- 覆盖率达标
+
+### 维护原则 | Maintenance Principles
+
+1. **测试隔离**：每个测试必须独立,可任意顺序运行
+2. **快速反馈**：单元测试 < 2分钟，集成测试 < 5分钟，E2E < 10分钟
+3. **快速失败**：第一个错误出现立即停止,节省CI时间
+4. **清理数据**：测试后始终清理测试数据
+5. **禁止跳过**：永远不要跳过测试来通过CI；修复或删除它们
+6. **真实代码**：生产代码中不要有TODO、模拟对象或占位符
+7. **覆盖率优先**：合并新功能前先写测试
+
+### 测试文件组织 | Test File Organization
+
+```
+src/
+  ├── lib/
+  │   ├── utils.ts
+  │   └── __tests__/
+  │       └── utils.test.ts          # 单元测试
+  ├── tests/
+  │   ├── integration/
+  │   │   ├── api/
+  │   │   │   ├── auth.integration.test.ts
+  │   │   │   └── posts.integration.test.ts
+  │   │   └── services/
+  │   │       └── storage.integration.test.ts
+  │   └── setup.ts
+  └── components/
+      ├── button.tsx
+      └── __tests__/
+          └── button.test.tsx         # 组件单元测试
+
+e2e/
+  ├── auth-flow.spec.ts               # 关键E2E
+  ├── sitemap-improved.spec.ts        # 关键E2E
+  └── utils/
+      └── test-helpers.ts
+```
+
+### 贡献指南 | Contributing
+
+添加新功能时：
+
+1. **测试先行** (TDD,如果可能)
+2. **遵循金字塔**：主要是单元测试,少量集成测试,极少E2E
+3. **保持覆盖率**：不要降低现有覆盖率
+4. **更新文档**：如果添加新的测试模式,请更新此文档
+
+### 故障排除 | Troubleshooting
+
+**测试在本地通过但CI失败**：
+
+- 检查Node版本 (应该 ≥22.0.0)
+- 清理缓存：`rm -rf node_modules/.vitest`
+- 确保测试数据库干净
+
+**测试超时**：
+
+- 检查未解决的Promise
+- 验证fake timers配置正确
+- 如果测试确实很慢,增加`testTimeout`
+
+**覆盖率低于阈值**：
+
+- 运行 `npm run test:coverage` 查看报告
+- 为未覆盖的行添加测试
+- 考虑代码是否可测试 (如果不可测试,重构)
+
+详细的CI/CD测试优化清单见 [claudedocs/ci-cd-optimization-checklist.md](claudedocs/ci-cd-optimization-checklist.md)
 
 ## 目录与关键文件
 

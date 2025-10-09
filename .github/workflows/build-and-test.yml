@@ -72,6 +72,11 @@ jobs:
           set -o pipefail
           npm run test:run 2>&1 | tee ci/test.log
 
+      - name: Integration tests
+        run: |
+          set -o pipefail
+          npm run test:integration 2>&1 | tee ci/integration.log
+
       - name: Build
         run: |
           set -o pipefail
