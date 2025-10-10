@@ -4,11 +4,12 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { PostLocale, PostStatus } from "@prisma/client";
+import { PostLocale, PostStatus, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { generateBlogPostingSchema, generateAlternateLinks } from "@/lib/seo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { LikeButton } from "@/components/like-button";
+import { pinyin } from "pinyin-pro";
 
 // Ensure Node.js runtime for Prisma
 export const runtime = "nodejs";
@@ -17,36 +18,135 @@ type PageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
 
+const POST_INCLUDE = {
+  author: {
+    select: { name: true, image: true },
+  },
+} as const;
+
+type PostWithAuthor = Prisma.PostGetPayload<{ include: typeof POST_INCLUDE }>;
+
+function normalizeSlugCandidate(input: string): string | null {
+  const value = input.trim();
+  if (!value) {
+    return null;
+  }
+
+  let ascii = value;
+  if (/[\u4e00-\u9fa5]/.test(value)) {
+    try {
+      ascii = (pinyin(value, { toneType: "none", type: "string", v: true }) as string) || value;
+    } catch {
+      ascii = value;
+    }
+  }
+
+  const normalized = ascii
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\w\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+
+  return normalized || null;
+}
+
+async function findPublishedPostBySlug(
+  locale: string,
+  slug: string
+): Promise<PostWithAuthor | null> {
+  const normalizedLocale = locale === "zh" ? PostLocale.ZH : PostLocale.EN;
+
+  const directMatch = await prisma.post.findFirst({
+    where: {
+      slug,
+      status: PostStatus.PUBLISHED,
+      locale: normalizedLocale,
+    },
+    include: POST_INCLUDE,
+  });
+
+  if (directMatch) {
+    return directMatch;
+  }
+
+  const aliasMatch = await prisma.postAlias.findUnique({
+    where: {
+      locale_oldSlug: {
+        locale: normalizedLocale,
+        oldSlug: slug,
+      },
+    },
+    include: {
+      post: {
+        include: POST_INCLUDE,
+      },
+    },
+  });
+
+  if (aliasMatch?.post && aliasMatch.post.status === PostStatus.PUBLISHED) {
+    return aliasMatch.post;
+  }
+
+  const normalizedAlias = normalizeSlugCandidate(slug);
+  if (normalizedAlias && normalizedAlias !== slug) {
+    const aliasFromNormalized = await prisma.postAlias.findUnique({
+      where: {
+        locale_oldSlug: {
+          locale: normalizedLocale,
+          oldSlug: normalizedAlias,
+        },
+      },
+      include: {
+        post: {
+          include: POST_INCLUDE,
+        },
+      },
+    });
+
+    if (aliasFromNormalized?.post && aliasFromNormalized.post.status === PostStatus.PUBLISHED) {
+      return aliasFromNormalized.post;
+    }
+  }
+
+  const candidates = await prisma.post.findMany({
+    where: {
+      status: PostStatus.PUBLISHED,
+      locale: normalizedLocale,
+    },
+    select: {
+      id: true,
+      slug: true,
+    },
+  });
+
+  for (const candidate of candidates) {
+    if (candidate.slug === slug) {
+      continue;
+    }
+
+    const normalizedCandidate = normalizeSlugCandidate(candidate.slug);
+    if (normalizedCandidate && normalizedCandidate === slug) {
+      const fullPost = await prisma.post.findUnique({
+        where: { id: candidate.id },
+        include: POST_INCLUDE,
+      });
+
+      if (fullPost && fullPost.status === PostStatus.PUBLISHED) {
+        return fullPost;
+      }
+    }
+  }
+
+  return null;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
   const l = locale === "zh" ? "zh" : "en";
 
-  // Find post by slug - try direct match first, then check PostAlias
-  let post = await prisma.post.findFirst({
-    where: {
-      slug,
-      status: PostStatus.PUBLISHED,
-    },
-  });
-
-  // If not found, check if this slug is an alias (e.g., pinyin slug for Chinese post)
-  if (!post) {
-    const alias = await prisma.postAlias.findUnique({
-      where: {
-        locale_oldSlug: {
-          locale: locale === "zh" ? PostLocale.ZH : PostLocale.EN,
-          oldSlug: slug,
-        },
-      },
-      include: {
-        post: true,
-      },
-    });
-
-    if (alias?.post && alias.post.status === PostStatus.PUBLISHED) {
-      post = alias.post;
-    }
-  }
+  const post = await findPublishedPostBySlug(locale, slug);
 
   if (!post) {
     return { title: l === "zh" ? "文章未找到" : "Post Not Found" };
@@ -69,8 +169,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
-  const url = `${baseUrl}/${l}/posts/${slug}`;
-  const alternateLinks = generateAlternateLinks(postLocale, slug, alternateSlug);
+  const url = `${baseUrl}/${l}/posts/${post.slug}`;
+  const alternateLinks = generateAlternateLinks(postLocale, post.slug, alternateSlug);
 
   // Use post cover or fallback to default OG image
   const ogImage = post.coverImagePath
@@ -105,43 +205,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
   const { locale, slug } = await params;
   const l = locale === "zh" ? "zh" : "en";
 
-  // Find post by slug - try direct match first, then check PostAlias table
-  let post = await prisma.post.findFirst({
-    where: {
-      slug,
-      status: PostStatus.PUBLISHED,
-    },
-    include: {
-      author: {
-        select: { name: true, image: true },
-      },
-    },
-  });
-
-  // If not found, check if this slug is an alias (e.g., pinyin slug for Chinese post)
-  if (!post) {
-    const alias = await prisma.postAlias.findUnique({
-      where: {
-        locale_oldSlug: {
-          locale: locale === "zh" ? PostLocale.ZH : PostLocale.EN,
-          oldSlug: slug,
-        },
-      },
-      include: {
-        post: {
-          include: {
-            author: {
-              select: { name: true, image: true },
-            },
-          },
-        },
-      },
-    });
-
-    if (alias?.post && alias.post.status === PostStatus.PUBLISHED) {
-      post = alias.post;
-    }
-  }
+  const post = await findPublishedPostBySlug(locale, slug);
 
   if (!post) {
     notFound();
