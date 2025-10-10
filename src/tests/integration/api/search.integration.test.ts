@@ -95,7 +95,7 @@ describe("Search API Integration", () => {
     });
 
     expect(zhOnlyResults).toHaveLength(1);
-    expect(zhOnlyResults[0].id).toBe(zhPost.id);
+    expect(zhOnlyResults[0]?.id).toBe(zhPost.id);
   });
 
   // Test 2: 搜索结果排序和性能
@@ -162,9 +162,9 @@ describe("Search API Integration", () => {
 
     // 验证时间排序正确
     expect(timeOrderedResults).toHaveLength(3);
-    expect(timeOrderedResults[0].id).toBe(posts[1].id); // 最新的
-    expect(timeOrderedResults[1].id).toBe(posts[0].id); // 中间的
-    expect(timeOrderedResults[2].id).toBe(posts[2].id); // 最早的
+    expect(timeOrderedResults[0]?.id).toBe(posts[1].id); // 最新的
+    expect(timeOrderedResults[1]?.id).toBe(posts[0].id); // 中间的
+    expect(timeOrderedResults[2]?.id).toBe(posts[2].id); // 最早的
 
     // 3. 测试按热度排序
     const popularityOrderedResults = await db.post.findMany({
@@ -180,9 +180,9 @@ describe("Search API Integration", () => {
 
     // 验证热度排序正确
     expect(popularityOrderedResults).toHaveLength(3);
-    expect(popularityOrderedResults[0].id).toBe(posts[2].id); // 500 views
-    expect(popularityOrderedResults[1].id).toBe(posts[0].id); // 100 views
-    expect(popularityOrderedResults[2].id).toBe(posts[1].id); // 10 views
+    expect(popularityOrderedResults[0]?.id).toBe(posts[2].id); // 500 views
+    expect(popularityOrderedResults[1]?.id).toBe(posts[0].id); // 100 views
+    expect(popularityOrderedResults[2]?.id).toBe(posts[1].id); // 10 views
 
     // 4. 验证搜索性能 (应该在1秒内完成，考虑远程数据库延迟)
     expect(timeSearchDuration).toBeLessThan(1000);
@@ -201,8 +201,8 @@ describe("Search API Integration", () => {
     });
 
     expect(paginatedResults).toHaveLength(2);
-    expect(paginatedResults[0].id).toBe(posts[1].id);
-    expect(paginatedResults[1].id).toBe(posts[0].id);
+    expect(paginatedResults[0]?.id).toBe(posts[1].id);
+    expect(paginatedResults[1]?.id).toBe(posts[0].id);
 
     // 获取第二页
     const secondPageResults = await db.post.findMany({
@@ -218,6 +218,6 @@ describe("Search API Integration", () => {
     });
 
     expect(secondPageResults).toHaveLength(1);
-    expect(secondPageResults[0].id).toBe(posts[2].id);
+    expect(secondPageResults[0]?.id).toBe(posts[2].id);
   });
 });

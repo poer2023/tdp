@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { Prisma } from "@prisma/client";
 import { getTestDb, createTestUser } from "../utils/test-db";
 
 interface MomentImages {
@@ -23,7 +24,7 @@ describe("Moments API Integration", () => {
       data: {
         authorId: user.id,
         content: "测试瞬间内容",
-        images: images as unknown as Record<string, unknown>,
+        images: images as Prisma.InputJsonValue,
       },
     });
 
@@ -86,7 +87,7 @@ describe("Moments API Integration", () => {
     });
 
     expect(user2Moments).toHaveLength(1);
-    expect(user2Moments[0].authorId).toBe(user2.id);
+    expect(user2Moments[0]?.authorId).toBe(user2.id);
   });
 
   // Test 3: 更新moment内容
@@ -109,8 +110,8 @@ describe("Moments API Integration", () => {
     });
 
     // 3. 验证更新
-    expect(updatedMoment.content).toBe("更新后的内容");
-    expect(updatedMoment.authorId).toBe(user.id); // authorId未变
+    expect(updatedMoment?.content).toBe("更新后的内容");
+    expect(updatedMoment?.authorId).toBe(user.id); // authorId未变
   });
 
   // Test 4: 删除moment
@@ -263,13 +264,13 @@ describe("Moments API Integration", () => {
       data: {
         authorId: user.id,
         content: "多图测试",
-        images: images as unknown as Record<string, unknown>,
+        images: images as Prisma.InputJsonValue,
       },
     });
 
     // 2. 验证JSON字段
     expect(moment.images).toBeDefined();
-    const momentImages = moment.images as MomentImages;
+    const momentImages = moment.images as unknown as MomentImages;
     expect(momentImages.urls).toHaveLength(5);
 
     // 3. 更新images
@@ -279,10 +280,10 @@ describe("Moments API Integration", () => {
     };
     const updatedMoment = await db.moment.update({
       where: { id: moment.id },
-      data: { images: newImages as unknown as Record<string, unknown> },
+      data: { images: newImages as Prisma.InputJsonValue },
     });
 
-    const updatedImages = updatedMoment.images as MomentImages;
+    const updatedImages = updatedMoment.images as unknown as MomentImages;
     expect(updatedImages.urls).toHaveLength(6);
     expect(updatedImages.urls).toContain("https://example.com/6.jpg");
   });
