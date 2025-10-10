@@ -1,8 +1,13 @@
 import { mkdir, writeFile, unlink, stat } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-
-const UPLOAD_ROOT = path.join(process.cwd(), "public", "uploads");
+import {
+  getFallbackUploadRoot,
+  isPermissionError,
+  resolveLocalPathFromPublicUrl,
+  resolveLocalUploadPath,
+  setLocalUploadRoot,
+} from "@/lib/storage/local-paths";
 const MAX_UPLOAD_SIZE_MB = Number(process.env.MAX_UPLOAD_SIZE_MB ?? 8);
 const MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024;
 
@@ -38,21 +43,33 @@ export async function persistUploadedFile(file: File, category: UploadCategory):
   const buffer = Buffer.from(arrayBuffer);
   const randomName = crypto.randomUUID().replace(/-/g, "");
   const extension = getFileExtension(file.name, file.type);
-  const dir = path.join(UPLOAD_ROOT, category);
-  await mkdir(dir, { recursive: true });
-
   const fileName = `${randomName}.${extension}`;
-  const filePath = path.join(dir, fileName);
 
-  await writeFile(filePath, buffer);
+  let dir = await ensureCategoryDir(category);
+  let filePath = path.join(dir, fileName);
+
+  try {
+    await writeFile(filePath, buffer);
+  } catch (error) {
+    if (!isPermissionError(error)) {
+      throw error;
+    }
+
+    dir = await switchCategoryToFallback(category);
+    filePath = path.join(dir, fileName);
+    await writeFile(filePath, buffer);
+  }
 
   return `/api/uploads/${category}/${fileName}`;
 }
 
 export async function removeUploadedFile(relativePath?: string | null) {
   if (!relativePath) return;
-  const sanitized = relativePath.startsWith("/") ? relativePath.slice(1) : relativePath;
-  const fullPath = path.join(process.cwd(), "public", sanitized);
+  const fullPath = resolveLocalPathFromPublicUrl(relativePath);
+
+  if (fullPath.startsWith("http://") || fullPath.startsWith("https://")) {
+    return;
+  }
 
   try {
     await stat(fullPath);
@@ -91,3 +108,26 @@ const MIME_EXTENSION_MAP = {
   "video/quicktime": "mov",
   "video/mp4": "mp4",
 } as const;
+
+async function ensureCategoryDir(category: UploadCategory): Promise<string> {
+  const dir = resolveLocalUploadPath(category);
+
+  try {
+    await mkdir(dir, { recursive: true });
+    return dir;
+  } catch (error) {
+    if (!isPermissionError(error)) {
+      throw error;
+    }
+
+    return switchCategoryToFallback(category);
+  }
+}
+
+async function switchCategoryToFallback(category: UploadCategory): Promise<string> {
+  const fallbackRoot = getFallbackUploadRoot();
+  const dir = path.join(fallbackRoot, category);
+  await mkdir(dir, { recursive: true });
+  setLocalUploadRoot(fallbackRoot);
+  return dir;
+}
