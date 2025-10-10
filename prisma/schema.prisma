@@ -182,7 +182,7 @@ model RateLimitHit {
 }
 
 model DailyStats {
-  id             String   @id
+  id             String   @id @default(cuid())
   date           DateTime @unique
   totalViews     Int      @default(0)
   uniqueVisitors Int      @default(0)
@@ -192,7 +192,7 @@ model DailyStats {
 }
 
 model PageView {
-  id        String   @id
+  id        String   @id @default(cuid())
   path      String
   locale    String?
   referer   String?
@@ -203,7 +203,7 @@ model PageView {
 }
 
 model Visitor {
-  id          String   @id
+  id          String   @id @default(cuid())
   fingerprint String   @unique
   firstVisit  DateTime @default(now())
   lastVisit   DateTime
@@ -245,39 +245,4 @@ enum GalleryCategory {
   REPOST
   ORIGINAL
   AI
-}
-
-// Analytics - Page Views (PV)
-model PageView {
-  id        String   @id @default(cuid())
-  path      String   // 访问路径
-  locale    String?  // 语言
-  referer   String?  // 来源
-  createdAt DateTime @default(now())
-
-  @@index([path])
-  @@index([createdAt])
-}
-
-// Analytics - Unique Visitors (UV)
-model Visitor {
-  id          String   @id @default(cuid())
-  fingerprint String   @unique // SHA256浏览器指纹
-  firstVisit  DateTime @default(now())
-  lastVisit   DateTime @updatedAt
-  visitCount  Int      @default(1)
-
-  @@index([fingerprint])
-  @@index([lastVisit])
-}
-
-// Analytics - Daily Statistics (聚合优化)
-model DailyStats {
-  id             String   @id @default(cuid())
-  date           DateTime @unique // UTC 0点
-  totalViews     Int      @default(0)
-  uniqueVisitors Int      @default(0)
-  createdAt      DateTime @default(now())
-
-  @@index([date])
 }

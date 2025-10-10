@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
         where: { fingerprint },
         create: {
           fingerprint,
+          lastVisit: new Date(),
           visitCount: 1,
         },
         update: {
