@@ -22,12 +22,9 @@ export default defineConfig({
       reporter: ["text", "json", "html"],
       include: ["src/app/api/**", "src/lib/**"],
       exclude: ["**/*.test.ts", "**/*.spec.ts", "**/node_modules/**"],
-      thresholds: {
-        lines: 60,
-        functions: 60,
-        branches: 55,
-        statements: 60,
-      },
+      // Integration tests focus on functional testing, not code coverage
+      // Unit tests already enforce 75% coverage thresholds
+      enabled: false,
     },
   },
   resolve: {
