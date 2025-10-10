@@ -24,8 +24,8 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-transparent" role="contentinfo">
-      <div className="mx-auto max-w-4xl px-6 py-6">
+    <footer className="mt-auto bg-transparent" role="contentinfo">
+      <div className="mx-auto max-w-4xl border-t border-zinc-200 px-6 py-8 dark:border-zinc-800">
         {/* Compact Layout - Max 2 lines */}
         <div className="flex flex-col items-center gap-2 text-center">
           {/* Line 1: Links + Copyright */}

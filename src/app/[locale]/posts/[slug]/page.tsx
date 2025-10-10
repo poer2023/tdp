@@ -21,13 +21,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { locale, slug } = await params;
   const l = locale === "zh" ? "zh" : "en";
 
-  // Find post by slug only - content is not filtered by UI language
-  const post = await prisma.post.findFirst({
+  // Find post by slug - try direct match first, then check PostAlias
+  let post = await prisma.post.findFirst({
     where: {
       slug,
       status: PostStatus.PUBLISHED,
     },
   });
+
+  // If not found, check if this slug is an alias (e.g., pinyin slug for Chinese post)
+  if (!post) {
+    const alias = await prisma.postAlias.findUnique({
+      where: {
+        locale_oldSlug: {
+          locale: locale === "zh" ? PostLocale.ZH : PostLocale.EN,
+          oldSlug: slug,
+        },
+      },
+      include: {
+        post: true,
+      },
+    });
+
+    if (alias?.post && alias.post.status === PostStatus.PUBLISHED) {
+      post = alias.post;
+    }
+  }
 
   if (!post) {
     return { title: l === "zh" ? "文章未找到" : "Post Not Found" };
@@ -86,8 +105,8 @@ export default async function LocalizedPostPage({ params }: PageProps) {
   const { locale, slug } = await params;
   const l = locale === "zh" ? "zh" : "en";
 
-  // Find post by slug only - content is not filtered by UI language
-  const post = await prisma.post.findFirst({
+  // Find post by slug - try direct match first, then check PostAlias table
+  let post = await prisma.post.findFirst({
     where: {
       slug,
       status: PostStatus.PUBLISHED,
@@ -98,6 +117,31 @@ export default async function LocalizedPostPage({ params }: PageProps) {
       },
     },
   });
+
+  // If not found, check if this slug is an alias (e.g., pinyin slug for Chinese post)
+  if (!post) {
+    const alias = await prisma.postAlias.findUnique({
+      where: {
+        locale_oldSlug: {
+          locale: locale === "zh" ? PostLocale.ZH : PostLocale.EN,
+          oldSlug: slug,
+        },
+      },
+      include: {
+        post: {
+          include: {
+            author: {
+              select: { name: true, image: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (alias?.post && alias.post.status === PostStatus.PUBLISHED) {
+      post = alias.post;
+    }
+  }
 
   if (!post) {
     notFound();

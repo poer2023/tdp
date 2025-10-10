@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     const video = (formData.get("video") as File | null) ?? null;
     const title = (formData.get("title") as string | null)?.trim() || null;
     const description = (formData.get("description") as string | null)?.trim() || null;
+    const category = (formData.get("category") as string | null) ?? "ORIGINAL";
     const postId = ((formData.get("postId") as string | null) ?? "").trim() || null;
 
     if (!image) {
@@ -85,6 +86,7 @@ export async function POST(req: Request) {
       smallThumbPath: storage.getPublicUrl(smallPath),
       mediumPath: storage.getPublicUrl(mediumPath),
       postId,
+      category: category as "REPOST" | "ORIGINAL" | "AI",
       latitude: exif?.latitude ?? null,
       longitude: exif?.longitude ?? null,
       locationName: location?.locationName ?? null,

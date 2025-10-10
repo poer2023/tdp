@@ -1,19 +1,30 @@
 import Link from "next/link";
 import { listGalleryImages } from "@/lib/gallery";
+import type { GalleryCategory } from "@/lib/gallery";
 import { GalleryMasonry } from "@/components/gallery-masonry";
+import { GalleryCategoryTabs } from "@/components/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
 
 export const revalidate = 0;
 
 type PageProps = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ category?: string }>;
 };
 
-export default async function LocalizedGalleryPage({ params }: PageProps) {
+export default async function LocalizedGalleryPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
+  const { category } = await searchParams;
   const l = locale === "zh" ? "zh" : "en";
 
-  const images = await listGalleryImages();
+  // Parse and validate category
+  const validCategories: GalleryCategory[] = ["REPOST", "ORIGINAL", "AI"];
+  const currentCategory =
+    category && validCategories.includes(category as GalleryCategory)
+      ? (category as GalleryCategory)
+      : undefined;
+
+  const images = await listGalleryImages(undefined, currentCategory);
   const imagesWithLocation = images.filter((img) => img.latitude && img.longitude);
 
   return (
@@ -32,6 +43,9 @@ export default async function LocalizedGalleryPage({ params }: PageProps) {
             : "A mix of photography, found visuals, and machine dreams."}
         </p>
       </header>
+
+      {/* Category Tabs */}
+      <GalleryCategoryTabs locale={l} currentCategory={currentCategory} />
 
       {/* Navigation */}
       {imagesWithLocation.length > 0 && (

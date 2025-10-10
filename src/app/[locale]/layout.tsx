@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { AnalyticsTracker } from "@/components/analytics-tracker";
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -13,5 +14,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
     redirect(`/en/${locale}`);
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <AnalyticsTracker locale={locale} />
+    </>
+  );
 }
