@@ -20,19 +20,19 @@ export function GalleryGrid({ images, locale = "zh" }: GalleryGridProps) {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3">
       {images.map((image) => (
         <Link
           key={image.id}
           href={localePath(locale, `/gallery/${image.id}`)}
-          className="group block overflow-hidden rounded-xl"
+          className="group block overflow-hidden rounded-lg sm:rounded-xl"
         >
           <div className="relative aspect-square overflow-hidden">
             <Image
               src={image.smallThumbPath || image.microThumbPath || image.filePath}
               alt={image.title ?? (locale === "zh" ? "博客相册照片" : "Gallery photo")}
               fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 33vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover transition duration-500 group-hover:scale-105"
             />
           </div>

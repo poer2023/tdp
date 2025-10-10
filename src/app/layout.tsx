@@ -62,7 +62,7 @@ export default async function RootLayout({
   return (
     <html lang={htmlLang}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col overflow-x-hidden bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
       >
         {/* Early theme applier to avoid FOUC */}
         <script
@@ -84,16 +84,16 @@ export default async function RootLayout({
             </a>
 
             <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
-              <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
+              <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-3.5">
                 {/* Left cluster: brand + links + search */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <MainNav />
                   <div className="hidden sm:block">
                     <CommandPaletteTrigger size="sm" />
                   </div>
                 </div>
                 {/* Right cluster: compact controls */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <ThemeToggle size="sm" />
                   <GlobalLanguageSwitcher />
                   {/* Mobile search fallback */}

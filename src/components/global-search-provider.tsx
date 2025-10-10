@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, createContext, useContext } from "react";
-import { CommandPalette } from "./command-palette";
+import { SearchCommand } from "./search/search-command";
 
 type SearchContextType = {
   open: boolean;
@@ -24,7 +24,7 @@ export function GlobalSearchProvider({ children }: { children: React.ReactNode }
   return (
     <SearchContext.Provider value={{ open, setOpen }}>
       {children}
-      <CommandPalette open={open} onOpenChange={setOpen} />
+      <SearchCommand open={open} onOpenChange={setOpen} />
     </SearchContext.Provider>
   );
 }

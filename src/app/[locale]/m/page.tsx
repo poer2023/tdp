@@ -19,14 +19,14 @@ export default async function LocalizedMomentsPage({ params }: Props) {
   const moments = await listMoments({ limit: 20, tag: null, q: null });
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-10">
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+      <header className="mb-4 flex items-center justify-between sm:mb-6">
+        <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-100">
           {l === "zh" ? "瞬间" : "Moments"}
         </h1>
         <OpenComposerButton label={l === "zh" ? "+ 新建" : "+ New"} />
       </header>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
         {moments.map((m) => (
           <div key={m.id} className="relative space-y-2">
             <MomentCard

@@ -1,6 +1,17 @@
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeAll, afterAll } from "vitest";
+import React from "react";
+
+// Make React available globally for JSX
+globalThis.React = React;
+
+// Mock ResizeObserver for jsdom environment
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
 
 // Clean up after each test case (e.g. clearing jsdom)
 afterEach(() => {

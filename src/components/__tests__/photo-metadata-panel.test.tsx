@@ -16,14 +16,47 @@ vi.mock("react-leaflet", () => ({
   ),
 }));
 
-// Mock next/dynamic
+// Mock next/dynamic to synchronously return mocked react-leaflet components
 vi.mock("next/dynamic", () => ({
-  default: (loader: () => React.ComponentType<unknown>) => {
-    const Component = (props: Record<string, unknown>) => {
-      const Comp = loader();
-      return <Comp {...props} />;
-    };
-    return Component;
+  default: (importFunc: () => Promise<{ default: unknown } | Record<string, unknown>>) => {
+    // Simply return the component directly from react-leaflet mock
+    // next/dynamic will be bypassed and components will be rendered synchronously
+    const funcString = importFunc.toString();
+
+    if (funcString.includes("MapContainer")) {
+      const MapContainerMock = ({
+        children,
+        center,
+      }: {
+        children: React.ReactNode;
+        center: [number, number];
+      }) => (
+        <div data-testid="map-container" data-center={JSON.stringify(center)}>
+          {children}
+        </div>
+      );
+      MapContainerMock.displayName = "MapContainerMock";
+      return MapContainerMock;
+    }
+    if (funcString.includes("TileLayer")) {
+      const TileLayerMock = ({ url }: { url: string }) => (
+        <div data-testid="tile-layer" data-url={url} />
+      );
+      TileLayerMock.displayName = "TileLayerMock";
+      return TileLayerMock;
+    }
+    if (funcString.includes("Marker")) {
+      const MarkerMock = ({ position }: { position: [number, number] }) => (
+        <div data-testid="marker" data-position={JSON.stringify(position)} />
+      );
+      MarkerMock.displayName = "MarkerMock";
+      return MarkerMock;
+    }
+
+    // Fallback: return a placeholder
+    const PlaceholderMock = () => null;
+    PlaceholderMock.displayName = "PlaceholderMock";
+    return PlaceholderMock;
   },
 }));
 

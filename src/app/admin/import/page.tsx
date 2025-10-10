@@ -187,7 +187,7 @@ export default function ImportPage() {
           </div>
 
           {/* Details Table */}
-          <div className="overflow-hidden rounded-2xl border border-zinc-200/60 bg-white/60 dark:border-zinc-800/60 dark:bg-zinc-900/60">
+          <div className="overflow-hidden rounded-2xl border border-zinc-200/60 bg-white/30 dark:border-zinc-800/60 dark:bg-zinc-900/60">
             <table className="w-full text-left text-sm">
               <thead className="bg-zinc-100/70 text-xs tracking-[0.2em] text-zinc-500 uppercase dark:bg-zinc-800/50 dark:text-zinc-400">
                 <tr>

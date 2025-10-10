@@ -25,12 +25,12 @@ export function Footer() {
 
   return (
     <footer className="mt-auto bg-transparent" role="contentinfo">
-      <div className="mx-auto max-w-4xl border-t border-zinc-200 px-6 py-8 dark:border-zinc-800">
+      <div className="mx-auto max-w-4xl border-t border-zinc-200 px-4 py-4 sm:px-6 sm:py-6 dark:border-zinc-800">
         {/* Compact Layout - Max 2 lines */}
-        <div className="flex flex-col items-center gap-2 text-center">
+        <div className="flex flex-col items-center gap-1.5 text-center sm:gap-2">
           {/* Line 1: Links + Copyright */}
-          <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
-            <nav className="flex items-center gap-3" aria-label="Footer navigation">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-sm sm:gap-3">
+            <nav className="flex items-center gap-2 sm:gap-3" aria-label="Footer navigation">
               {links.map((link) => (
                 <Link
                   key={link.href}

@@ -37,15 +37,15 @@ export default async function LocalizedHomePage({ params }: PageProps) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <div className="mx-auto w-full max-w-6xl space-y-28 px-6 py-16 sm:px-8 md:px-12">
+      <div className="mx-auto w-full max-w-6xl space-y-16 px-4 py-8 sm:space-y-20 sm:px-6 sm:py-12 md:space-y-28 md:px-12 md:py-16">
         <ScrollSyncHero activities={activities} locale={l} />
-        <section className="space-y-8" id="posts">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-2">
-              <h2 className="text-4xl font-semibold text-zinc-900 dark:text-zinc-50">
+        <section className="space-y-6 sm:space-y-8" id="posts">
+          <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="space-y-1.5 sm:space-y-2">
+              <h2 className="text-3xl font-semibold text-zinc-900 sm:text-4xl dark:text-zinc-50">
                 {l === "zh" ? "最新文章" : "Latest Posts"}
               </h2>
-              <p className="text-lg leading-loose text-zinc-600 dark:text-zinc-400">
+              <p className="text-base leading-relaxed text-zinc-600 sm:text-lg sm:leading-loose dark:text-zinc-400">
                 {l === "zh"
                   ? "精选文章与长文，涵盖技术、创意与生活记录。"
                   : "Curated writing across craft, travel, and daily life."}
@@ -59,7 +59,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
             </Link>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             {recentPosts.length > 0 ? (
               recentPosts.map((post) => (
                 <Link
@@ -95,14 +95,17 @@ export default async function LocalizedHomePage({ params }: PageProps) {
         <MomentStrip locale={l} />
       </div>
 
-      <section className="w-full bg-zinc-100/60 py-14 dark:bg-zinc-900/40" id="gallery">
-        <div className="mx-auto w-full max-w-6xl space-y-8 px-6 sm:px-8 md:px-12">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-2">
-              <h2 className="text-4xl font-semibold text-zinc-900 dark:text-zinc-50">
+      <section
+        className="w-full bg-zinc-100/60 py-8 sm:py-12 md:py-14 dark:bg-zinc-900/40"
+        id="gallery"
+      >
+        <div className="mx-auto w-full max-w-6xl space-y-6 px-4 sm:space-y-8 sm:px-6 md:px-12">
+          <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="space-y-1.5 sm:space-y-2">
+              <h2 className="text-3xl font-semibold text-zinc-900 sm:text-4xl dark:text-zinc-50">
                 {l === "zh" ? "灵感相册" : "Photo Gallery"}
               </h2>
-              <p className="text-lg leading-loose text-zinc-600 dark:text-zinc-400">
+              <p className="text-base leading-relaxed text-zinc-600 sm:text-lg sm:leading-loose dark:text-zinc-400">
                 {l === "zh"
                   ? "用照片记录每一次创作的瞬间与旅程"
                   : "Capturing moments and journeys through photography"}

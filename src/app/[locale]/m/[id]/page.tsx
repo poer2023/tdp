@@ -38,8 +38,8 @@ export default async function LocalizedMomentDetailPage({ params, searchParams }
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-10">
-      <div className="mb-4">
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+      <div className="mb-3 sm:mb-4">
         <BackButton />
       </div>
       <MomentLightbox
@@ -47,7 +47,7 @@ export default async function LocalizedMomentDetailPage({ params, searchParams }
         initialIndex={Number.isFinite(Number(sp.image)) ? Number(sp.image) : 0}
       />
       {Array.isArray(m.images) && (m.images as unknown as MomentImage[]).length > 1 && (
-        <div className="mb-4 grid grid-cols-6 gap-2">
+        <div className="mb-3 grid grid-cols-4 gap-2 sm:mb-4 sm:grid-cols-6">
           {(m.images as MomentImage[]).map((im, i) => (
             <a key={i} href={`?image=${i}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}

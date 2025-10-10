@@ -30,12 +30,12 @@ export default async function LocalizedMomentsArchivePage({ params, searchParams
 
   const ym = `${year}-${String(month).padStart(2, "0")}`;
   return (
-    <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+      <h1 className="text-xl font-semibold text-zinc-900 sm:text-2xl dark:text-zinc-100">
         {l === "zh" ? "瞬间归档" : "Moments Archive"}
       </h1>
       <p className="mt-2 text-sm text-zinc-500">{ym}</p>
-      <ul className="mt-6 space-y-3">
+      <ul className="mt-4 space-y-2 sm:mt-6 sm:space-y-3">
         {moments.map((m) => (
           <li key={m.id} className="border-b border-zinc-200 pb-3 text-sm dark:border-zinc-800">
             <a

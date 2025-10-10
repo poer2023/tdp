@@ -50,7 +50,7 @@ export function AdminNav({
       aria-label="Admin navigation"
     >
       {/* Header */}
-      <div className="px-6 py-6">
+      <div className="px-4 py-4 sm:px-6 sm:py-6">
         <Link href="/admin" className="block">
           <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             {t(locale, "admin")}
@@ -84,7 +84,7 @@ export function AdminNav({
                       className={`group block rounded-lg px-3 py-2.5 transition-all duration-150 ${
                         isActive
                           ? "bg-zinc-100 dark:bg-zinc-900/60"
-                          : "hover:bg-zinc-100 dark:hover:bg-zinc-900/50"
+                          : "hover:bg-zinc-100 dark:hover:bg-zinc-900/30"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -117,7 +117,7 @@ export function AdminNav({
       </div>
 
       {/* Footer - Fixed at bottom (no divider) */}
-      <div className="px-6 py-5">
+      <div className="px-4 py-4 sm:px-6 sm:py-5">
         <Link
           href="/"
           className="inline-flex items-center gap-1.5 text-sm text-zinc-600 transition-colors duration-150 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"

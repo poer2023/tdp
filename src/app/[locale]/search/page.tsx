@@ -27,9 +27,9 @@ export default async function LocalizedSearchPage({ params, searchParams }: Page
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-16">
-      <header className="mb-10">
-        <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12 md:py-16">
+      <header className="mb-6 sm:mb-8 md:mb-10">
+        <h1 className="text-2xl font-bold text-zinc-900 sm:text-3xl dark:text-zinc-100">
           {isZh ? "搜索" : "Search"}
         </h1>
         <p className="mt-3 text-zinc-600 dark:text-zinc-400">
@@ -50,7 +50,7 @@ export default async function LocalizedSearchPage({ params, searchParams }: Page
       ) : null}
 
       {results.length > 0 ? (
-        <div className="space-y-10">
+        <div className="space-y-6 sm:space-y-8 md:space-y-10">
           {results.map((r) => (
             <article key={r.id} className="border-b border-zinc-200 pb-8 dark:border-zinc-800">
               <Link href={`/${locale}/posts/${r.slug}`} className="group">

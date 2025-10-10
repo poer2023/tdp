@@ -5,6 +5,7 @@ import { MetricCard } from "@/components/admin/metric-card";
 import { ActionCard } from "@/components/admin/action-card";
 import { RecentPosts } from "@/components/admin/recent-posts";
 import { RecentUploads } from "@/components/admin/recent-uploads";
+import { PostStatsTop } from "@/components/admin/post-stats-top";
 import { getAdminLocale, t } from "@/lib/admin-i18n";
 
 export const revalidate = 0;
@@ -43,10 +44,10 @@ export default async function AdminHomePage() {
   ]);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 sm:space-y-8 md:space-y-10">
       {/* Page Header - Simplified */}
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
           {t(locale, "overview")}
         </h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
@@ -129,9 +130,10 @@ export default async function AdminHomePage() {
         <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
           {t(locale, "recentActivity")}
         </h2>
-        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
           <RecentPosts posts={recentPosts} />
           <RecentUploads images={recentUploads} />
+          <PostStatsTop locale={locale} />
         </div>
       </section>
 

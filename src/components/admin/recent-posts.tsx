@@ -22,7 +22,7 @@ export function RecentPosts({ posts }: RecentPostsProps) {
             <li key={post.id} className="group">
               <Link
                 href={`/admin/posts/${post.id}`}
-                className="block rounded-lg p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+                className="block rounded-lg p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/30"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 space-y-1">

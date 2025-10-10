@@ -42,7 +42,7 @@ type AboutCopy = {
 };
 
 export const aboutLayoutClass =
-  "mx-auto flex min-h-screen max-w-4xl flex-col gap-20 px-6 py-16 sm:px-8 md:px-12";
+  "mx-auto flex min-h-screen max-w-4xl flex-col gap-12 px-4 py-8 sm:gap-16 sm:px-6 sm:py-12 md:gap-20 md:px-12 md:py-16";
 
 export const aboutContent: Record<AboutLocale, AboutCopy> = {
   en: {

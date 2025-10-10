@@ -14,6 +14,7 @@ export type PublicPost = {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  viewCount?: number;
   author?: {
     id: string;
     name: string | null;
@@ -300,6 +301,7 @@ function toPublicPost(post: PostWithAuthor): PublicPost {
     publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
     createdAt: post.createdAt.toISOString(),
     updatedAt: post.updatedAt.toISOString(),
+    viewCount: post.viewCount || 0,
     author: post.author
       ? {
           id: post.author.id,

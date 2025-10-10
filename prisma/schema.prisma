@@ -15,9 +15,9 @@ model User {
   image         String?
   role          UserRole  @default(AUTHOR)
   accounts      Account[]
+  moments       Moment[]
   posts         Post[]
   sessions      Session[]
-  moments       Moment[]
 }
 
 model Account {
@@ -54,6 +54,7 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Post {
   id              String             @id @default(cuid())
   title           String
@@ -69,6 +70,8 @@ model Post {
   authorId        String?
   locale          PostLocale         @default(EN)
   groupId         String?
+  viewCount       Int                @default(0)
+  relatedPostIds  Json?
   gallery         GalleryImage[]
   author          User?              @relation(fields: [authorId], references: [id])
   aliases         PostAlias[]
@@ -78,6 +81,9 @@ model Post {
   @@unique([locale, slug])
   @@unique([groupId, locale])
   @@index([status, locale])
+  @@index([viewCount])
+  @@index([content(ops: raw("gin_trgm_ops"))], map: "idx_post_content_trgm", type: Gin)
+  @@index([title(ops: raw("gin_trgm_ops"))], map: "idx_post_title_trgm", type: Gin)
 }
 
 model PostAlias {
@@ -110,17 +116,13 @@ model Reaction {
   @@index([sessionKeyHash])
 }
 
-
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model GalleryImage {
   id                 String          @id @default(cuid())
   title              String?
   description        String?
   filePath           String
-  microThumbPath     String?
-  smallThumbPath     String?
-  mediumPath         String?
   postId             String?
-  category           GalleryCategory @default(REPOST)
   createdAt          DateTime        @default(now())
   capturedAt         DateTime?
   city               String?
@@ -135,14 +137,21 @@ model GalleryImage {
   mimeType           String?
   storageType        String          @default("local")
   width              Int?
+  mediumPath         String?
+  microThumbPath     String?
+  smallThumbPath     String?
+  category           GalleryCategory @default(REPOST)
   post               Post?           @relation(fields: [postId], references: [id])
+
+  @@index([locationName(ops: raw("gin_trgm_ops"))], map: "idx_gallery_location_trgm", type: Gin)
+  @@index([title(ops: raw("gin_trgm_ops"))], map: "idx_gallery_title_trgm", type: Gin)
 }
 
-// Moments (short notes)
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Moment {
   id          String           @id @default(cuid())
   authorId    String
-  content     String           @db.Text
+  content     String
   images      Json?
   visibility  MomentVisibility @default(PUBLIC)
   slug        String?          @unique
@@ -155,13 +164,53 @@ model Moment {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   deletedAt   DateTime?
-
-  author   User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  replyTo  Moment? @relation("MomentThread", fields: [replyToId], references: [id])
-  replies  Moment[] @relation("MomentThread")
+  author      User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replyTo     Moment?          @relation("MomentThread", fields: [replyToId], references: [id])
+  replies     Moment[]         @relation("MomentThread")
 
   @@index([createdAt, visibility, lang])
   @@index([status])
+  @@index([content(ops: raw("gin_trgm_ops"))], map: "idx_moment_content_trgm", type: Gin)
+}
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
+model DailyStats {
+  id             String   @id
+  date           DateTime @unique
+  totalViews     Int      @default(0)
+  uniqueVisitors Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  @@index([date])
+}
+
+model PageView {
+  id        String   @id
+  path      String
+  locale    String?
+  referer   String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+}
+
+model Visitor {
+  id          String   @id
+  fingerprint String   @unique
+  firstVisit  DateTime @default(now())
+  lastVisit   DateTime
+  visitCount  Int      @default(1)
+
+  @@index([fingerprint])
+  @@index([lastVisit])
 }
 
 enum MomentVisibility {
@@ -174,14 +223,6 @@ enum MomentStatus {
   DRAFT
   PUBLISHED
   SCHEDULED
-}
-
-model RateLimitHit {
-  id        String   @id @default(cuid())
-  key       String
-  createdAt DateTime @default(now())
-
-  @@index([key, createdAt])
 }
 
 enum UserRole {
