@@ -8,11 +8,7 @@ export default defineConfig({
     environment: "node",
     setupFiles: ["./src/tests/integration/utils/setup.ts"],
     include: ["**/*.integration.test.ts"],
-    exclude: [
-      "node_modules/**",
-      "dist/**",
-      ".next/**",
-    ],
+    exclude: ["node_modules/**", "dist/**", ".next/**"],
     testTimeout: 30000, // 30秒超时
     hookTimeout: 30000,
     pool: "forks", // 隔离测试环境
@@ -22,14 +18,10 @@ export default defineConfig({
       },
     },
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      include: ['src/app/api/**', 'src/lib/**'],
-      exclude: [
-        '**/*.test.ts',
-        '**/*.spec.ts',
-        '**/node_modules/**',
-      ],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      include: ["src/app/api/**", "src/lib/**"],
+      exclude: ["**/*.test.ts", "**/*.spec.ts", "**/node_modules/**"],
       thresholds: {
         lines: 60,
         functions: 60,
