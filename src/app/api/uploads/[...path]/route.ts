@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFile, stat } from "fs/promises";
 import path from "path";
+import { getLocalUploadRoot } from "@/lib/storage/local-paths";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -39,7 +40,7 @@ function buildHeaders(stats: { size: number; mtime: Date }) {
 
 async function resolveFile(request: NextRequest, params: string[]) {
   void request;
-  const uploadsRoot = path.resolve(process.cwd(), "public", "uploads") + path.sep;
+  const uploadsRoot = path.resolve(getLocalUploadRoot()) + path.sep;
   const filePath = path.resolve(uploadsRoot, ...params);
 
   if (!filePath.startsWith(uploadsRoot)) {
