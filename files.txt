@@ -26,6 +26,7 @@ docs/PRIVACY_POLICY.md
 docs/TESTING.md
 docs/USER_GUIDE.md
 docs/admin-overview-ui-spec.md
+docs/analytics-implementation-guide.md
 docs/archive/development/B_C_D_EXECUTION_COMPLETE.md
 docs/archive/development/CICD_IMPLEMENTATION_COMPLETE.md
 docs/archive/development/CICD_OPTIMIZATION_PLAN.md
