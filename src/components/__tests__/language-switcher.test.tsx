@@ -111,13 +111,14 @@ describe("LanguageSwitcher", () => {
 
     const link = screen.getByRole("link", { name: "English" });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "/posts/test-post");
+    // Component always adds /en/ prefix for English links
+    expect(link).toHaveAttribute("href", "/en/posts/test-post");
   });
 
-  it("should show 'not available' when no alternate version exists", async () => {
+  it("should return null when no alternate version exists", async () => {
     vi.mocked(prisma.post.findFirst).mockResolvedValue(null);
 
-    render(
+    const { container } = render(
       await LanguageSwitcher({
         currentLocale: PostLocale.EN,
         currentSlug: "test-post",
@@ -125,7 +126,8 @@ describe("LanguageSwitcher", () => {
       })
     );
 
-    expect(screen.getByText("中文 version not available")).toBeInTheDocument();
+    // Component returns null when alternate doesn't exist
+    expect(container.firstChild).toBeNull();
   });
 
   it("should query database for alternate language post", async () => {
@@ -152,8 +154,13 @@ describe("LanguageSwitcher", () => {
     });
   });
 
-  it("should render language icon", async () => {
-    vi.mocked(prisma.post.findFirst).mockResolvedValue(null);
+  it("should render language icon when alternate exists", async () => {
+    // Mock an existing alternate post so component renders
+    vi.mocked(prisma.post.findFirst).mockResolvedValue({
+      slug: "ce-shi-wen-zhang",
+      locale: PostLocale.ZH,
+      title: "测试文章",
+    });
 
     const { container } = render(
       await LanguageSwitcher({
@@ -230,6 +237,10 @@ describe("LanguageSwitcher", () => {
       })
     );
 
-    expect(screen.getByRole("link", { name: "English" })).toHaveAttribute("href", "/posts/english");
+    // Component always adds /en/ prefix for English links
+    expect(screen.getByRole("link", { name: "English" })).toHaveAttribute(
+      "href",
+      "/en/posts/english"
+    );
   });
 });

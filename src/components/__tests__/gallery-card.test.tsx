@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { GalleryCard } from "../gallery-card";
 import type { GalleryImage } from "@/lib/gallery";
@@ -67,7 +67,7 @@ describe("GalleryCard", () => {
   it("should render image when not a Live Photo", () => {
     render(<GalleryCard image={baseImage} />);
 
-    const image = screen.getByAlt("Test Photo");
+    const image = screen.getByAltText("Test Photo");
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute("src", "/uploads/test.jpg");
   });
@@ -224,7 +224,8 @@ describe("GalleryCard", () => {
     render(<GalleryCard image={baseImage} />);
 
     const link = screen.getByRole("link");
-    expect(link).toHaveAttribute("href", "/gallery/img-001");
+    // Component uses default locale "zh", so href includes locale prefix
+    expect(link).toHaveAttribute("href", "/zh/gallery/img-001");
   });
 
   it("should have proper article semantic structure", () => {

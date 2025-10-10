@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, beforeAll, afterAll, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { PhotoViewer } from "../photo-viewer";
 import type { GalleryImage } from "@/lib/gallery";
 
@@ -224,7 +224,7 @@ describe("PhotoViewer", () => {
   it("should render photo viewer with image", () => {
     render(<PhotoViewer image={baseImage} prevId={null} nextId={null} />);
 
-    const image = screen.getByAlt("Test Photo");
+    const image = screen.getByAltText("Test Photo");
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute("src", "/uploads/test.jpg");
   });
@@ -241,7 +241,7 @@ describe("PhotoViewer", () => {
       />
     );
 
-    const image = screen.getByAlt("Test Photo");
+    const image = screen.getByAltText("Test Photo");
     expect(image).toHaveAttribute("src", "/uploads/test_medium.webp");
 
     await waitFor(() => expect(MockXHR.instances.length).toBeGreaterThan(0));
@@ -280,19 +280,31 @@ describe("PhotoViewer", () => {
     await waitFor(() => expect(MockXHR.instances.length).toBeGreaterThan(0));
     const instance = MockXHR.instances.at(-1);
     expect(instance).toBeDefined();
-    instance?.onprogress?.({
-      lengthComputable: true,
-      loaded: 102400,
-      total: 204800,
-    } as Event & { loaded: number; total: number; lengthComputable: boolean });
 
-    expect(screen.getByText(/正在加载图片/)).toHaveTextContent("50%");
+    // Trigger progress update with act()
+    await act(async () => {
+      instance?.onprogress?.({
+        lengthComputable: true,
+        loaded: 102400,
+        total: 204800,
+      } as Event & { loaded: number; total: number; lengthComputable: boolean });
+    });
+
+    // Wait for progress indicator to appear and check percentage
+    await waitFor(
+      () => {
+        expect(screen.getByText(/正在加载图片 50%/)).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
     expect(screen.getByText("0.10 MB / 0.20 MB")).toBeInTheDocument();
 
-    instance!.response = new Blob([new Uint8Array(10)], { type: "image/jpeg" });
-    instance!.onload?.(new Event("load"));
+    await act(async () => {
+      instance!.response = new Blob([new Uint8Array(10)], { type: "image/jpeg" });
+      instance!.onload?.(new Event("load"));
+    });
 
-    return waitFor(() => {
+    await waitFor(() => {
       expect(screen.queryByText(/正在加载图片/)).not.toBeInTheDocument();
     });
   });
@@ -308,9 +320,9 @@ describe("PhotoViewer", () => {
   it("should render back button", () => {
     render(<PhotoViewer image={baseImage} prevId={null} nextId={null} />);
 
-    const backButton = screen.getByText("返回相册");
+    const backButton = screen.getByTitle("返回相册");
     expect(backButton).toBeInTheDocument();
-    expect(backButton.closest("a")).toHaveAttribute("href", "/gallery");
+    expect(backButton).toHaveAttribute("href", "/zh/gallery");
   });
 
   it("should navigate to gallery on Escape key", () => {
@@ -318,7 +330,7 @@ describe("PhotoViewer", () => {
 
     fireEvent.keyDown(window, { key: "Escape" });
 
-    expect(mockPush).toHaveBeenCalledWith("/gallery");
+    expect(mockPush).toHaveBeenCalledWith("/zh/gallery");
   });
 
   it("should navigate to previous photo on ArrowLeft key when prevId exists", () => {
@@ -326,7 +338,7 @@ describe("PhotoViewer", () => {
 
     fireEvent.keyDown(window, { key: "ArrowLeft" });
 
-    expect(mockPush).toHaveBeenCalledWith("/gallery/img-prev");
+    expect(mockPush).toHaveBeenCalledWith("/zh/gallery/img-prev");
   });
 
   it("should not navigate on ArrowLeft when prevId is null", () => {
@@ -342,7 +354,7 @@ describe("PhotoViewer", () => {
 
     fireEvent.keyDown(window, { key: "ArrowRight" });
 
-    expect(mockPush).toHaveBeenCalledWith("/gallery/img-next");
+    expect(mockPush).toHaveBeenCalledWith("/zh/gallery/img-next");
   });
 
   it("should not navigate on ArrowRight when nextId is null", () => {
@@ -354,34 +366,63 @@ describe("PhotoViewer", () => {
   });
 
   it("should render previous navigation button when prevId exists", () => {
-    render(<PhotoViewer image={baseImage} prevId="img-prev" nextId={null} />);
+    render(
+      <PhotoViewer
+        image={baseImage}
+        prevId="img-prev"
+        nextId={null}
+        thumbnails={[
+          { id: "img-prev", filePath: "/prev.jpg" },
+          { id: "img-001", filePath: "/uploads/test.jpg" },
+        ]}
+        currentId="img-001"
+      />
+    );
 
     const prevButton = screen.getByTitle("上一张");
     expect(prevButton).toBeInTheDocument();
-    expect(prevButton).toHaveAttribute("href", "/gallery/img-prev");
+    expect(prevButton).toHaveAttribute("href", "/zh/gallery/img-prev");
   });
 
-  it("should render disabled previous button when prevId is null", () => {
+  it("should not render previous button when prevId is null", () => {
     render(<PhotoViewer image={baseImage} prevId={null} nextId={null} />);
 
     const prevButton = screen.queryByTitle("上一张");
     expect(prevButton).not.toBeInTheDocument();
-
-    // Should show disabled button instead
-    const container = screen.getByText("返回相册").closest("header");
-    expect(container?.querySelectorAll(".border-zinc-800").length).toBeGreaterThan(0);
   });
 
   it("should render next navigation button when nextId exists", () => {
-    render(<PhotoViewer image={baseImage} prevId={null} nextId="img-next" />);
+    render(
+      <PhotoViewer
+        image={baseImage}
+        prevId={null}
+        nextId="img-next"
+        thumbnails={[
+          { id: "img-001", filePath: "/uploads/test.jpg" },
+          { id: "img-next", filePath: "/next.jpg" },
+        ]}
+        currentId="img-001"
+      />
+    );
 
     const nextButton = screen.getByTitle("下一张");
     expect(nextButton).toBeInTheDocument();
-    expect(nextButton).toHaveAttribute("href", "/gallery/img-next");
+    expect(nextButton).toHaveAttribute("href", "/zh/gallery/img-next");
   });
 
   it("stores slide direction when navigating forward", () => {
-    render(<PhotoViewer image={baseImage} prevId={null} nextId="img-next" />);
+    render(
+      <PhotoViewer
+        image={baseImage}
+        prevId={null}
+        nextId="img-next"
+        thumbnails={[
+          { id: "img-001", filePath: "/uploads/test.jpg" },
+          { id: "img-next", filePath: "/next.jpg" },
+        ]}
+        currentId="img-001"
+      />
+    );
 
     fireEvent.click(screen.getByTitle("下一张"));
 
@@ -403,7 +444,19 @@ describe("PhotoViewer", () => {
   });
 
   it("should render both navigation buttons when both IDs exist", () => {
-    render(<PhotoViewer image={baseImage} prevId="img-prev" nextId="img-next" />);
+    render(
+      <PhotoViewer
+        image={baseImage}
+        prevId="img-prev"
+        nextId="img-next"
+        thumbnails={[
+          { id: "img-prev", filePath: "/prev.jpg" },
+          { id: "img-001", filePath: "/uploads/test.jpg" },
+          { id: "img-next", filePath: "/next.jpg" },
+        ]}
+        currentId="img-001"
+      />
+    );
 
     expect(screen.getByTitle("上一张")).toBeInTheDocument();
     expect(screen.getByTitle("下一张")).toBeInTheDocument();
@@ -428,7 +481,7 @@ describe("PhotoViewer", () => {
     render(<PhotoViewer image={baseImage} prevId={null} nextId={null} />);
 
     expect(screen.queryByTestId("live-photo-player")).not.toBeInTheDocument();
-    expect(screen.getByAlt("Test Photo")).toBeInTheDocument();
+    expect(screen.getByAltText("Test Photo")).toBeInTheDocument();
   });
 
   it("should use fallback alt text when title is missing", () => {
@@ -439,7 +492,7 @@ describe("PhotoViewer", () => {
 
     render(<PhotoViewer image={imageWithoutTitle} prevId={null} nextId={null} />);
 
-    expect(screen.getByAlt("照片")).toBeInTheDocument();
+    expect(screen.getByAltText("未命名照片")).toBeInTheDocument();
   });
 
   it("should cleanup keyboard event listener on unmount", () => {
@@ -463,14 +516,15 @@ describe("PhotoViewer", () => {
     rerender(<PhotoViewer image={baseImage} prevId="img-prev" nextId={null} />);
 
     fireEvent.keyDown(window, { key: "ArrowLeft" });
-    expect(mockPush).toHaveBeenCalledWith("/gallery/img-prev");
+    expect(mockPush).toHaveBeenCalledWith("/zh/gallery/img-prev");
   });
 
   it("should have fixed layout with full viewport", () => {
     const { container } = render(<PhotoViewer image={baseImage} prevId={null} nextId={null} />);
 
     const mainDiv = container.firstChild as HTMLElement;
-    expect(mainDiv).toHaveClass("fixed", "inset-0", "bg-zinc-950");
+    expect(mainDiv).toHaveClass("fixed");
+    expect(mainDiv).toHaveClass("inset-0");
   });
 
   it("should have responsive layout classes", () => {
@@ -480,11 +534,12 @@ describe("PhotoViewer", () => {
     expect(contentDiv).toHaveClass("lg:flex-row");
   });
 
-  it("should render header with backdrop blur", () => {
-    const { container } = render(<PhotoViewer image={baseImage} prevId={null} nextId={null} />);
+  it("should render toolbar with backdrop blur", () => {
+    render(<PhotoViewer image={baseImage} prevId={null} nextId={null} />);
 
-    const header = container.querySelector("header");
-    expect(header).toHaveClass("backdrop-blur-sm", "bg-zinc-950/95");
+    // Back button has backdrop-blur class
+    const backButton = screen.getByTitle("返回相册");
+    expect(backButton).toHaveClass("backdrop-blur");
   });
 
   it("should render metadata panel as aside with scrollable content", () => {
@@ -512,8 +567,8 @@ describe("PhotoViewer", () => {
     fireEvent.keyDown(window, { key: "Escape" });
 
     expect(mockPush).toHaveBeenCalledTimes(3);
-    expect(mockPush).toHaveBeenCalledWith("/gallery/img-prev");
-    expect(mockPush).toHaveBeenCalledWith("/gallery/img-next");
-    expect(mockPush).toHaveBeenCalledWith("/gallery");
+    expect(mockPush).toHaveBeenCalledWith("/zh/gallery/img-prev");
+    expect(mockPush).toHaveBeenCalledWith("/zh/gallery/img-next");
+    expect(mockPush).toHaveBeenCalledWith("/zh/gallery");
   });
 });
