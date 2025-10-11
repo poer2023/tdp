@@ -16,24 +16,15 @@ test.describe("Header search UI", () => {
     // Input should appear with transition
     const input = page.getByPlaceholder(/search posts|搜索文章/i);
     await expect(input).toBeVisible();
-    // Small wait to let transition finish for clean screenshot
-    await page.waitForTimeout(300);
+    // Wait for input to be ready for interaction
+    await expect(input).toBeFocused({ timeout: 500 });
     await navHeader.screenshot({ path: `test-results/search-header-open-${browserName}-en.png` });
 
     await input.fill("nextjs");
 
-    // Wait for search API response instead of hard timeout
-    await page
-      .waitForResponse(
-        (response) => response.url().includes("/api/search") && response.status() === 200,
-        { timeout: 5000 }
-      )
-      .catch(() => {
-        // If no API call happens (e.g., static search), just wait for dropdown
-      });
-
+    // Dropdown appears when there's input text
     const dropdown = page.getByTestId("search-dropdown");
-    await expect(dropdown).toBeVisible();
+    await expect(dropdown).toBeVisible({ timeout: 5000 });
     const box = await dropdown.boundingBox();
     const viewport = page.viewportSize();
     expect(box).toBeTruthy();
@@ -56,7 +47,7 @@ test.describe("Header search UI", () => {
     await button.click();
     const input = page.getByPlaceholder(/搜索文章|search posts/i);
     await expect(input).toBeVisible();
-    await page.waitForTimeout(300);
+    await expect(input).toBeFocused({ timeout: 500 });
 
     // Ensure the header height is stable (no layout push)
     const h1 = await navHeader.boundingBox();
@@ -65,18 +56,9 @@ test.describe("Header search UI", () => {
     // Type query to render results pane
     await input.fill("测试");
 
-    // Wait for search API response instead of hard timeout
-    await page
-      .waitForResponse(
-        (response) => response.url().includes("/api/search") && response.status() === 200,
-        { timeout: 5000 }
-      )
-      .catch(() => {
-        // If no API call happens (e.g., static search), just wait for dropdown
-      });
-
+    // Dropdown appears when there's input text
     const dd2 = page.getByTestId("search-dropdown");
-    await expect(dd2).toBeVisible();
+    await expect(dd2).toBeVisible({ timeout: 5000 });
     const box2 = await dd2.boundingBox();
     const viewport2 = page.viewportSize();
     if (box2 && viewport2) {
