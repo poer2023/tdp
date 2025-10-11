@@ -17,6 +17,8 @@ const mockMkdir = vi.mocked(fsPromises.mkdir);
 const mockWriteFile = vi.mocked(fsPromises.writeFile);
 const mockUnlink = vi.mocked(fsPromises.unlink);
 const mockStat = vi.mocked(fsPromises.stat);
+const mockChmod = vi.mocked(fsPromises.chmod);
+const mockAccess = vi.mocked(fsPromises.access);
 const mockS3Send = vi.fn();
 const mockUploadDone = vi.fn();
 
@@ -105,6 +107,8 @@ describe("LocalStorage", () => {
     mockWriteFile.mockResolvedValue(undefined);
     mockStat.mockResolvedValue({});
     mockUnlink.mockResolvedValue(undefined);
+    mockChmod.mockResolvedValue(undefined);
+    mockAccess.mockResolvedValue(undefined);
   });
 
   describe("upload", () => {
@@ -117,7 +121,11 @@ describe("LocalStorage", () => {
 
       expect(result).toBe("/api/uploads/gallery/test-photo.jpg");
       expect(mockMkdir).toHaveBeenCalled();
-      expect(mockWriteFile).toHaveBeenCalledWith(expect.stringContaining("test-photo.jpg"), buffer);
+      expect(mockWriteFile).toHaveBeenCalledWith(
+        expect.stringContaining("test-photo.jpg"),
+        buffer,
+        { mode: 0o644 }
+      );
     });
 
     it("should create directory recursively", async () => {
