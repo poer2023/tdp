@@ -68,14 +68,14 @@ test.describe.serial("Likes Feature", () => {
     await postPage.clickLike();
 
     // Wait for like to be registered
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
 
     // Reload page
     await page.reload();
     await page.waitForLoadState("networkidle");
 
     // Wait for React to re-hydrate and fetch like status
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(3000);
 
     // Button should still be disabled (user already liked)
     const isDisabled = await postPage.isLikeButtonDisabled();

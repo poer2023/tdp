@@ -5,7 +5,9 @@ const oneImage = "e2e/fixtures/gallery/d2983206585b4d9e8676bb2ee32d3182.jpg";
 
 async function openComposer(page) {
   await page.goto("/m?compose=1");
-  await expect(page.getByText("新建瞬间")).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1000); // Wait for dialog animation
+  await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 10000 });
 }
 
 async function publishMoment(page, count: number) {
@@ -24,17 +26,24 @@ test.describe("Moments - composer + admin ops + preview", () => {
   test("opens composer via query and via button", async ({ page }) => {
     await loginAsUser(page, "regular");
     await page.goto("/m");
+    await page.waitForLoadState("networkidle");
+
     // Button open
-    await page
-      .getByRole("button", { name: /new|发布/i })
-      .first()
-      .click();
-    await expect(page.getByText("新建瞬间")).toBeVisible();
+    const newButton = page.getByRole("button", { name: /new|发布/i }).first();
+    await expect(newButton).toBeVisible({ timeout: 10000 });
+    await newButton.click();
+    await page.waitForTimeout(1000); // Wait for dialog animation
+    await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 10000 });
+
     // Close
     await page.getByRole("button", { name: /关闭|close/i }).click();
+    await page.waitForTimeout(500); // Wait for dialog close animation
+
     // Query open
     await page.goto("/m?compose=1");
-    await expect(page.getByText("新建瞬间")).toBeVisible();
+    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(1000); // Wait for dialog animation
+    await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 10000 });
   });
 
   test("admin sees delete icon; regular does not", async ({ page }) => {

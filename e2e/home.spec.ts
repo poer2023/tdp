@@ -10,9 +10,7 @@ test.describe("Home Page", () => {
     const h1 = page.getByRole("heading", { level: 1 });
     const h1Text = await h1.textContent();
 
-    expect(
-      h1Text?.includes("清新简约的个人博客") || h1Text?.includes("Clean & Minimalist Personal Blog")
-    ).toBe(true);
+    expect(h1Text?.includes("留住") || h1Text?.includes("Moments that")).toBe(true);
 
     // Check navigation elements exist (language-independent)
     const buttons = page.locator("a[href*='#posts'], a[href*='#gallery']");
@@ -57,18 +55,12 @@ test.describe("Home Page", () => {
     await page.setViewportSize({ width: 375, height: 667 });
     const h1Mobile = page.getByRole("heading", { level: 1 });
     const h1MobileText = await h1Mobile.textContent();
-    expect(
-      h1MobileText?.includes("清新简约的个人博客") ||
-        h1MobileText?.includes("Clean & Minimalist Personal Blog")
-    ).toBe(true);
+    expect(h1MobileText?.includes("留住") || h1MobileText?.includes("Moments that")).toBe(true);
 
     // Test desktop viewport
     await page.setViewportSize({ width: 1920, height: 1080 });
     const h1Desktop = page.getByRole("heading", { level: 1 });
     const h1DesktopText = await h1Desktop.textContent();
-    expect(
-      h1DesktopText?.includes("清新简约的个人博客") ||
-        h1DesktopText?.includes("Clean & Minimalist Personal Blog")
-    ).toBe(true);
+    expect(h1DesktopText?.includes("留住") || h1DesktopText?.includes("Moments that")).toBe(true);
   });
 });
