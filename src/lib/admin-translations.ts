@@ -68,6 +68,23 @@ export const adminTranslations = {
     avgViewsShort: "Avg",
     noPostsYet: "No posts yet",
     failedToLoadStats: "Failed to load stats",
+
+    // Analytics
+    analytics: "Analytics",
+    analyticsDescription: "Traffic insights",
+    viewAnalytics: "View Analytics",
+    trafficInsights: "Website traffic and visitor statistics",
+    todayVisits: "Today's Visits",
+    weeklyVisits: "Weekly Visits",
+    totalVisitors: "Total Visitors",
+    avgVisits: "Average Visits",
+    dailyAverage: "Daily average",
+    trendChart: "7-Day Trend",
+    topPages: "Top Pages",
+    languageDistribution: "Language Distribution",
+    noDataYet: "No data yet",
+    uniqueVisitors: "unique visitors",
+    visits: "visits",
   },
   zh: {
     // Layout
@@ -128,6 +145,23 @@ export const adminTranslations = {
     avgViewsShort: "平均",
     noPostsYet: "暂无文章",
     failedToLoadStats: "加载统计失败",
+
+    // Analytics
+    analytics: "访问统计",
+    analyticsDescription: "流量洞察",
+    viewAnalytics: "查看统计",
+    trafficInsights: "网站流量和访客统计",
+    todayVisits: "今日访问",
+    weeklyVisits: "本周访问",
+    totalVisitors: "总访客数",
+    avgVisits: "平均访问",
+    dailyAverage: "每日平均",
+    trendChart: "7天访问趋势",
+    topPages: "热门页面",
+    languageDistribution: "语言分布",
+    noDataYet: "暂无数据",
+    uniqueVisitors: "独立访客",
+    visits: "次",
   },
 } as const;
 

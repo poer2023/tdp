@@ -1,8 +1,10 @@
 import prisma from "@/lib/prisma";
+import { getAdminLocale, t } from "@/lib/admin-i18n";
 
 export const revalidate = 0;
 
 export default async function AdminAnalyticsPage() {
+  const locale = await getAdminLocale();
   // Get today's date boundaries (UTC 0:00)
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
@@ -96,32 +98,34 @@ export default async function AdminAnalyticsPage() {
   return (
     <div className="space-y-10">
       <header className="space-y-3">
-        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Analytics</p>
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">访问统计</h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          轻量级访问统计，追踪页面浏览量(PV)和独立访客(UV)。
-        </p>
+        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">{t(locale, "analytics")}</p>
+        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">
+          {t(locale, "analytics")}
+        </h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t(locale, "trafficInsights")}</p>
       </header>
 
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-4">
         <StatCard
-          title="今日访问"
+          title={t(locale, "todayVisits")}
           value={todayViews}
-          subtitle={`${todayUniqueVisitors} 独立访客`}
+          subtitle={`${todayUniqueVisitors} ${t(locale, "uniqueVisitors")}`}
         />
-        <StatCard title="本周访问" value={weekViews} />
-        <StatCard title="总访客数" value={totalVisitors} />
+        <StatCard title={t(locale, "weeklyVisits")} value={weekViews} />
+        <StatCard title={t(locale, "totalVisitors")} value={totalVisitors} />
         <StatCard
-          title="平均访问"
+          title={t(locale, "avgVisits")}
           value={totalVisitors > 0 ? Math.round(weekViews / 7) : 0}
-          subtitle="每日平均"
+          subtitle={t(locale, "dailyAverage")}
         />
       </div>
 
       {/* 7-Day Trend */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">7天访问趋势</h2>
+        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          {t(locale, "trendChart")}
+        </h2>
         <div className="space-y-2">
           {last7Days.length > 0 ? (
             <div className="space-y-2">
@@ -155,14 +159,18 @@ export default async function AdminAnalyticsPage() {
               })}
             </div>
           ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">暂无数据</p>
+            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              {t(locale, "noDataYet")}
+            </p>
           )}
         </div>
       </section>
 
       {/* Top Pages */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">热门页面</h2>
+        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          {t(locale, "topPages")}
+        </h2>
         <div className="space-y-3">
           {topPages.length > 0 ? (
             topPages.map((page, index) => (
@@ -179,19 +187,23 @@ export default async function AdminAnalyticsPage() {
                   </span>
                 </div>
                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                  {page._count.path} 次
+                  {page._count.path} {t(locale, "visits")}
                 </span>
               </div>
             ))
           ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">暂无数据</p>
+            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              {t(locale, "noDataYet")}
+            </p>
           )}
         </div>
       </section>
 
       {/* Language Distribution */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">语言分布</h2>
+        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          {t(locale, "languageDistribution")}
+        </h2>
         <div className="space-y-3">
           {localeStats.length > 0 ? (
             localeStats.map((stat) => {
@@ -221,7 +233,9 @@ export default async function AdminAnalyticsPage() {
               );
             })
           ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">暂无数据</p>
+            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              {t(locale, "noDataYet")}
+            </p>
           )}
         </div>
       </section>
