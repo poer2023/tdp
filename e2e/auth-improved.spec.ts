@@ -97,7 +97,10 @@ test.describe("Authenticated User Header", () => {
     await expect(authPage.userMenuButton.first()).toBeVisible();
   });
 
-  test("should show user name in header", async () => {
+  test("should show user name in header", async ({ page }) => {
+    // Switch to desktop viewport where user name is visible
+    await page.setViewportSize({ width: 1280, height: 720 });
+
     await expect(authPage.userName.first()).toBeVisible();
 
     const nameText = await authPage.userName.textContent();
@@ -187,7 +190,12 @@ test.describe("Authenticated User Header", () => {
     await waitForNetworkIdle(page);
 
     await authPage.signOut();
-    await page.waitForTimeout(1000); // Wait for sign out to complete
+
+    // Wait for sign-out to complete using web-first assertion
+    await expect(async () => {
+      const hasSignInButton = await authPage.hasSignInButton();
+      expect(hasSignInButton).toBe(true);
+    }).toPass({ timeout: 5000 });
 
     // After sign out, NextAuth redirects to home page
     // This is expected behavior in test environment
@@ -204,7 +212,9 @@ test.describe("Authenticated User Header", () => {
     await waitForNetworkIdle(page);
 
     await authPage.gotoDashboard();
-    await page.waitForTimeout(1000); // Wait for navigation
+
+    // Wait for navigation to admin page using web-first assertion
+    await expect(page).toHaveURL(/\/admin/, { timeout: 5000 });
 
     // Should be on dashboard page
     const url = page.url();

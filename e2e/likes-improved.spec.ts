@@ -63,19 +63,22 @@ test.describe.serial("Likes Feature", () => {
 
     // Wait for initial load
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(500); // Wait for React hydration
+
+    // Wait for like button to be ready
+    const likeButton = page.getByRole("button", { name: /like/i });
+    await expect(likeButton).toBeVisible();
 
     await postPage.clickLike();
 
-    // Wait for like to be registered
-    await page.waitForTimeout(2000);
+    // Wait for button to become disabled after like
+    await expect(likeButton).toBeDisabled({ timeout: 5000 });
 
     // Reload page
     await page.reload();
     await page.waitForLoadState("networkidle");
 
-    // Wait for React to re-hydrate and fetch like status
-    await page.waitForTimeout(3000);
+    // Wait for button to be visible after reload
+    await expect(likeButton).toBeVisible({ timeout: 5000 });
 
     // Button should still be disabled (user already liked)
     const isDisabled = await postPage.isLikeButtonDisabled();
@@ -135,13 +138,17 @@ test.describe.serial("Likes Feature", () => {
     // First session: add a like
     await postPage.gotoPost("test-post-en-1");
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(500);
 
     const initialCount = await postPage.getLikeCount();
     expect(initialCount).toBe(0); // Should be 0 after beforeEach reset
 
     await postPage.clickLike();
-    await page.waitForTimeout(1000); // Wait for API
+
+    // Wait for like count to update using web-first assertion
+    await expect(async () => {
+      const count = await postPage.getLikeCount();
+      expect(count).toBe(1);
+    }).toPass({ timeout: 5000 });
 
     // Verify like count increased to 1
     const afterLikeCount = await postPage.getLikeCount();
@@ -152,7 +159,12 @@ test.describe.serial("Likes Feature", () => {
     await context.clearCookies();
     await page.reload();
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1500); // Wait for React hydration
+
+    // Wait for like count to be visible and correct
+    await expect(async () => {
+      const count = await postPage.getLikeCount();
+      expect(count).toBe(1);
+    }).toPass({ timeout: 5000 });
 
     // Should still show count of 1 (total from all users)
     const newSessionCount = await postPage.getLikeCount();

@@ -22,8 +22,16 @@ test.describe("Header search UI", () => {
 
     await input.fill("nextjs");
 
-    // Wait for debounce + API call (250ms debounce + network time)
-    await page.waitForTimeout(800);
+    // Wait for search API response instead of hard timeout
+    await page
+      .waitForResponse(
+        (response) => response.url().includes("/api/search") && response.status() === 200,
+        { timeout: 5000 }
+      )
+      .catch(() => {
+        // If no API call happens (e.g., static search), just wait for dropdown
+      });
+
     const dropdown = page.getByTestId("search-dropdown");
     await expect(dropdown).toBeVisible();
     const box = await dropdown.boundingBox();
@@ -56,7 +64,17 @@ test.describe("Header search UI", () => {
 
     // Type query to render results pane
     await input.fill("测试");
-    await page.waitForTimeout(800);
+
+    // Wait for search API response instead of hard timeout
+    await page
+      .waitForResponse(
+        (response) => response.url().includes("/api/search") && response.status() === 200,
+        { timeout: 5000 }
+      )
+      .catch(() => {
+        // If no API call happens (e.g., static search), just wait for dropdown
+      });
+
     const dd2 = page.getByTestId("search-dropdown");
     await expect(dd2).toBeVisible();
     const box2 = await dd2.boundingBox();

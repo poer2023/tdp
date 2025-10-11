@@ -6,7 +6,11 @@ const oneImage = "e2e/fixtures/gallery/d2983206585b4d9e8676bb2ee32d3182.jpg";
 async function openComposer(page) {
   await page.goto("/m?compose=1");
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(1000); // Wait for dialog animation
+
+  // Wait for dialog to be visible instead of arbitrary timeout
+  const dialog = page.locator('[role="dialog"]');
+  await expect(dialog).toBeVisible({ timeout: 10000 });
+
   await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 10000 });
 }
 
@@ -32,17 +36,24 @@ test.describe("Moments - composer + admin ops + preview", () => {
     const newButton = page.getByRole("button", { name: /new|发布/i }).first();
     await expect(newButton).toBeVisible({ timeout: 10000 });
     await newButton.click();
-    await page.waitForTimeout(1000); // Wait for dialog animation
+
+    // Wait for dialog to be visible
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 10000 });
     await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 10000 });
 
     // Close
     await page.getByRole("button", { name: /关闭|close/i }).click();
-    await page.waitForTimeout(500); // Wait for dialog close animation
+
+    // Wait for dialog to be hidden
+    await expect(dialog).toBeHidden({ timeout: 5000 });
 
     // Query open
     await page.goto("/m?compose=1");
     await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000); // Wait for dialog animation
+
+    // Wait for dialog to be visible
+    await expect(dialog).toBeVisible({ timeout: 10000 });
     await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 10000 });
   });
 

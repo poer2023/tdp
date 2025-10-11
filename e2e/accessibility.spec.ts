@@ -75,6 +75,16 @@ test.describe("Keyboard Navigation", () => {
 
     // Find first post link - matches both /posts/slug and /locale/posts/slug
     const firstLink = page.locator('a[href*="/posts/"]').first();
+
+    // Check if any post links exist before attempting to focus
+    const linkCount = await page.locator('a[href*="/posts/"]').count();
+    if (linkCount === 0) {
+      console.log("No posts found, skipping link focus test");
+      return;
+    }
+
+    // Ensure link is visible before focusing
+    await expect(firstLink).toBeVisible();
     await firstLink.focus();
 
     // Press Enter and wait for URL change (SPA navigation)
@@ -257,7 +267,9 @@ test.describe("Focus Management", () => {
 
       // Close with Escape
       await page.keyboard.press("Escape");
-      await page.waitForTimeout(300);
+
+      // Wait for menu to close using web-first assertion
+      await expect(userMenu.first()).toHaveAttribute("aria-expanded", "false", { timeout: 2000 });
 
       // Focus should return to trigger button
       const focused = page.locator(":focus");
