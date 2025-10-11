@@ -5,9 +5,11 @@ const oneImage = "e2e/fixtures/gallery/d2983206585b4d9e8676bb2ee32d3182.jpg";
 
 async function openComposer(page) {
   await page.goto("/m?compose=1");
+  // Wait for DOM to be fully loaded before checking for modal
+  await page.waitForLoadState("domcontentloaded");
   await page.waitForLoadState("networkidle");
 
-  // Wait for composer modal to be visible
+  // Wait for composer modal to be visible (increased timeout for Firefox)
   await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 10000 });
 }
 
@@ -45,9 +47,11 @@ test.describe("Moments - composer + admin ops + preview", () => {
 
     // Query open
     await page.goto("/m?compose=1");
+    // Wait for DOM to be fully loaded before checking for modal
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForLoadState("networkidle");
 
-    // Wait for composer modal to be visible
+    // Wait for composer modal to be visible (increased timeout for Firefox)
     await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 10000 });
   });
 

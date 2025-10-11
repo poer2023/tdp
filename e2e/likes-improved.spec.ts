@@ -64,9 +64,9 @@ test.describe.serial("Likes Feature", () => {
     // Wait for initial load
     await page.waitForLoadState("networkidle");
 
-    // Wait for like button to be ready
-    const likeButton = page.getByRole("button", { name: /like/i });
-    await expect(likeButton).toBeVisible();
+    // Wait for like button to be ready - use data-testid for cross-browser compatibility
+    const likeButton = page.getByTestId("like-button");
+    await expect(likeButton).toBeVisible({ timeout: 5000 });
 
     await postPage.clickLike();
 
