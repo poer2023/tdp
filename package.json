@@ -23,6 +23,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
+    "test:cleanup": "pkill -9 -f 'node.*vitest' || true",
+    "pretest": "npm run test:cleanup",
     "test": "vitest",
     "test:run": "vitest run",
     "test:watch": "vitest --watch",
