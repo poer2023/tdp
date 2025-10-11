@@ -49,14 +49,12 @@ jobs:
           node-version: "22"
 
       - name: Install dependencies
-        run: |
-          npm i -g pnpm
-          pnpm i --frozen-lockfile
+        run: npm ci
 
       - name: Prepare database
         run: |
           npx prisma migrate deploy
-          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then pnpm prisma db seed || true; fi
+          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then npx prisma db seed || true; fi
 
       - name: Download artifacts from failed run
         uses: actions/download-artifact@v4
@@ -84,15 +82,15 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           codex --mode auto-edit \
-            "Read ci/last-failure.log; reproduce locally per AGENTS.md; fix only what's needed for failing specs; run pnpm lint && pnpm typecheck && npx playwright test --reporter=line; keep changes minimal and explain in PR body."
+            "Read ci/last-failure.log; reproduce locally per AGENTS.md; fix only what's needed for failing specs; run npm run lint && npm run type-check && npx playwright test --reporter=line; keep changes minimal and explain in PR body."
 
       - name: Verify after edits
         run: |
-          pnpm lint
-          pnpm run type-check
+          npm run lint
+          npm run type-check
           npx playwright install --with-deps
           npx playwright test --reporter=line
-          pnpm build
+          npm run build
 
       - name: Open PR if changes exist
         uses: peter-evans/create-pull-request@v6
