@@ -32,6 +32,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
       NODE_ENV: test
+      NEXTAUTH_SECRET: test-secret-for-e2e-testing-only
 
     steps:
       - name: Checkout repository
@@ -64,7 +65,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ci-e2e-logs-${{ matrix.shard }}
+          name: ci-e2e-logs-${{ strategy.job-index }}
           path: |
             ci_e2e_*.log
             playwright-report/**
