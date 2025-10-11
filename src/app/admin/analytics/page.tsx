@@ -1,8 +1,27 @@
 import prisma from "@/lib/prisma";
+import { getAdminLocale, t } from "@/lib/admin-i18n";
 
 export const revalidate = 0;
 
+/**
+ * Normalize path by removing locale prefix for statistics
+ * @param path - Original path (e.g., "/zh/posts", "/en/gallery")
+ * @returns Normalized path (e.g., "/posts", "/gallery") or null if should be filtered
+ */
+function normalizePathForStats(path: string): string | null {
+  // Remove leading /zh/ or /en/ prefix
+  const normalized = path.replace(/^\/(zh|en)(\/|$)/, "/");
+
+  // Filter out root path, pure locale paths, and empty paths
+  if (!normalized || normalized === "/" || normalized === "/zh" || normalized === "/en") {
+    return null;
+  }
+
+  return normalized;
+}
+
 export default async function AdminAnalyticsPage() {
+  const locale = await getAdminLocale();
   // Get today's date boundaries (UTC 0:00)
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
@@ -14,7 +33,7 @@ export default async function AdminAnalyticsPage() {
   weekAgo.setUTCDate(weekAgo.getUTCDate() - 7);
 
   // Parallel queries for performance
-  const [todayViews, weekViews, totalVisitors, topPages, localeStats, last7Days] =
+  const [todayViews, weekViews, totalVisitors, rawPageViews, localeStats, last7Days] =
     await Promise.all([
       // Today's page views
       prisma.pageView.count({
@@ -38,23 +57,16 @@ export default async function AdminAnalyticsPage() {
       // Total unique visitors
       prisma.visitor.count(),
 
-      // Top pages (last 7 days)
-      prisma.pageView.groupBy({
-        by: ["path"],
+      // Top pages (last 7 days) - get raw data for normalization
+      prisma.pageView.findMany({
         where: {
           createdAt: {
             gte: weekAgo,
           },
         },
-        _count: {
+        select: {
           path: true,
         },
-        orderBy: {
-          _count: {
-            path: "desc",
-          },
-        },
-        take: 10,
       }),
 
       // Language distribution (last 7 days)
@@ -83,6 +95,25 @@ export default async function AdminAnalyticsPage() {
       }),
     ]);
 
+  // Process top pages: normalize paths and aggregate
+  const pathCounts = new Map<string, number>();
+
+  for (const view of rawPageViews) {
+    const normalizedPath = normalizePathForStats(view.path);
+    if (normalizedPath) {
+      pathCounts.set(normalizedPath, (pathCounts.get(normalizedPath) || 0) + 1);
+    }
+  }
+
+  // Convert to array, sort by count, and take top 10
+  const topPages = Array.from(pathCounts.entries())
+    .map(([path, count]) => ({
+      path,
+      _count: { path: count },
+    }))
+    .sort((a, b) => b._count.path - a._count.path)
+    .slice(0, 10);
+
   // Calculate today's unique visitors
   const todayUniqueVisitors = await prisma.visitor.count({
     where: {
@@ -96,32 +127,34 @@ export default async function AdminAnalyticsPage() {
   return (
     <div className="space-y-10">
       <header className="space-y-3">
-        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Analytics</p>
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">访问统计</h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          轻量级访问统计，追踪页面浏览量(PV)和独立访客(UV)。
-        </p>
+        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">{t(locale, "analytics")}</p>
+        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">
+          {t(locale, "analytics")}
+        </h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t(locale, "trafficInsights")}</p>
       </header>
 
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-4">
         <StatCard
-          title="今日访问"
+          title={t(locale, "todayVisits")}
           value={todayViews}
-          subtitle={`${todayUniqueVisitors} 独立访客`}
+          subtitle={`${todayUniqueVisitors} ${t(locale, "uniqueVisitors")}`}
         />
-        <StatCard title="本周访问" value={weekViews} />
-        <StatCard title="总访客数" value={totalVisitors} />
+        <StatCard title={t(locale, "weeklyVisits")} value={weekViews} />
+        <StatCard title={t(locale, "totalVisitors")} value={totalVisitors} />
         <StatCard
-          title="平均访问"
+          title={t(locale, "avgVisits")}
           value={totalVisitors > 0 ? Math.round(weekViews / 7) : 0}
-          subtitle="每日平均"
+          subtitle={t(locale, "dailyAverage")}
         />
       </div>
 
       {/* 7-Day Trend */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">7天访问趋势</h2>
+        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          {t(locale, "trendChart")}
+        </h2>
         <div className="space-y-2">
           {last7Days.length > 0 ? (
             <div className="space-y-2">
@@ -155,14 +188,18 @@ export default async function AdminAnalyticsPage() {
               })}
             </div>
           ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">暂无数据</p>
+            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              {t(locale, "noDataYet")}
+            </p>
           )}
         </div>
       </section>
 
       {/* Top Pages */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">热门页面</h2>
+        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          {t(locale, "topPages")}
+        </h2>
         <div className="space-y-3">
           {topPages.length > 0 ? (
             topPages.map((page, index) => (
@@ -179,19 +216,23 @@ export default async function AdminAnalyticsPage() {
                   </span>
                 </div>
                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                  {page._count.path} 次
+                  {page._count.path} {t(locale, "visits")}
                 </span>
               </div>
             ))
           ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">暂无数据</p>
+            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              {t(locale, "noDataYet")}
+            </p>
           )}
         </div>
       </section>
 
       {/* Language Distribution */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">语言分布</h2>
+        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          {t(locale, "languageDistribution")}
+        </h2>
         <div className="space-y-3">
           {localeStats.length > 0 ? (
             localeStats.map((stat) => {
@@ -221,7 +262,9 @@ export default async function AdminAnalyticsPage() {
               );
             })
           ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">暂无数据</p>
+            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              {t(locale, "noDataYet")}
+            </p>
           )}
         </div>
       </section>

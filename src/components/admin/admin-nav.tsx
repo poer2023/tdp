@@ -23,6 +23,7 @@ const navSections: NavSection[] = [
       { labelKey: "overview", href: "/admin", descriptionKey: "dashboard" },
       { labelKey: "posts", href: "/admin/posts", descriptionKey: "managePosts" },
       { labelKey: "gallery", href: "/admin/gallery", descriptionKey: "photoManagement" },
+      { labelKey: "analytics", href: "/admin/analytics", descriptionKey: "analyticsDescription" },
     ],
   },
   {

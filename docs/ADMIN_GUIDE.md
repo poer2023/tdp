@@ -5,6 +5,7 @@ Complete guide for administrators managing the blog content and operations.
 ## Table of Contents
 
 - [Content Management](#content-management)
+- [Traffic Analytics](#traffic-analytics)
 - [Export Operations](#export-operations)
 - [Import Operations](#import-operations)
 - [Best Practices](#best-practices)
@@ -41,6 +42,50 @@ Posts are typically created through your content management workflow. For bulk o
 ---
 
 <!-- Comment moderation feature has been removed. -->
+
+---
+
+## Traffic Analytics
+
+### Accessing the Analytics Dashboard
+
+1. Open `/admin` with an administrator account.
+2. Use the sidebar under **Content -> Analytics** or click the **"View Analytics"** quick action.
+3. The page URL is `/admin/analytics`; direct navigation is supported if you have ADMIN role.
+
+### Key Metrics (PV/UV)
+
+- **Today's Visits**: Total page views collected since 00:00 UTC of the current day.
+- **Weekly Visits**: Accumulated views from the last 7 days (rolling window).
+- **Total Visitors**: Count of unique fingerprints captured by the tracker across all time.
+- **Average Visits**: Daily average for the current week (`weeklyVisits / 7`). Tooltip shows "Daily average".
+
+> PV == Page Views, UV == Unique Visitors. The tracker hashes user-agent + IP so no personal data is stored.
+
+### 7-Day Trend
+
+- Horizontal bar chart displaying each day's total views.
+- Values are ordered chronologically; each row shows PV and UV counts.
+- Zero data renders an empty-state message to signal no traffic has been collected yet.
+
+### Top Pages
+
+- Lists the 10 most visited paths within the past 7 days.
+- Each row shows rank, path, and total views.
+- Use this section to spot popular content or confirm campaign landing pages are receiving traffic.
+
+### Language Distribution
+
+- Breaks down visits by locale (`en`, `zh`, or Unknown).
+- Percentages are calculated from the same 7-day window used for Top Pages.
+- Helps evaluate localization adoption and plan content priorities.
+
+### Data Freshness & Permissions
+
+- Metrics update in real time as `/api/analytics/track` events are stored.
+- Daily stats rely on the `dailyStats` table populated by scheduled jobs or background workers.
+- Access is restricted to ADMIN users; non-admin sessions will be redirected or shown a 403 screen.
+- For implementation details or customization, refer to [`docs/analytics-implementation-guide.md`](./analytics-implementation-guide.md).
 
 ---
 
