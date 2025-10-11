@@ -140,10 +140,11 @@ test.describe("Authentication Errors", () => {
     await loginAsUser(page, "regular");
 
     // Try to access admin export (admin-only)
-    const response = await page.goto("/admin/export");
+    await page.goto("/admin/export");
 
-    // Should deny access
-    expect([401, 403]).toContain(response?.status() || 403);
+    // Should show 403 UI content (Next.js layout returns 200 with 403 UI)
+    await expect(page.getByText("403")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/forbidden|禁止访问/i)).toBeVisible({ timeout: 5000 });
 
     await logout(page);
   });

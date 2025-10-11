@@ -276,12 +276,11 @@ test.describe("Export Security", () => {
   test("should not allow regular user access", async ({ page }) => {
     await loginAsUser(page, "regular");
 
-    const response = await page.goto("/admin/export");
+    await page.goto("/admin/export");
 
-    // Should deny access
-    const status = response?.status() || 403;
-    expect(status).toBeGreaterThanOrEqual(300); // Should not be 200
-    expect([401, 403]).toContain(status);
+    // Should show 403 UI content (Next.js layout returns 200 with 403 UI)
+    await expect(page.getByText("403")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/forbidden|禁止访问/i)).toBeVisible({ timeout: 5000 });
 
     await logout(page);
   });
