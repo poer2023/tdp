@@ -54,17 +54,21 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async createUser({ user }) {
-      // Check if this is the first user (no admin exists yet)
-      const adminExists = await prisma.user.findFirst({
-        where: { role: UserRole.ADMIN },
-      });
+      // 从环境变量读取管理员邮箱白名单
+      const adminEmails = (process.env.ADMIN_EMAILS || "")
+        .split(",")
+        .map((email) => email.trim())
+        .filter(Boolean);
 
-      // If no admin exists, promote this newly created user to ADMIN
-      if (!adminExists && user.id) {
+      // 检查新用户是否在白名单中
+      if (user.id && user.email && adminEmails.includes(user.email)) {
         await prisma.user.update({
           where: { id: user.id },
           data: { role: UserRole.ADMIN },
         });
+        console.log(`✅ Admin user created: ${user.email}`);
+      } else {
+        console.log(`ℹ️ Regular user created: ${user.email || "unknown"} (role: AUTHOR)`);
       }
     },
   },
