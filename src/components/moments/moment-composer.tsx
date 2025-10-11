@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, startTransition } from "react";
+import { useActionState, useEffect, useRef, useState, startTransition, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createMomentAction, type CreateMomentState } from "@/app/[locale]/m/actions";
@@ -8,7 +8,8 @@ import { useSession } from "next-auth/react";
 
 type LocalImage = { file: File; url: string };
 
-export function MomentComposerBottomSheet() {
+// Inner component that uses useSearchParams - must be wrapped in Suspense
+function MomentComposerCore() {
   const { status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -30,13 +31,7 @@ export function MomentComposerBottomSheet() {
 
   // URL 驱动：?compose=1 时自动打开；关闭时清理该参数
   useEffect(() => {
-    // Check useSearchParams first, but fallback to manual URL parsing for browser compatibility
-    const shouldOpen =
-      sp?.get("compose") === "1" ||
-      (typeof window !== "undefined" &&
-        new URL(window.location.href).searchParams.get("compose") === "1");
-
-    if (shouldOpen) {
+    if (sp.get("compose") === "1") {
       setOpen(true);
     }
   }, [sp]);
@@ -45,7 +40,7 @@ export function MomentComposerBottomSheet() {
     setOpen(false);
     // 清理 URL 中的 compose 参数
     try {
-      const params = new URLSearchParams(sp?.toString() || "");
+      const params = new URLSearchParams(sp.toString());
       if (params.get("compose") === "1") {
         params.delete("compose");
         router.replace(params.size ? `${pathname}?${params.toString()}` : pathname, {
@@ -293,5 +288,14 @@ export function MomentComposerBottomSheet() {
         </div>
       )}
     </>
+  );
+}
+
+// Main export component with Suspense boundary
+export function MomentComposerBottomSheet() {
+  return (
+    <Suspense fallback={null}>
+      <MomentComposerCore />
+    </Suspense>
   );
 }
