@@ -7,22 +7,19 @@ import { getLocaleFromPathname } from "@/lib/i18n";
 import { LanguageBadge } from "@/components/ui/language-badge";
 import { SearchResultSkeleton } from "./search/search-skeleton";
 import { SearchEmptyState } from "./search/search-empty-state";
+import type { SearchResult, GallerySearchResult, MomentSearchResult } from "@/lib/search";
 
-type Result = {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  publishedAt: string | null;
-  locale: "EN" | "ZH";
-  authorName: string | null;
+type SearchResults = {
+  posts: SearchResult[];
+  images: GallerySearchResult[];
+  moments: MomentSearchResult[];
 };
 
 export function Search({ size = "md" }: { size?: "sm" | "md" }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<Result[]>([]);
+  const [results, setResults] = useState<SearchResults>({ posts: [], images: [], moments: [] });
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -108,11 +105,11 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
     };
   }, [open]);
 
-  // Debounced search
+  // Debounced search with full mode for all content types
   useEffect(() => {
     if (!open) return;
     if (!q.trim()) {
-      setResults([]);
+      setResults({ posts: [], images: [], moments: [] });
       return;
     }
     const ctrl = new AbortController();
@@ -120,15 +117,19 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
     const t = setTimeout(async () => {
       try {
         const res = await fetch(
-          `/api/search?q=${encodeURIComponent(q.trim())}&locale=${serverLocale}`,
+          `/api/search?q=${encodeURIComponent(q.trim())}&locale=${serverLocale}&mode=full`,
           { signal: ctrl.signal }
         );
         if (!res.ok) throw new Error("Search failed");
         const data = await res.json();
-        setResults(data.results || []);
+        setResults({
+          posts: data.posts || [],
+          images: data.images || [],
+          moments: data.moments || [],
+        });
       } catch (e) {
         if (!(e instanceof DOMException && e.name === "AbortError")) {
-          setResults([]);
+          setResults({ posts: [], images: [], moments: [] });
         }
       } finally {
         setLoading(false);
@@ -189,7 +190,9 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
               setOpen(false);
             }
           }}
-          placeholder={locale === "zh" ? "搜索文章..." : "Search posts..."}
+          placeholder={
+            locale === "zh" ? "搜索文章、图片、动态..." : "Search posts, images, moments..."
+          }
           className="w-full bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400/30 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus-visible:ring-blue-400/20"
         />
         {q && (
@@ -226,48 +229,125 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
               <SearchResultSkeleton />
               <SearchResultSkeleton />
             </div>
-          ) : results.length === 0 ? (
+          ) : results.posts.length === 0 &&
+            results.images.length === 0 &&
+            results.moments.length === 0 ? (
             <SearchEmptyState query={q} locale={locale} />
           ) : (
-            <ul className="overflow-auto" style={{ maxHeight: anchor?.maxHeight || 320 }}>
-              {results.map((r) => (
-                <li key={r.id}>
-                  <a
-                    href={`/${locale}/posts/${r.slug}`}
-                    className="block px-3 py-2.5 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    <div className="font-medium text-zinc-900 dark:text-zinc-100">{r.title}</div>
-                    <div className="line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400">
-                      {r.excerpt}
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-500">
-                      <LanguageBadge locale={r.locale} />
-                      {r.publishedAt && (
-                        <>
-                          <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                          <span className="flex items-center gap-1">
-                            <span>📅</span>
-                            {new Date(r.publishedAt).toLocaleDateString(
-                              locale === "zh" ? "zh-CN" : "en-US",
-                              { year: "numeric", month: "short", day: "numeric" }
+            <div className="overflow-auto" style={{ maxHeight: anchor?.maxHeight || 320 }}>
+              {/* Posts section */}
+              {results.posts.length > 0 && (
+                <div className="mb-2">
+                  <div className="mb-1.5 px-3 pt-2 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+                    📝 {locale === "zh" ? "文章" : "Posts"} ({results.posts.length})
+                  </div>
+                  <ul>
+                    {results.posts.map((post) => (
+                      <li key={post.id}>
+                        <a
+                          href={`/${locale}/posts/${post.slug}`}
+                          className="block px-3 py-2.5 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        >
+                          <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                            {post.title}
+                          </div>
+                          <div className="line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400">
+                            {post.excerpt}
+                          </div>
+                          <div className="mt-1.5 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-500">
+                            <LanguageBadge locale={post.locale} />
+                            {post.publishedAt && (
+                              <>
+                                <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                                <span className="flex items-center gap-1">
+                                  <span>📅</span>
+                                  {new Date(post.publishedAt).toLocaleDateString(
+                                    locale === "zh" ? "zh-CN" : "en-US",
+                                    { year: "numeric", month: "short", day: "numeric" }
+                                  )}
+                                </span>
+                              </>
                             )}
-                          </span>
-                        </>
-                      )}
-                      {r.authorName && (
-                        <>
-                          <span className="text-zinc-300 dark:text-zinc-700">·</span>
-                          <span className="flex items-center gap-1">
-                            <span>👤</span>
-                            {r.authorName}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </a>
-                </li>
-              ))}
-            </ul>
+                            {post.authorName && (
+                              <>
+                                <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                                <span className="flex items-center gap-1">
+                                  <span>👤</span>
+                                  {post.authorName}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Images section */}
+              {results.images.length > 0 && (
+                <div className="mb-2">
+                  <div className="mb-1.5 px-3 pt-2 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+                    🖼️ {locale === "zh" ? "图片" : "Images"} ({results.images.length})
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 px-3">
+                    {results.images.map((image) => (
+                      <a
+                        key={image.id}
+                        href={`/gallery#${image.id}`}
+                        className="group aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
+                      >
+                        {image.smallThumbPath && (
+                          <img
+                            src={image.smallThumbPath}
+                            alt={image.title || "Gallery image"}
+                            className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                          />
+                        )}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Moments section */}
+              {results.moments.length > 0 && (
+                <div className="mb-2">
+                  <div className="mb-1.5 px-3 pt-2 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+                    💬 {locale === "zh" ? "动态" : "Moments"} ({results.moments.length})
+                  </div>
+                  <ul>
+                    {results.moments.map((moment) => (
+                      <li key={moment.id}>
+                        <a
+                          href={`/moments${moment.slug ? `/${moment.slug}` : `#${moment.id}`}`}
+                          className="block px-3 py-2.5 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        >
+                          <div className="line-clamp-2 text-sm text-zinc-900 dark:text-zinc-100">
+                            {moment.content}
+                          </div>
+                          <div className="mt-1 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                            {moment.tags.length > 0 && (
+                              <span className="flex items-center gap-1">
+                                🏷️ {moment.tags.slice(0, 2).join(", ")}
+                              </span>
+                            )}
+                            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                            <span>
+                              {new Date(moment.createdAt).toLocaleDateString(
+                                locale === "zh" ? "zh-CN" : "en-US",
+                                { month: "short", day: "numeric" }
+                              )}
+                            </span>
+                          </div>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           )}
           <button
             type="button"
