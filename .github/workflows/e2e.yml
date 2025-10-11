@@ -43,14 +43,12 @@ jobs:
           node-version: "22"
 
       - name: Install dependencies
-        run: |
-          npm i -g pnpm
-          pnpm i --frozen-lockfile
+        run: npm ci
 
       - name: Prepare database
         run: |
           npx prisma migrate deploy
-          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then pnpm prisma db seed || true; fi
+          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then npm run prisma:seed || true; fi
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
