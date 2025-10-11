@@ -3,6 +3,23 @@ import { getAdminLocale, t } from "@/lib/admin-i18n";
 
 export const revalidate = 0;
 
+/**
+ * Normalize path by removing locale prefix for statistics
+ * @param path - Original path (e.g., "/zh/posts", "/en/gallery")
+ * @returns Normalized path (e.g., "/posts", "/gallery") or null if should be filtered
+ */
+function normalizePathForStats(path: string): string | null {
+  // Remove leading /zh/ or /en/ prefix
+  const normalized = path.replace(/^\/(zh|en)(\/|$)/, "/");
+
+  // Filter out root path, pure locale paths, and empty paths
+  if (!normalized || normalized === "/" || normalized === "/zh" || normalized === "/en") {
+    return null;
+  }
+
+  return normalized;
+}
+
 export default async function AdminAnalyticsPage() {
   const locale = await getAdminLocale();
   // Get today's date boundaries (UTC 0:00)
@@ -16,7 +33,7 @@ export default async function AdminAnalyticsPage() {
   weekAgo.setUTCDate(weekAgo.getUTCDate() - 7);
 
   // Parallel queries for performance
-  const [todayViews, weekViews, totalVisitors, topPages, localeStats, last7Days] =
+  const [todayViews, weekViews, totalVisitors, rawPageViews, localeStats, last7Days] =
     await Promise.all([
       // Today's page views
       prisma.pageView.count({
@@ -40,23 +57,16 @@ export default async function AdminAnalyticsPage() {
       // Total unique visitors
       prisma.visitor.count(),
 
-      // Top pages (last 7 days)
-      prisma.pageView.groupBy({
-        by: ["path"],
+      // Top pages (last 7 days) - get raw data for normalization
+      prisma.pageView.findMany({
         where: {
           createdAt: {
             gte: weekAgo,
           },
         },
-        _count: {
+        select: {
           path: true,
         },
-        orderBy: {
-          _count: {
-            path: "desc",
-          },
-        },
-        take: 10,
       }),
 
       // Language distribution (last 7 days)
@@ -84,6 +94,25 @@ export default async function AdminAnalyticsPage() {
         },
       }),
     ]);
+
+  // Process top pages: normalize paths and aggregate
+  const pathCounts = new Map<string, number>();
+
+  for (const view of rawPageViews) {
+    const normalizedPath = normalizePathForStats(view.path);
+    if (normalizedPath) {
+      pathCounts.set(normalizedPath, (pathCounts.get(normalizedPath) || 0) + 1);
+    }
+  }
+
+  // Convert to array, sort by count, and take top 10
+  const topPages = Array.from(pathCounts.entries())
+    .map(([path, count]) => ({
+      path,
+      _count: { path: count },
+    }))
+    .sort((a, b) => b._count.path - a._count.path)
+    .slice(0, 10);
 
   // Calculate today's unique visitors
   const todayUniqueVisitors = await prisma.visitor.count({
