@@ -30,7 +30,15 @@ export function MomentComposerBottomSheet() {
 
   // URL 驱动：?compose=1 时自动打开；关闭时清理该参数
   useEffect(() => {
-    if (sp?.get("compose") === "1") setOpen(true);
+    // Check useSearchParams first, but fallback to manual URL parsing for browser compatibility
+    const shouldOpen =
+      sp?.get("compose") === "1" ||
+      (typeof window !== "undefined" &&
+        new URL(window.location.href).searchParams.get("compose") === "1");
+
+    if (shouldOpen) {
+      setOpen(true);
+    }
   }, [sp]);
 
   function close() {
