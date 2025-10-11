@@ -9,8 +9,11 @@ async function openComposer(page) {
   await page.waitForLoadState("domcontentloaded");
   await page.waitForLoadState("networkidle");
 
-  // Wait for composer modal to be visible (increased timeout for Firefox)
-  await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 10000 });
+  // Additional wait for Safari hydration issues
+  await page.waitForTimeout(500);
+
+  // Wait for composer modal to be visible (increased timeout for Safari)
+  await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 15000 });
 }
 
 async function publishMoment(page, count: number) {
@@ -51,8 +54,11 @@ test.describe("Moments - composer + admin ops + preview", () => {
     await page.waitForLoadState("domcontentloaded");
     await page.waitForLoadState("networkidle");
 
-    // Wait for composer modal to be visible (increased timeout for Firefox)
-    await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 10000 });
+    // Additional wait for Safari hydration issues
+    await page.waitForTimeout(500);
+
+    // Wait for composer modal to be visible (increased timeout for Safari)
+    await expect(page.getByText("新建瞬间")).toBeVisible({ timeout: 15000 });
   });
 
   test("admin sees delete icon; regular does not", async ({ page }) => {

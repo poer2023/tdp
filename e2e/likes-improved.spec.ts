@@ -58,7 +58,7 @@ test.describe.serial("Likes Feature", () => {
     expect(isDisabled).toBe(true);
   });
 
-  test("should persist like state across page reloads", async ({ page }) => {
+  test("should persist like state across page reloads", async ({ page, context }) => {
     await postPage.gotoPost("test-post-en-1");
 
     // Wait for initial load
@@ -72,6 +72,14 @@ test.describe.serial("Likes Feature", () => {
 
     // Wait for button to become disabled after like
     await expect(likeButton).toBeDisabled({ timeout: 5000 });
+
+    // Wait for cookie to be set (Safari may need extra time)
+    await page.waitForTimeout(500);
+
+    // Verify sessionKey cookie exists before reload
+    const cookies = await context.cookies();
+    const sessionKeyCookie = cookies.find((c) => c.name === "sessionKey");
+    expect(sessionKeyCookie).toBeDefined();
 
     // Reload page
     await page.reload();

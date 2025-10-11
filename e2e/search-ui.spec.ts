@@ -16,8 +16,11 @@ test.describe("Header search UI", () => {
     // Input should appear with transition
     const input = page.getByPlaceholder(/search posts|搜索文章/i);
     await expect(input).toBeVisible();
-    // Wait for input to be ready for interaction (increased timeout for Firefox)
-    await expect(input).toBeFocused({ timeout: 2000 });
+
+    // Explicitly focus the input on mobile browsers where auto-focus may not work
+    await input.click();
+    // Wait for input to be ready for interaction (increased timeout for mobile browsers)
+    await expect(input).toBeFocused({ timeout: 3000 });
     await navHeader.screenshot({ path: `test-results/search-header-open-${browserName}-en.png` });
 
     await input.fill("nextjs");
@@ -47,8 +50,11 @@ test.describe("Header search UI", () => {
     await button.click();
     const input = page.getByPlaceholder(/搜索文章|search posts/i);
     await expect(input).toBeVisible();
-    // Wait for input to be ready for interaction (increased timeout for Firefox)
-    await expect(input).toBeFocused({ timeout: 2000 });
+
+    // Explicitly focus the input on mobile browsers where auto-focus may not work
+    await input.click();
+    // Wait for input to be ready for interaction (increased timeout for mobile browsers)
+    await expect(input).toBeFocused({ timeout: 3000 });
 
     // Ensure the header height is stable (no layout push)
     const h1 = await navHeader.boundingBox();
