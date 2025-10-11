@@ -4,6 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { getLocaleFromPathname } from "@/lib/i18n";
+import { LanguageBadge } from "@/components/ui/language-badge";
+import { SearchResultSkeleton } from "./search/search-skeleton";
+import { SearchEmptyState } from "./search/search-empty-state";
 
 type Result = {
   id: string;
@@ -187,14 +190,14 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
             }
           }}
           placeholder={locale === "zh" ? "搜索文章..." : "Search posts..."}
-          className="w-full bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:ring-0 focus:outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
+          className="w-full bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400/30 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus-visible:ring-blue-400/20"
         />
         {q && (
           <button
             type="button"
             onClick={() => setQ("")}
             aria-label="Clear"
-            className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800"
+            className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/20 dark:hover:bg-zinc-800 dark:focus-visible:ring-blue-400/15"
           >
             <svg
               viewBox="0 0 24 24"
@@ -218,24 +221,48 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
           style={{ width: anchor?.width || 320, maxWidth: "95vw" }}
         >
           {loading ? (
-            <div className="p-3 text-sm text-zinc-500 dark:text-zinc-400">
-              {locale === "zh" ? "搜索中..." : "Searching..."}
+            <div className="space-y-1">
+              <SearchResultSkeleton />
+              <SearchResultSkeleton />
+              <SearchResultSkeleton />
             </div>
           ) : results.length === 0 ? (
-            <div className="p-3 text-sm text-zinc-500 dark:text-zinc-400">
-              {locale === "zh" ? "无结果" : "No results"}
-            </div>
+            <SearchEmptyState query={q} locale={locale} />
           ) : (
             <ul className="overflow-auto" style={{ maxHeight: anchor?.maxHeight || 320 }}>
               {results.map((r) => (
                 <li key={r.id}>
                   <a
                     href={`/${locale}/posts/${r.slug}`}
-                    className="block px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    className="block px-3 py-2.5 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
                   >
                     <div className="font-medium text-zinc-900 dark:text-zinc-100">{r.title}</div>
                     <div className="line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400">
                       {r.excerpt}
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-500">
+                      <LanguageBadge locale={r.locale} />
+                      {r.publishedAt && (
+                        <>
+                          <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                          <span className="flex items-center gap-1">
+                            <span>📅</span>
+                            {new Date(r.publishedAt).toLocaleDateString(
+                              locale === "zh" ? "zh-CN" : "en-US",
+                              { year: "numeric", month: "short", day: "numeric" }
+                            )}
+                          </span>
+                        </>
+                      )}
+                      {r.authorName && (
+                        <>
+                          <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                          <span className="flex items-center gap-1">
+                            <span>👤</span>
+                            {r.authorName}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </a>
                 </li>
@@ -259,10 +286,10 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
       <div ref={rootRef} className="relative" aria-label="Site search">
         <button
           type="button"
-          aria-label="Search"
+          aria-label={locale === "zh" ? "搜索" : "Search"}
           onClick={() => setOpen((v) => !v)}
-          className={`flex items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-300 hover:text-zinc-900 focus:ring-0 focus:outline-none dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-300 ${
-            size === "sm" ? "h-7 w-7" : "h-9 w-9"
+          className={`group flex items-center gap-2 rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-300 hover:text-zinc-900 focus:outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/20 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-300 dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/20 ${
+            size === "sm" ? "h-7 w-7 lg:w-auto lg:px-3" : "h-9 w-9 lg:w-auto lg:px-4"
           }`}
         >
           <svg
@@ -276,6 +303,14 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
             <circle cx="11" cy="11" r="7"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
+
+          {/* 宽屏显示文字和快捷键 */}
+          <span className="hidden text-sm font-medium lg:inline">
+            {locale === "zh" ? "搜索" : "Search"}
+          </span>
+          <kbd className="hidden rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 lg:inline dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
+            ⌘K
+          </kbd>
         </button>
 
         {/* Expanding input overlay (absolute, does not shift layout) */}
