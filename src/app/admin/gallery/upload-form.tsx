@@ -24,7 +24,8 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
         <div className="space-y-1">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">上传照片</h2>
           <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-            EXIF 元数据与 GPS 坐标将自动提取。Live Photo 通过文件名自动配对（需同名 HEIC+MOV）。
+            自动提取 EXIF 元数据和 GPS 坐标。HEIC 格式将自动转换为 JPEG。Live Photo
+            需同时选择图片和视频文件（同名配对）。
           </p>
         </div>
         {state.status === "success" && state.message && (
@@ -99,7 +100,10 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
               className="w-full text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border file:border-zinc-300 file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-zinc-900 file:transition-all hover:file:bg-zinc-50 dark:text-zinc-300 dark:file:border-zinc-700 dark:file:bg-zinc-900 dark:file:text-zinc-100"
             />
             <p className="mt-1.5 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-              支持 JPG/PNG/WebP/HEIC 图片。上传同名 HEIC+MOV 文件将自动识别为 Live Photo。
+              支持 JPG/PNG/WebP/HEIC 图片格式。HEIC 将自动转换为 JPEG。
+              <br />
+              <strong>Live Photo 上传</strong>：需同时选择图片和视频（文件名相同，如 IMG_1234.HEIC +
+              IMG_1234.MOV），系统将自动识别配对关系。
             </p>
           </Field>
 
