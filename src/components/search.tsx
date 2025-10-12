@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { LanguageBadge } from "@/components/ui/language-badge";
 import { SearchResultSkeleton } from "./search/search-skeleton";
@@ -395,13 +396,15 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                       <a
                         key={image.id}
                         href={`/gallery#${image.id}`}
-                        className="group aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
+                        className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
                       >
                         {image.smallThumbPath && (
-                          <img
+                          <Image
                             src={image.smallThumbPath}
                             alt={image.title || "Gallery image"}
-                            className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                            fill
+                            sizes="33vw"
+                            className="object-cover transition-transform duration-200 group-hover:scale-105"
                           />
                         )}
                       </a>
@@ -653,13 +656,15 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                       <a
                         key={image.id}
                         href={`/gallery#${image.id}`}
-                        className="group aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
+                        className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
                       >
                         {image.smallThumbPath && (
-                          <img
+                          <Image
                             src={image.smallThumbPath}
                             alt={image.title || "Gallery image"}
-                            className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                            fill
+                            sizes="33vw"
+                            className="object-cover transition-transform duration-200 group-hover:scale-105"
                           />
                         )}
                       </a>

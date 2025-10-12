@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { LanguageBadge } from "@/components/ui/language-badge";
 import { SearchResultSkeleton } from "@/components/search/search-skeleton";
 import { SearchEmptyState } from "@/components/search/search-empty-state";
@@ -260,13 +261,15 @@ export default function SearchPage() {
                     <a
                       key={image.id}
                       href={`/gallery#${image.id}`}
-                      className="group aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
+                      className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
                     >
                       {image.smallThumbPath && (
-                        <img
+                        <Image
                           src={image.smallThumbPath}
                           alt={image.title || "Gallery image"}
-                          className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                          className="object-cover transition-transform duration-200 group-hover:scale-105"
                         />
                       )}
                     </a>
