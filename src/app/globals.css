@@ -79,6 +79,13 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
+.search-focus-reset:focus,
+.search-focus-reset:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+
 /* Screen reader only class */
 .sr-only {
   position: absolute;

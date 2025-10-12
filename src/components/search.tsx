@@ -510,7 +510,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
           aria-label={locale === "zh" ? "搜索输入框" : "Search input"}
           aria-describedby="search-hint"
           role="searchbox"
-          className="w-full bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
+          className="search-focus-reset w-full bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
         />
         {q && (
           <button
