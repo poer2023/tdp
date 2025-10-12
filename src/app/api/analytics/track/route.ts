@@ -1,9 +1,21 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+interface TrackPayload {
+  path?: string;
+  locale?: string | null;
+  fingerprint?: string;
+  referer?: string | null;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { path, locale, fingerprint, referer } = await req.json();
+    const data = (await req.json()) as TrackPayload;
+    const path = typeof data.path === "string" ? data.path : null;
+    const fingerprint = typeof data.fingerprint === "string" ? data.fingerprint : null;
+    const locale = typeof data.locale === "string" ? data.locale : null;
+    const referer = typeof data.referer === "string" ? data.referer : null;
 
     // Validate required fields
     if (!path || !fingerprint) {
@@ -19,9 +31,10 @@ export async function POST(req: NextRequest) {
       // 1. Record page view
       prisma.pageView.create({
         data: {
+          id: randomUUID(),
           path,
-          locale: locale || null,
-          referer: referer || null,
+          locale,
+          referer,
         },
       }),
 
@@ -29,7 +42,9 @@ export async function POST(req: NextRequest) {
       prisma.visitor.upsert({
         where: { fingerprint },
         create: {
+          id: randomUUID(),
           fingerprint,
+          firstVisit: new Date(),
           lastVisit: new Date(),
           visitCount: 1,
         },
@@ -43,6 +58,7 @@ export async function POST(req: NextRequest) {
       prisma.dailyStats.upsert({
         where: { date: today },
         create: {
+          id: randomUUID(),
           date: today,
           totalViews: 1,
           uniqueVisitors: 1,

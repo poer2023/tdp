@@ -62,7 +62,19 @@ export default async function RootLayout({
   const cookieLocale = (cookieStore.get("x-locale")?.value as "zh" | "en" | undefined) || undefined;
   const locale = headerLocale ?? getLocaleFromPathname(pathname) ?? cookieLocale;
   const htmlLang = getHtmlLang(locale);
-  const session = await auth();
+
+  // 尝试获取 session,如果失败则返回 null
+  let session = null;
+  try {
+    session = await auth();
+  } catch (error) {
+    // 在开发环境忽略认证错误
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Auth error (ignored in development):", error);
+    } else {
+      throw error;
+    }
+  }
 
   const isAdminRoute = pathname.startsWith("/admin");
 

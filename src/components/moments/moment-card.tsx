@@ -72,7 +72,9 @@ export function MomentCard({
   );
 }
 
-function renderTwitterLikeGrid(images: MomentImage[], detailHref: string) {
+function renderTwitterLikeGrid(images: MomentImage[] | null | unknown, detailHref: string) {
+  if (!images || !Array.isArray(images) || images.length === 0) return null;
+
   const count = images.length;
 
   if (count === 1) {

@@ -6,7 +6,7 @@
 [![E2E Tests](https://img.shields.io/badge/e2e%20tests-critical%20path-brightgreen)](https://github.com/poer2023/tdp/actions)
 [![Coverage](https://img.shields.io/badge/coverage-75%25-green)](https://github.com/poer2023/tdp/actions)
 
-一个基于 Next.js 15 的全栈博客/相册项目，内置文章管理、图片上传、Google 登录与后台管理，支持 Docker 一键部署与 PostgreSQL 持久化存储。
+一个基于 Next.js 15 的全栈博客/相册项目，内置文章管理、图片上传、Google / 邮箱验证码登录与后台管理，支持 Docker 一键部署与 PostgreSQL 持久化存储。
 
 ## 特性
 
@@ -18,7 +18,7 @@
 - **内容运营**：Markdown 导入/导出 (YAML frontmatter)、双语 sitemap
 - **SEO 优化**：hreflang 交叉引用、JSON-LD 结构化数据、Open Graph 元标签
 - **相册管理**：本地上传到 `public/uploads`，可选关联文章
-- **身份认证**：NextAuth + Google，首个登录者自动授予 ADMIN 权限
+- **身份认证**：NextAuth (Google OAuth + 邮箱验证码登录)，管理员通过白名单控制
 - **数据库**：Prisma + PostgreSQL，生产/本地统一迁移流程
 - **路由保护**：`/admin` 需登录访问
 - **工程化**：ESLint、Prettier、Vitest 单测、Playwright E2E、CI 构建
@@ -50,9 +50,20 @@ DATABASE_URL="postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="请填入长度>=32的随机字符串"
 
-# Google OAuth 凭据
+# Google OAuth 凭据（用于 OAuth 登录，可选但推荐）
 GOOGLE_CLIENT_ID="你的 Google Client ID"
 GOOGLE_CLIENT_SECRET="你的 Google Client Secret"
+
+# 邮箱验证码登录配置（启用 Email Provider 必需）
+EMAIL_FROM="noreply@example.com"
+SMTP_HOST="smtp.example.com"
+SMTP_PORT="587"
+SMTP_USER="your-smtp-user"
+SMTP_PASS="your-smtp-password"
+SMTP_SECURE="false"             # 465 使用 true
+VERIFICATION_CODE_LENGTH="6"
+VERIFICATION_CODE_EXPIRY_MINUTES="10"
+ADMIN_EMAILS="admin@example.com,ops@example.com"
 
 # 上传大小限制（MB）
 MAX_UPLOAD_SIZE_MB=8
@@ -71,7 +82,14 @@ npm run dev
 # 打开 http://localhost:3000
 ```
 
-提示：首次使用 Google 登录时，将自动把第一个用户设为 ADMIN（见 `src/auth.ts`）。
+提示：管理员角色由 `ADMIN_EMAILS` 白名单控制；未列入白名单的账号（无论 Google 或邮箱登录）都会以 READER 角色进入系统。
+
+### 邮箱验证码登录说明
+
+1. 确认上文 SMTP 相关环境变量已经配置，且 `NEXTAUTH_URL` 指向对外可访问的地址。
+2. 用户在登录页选择“使用邮箱登录”，输入邮箱后会收到 6 位验证码与兜底登录链接。
+3. 验证码 10 分钟有效（可通过 `VERIFICATION_CODE_EXPIRY_MINUTES` 调整），系统会对邮箱/IP 做限流（默认 15 分钟内每邮箱 5 次、每 IP 20 次）。
+4. 成功登录后若邮箱未在 `ADMIN_EMAILS` 中，账号会以 READER 角色创建，可在后台调整权限。
 
 ## 使用 Docker 启动
 
