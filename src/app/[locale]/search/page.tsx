@@ -113,7 +113,7 @@ export default function SearchPage() {
 
         {/* Inline search input */}
         <div className="relative" role="search">
-          <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:border-zinc-800 dark:bg-zinc-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20">
+          <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
