@@ -184,7 +184,7 @@ export function SearchCommand({ open, onOpenChange }: Props) {
             placeholder={
               locale === "zh" ? "搜索文章、图片、动态..." : "Search posts, images, moments..."
             }
-            className="flex h-14 w-full rounded-md bg-transparent px-4 py-4 text-base text-zinc-900 placeholder:text-zinc-400 focus:ring-0 focus:outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            className="search-focus-reset flex h-14 w-full rounded-md bg-transparent px-4 py-4 text-base text-zinc-900 placeholder:text-zinc-400 focus:ring-0 focus:outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
           />
           {loading && (
             <div className="flex-shrink-0" role="status" aria-label="Loading">

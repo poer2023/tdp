@@ -4,6 +4,12 @@
 :root {
   --background: #ffffff; /* 纯白底色 */
   --foreground: #111111;
+
+  /* 搜索组件焦点样式 */
+  --search-focus-ring: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  --search-focus-border: #3b82f6;
+  --search-focus-ring-dark: 0 0 0 2px rgba(96, 165, 250, 0.2);
+  --search-focus-border-dark: #60a5fa;
 }
 
 @theme inline {
@@ -71,6 +77,13 @@ textarea:focus-visible,
 select:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
+}
+
+.search-focus-reset:focus,
+.search-focus-reset:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
 }
 
 /* Screen reader only class */
