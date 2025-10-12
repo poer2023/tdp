@@ -8,6 +8,14 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    // 进程池配置 - 防止孤儿进程
+    pool: "forks",
+    poolOptions: {
+      forks: {
+        maxForks: 3, // 限制最多 3 个 worker 进程
+        minForks: 1, // 最少 1 个 worker 进程
+      },
+    },
     // 避免 Vitest 误执行 Playwright 的 e2e 用例
     exclude: [
       "node_modules/**",
