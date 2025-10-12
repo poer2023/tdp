@@ -15,6 +15,7 @@ export type PostFormState = {
     content?: string;
   };
   redirectTo?: string;
+  previewUrl?: string;
 };
 
 function initialState(): PostFormState {
@@ -124,8 +125,9 @@ export async function createPostAction(
 
   return {
     status: "success",
-    message: "文章已创建",
+    message: "文章已创建，静态页面将在 10-30 秒内刷新",
     redirectTo: `/admin/posts/${post.id}`,
+    previewUrl: `/posts/${post.slug}?t=${Date.now()}`,
   };
 }
 
@@ -203,7 +205,8 @@ export async function updatePostAction(
 
   return {
     status: "success",
-    message: "文章已更新",
+    message: "文章已更新，静态页面将在 10-30 秒内刷新",
+    previewUrl: `/posts/${existing.slug}?t=${Date.now()}`,
   };
 }
 

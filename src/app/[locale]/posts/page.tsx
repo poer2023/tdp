@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { listPublishedPosts } from "@/lib/posts";
 import { localePath } from "@/lib/locale-path";
+import { Tag } from "@/components/ui/tag";
 
 // Querying Prisma – lock runtime to Node.js
 export const runtime = "nodejs";
@@ -115,9 +116,11 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
                     {post.tags?.length ? (
                       <>
                         <span className="hidden sm:inline">·</span>
-                        <span className="text-blue-600 dark:text-blue-400">
-                          {post.tags.join(", ")}
-                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {post.tags.map((tag, index) => (
+                            <Tag key={index}>{tag}</Tag>
+                          ))}
+                        </div>
                       </>
                     ) : null}
                   </div>
