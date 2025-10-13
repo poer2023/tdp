@@ -24,17 +24,23 @@ export function TrendLineChart({
   const maxUV = Math.max(...data.map((d) => d.uniqueVisitors), 1);
 
   // Calculate points for PV (totalViews) line
+  const denominator = Math.max(data.length - 1, 1);
+
   const pvPoints = data.map((d, i) => {
-    const x = padding.left + (i / (data.length - 1)) * chartWidth;
+    const x = padding.left + (i / denominator) * chartWidth;
     const y = padding.top + chartHeight - (d.totalViews / maxViews) * chartHeight;
     return { x, y, value: d.totalViews, uv: d.uniqueVisitors };
   });
+
+  if (pvPoints.length === 0) {
+    return null;
+  }
 
   // Create path for area fill
   const areaPath = [
     `M ${padding.left} ${padding.top + chartHeight}`,
     ...pvPoints.map((p) => `L ${p.x} ${p.y}`),
-    `L ${pvPoints[pvPoints.length - 1].x} ${padding.top + chartHeight}`,
+    `L ${pvPoints[pvPoints.length - 1]!.x} ${padding.top + chartHeight}`,
     "Z",
   ].join(" ");
 
@@ -44,7 +50,7 @@ export function TrendLineChart({
     .join(" ");
 
   // Today's point (last point)
-  const todayPoint = pvPoints[pvPoints.length - 1];
+  const todayPoint = pvPoints[pvPoints.length - 1]!;
 
   return (
     <div className="space-y-4">
