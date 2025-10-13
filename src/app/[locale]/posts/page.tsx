@@ -34,16 +34,16 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
   // Fetch all published posts via shared lib (supports E2E fallback)
   const posts = await listPublishedPosts();
 
+  const currentYear = new Date().getFullYear();
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12 md:py-16">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:py-16">
       <header className="mb-8 sm:mb-12">
-        <h1 className="text-3xl font-bold text-zinc-900 sm:text-4xl dark:text-zinc-100">
-          {isZh ? "博客文章" : "Blog Posts"}
+        <h1 className="text-4xl font-bold tracking-tight text-zinc-900 uppercase sm:text-5xl md:text-6xl dark:text-zinc-100">
+          {isZh ? "故事" : "Stories"}
         </h1>
-        <p className="mt-3 text-sm text-zinc-600 sm:mt-4 sm:text-base dark:text-zinc-400">
-          {isZh
-            ? `共 ${posts.length} 篇文章`
-            : `${posts.length} post${posts.length !== 1 ? "s" : ""}`}
+        <p className="mt-2 text-2xl font-light text-zinc-600 sm:text-3xl dark:text-zinc-400">
+          {currentYear}
         </p>
       </header>
 
@@ -52,22 +52,19 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
           {isZh ? "暂无文章" : "No posts available"}
         </p>
       ) : (
-        <div className="grid gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
-            <Link
-              key={post.id}
-              href={localePath(l, `/posts/${post.slug}`)}
-              className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:-translate-y-1 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-950"
-            >
-              <article className="flex flex-col sm:flex-row">
+            <Link key={post.id} href={localePath(l, `/posts/${post.slug}`)} className="group">
+              <article className="flex flex-col">
                 {/* 封面图 */}
-                <div className="relative h-48 w-full shrink-0 overflow-hidden bg-zinc-100 sm:h-auto sm:w-64 dark:bg-zinc-900">
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                   {post.coverImagePath ? (
                     <Image
                       src={post.coverImagePath}
                       alt={post.title}
                       fill
-                      className="object-cover transition group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition duration-300 group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
@@ -77,53 +74,30 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
                 </div>
 
                 {/* 内容 */}
-                <div className="flex flex-1 flex-col justify-between p-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-zinc-900 group-hover:text-blue-600 sm:text-2xl dark:text-zinc-100 dark:group-hover:text-blue-400">
-                      {post.title}
-                    </h2>
-                    <p className="mt-2 line-clamp-2 text-sm text-zinc-600 sm:mt-3 dark:text-zinc-400">
-                      {post.excerpt}
-                    </p>
-                  </div>
-
-                  {/* 元信息 */}
-                  <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-zinc-500 sm:gap-4 sm:text-sm dark:text-zinc-400">
+                <div className="mt-4 flex flex-col gap-2">
+                  {/* 元信息 - 分类 | 日期 */}
+                  <div className="text-xs tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+                    {post.tags?.[0] || (isZh ? "文章" : "Article")}
+                    {" | "}
                     {post.publishedAt && (
                       <time dateTime={post.publishedAt}>
                         {new Date(post.publishedAt).toLocaleDateString(isZh ? "zh-CN" : "en-US", {
-                          year: "numeric",
                           month: "short",
                           day: "numeric",
                         })}
                       </time>
                     )}
-                    <span>·</span>
-                    <span>
-                      {calculateReadingTime(post.content, isZh)}{" "}
-                      {isZh
-                        ? "分钟"
-                        : `min${calculateReadingTime(post.content, isZh) > 1 ? "s" : ""}`}
-                    </span>
-                    {post.viewCount !== undefined && post.viewCount > 0 && (
-                      <>
-                        <span>·</span>
-                        <span>
-                          {post.viewCount} {isZh ? "次阅读" : "views"}
-                        </span>
-                      </>
-                    )}
-                    {post.tags?.length ? (
-                      <>
-                        <span className="hidden sm:inline">·</span>
-                        <div className="flex flex-wrap gap-1.5">
-                          {post.tags.map((tag, index) => (
-                            <Tag key={index}>{tag}</Tag>
-                          ))}
-                        </div>
-                      </>
-                    ) : null}
                   </div>
+
+                  {/* 标题 - 大写 */}
+                  <h2 className="text-lg leading-tight font-bold tracking-tight text-zinc-900 uppercase transition group-hover:text-zinc-600 sm:text-xl dark:text-zinc-100 dark:group-hover:text-zinc-300">
+                    {post.title}
+                  </h2>
+
+                  {/* 描述 */}
+                  <p className="line-clamp-3 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                    {post.excerpt}
+                  </p>
                 </div>
               </article>
             </Link>

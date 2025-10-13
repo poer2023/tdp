@@ -52,6 +52,8 @@ export function PhotoViewer({
   const thumbnailStripRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const scaleRef = useRef(scale);
+  const offsetRef = useRef(offset);
   const imgWrapRef = useRef<HTMLDivElement>(null);
   const [showHint, setShowHint] = useState(true);
   const [showZoomIndicator, setShowZoomIndicator] = useState(false);
@@ -82,6 +84,9 @@ export function PhotoViewer({
     src: image.mediumPath || image.filePath,
     alt: image.title || "未命名照片",
   });
+  const clampOffsetRef = useRef<
+    ((nextOffset: { x: number; y: number }, s: number) => { x: number; y: number }) | null
+  >(null);
   const slideTimeoutRef = useRef<number | null>(null);
   const [slideContext, setSlideContext] = useState<{
     direction: "left" | "right";
@@ -116,6 +121,10 @@ export function PhotoViewer({
       next: nextThumbnail?.id ?? null,
     };
   }, [thumbnails, currentId]);
+
+  const preventDefault = useCallback((event: Event) => {
+    event.preventDefault();
+  }, []);
 
   const markPendingDirection = useCallback(
     (direction: "prev" | "next") => {
@@ -594,6 +603,17 @@ export function PhotoViewer({
     },
     [containerSize, naturalSize]
   );
+  useEffect(() => {
+    clampOffsetRef.current = clampOffset;
+  }, [clampOffset]);
+
+  useEffect(() => {
+    scaleRef.current = scale;
+  }, [scale]);
+
+  useEffect(() => {
+    offsetRef.current = offset;
+  }, [offset]);
 
   // Observe container size
   useEffect(() => {
@@ -624,7 +644,7 @@ export function PhotoViewer({
       const delta = -we.deltaY;
       const factor = delta > 0 ? 1.1 : 0.9;
       setScale((prev) => {
-        const next = Math.max(1, Math.min(3, prev * factor));
+        const next = Math.max(1, Math.min(4, prev * factor));
         // Clamp offset under new scale
         setOffset((off) => clampOffset(off, next));
         return next;
@@ -659,17 +679,18 @@ export function PhotoViewer({
     const SWIPE_THRESHOLD = 100; // pixels to trigger image switch
 
     const onDown = (e: MouseEvent) => {
-      setOffset((currentOffset) => {
-        dragRef.current = {
-          active: true,
-          startX: e.clientX,
-          startY: e.clientY,
-          originX: currentOffset.x,
-          originY: currentOffset.y,
-        };
-        return currentOffset;
-      });
+      if (e.button !== 0) return;
+      e.preventDefault();
+      const currentOffset = offsetRef.current;
+      dragRef.current = {
+        active: true,
+        startX: e.clientX,
+        startY: e.clientY,
+        originX: currentOffset.x,
+        originY: currentOffset.y,
+      };
       setIsDragging(true);
+      setShowHint(false);
     };
 
     const onMove = (e: MouseEvent) => {
@@ -677,11 +698,19 @@ export function PhotoViewer({
 
       const dx = e.clientX - dragRef.current.startX;
       const dy = e.clientY - dragRef.current.startY;
+      const currentScale = scaleRef.current;
 
-      if (scale > 1) {
+      if (currentScale > 1) {
         // Zoomed: pan the image
         const next = { x: dragRef.current.originX + dx, y: dragRef.current.originY + dy };
-        setOffset(clampOffset(next, scale));
+        const clampFn = clampOffsetRef.current;
+        setOffset((prev) => {
+          const clamped = clampFn ? clampFn(next, currentScale) : next;
+          if (prev.x === clamped.x && prev.y === clamped.y) {
+            return prev;
+          }
+          return clamped;
+        });
       } else {
         // Not zoomed: horizontal swipe for navigation
         const absDx = Math.abs(dx);
@@ -689,19 +718,26 @@ export function PhotoViewer({
 
         // Only apply horizontal offset if dragging horizontally
         if (absDx > absDy && absDx > 10) {
-          setOffset({ x: dx * 0.3, y: 0 }); // Apply damping for visual feedback
+          setOffset((prev) => {
+            const nextOffset = { x: dx * 0.3, y: 0 };
+            if (prev.x === nextOffset.x && prev.y === nextOffset.y) {
+              return prev;
+            }
+            return nextOffset;
+          }); // Apply damping for visual feedback
         }
       }
     };
 
     const end = (e: MouseEvent) => {
       if (!dragRef.current.active) return;
+      const currentScale = scaleRef.current;
 
       // Calculate actual drag distance from start position
       const dragDistance = e.clientX - dragRef.current.startX;
 
       // Check if swipe threshold met for navigation
-      if (scale === 1 && Math.abs(dragDistance) > SWIPE_THRESHOLD) {
+      if (currentScale === 1 && Math.abs(dragDistance) > SWIPE_THRESHOLD) {
         // Use visual adjacent IDs (thumbnail array order)
         const visualNext = visualAdjacentIds.current.next;
         const visualPrev = visualAdjacentIds.current.prev;
@@ -718,8 +754,13 @@ export function PhotoViewer({
       }
 
       // Reset offset if not zoomed (bounce back animation)
-      if (scale === 1) {
-        setOffset({ x: 0, y: 0 });
+      if (currentScale === 1) {
+        setOffset((prev) => {
+          if (prev.x === 0 && prev.y === 0) {
+            return prev;
+          }
+          return { x: 0, y: 0 };
+        });
       }
 
       dragRef.current.active = false;
@@ -727,15 +768,17 @@ export function PhotoViewer({
     };
 
     el.addEventListener("mousedown", onDown);
+    el.addEventListener("dragstart", preventDefault);
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", end);
 
     return () => {
       el.removeEventListener("mousedown", onDown);
+      el.removeEventListener("dragstart", preventDefault);
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", end);
     };
-  }, [scale, offset.x, clampOffset, nextId, prevId, router, locale, markPendingDirection]);
+  }, [locale, markPendingDirection, preventDefault, router]);
 
   // Pinch zoom for touch devices
   useEffect(() => {
@@ -763,7 +806,7 @@ export function PhotoViewer({
         const t2 = e.touches[1]!;
         const d = dist(t1, t2);
         const ratio = d / (startDist || d);
-        const next = Math.max(1, Math.min(3, startScale * ratio));
+        const next = Math.max(1, Math.min(4, startScale * ratio));
         setScale(next);
         setOffset((off) => clampOffset(off, next));
       }
@@ -900,7 +943,7 @@ export function PhotoViewer({
                     style={{
                       transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${scale})`,
                       transformOrigin: "50% 50%",
-                      transition: isDragging && scale === 1 ? "none" : "transform 200ms ease-out",
+                      transition: isDragging ? "none" : "transform 200ms ease-out",
                       willChange: "transform",
                       cursor: isDragging ? "grabbing" : "grab",
                     }}

@@ -98,7 +98,9 @@ export function AuthHeader() {
               alt={user.name || "User"}
               width={28}
               height={28}
+              sizes="28px"
               className="rounded-full"
+              style={{ objectFit: "cover" }}
               data-testid="user-avatar"
             />
           ) : (

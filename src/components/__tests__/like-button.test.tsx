@@ -13,7 +13,7 @@ describe("LikeButton", () => {
   it("should render like button with initial count", async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ likeCount: 5 }),
+      json: async () => ({ likeCount: 5, alreadyLiked: false }),
     } as Response);
 
     render(<LikeButton slug="test-post" locale="EN" />);
@@ -26,7 +26,7 @@ describe("LikeButton", () => {
   it("should fetch initial like count on mount", async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ likeCount: 10 }),
+      json: async () => ({ likeCount: 10, alreadyLiked: false }),
     } as Response);
 
     render(<LikeButton slug="test-post" locale="EN" />);
@@ -39,7 +39,7 @@ describe("LikeButton", () => {
   it("should use default EN locale when not specified", async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ likeCount: 0 }),
+      json: async () => ({ likeCount: 0, alreadyLiked: false }),
     } as Response);
 
     render(<LikeButton slug="test-post" />);
@@ -49,11 +49,46 @@ describe("LikeButton", () => {
     });
   });
 
+  it("should show optimistic update immediately on click", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
+      } as Response)
+      .mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ likeCount: 6 }),
+                } as Response),
+              100
+            )
+          )
+      );
+
+    render(<LikeButton slug="test-post" locale="EN" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("5")).toBeInTheDocument();
+    });
+
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    // Should show optimistic update immediately (before server responds)
+    await waitFor(() => {
+      expect(screen.getByText("6")).toBeInTheDocument();
+    });
+  });
+
   it("should increment like count on successful like", async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ likeCount: 5 }),
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
@@ -78,7 +113,7 @@ describe("LikeButton", () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ likeCount: 5 }),
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
@@ -103,7 +138,7 @@ describe("LikeButton", () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ likeCount: 5 }),
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
@@ -124,11 +159,45 @@ describe("LikeButton", () => {
     });
   });
 
+  it("should show 'Saving...' text while pending", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
+      } as Response)
+      .mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({ likeCount: 6 }),
+                } as Response),
+              100
+            )
+          )
+      );
+
+    render(<LikeButton slug="test-post" locale="EN" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("5")).toBeInTheDocument();
+    });
+
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText("Saving...")).toBeInTheDocument();
+    });
+  });
+
   it("should send POST request with correct locale", async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ likeCount: 0 }),
+        json: async () => ({ likeCount: 0, alreadyLiked: false }),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
@@ -156,17 +225,16 @@ describe("LikeButton", () => {
     });
   });
 
-  it("should show alert on rate limit error", async () => {
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
-
+  it("should show error message on rate limit error", async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ likeCount: 5 }),
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
       } as Response)
       .mockResolvedValueOnce({
         ok: false,
         status: 429,
+        json: async () => ({ error: "Rate limit exceeded" }),
       } as Response);
 
     render(<LikeButton slug="test-post" locale="EN" />);
@@ -179,10 +247,66 @@ describe("LikeButton", () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith("Rate limit exceeded. Please try again later.");
+      expect(screen.getByText(/Too many requests/i)).toBeInTheDocument();
+    });
+  });
+
+  it("should show error message on 404 error", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({ error: "Post not found" }),
+      } as Response);
+
+    render(<LikeButton slug="test-post" locale="EN" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("5")).toBeInTheDocument();
     });
 
-    alertSpy.mockRestore();
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText("Post not found")).toBeInTheDocument();
+    });
+  });
+
+  it("should rollback optimistic update on error", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: "Server error" }),
+      } as Response);
+
+    render(<LikeButton slug="test-post" locale="EN" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("5")).toBeInTheDocument();
+    });
+
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    // Should show optimistic update first (6)
+    await waitFor(() => {
+      expect(screen.getByText("6")).toBeInTheDocument();
+    });
+
+    // Should rollback to 5 after error
+    await waitFor(() => {
+      expect(screen.getByText("5")).toBeInTheDocument();
+    });
   });
 
   it("should handle fetch error gracefully", async () => {
@@ -194,6 +318,7 @@ describe("LikeButton", () => {
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(screen.getByText("Failed to load likes")).toBeInTheDocument();
     });
 
     consoleErrorSpy.mockRestore();
@@ -205,7 +330,7 @@ describe("LikeButton", () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ likeCount: 5 }),
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
       } as Response)
       .mockRejectedValueOnce(new Error("Failed to like"));
 
@@ -220,30 +345,22 @@ describe("LikeButton", () => {
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to like post:", expect.any(Error));
+      expect(screen.getByText("Failed to like post")).toBeInTheDocument();
     });
 
     consoleErrorSpy.mockRestore();
   });
 
-  it("should prevent multiple clicks while loading", async () => {
+  it("should prevent multiple clicks with debounce", async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ likeCount: 5 }),
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
       } as Response)
-      .mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  json: async () => ({ likeCount: 6 }),
-                } as Response),
-              100
-            )
-          )
-      );
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({ likeCount: 6 }),
+      } as Response);
 
     render(<LikeButton slug="test-post" locale="EN" />);
 
@@ -253,12 +370,12 @@ describe("LikeButton", () => {
 
     const button = screen.getByRole("button");
 
-    // Click multiple times
+    // Click multiple times rapidly
     fireEvent.click(button);
     fireEvent.click(button);
     fireEvent.click(button);
 
-    // Should only call POST once
+    // Should only call POST once (debounced)
     await waitFor(() => {
       const postCalls = vi.mocked(fetch).mock.calls.filter((call) => call[1]?.method === "POST");
       expect(postCalls).toHaveLength(1);
@@ -269,7 +386,7 @@ describe("LikeButton", () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ likeCount: 5 }),
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
       } as Response)
       .mockImplementation(
         () =>
@@ -295,14 +412,16 @@ describe("LikeButton", () => {
     fireEvent.click(button);
 
     // Check for loading class
-    expect(button).toHaveClass("cursor-wait");
+    await waitFor(() => {
+      expect(button).toHaveClass("cursor-wait");
+    });
   });
 
   it("should apply liked styling after like", async () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ likeCount: 5 }),
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
@@ -326,7 +445,7 @@ describe("LikeButton", () => {
   it("should render heart icon", async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ likeCount: 0 }),
+      json: async () => ({ likeCount: 0, alreadyLiked: false }),
     } as Response);
 
     const { container } = render(<LikeButton slug="test-post" locale="EN" />);
@@ -341,7 +460,7 @@ describe("LikeButton", () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ likeCount: 5 }),
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
       } as Response)
       .mockResolvedValueOnce({
         ok: true,
@@ -360,6 +479,157 @@ describe("LikeButton", () => {
     await waitFor(() => {
       const svg = container.querySelector("svg");
       expect(svg).toHaveAttribute("fill", "currentColor");
+    });
+  });
+
+  it("should disable button if already liked on initial load", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ likeCount: 10, alreadyLiked: true }),
+    } as Response);
+
+    render(<LikeButton slug="test-post" locale="EN" />);
+
+    await waitFor(() => {
+      const button = screen.getByRole("button");
+      expect(button).toBeDisabled();
+      expect(screen.getByText("Liked")).toBeInTheDocument();
+    });
+  });
+
+  it("should have proper accessibility attributes", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ likeCount: 5, alreadyLiked: false }),
+    } as Response);
+
+    render(<LikeButton slug="test-post" locale="EN" />);
+
+    await waitFor(() => {
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("aria-label", "Like this post");
+      expect(button).toHaveAttribute("aria-live", "polite");
+    });
+  });
+
+  it("should auto-clear error after 3 seconds", async () => {
+    vi.useFakeTimers();
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: "Server error" }),
+      } as Response);
+
+    render(<LikeButton slug="test-post" locale="EN" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("5")).toBeInTheDocument();
+    });
+
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+    });
+
+    // Fast-forward 3 seconds
+    vi.advanceTimersByTime(3000);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    vi.useRealTimers();
+  });
+
+  it("should handle non-JSON error response with status code", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        json: async () => {
+          throw new Error("Not JSON");
+        },
+      } as Response);
+
+    render(<LikeButton slug="test-post" locale="EN" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("5")).toBeInTheDocument();
+    });
+
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText("Server error (503)")).toBeInTheDocument();
+    });
+  });
+
+  it("should handle non-JSON 429 error response", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        json: async () => {
+          throw new Error("Not JSON");
+        },
+      } as Response);
+
+    render(<LikeButton slug="test-post" locale="EN" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("5")).toBeInTheDocument();
+    });
+
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Too many requests/i)).toBeInTheDocument();
+    });
+  });
+
+  it("should handle non-JSON 404 error response", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ likeCount: 5, alreadyLiked: false }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => {
+          throw new Error("Not JSON");
+        },
+      } as Response);
+
+    render(<LikeButton slug="test-post" locale="EN" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("5")).toBeInTheDocument();
+    });
+
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText("Post not found")).toBeInTheDocument();
     });
   });
 });
