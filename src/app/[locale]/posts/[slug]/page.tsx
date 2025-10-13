@@ -7,7 +7,6 @@ import remarkGfm from "remark-gfm";
 import { PostLocale, PostStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { generateBlogPostingSchema, generateAlternateLinks } from "@/lib/seo";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { LikeButton } from "@/components/like-button";
 
 // Ensure Node.js runtime for Prisma
@@ -160,15 +159,6 @@ export default async function LocalizedPostPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-
-      {/* Language Switcher */}
-      <div className="mb-6 sm:mb-8">
-        <LanguageSwitcher
-          currentLocale={postLocale}
-          currentSlug={post.slug}
-          groupId={post.groupId}
-        />
-      </div>
 
       {/* Header */}
       <header className="mb-8 sm:mb-10 md:mb-12">

@@ -62,7 +62,19 @@ export default async function RootLayout({
   const cookieLocale = (cookieStore.get("x-locale")?.value as "zh" | "en" | undefined) || undefined;
   const locale = headerLocale ?? getLocaleFromPathname(pathname) ?? cookieLocale;
   const htmlLang = getHtmlLang(locale);
-  const session = await auth();
+
+  // 尝试获取 session,如果失败则返回 null
+  let session = null;
+  try {
+    session = await auth();
+  } catch (error) {
+    // 在开发环境忽略认证错误
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Auth error (ignored in development):", error);
+    } else {
+      throw error;
+    }
+  }
 
   const isAdminRoute = pathname.startsWith("/admin");
 
@@ -90,24 +102,26 @@ export default async function RootLayout({
               Skip to content
             </a>
 
-            <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
-              <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-3.5">
-                {/* Left cluster: brand + links + search */}
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <MainNav />
-                  <div className="hidden sm:block">
-                    <CommandPaletteTrigger size="sm" />
+            <header className="relative z-50">
+              <div className="sticky top-0 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-3.5">
+                  {/* Left cluster: brand + links + search */}
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <MainNav />
+                    <div className="hidden sm:block">
+                      <CommandPaletteTrigger size="sm" />
+                    </div>
                   </div>
-                </div>
-                {/* Right cluster: compact controls */}
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <ThemeToggle size="sm" />
-                  <GlobalLanguageSwitcher />
-                  {/* Mobile search fallback */}
-                  <div className="sm:hidden">
-                    <CommandPaletteTrigger size="sm" />
+                  {/* Right cluster: compact controls */}
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <ThemeToggle size="sm" />
+                    <GlobalLanguageSwitcher />
+                    {/* Mobile search fallback */}
+                    <div className="sm:hidden">
+                      <CommandPaletteTrigger size="sm" />
+                    </div>
+                    <AuthHeader />
                   </div>
-                  <AuthHeader />
                 </div>
               </div>
             </header>

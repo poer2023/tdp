@@ -6,7 +6,7 @@
 
 - 已安装 Docker 与 docker-compose（Docker Engine 20+，docker compose v2）。
 - 服务器开放 3000 端口或自定义端口。
-- 准备好 Google OAuth 凭据及随机生成的 `NEXTAUTH_SECRET`。
+- 准备好 Google OAuth 凭据、SMTP 邮件服务配置及随机生成的 `NEXTAUTH_SECRET`。
 
 ## 2. 配置环境变量
 
@@ -22,6 +22,7 @@ cp .env.example .env
 - `NEXTAUTH_URL`：部署后的对外访问地址（如 `https://blog.example.com`）。
 - `NEXTAUTH_SECRET`：必填，用于 NextAuth 加密签名。
 - `MAX_UPLOAD_SIZE_MB`：限制上传图片大小（默认 8MB）。
+- `EMAIL_FROM` / `SMTP_*`：启用邮箱验证码登录所需的发信配置。
 
 ## 3. 启动服务
 
@@ -36,7 +37,7 @@ docker compose up -d --build
 3. 启动应用容器，执行 `npm run db:migrate` 自动迁移数据库，再运行 `npm run start`。
 4. 将宿主机 `./public/uploads` 挂载到容器，确保图片持久化。
 
-访问 <http://localhost:3000>（或映射后的域名/端口），完成 Google 登录后即可使用后台。
+访问 <http://localhost:3000>（或映射后的域名/端口），可使用 Google OAuth 或邮箱验证码登录后台。
 
 ## 4. 健康检查
 

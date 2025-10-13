@@ -14,8 +14,18 @@ export default async function LocalizedMomentsPage({ params }: Props) {
   const { locale } = await params;
   const l = locale === "zh" ? "zh" : "en";
 
-  const session = await auth();
-  const isAdmin = (session?.user as { role?: string } | undefined)?.role === "ADMIN";
+  let session = null;
+  let isAdmin = false;
+  try {
+    session = await auth();
+    isAdmin = (session?.user as { role?: string } | undefined)?.role === "ADMIN";
+  } catch (error) {
+    // 在开发环境忽略认证错误
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Auth error (ignored in development):", error);
+    }
+  }
+
   const moments = await listMoments({ limit: 20, tag: null, q: null });
 
   return (

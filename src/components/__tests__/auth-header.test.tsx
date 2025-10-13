@@ -2,11 +2,19 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AuthHeader } from "../auth-header";
 
+const pushMock = vi.fn();
+
 // Mock next-auth
 vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
   signIn: vi.fn(),
   signOut: vi.fn(),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: pushMock,
+  }),
 }));
 
 // Mock Next.js Link
@@ -31,11 +39,12 @@ vi.mock("next/image", () => ({
   default: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
 }));
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 describe("AuthHeader", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    pushMock.mockReset();
   });
 
   it("should show sign-in button when session is loading", () => {
@@ -65,7 +74,7 @@ describe("AuthHeader", () => {
     expect(signInButton.textContent).toContain("Sign in");
   });
 
-  it("should call signIn when sign-in button is clicked", () => {
+  it("should redirect to login with encoded callback when sign-in button is clicked", () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: "unauthenticated",
@@ -73,7 +82,11 @@ describe("AuthHeader", () => {
     });
 
     Object.defineProperty(window, "location", {
-      value: { pathname: "/posts/test" },
+      value: {
+        pathname: "/posts/test",
+        search: "?draft=true",
+        hash: "#comments",
+      },
       writable: true,
     });
 
@@ -82,7 +95,8 @@ describe("AuthHeader", () => {
     const signInButton = screen.getByRole("button");
     fireEvent.click(signInButton);
 
-    expect(signIn).toHaveBeenCalledWith("google", { callbackUrl: "/posts/test" });
+    const expectedUrl = `/login?callbackUrl=${encodeURIComponent("/posts/test?draft=true#comments")}`;
+    expect(pushMock).toHaveBeenCalledWith(expectedUrl);
   });
 
   it("should show user menu button when authenticated", () => {
@@ -424,7 +438,7 @@ describe("AuthHeader", () => {
     expect(menu).toHaveAttribute("aria-orientation", "vertical");
   });
 
-  it("should render Google icon in sign-in button", () => {
+  it("should render sign-in button without icon", () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: "unauthenticated",
@@ -433,7 +447,8 @@ describe("AuthHeader", () => {
 
     const { container } = render(<AuthHeader />);
 
-    const googleIcon = container.querySelector("svg");
-    expect(googleIcon).toBeInTheDocument();
+    const signInButton = screen.getByRole("button", { name: "Sign in" });
+    expect(signInButton).toBeInTheDocument();
+    expect(container.querySelector("svg")).toBeNull();
   });
 });
