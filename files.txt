@@ -65,6 +65,7 @@ docs/user-configuration-checklist.md
 e2e/accessibility.spec.ts
 e2e/admin-analytics-access.spec.ts
 e2e/admin-gallery-ui.spec.ts
+e2e/auth-email-otp.spec.ts
 e2e/auth-improved.spec.ts
 e2e/content-export-improved.spec.ts
 e2e/content-import-improved.spec.ts
