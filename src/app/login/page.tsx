@@ -4,10 +4,11 @@ import { LoginButtons } from "@/components/login-buttons";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams?: { callbackUrl?: string };
+  searchParams: Promise<{ callbackUrl?: string }>;
 }) {
   const session = await auth();
-  const callbackUrl = searchParams?.callbackUrl ?? "/admin";
+  const sp = await searchParams;
+  const callbackUrl = sp.callbackUrl ?? "/admin";
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center gap-8 px-4 py-8 sm:gap-10 sm:px-6 sm:py-12 md:py-16">
