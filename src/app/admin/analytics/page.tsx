@@ -1,5 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getAdminLocale, t } from "@/lib/admin-i18n";
+import { TopPagesList } from "./components/TopPagesList";
+import { TrendLineChart } from "./components/TrendLineChart";
 
 export const revalidate = 0;
 
@@ -114,6 +116,44 @@ export default async function AdminAnalyticsPage() {
     .sort((a, b) => b._count.path - a._count.path)
     .slice(0, 10);
 
+  // Extract IDs/slugs from paths for title lookup
+  const postSlugs = topPages
+    .filter((p) => p.path.startsWith("/posts/"))
+    .map((p) => p.path.replace("/posts/", "").split("/")[0])
+    .filter(Boolean);
+
+  const momentSlugs = topPages
+    .filter((p) => p.path.startsWith("/m/"))
+    .map((p) => p.path.replace("/m/", "").split("/")[0])
+    .filter(Boolean);
+
+  // Fetch titles in parallel
+  const [postTitles, momentTitles] = await Promise.all([
+    // Fetch post titles
+    postSlugs.length > 0
+      ? prisma.post.findMany({
+          where: { slug: { in: postSlugs } },
+          select: { slug: true, title: true },
+        })
+      : Promise.resolve([]),
+    // Fetch moment content
+    momentSlugs.length > 0
+      ? prisma.moment.findMany({
+          where: { slug: { in: momentSlugs } },
+          select: { slug: true, content: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  // Create lookup maps
+  const postTitleMap = new Map(postTitles.map((p) => [p.slug, p.title]));
+  const momentTitleMap = new Map(
+    momentTitles.map((m) => [
+      m.slug,
+      m.content.length > 50 ? m.content.substring(0, 50) + "..." : m.content,
+    ])
+  );
+
   // Calculate today's unique visitors
   const todayUniqueVisitors = await prisma.visitor.count({
     where: {
@@ -150,49 +190,18 @@ export default async function AdminAnalyticsPage() {
         />
       </div>
 
-      {/* 7-Day Trend */}
+      {/* 7-Day Trend - Line Chart */}
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
           {t(locale, "trendChart")}
         </h2>
-        <div className="space-y-2">
-          {last7Days.length > 0 ? (
-            <div className="space-y-2">
-              {last7Days.map((day) => {
-                const maxViews = Math.max(...last7Days.map((d) => d.totalViews));
-                const percentage = maxViews > 0 ? (day.totalViews / maxViews) * 100 : 0;
-
-                return (
-                  <div key={day.date.toISOString()} className="flex items-center gap-4">
-                    <div className="w-24 text-sm text-zinc-500 dark:text-zinc-400">
-                      {day.date.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" })}
-                    </div>
-                    <div className="flex-1">
-                      <div className="h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                        <div
-                          className="h-full rounded-lg bg-blue-500 transition-all"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="w-32 text-right text-sm">
-                      <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                        {day.totalViews}
-                      </span>
-                      <span className="ml-2 text-zinc-500 dark:text-zinc-400">
-                        {day.uniqueVisitors} UV
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-              {t(locale, "noDataYet")}
-            </p>
-          )}
-        </div>
+        {last7Days.length > 0 ? (
+          <TrendLineChart data={last7Days} locale={locale} />
+        ) : (
+          <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            {t(locale, "noDataYet")}
+          </p>
+        )}
       </section>
 
       {/* Top Pages */}
@@ -202,24 +211,12 @@ export default async function AdminAnalyticsPage() {
         </h2>
         <div className="space-y-3">
           {topPages.length > 0 ? (
-            topPages.map((page, index) => (
-              <div
-                key={page.path}
-                className="flex items-center justify-between rounded-lg border border-zinc-100 p-3 dark:border-zinc-800"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 text-sm font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                    {index + 1}
-                  </div>
-                  <span className="font-mono text-sm text-zinc-700 dark:text-zinc-300">
-                    {page.path}
-                  </span>
-                </div>
-                <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                  {page._count.path} {t(locale, "visits")}
-                </span>
-              </div>
-            ))
+            <TopPagesList
+              pages={topPages}
+              postTitleMap={postTitleMap}
+              momentTitleMap={momentTitleMap}
+              locale={locale}
+            />
           ) : (
             <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
               {t(locale, "noDataYet")}
@@ -233,30 +230,39 @@ export default async function AdminAnalyticsPage() {
         <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
           {t(locale, "languageDistribution")}
         </h2>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {localeStats.length > 0 ? (
             localeStats.map((stat) => {
               const total = localeStats.reduce((sum, s) => sum + s._count.locale, 0);
               const percentage = total > 0 ? Math.round((stat._count.locale / total) * 100) : 0;
+              const langName =
+                stat.locale === "zh" ? "中文" : stat.locale === "en" ? "English" : "未知";
+              const color = stat.locale === "zh" ? "blue" : "green";
 
               return (
-                <div key={stat.locale || "unknown"} className="flex items-center gap-4">
-                  <div className="w-20 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    {stat.locale === "zh" ? "中文" : stat.locale === "en" ? "English" : "未知"}
-                  </div>
-                  <div className="flex-1">
-                    <div className="h-6 rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                      <div
-                        className="h-full rounded-lg bg-green-500 transition-all"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="w-24 text-right text-sm">
+                <div key={stat.locale || "unknown"} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-zinc-700 dark:text-zinc-300">{langName}</span>
                     <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                      {stat._count.locale}
+                      {stat._count.locale.toLocaleString()}
                     </span>
-                    <span className="ml-2 text-zinc-500 dark:text-zinc-400">({percentage}%)</span>
+                  </div>
+                  <div className="relative h-8 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                    <div
+                      className={`flex h-full items-center justify-center transition-all ${
+                        color === "blue" ? "bg-blue-500" : "bg-green-500"
+                      }`}
+                      style={{ width: `${percentage}%` }}
+                    >
+                      {percentage > 15 && (
+                        <span className="text-xs font-semibold text-white">{percentage}%</span>
+                      )}
+                    </div>
+                    {percentage <= 15 && (
+                      <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        {percentage}%
+                      </span>
+                    )}
                   </div>
                 </div>
               );

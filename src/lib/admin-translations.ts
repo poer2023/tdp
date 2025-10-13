@@ -85,6 +85,17 @@ export const adminTranslations = {
     noDataYet: "No data yet",
     uniqueVisitors: "unique visitors",
     visits: "visits",
+
+    // Page types
+    postsType: "Posts",
+    galleryType: "Gallery",
+    momentsType: "Moments",
+    otherType: "Other",
+    viewAll: "View All",
+    showLess: "Show Less",
+    vsLastWeek: "vs. Last Week",
+    percentage: "Percentage",
+    title: "Title",
   },
   zh: {
     // Layout
@@ -162,6 +173,17 @@ export const adminTranslations = {
     noDataYet: "暂无数据",
     uniqueVisitors: "独立访客",
     visits: "次",
+
+    // Page types
+    postsType: "文章",
+    galleryType: "相册",
+    momentsType: "动态",
+    otherType: "其他",
+    viewAll: "查看全部",
+    showLess: "收起",
+    vsLastWeek: "较上周",
+    percentage: "占比",
+    title: "标题",
   },
 } as const;
 
