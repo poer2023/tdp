@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Custom image loader for Next.js Image component
  *
@@ -18,16 +16,34 @@ export default function imageLoader({
   width: number;
   quality?: number;
 }) {
+  const normalizedQuality = typeof quality === "number" ? quality : 75;
+
+  // Helper to ensure width/quality params are reflected in the URL
+  const withDimensions = (input: string) => {
+    const [pathname, rawQuery] = input.split("?");
+    const params = new URLSearchParams(rawQuery ?? "");
+    params.set("w", String(width));
+    params.set("q", String(normalizedQuality));
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
+  };
+
   // API-served images: return as-is (already optimized)
   if (src.startsWith("/api/uploads/")) {
-    return src;
+    return withDimensions(src);
   }
 
   // External images (e.g., Google profile pictures): return as-is
   if (src.startsWith("http://") || src.startsWith("https://")) {
-    return src;
+    if (src.startsWith("https://lh3.googleusercontent.com/")) {
+      const sizedSrc = src.replace(/=s(\d+)-c$/, `=s${width}-c`);
+      if (sizedSrc !== src) {
+        return sizedSrc;
+      }
+    }
+    return withDimensions(src);
   }
 
   // Other local images: use Next.js default optimization
-  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${quality || 75}`;
+  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${normalizedQuality}`;
 }
