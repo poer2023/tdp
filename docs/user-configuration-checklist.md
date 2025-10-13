@@ -196,8 +196,10 @@ docker compose logs -f app
 - [ ] 项目已克隆到本地
 - [ ] `.env` 文件已配置所有必需变量
 - [ ] `NEXTAUTH_SECRET` 已生成（32位以上随机字符串）
+- [ ] SMTP 相关环境变量已配置（`EMAIL_FROM`、`SMTP_*`、验证码有效期）
 - [ ] Docker 服务已启动且状态为 `healthy`
 - [ ] 访问 http://localhost:3000 正常显示
+- [ ] 登录页面可正常发送邮箱验证码并完成登录
 - [ ] Google 登录功能正常工作
 
 **详细文档**：[Docker 部署指南](./docker-deployment.md)
@@ -483,7 +485,7 @@ curl http://localhost:3000/api/health
 #### 基础功能
 
 - [ ] 访问首页正常显示
-- [ ] Google 登录功能正常
+- [ ] 登录功能正常（Google / 邮箱验证码）
 - [ ] 健康检查接口返回正常
   ```bash
   curl http://localhost:3000/api/health

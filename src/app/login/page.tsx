@@ -16,7 +16,7 @@ export default async function LoginPage({
           登录后台
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          使用 Google 登录以管理文章和相册内容。
+          使用 Google 或邮箱登录以管理文章和相册内容。
         </p>
       </div>
 

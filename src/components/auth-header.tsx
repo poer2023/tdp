@@ -1,13 +1,15 @@
 "use client";
 
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import type { Session } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export function AuthHeader() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -157,28 +159,12 @@ export function AuthHeader() {
     <button
       type="button"
       aria-busy={isLoading ? "true" : undefined}
-      onClick={() => signIn("google", { callbackUrl: window.location.pathname })}
+      onClick={() => {
+        const callbackUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      }}
       className="flex items-center gap-1.5 rounded-md border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-50 focus:ring-2 focus:ring-zinc-400 focus:outline-none md:text-sm dark:border-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
     >
-      <svg className="mr-1.5 h-3.5 w-3.5" viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-        <path
-          d="M23.25 12.27c0-.78-.07-1.53-.21-2.25H12v4.26h6.33c-.27 1.44-1.08 2.66-2.3 3.48v2.88h3.72c2.18-2.01 3.5-4.98 3.5-8.37Z"
-          fill="#4285F4"
-        />
-        <path
-          d="M12 24c3.15 0 5.79-1.05 7.72-2.86l-3.72-2.88c-1.03.69-2.35 1.12-3.99 1.12-3.07 0-5.66-2.07-6.58-4.85H1.6v3.05C3.5 21.72 7.43 24 12 24Z"
-          fill="#34A853"
-        />
-        <path
-          d="M5.42 14.53a7.01 7.01 0 0 1 0-4.46V7.02H1.6a12 12 0 0 0 0 9.96l3.82-2.45Z"
-          fill="#FBBC05"
-        />
-        <path
-          d="M12 4.74c1.72 0 3.26.59 4.47 1.76l3.34-3.34C17.78 1.23 15.15 0 12 0 7.43 0 3.5 2.28 1.6 7.02l3.82 3.05C6.34 6.81 8.93 4.74 12 4.74Z"
-          fill="#EA4335"
-        />
-        <path d="M1.6 7.02v.01-.01Z" fill="none" />
-      </svg>
       Sign in
     </button>
   );
