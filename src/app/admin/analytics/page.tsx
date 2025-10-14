@@ -141,6 +141,15 @@ async function resolvePageLabels(paths: string[]) {
 
 export default async function AdminAnalyticsPage() {
   const locale = await getAdminLocale();
+  const header = (
+    <header className="space-y-3">
+      <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">{t(locale, "analytics")}</p>
+      <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        {t(locale, "analytics")}
+      </h1>
+      <p className="text-sm text-zinc-500 dark:text-zinc-400">{t(locale, "trafficInsights")}</p>
+    </header>
+  );
   // Get today's date boundaries (UTC 0:00)
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
@@ -158,254 +167,268 @@ export default async function AdminAnalyticsPage() {
   const prevMonthStart = new Date(monthAgo);
   prevMonthStart.setUTCDate(prevMonthStart.getUTCDate() - 30);
 
-  // Parallel queries for performance
-  const [
-    todayViews,
-    weekViews,
-    monthViews,
-    previousWeekViews,
-    previousMonthViews,
-    totalVisitors,
-    rawPageViews7d,
-    rawPageViews30d,
-    localeStats,
-    last7Days,
-  ] = await Promise.all([
-    prisma.pageView.count({
+  try {
+    // Parallel queries for performance
+    const [
+      todayViews,
+      weekViews,
+      monthViews,
+      previousWeekViews,
+      previousMonthViews,
+      totalVisitors,
+      rawPageViews7d,
+      rawPageViews30d,
+      localeStats,
+      last7Days,
+    ] = await Promise.all([
+      prisma.pageView.count({
+        where: {
+          createdAt: {
+            gte: today,
+            lt: tomorrow,
+          },
+        },
+      }),
+      prisma.pageView.count({
+        where: {
+          createdAt: {
+            gte: weekAgo,
+          },
+        },
+      }),
+      prisma.pageView.count({
+        where: {
+          createdAt: {
+            gte: monthAgo,
+          },
+        },
+      }),
+      prisma.pageView.count({
+        where: {
+          createdAt: {
+            gte: prevWeekStart,
+            lt: weekAgo,
+          },
+        },
+      }),
+      prisma.pageView.count({
+        where: {
+          createdAt: {
+            gte: prevMonthStart,
+            lt: monthAgo,
+          },
+        },
+      }),
+      prisma.visitor.count(),
+      prisma.pageView.findMany({
+        where: {
+          createdAt: {
+            gte: weekAgo,
+          },
+        },
+        select: { path: true },
+      }),
+      prisma.pageView.findMany({
+        where: {
+          createdAt: {
+            gte: monthAgo,
+          },
+        },
+        select: { path: true },
+      }),
+      prisma.pageView.groupBy({
+        by: ["locale"],
+        where: {
+          createdAt: {
+            gte: weekAgo,
+          },
+        },
+        _count: {
+          locale: true,
+        },
+      }),
+      prisma.dailyStats.findMany({
+        where: {
+          date: {
+            gte: weekAgo,
+          },
+        },
+        orderBy: {
+          date: "asc",
+        },
+      }),
+    ]);
+
+    const weekAggregation = aggregatePageViews(rawPageViews7d);
+    const monthAggregation = aggregatePageViews(rawPageViews30d);
+
+    const labels = await resolvePageLabels(
+      Array.from(
+        new Set([
+          ...weekAggregation.entries.map((item) => item.path),
+          ...monthAggregation.entries.map((item) => item.path),
+        ])
+      )
+    );
+
+    const topPagesByPeriod = {
+      "7d": weekAggregation.entries.map((entry) => ({
+        path: entry.path,
+        label: labels.get(entry.path) ?? fallbackLabel(entry.path),
+        views: entry.views,
+      })),
+      "30d": monthAggregation.entries.map((entry) => ({
+        path: entry.path,
+        label: labels.get(entry.path) ?? fallbackLabel(entry.path),
+        views: entry.views,
+      })),
+    } as const;
+
+    const totalsByPeriod = {
+      "7d": weekAggregation.total,
+      "30d": monthAggregation.total,
+    } as const;
+
+    const rangesByPeriod = {
+      "7d": { from: weekAgo, to: today },
+      "30d": { from: monthAgo, to: today },
+    } as const;
+
+    const deltasByPeriod = {
+      "7d":
+        previousWeekViews > 0 ? ((weekViews - previousWeekViews) / previousWeekViews) * 100 : null,
+      "30d":
+        previousMonthViews > 0
+          ? ((monthViews - previousMonthViews) / previousMonthViews) * 100
+          : null,
+    } as const;
+
+    const localeTotal = localeStats.reduce((sum, stat) => sum + stat._count.locale, 0);
+
+    // Calculate today's unique visitors
+    const todayUniqueVisitors = await prisma.visitor.count({
       where: {
-        createdAt: {
+        lastVisit: {
           gte: today,
           lt: tomorrow,
         },
       },
-    }),
-    prisma.pageView.count({
-      where: {
-        createdAt: {
-          gte: weekAgo,
-        },
-      },
-    }),
-    prisma.pageView.count({
-      where: {
-        createdAt: {
-          gte: monthAgo,
-        },
-      },
-    }),
-    prisma.pageView.count({
-      where: {
-        createdAt: {
-          gte: prevWeekStart,
-          lt: weekAgo,
-        },
-      },
-    }),
-    prisma.pageView.count({
-      where: {
-        createdAt: {
-          gte: prevMonthStart,
-          lt: monthAgo,
-        },
-      },
-    }),
-    prisma.visitor.count(),
-    prisma.pageView.findMany({
-      where: {
-        createdAt: {
-          gte: weekAgo,
-        },
-      },
-      select: { path: true },
-    }),
-    prisma.pageView.findMany({
-      where: {
-        createdAt: {
-          gte: monthAgo,
-        },
-      },
-      select: { path: true },
-    }),
-    prisma.pageView.groupBy({
-      by: ["locale"],
-      where: {
-        createdAt: {
-          gte: weekAgo,
-        },
-      },
-      _count: {
-        locale: true,
-      },
-    }),
-    prisma.dailyStats.findMany({
-      where: {
-        date: {
-          gte: weekAgo,
-        },
-      },
-      orderBy: {
-        date: "asc",
-      },
-    }),
-  ]);
+    });
 
-  const weekAggregation = aggregatePageViews(rawPageViews7d);
-  const monthAggregation = aggregatePageViews(rawPageViews30d);
+    return (
+      <div className="space-y-10">
+        {header}
 
-  const labels = await resolvePageLabels(
-    Array.from(
-      new Set([
-        ...weekAggregation.entries.map((item) => item.path),
-        ...monthAggregation.entries.map((item) => item.path),
-      ])
-    )
-  );
-
-  const topPagesByPeriod = {
-    "7d": weekAggregation.entries.map((entry) => ({
-      path: entry.path,
-      label: labels.get(entry.path) ?? fallbackLabel(entry.path),
-      views: entry.views,
-    })),
-    "30d": monthAggregation.entries.map((entry) => ({
-      path: entry.path,
-      label: labels.get(entry.path) ?? fallbackLabel(entry.path),
-      views: entry.views,
-    })),
-  } as const;
-
-  const totalsByPeriod = {
-    "7d": weekAggregation.total,
-    "30d": monthAggregation.total,
-  } as const;
-
-  const rangesByPeriod = {
-    "7d": { from: weekAgo, to: today },
-    "30d": { from: monthAgo, to: today },
-  } as const;
-
-  const deltasByPeriod = {
-    "7d":
-      previousWeekViews > 0 ? ((weekViews - previousWeekViews) / previousWeekViews) * 100 : null,
-    "30d":
-      previousMonthViews > 0
-        ? ((monthViews - previousMonthViews) / previousMonthViews) * 100
-        : null,
-  } as const;
-
-  const localeTotal = localeStats.reduce((sum, stat) => sum + stat._count.locale, 0);
-
-  // Calculate today's unique visitors
-  const todayUniqueVisitors = await prisma.visitor.count({
-    where: {
-      lastVisit: {
-        gte: today,
-        lt: tomorrow,
-      },
-    },
-  });
-
-  return (
-    <div className="space-y-10">
-      <header className="space-y-3">
-        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">{t(locale, "analytics")}</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
-          {t(locale, "analytics")}
-        </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t(locale, "trafficInsights")}</p>
-      </header>
-
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <StatCard
-          title={t(locale, "todayVisits")}
-          value={todayViews}
-          subtitle={`${todayUniqueVisitors} ${t(locale, "uniqueVisitors")}`}
-        />
-        <StatCard title={t(locale, "weeklyVisits")} value={weekViews} />
-        <StatCard title={t(locale, "totalVisitors")} value={totalVisitors} />
-        <StatCard
-          title={t(locale, "avgVisits")}
-          value={totalVisitors > 0 ? Math.round(weekViews / 7) : 0}
-          subtitle={t(locale, "dailyAverage")}
-        />
-      </div>
-
-      <section className="grid gap-6 md:grid-cols-2">
-        <div className="flex h-full flex-col rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            {t(locale, "trendChart")}
-          </h2>
-          {last7Days.length > 0 ? (
-            <TrendLineChart data={last7Days} locale={locale} />
-          ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-              {t(locale, "noDataYet")}
-            </p>
-          )}
+        {/* Key Metrics */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <StatCard
+            title={t(locale, "todayVisits")}
+            value={todayViews}
+            subtitle={`${todayUniqueVisitors} ${t(locale, "uniqueVisitors")}`}
+          />
+          <StatCard title={t(locale, "weeklyVisits")} value={weekViews} />
+          <StatCard title={t(locale, "totalVisitors")} value={totalVisitors} />
+          <StatCard
+            title={t(locale, "avgVisits")}
+            value={totalVisitors > 0 ? Math.round(weekViews / 7) : 0}
+            subtitle={t(locale, "dailyAverage")}
+          />
         </div>
 
-        <TopPagesCard
-          data={topPagesByPeriod}
-          totals={totalsByPeriod}
-          ranges={rangesByPeriod}
-          deltas={deltasByPeriod}
-          locale={locale}
-          className="h-full"
-        />
-      </section>
+        <section className="grid gap-6 md:grid-cols-2">
+          <div className="flex h-full flex-col rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              {t(locale, "trendChart")}
+            </h2>
+            {last7Days.length > 0 ? (
+              <TrendLineChart data={last7Days} locale={locale} />
+            ) : (
+              <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                {t(locale, "noDataYet")}
+              </p>
+            )}
+          </div>
 
-      {/* Language Distribution */}
-      <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-          {t(locale, "languageDistribution")}
-        </h2>
-        <div className="space-y-4">
-          {localeStats.length > 0 ? (
-            localeStats.map((stat) => {
-              const percentage =
-                localeTotal > 0 ? Math.round((stat._count.locale / localeTotal) * 100) : 0;
-              const langName =
-                stat.locale === "zh" ? "中文" : stat.locale === "en" ? "English" : "未知";
-              const color = stat.locale === "zh" ? "blue" : "green";
+          <TopPagesCard
+            data={topPagesByPeriod}
+            totals={totalsByPeriod}
+            ranges={rangesByPeriod}
+            deltas={deltasByPeriod}
+            locale={locale}
+            className="h-full"
+          />
+        </section>
 
-              return (
-                <div key={stat.locale || "unknown"} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">{langName}</span>
-                    <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                      {stat._count.locale.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="relative h-8 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                    <div
-                      className={`flex h-full items-center justify-center transition-all ${
-                        color === "blue" ? "bg-blue-500" : "bg-green-500"
-                      }`}
-                      style={{ width: `${percentage}%` }}
-                    >
-                      {percentage > 15 && (
-                        <span className="text-xs font-semibold text-white">{percentage}%</span>
+        {/* Language Distribution */}
+        <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            {t(locale, "languageDistribution")}
+          </h2>
+          <div className="space-y-4">
+            {localeStats.length > 0 ? (
+              localeStats.map((stat) => {
+                const percentage =
+                  localeTotal > 0 ? Math.round((stat._count.locale / localeTotal) * 100) : 0;
+                const langName =
+                  stat.locale === "zh" ? "中文" : stat.locale === "en" ? "English" : "未知";
+                const color = stat.locale === "zh" ? "blue" : "green";
+
+                return (
+                  <div key={stat.locale || "unknown"} className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                        {langName}
+                      </span>
+                      <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                        {stat._count.locale.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="relative h-8 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                      <div
+                        className={`flex h-full items-center justify-center transition-all ${
+                          color === "blue" ? "bg-blue-500" : "bg-green-500"
+                        }`}
+                        style={{ width: `${percentage}%` }}
+                      >
+                        {percentage > 15 && (
+                          <span className="text-xs font-semibold text-white">{percentage}%</span>
+                        )}
+                      </div>
+                      {percentage <= 15 && (
+                        <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                          {percentage}%
+                        </span>
                       )}
                     </div>
-                    {percentage <= 15 && (
-                      <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                        {percentage}%
-                      </span>
-                    )}
                   </div>
-                </div>
-              );
-            })
-          ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-              {t(locale, "noDataYet")}
-            </p>
-          )}
-        </div>
-      </section>
-    </div>
-  );
+                );
+              })
+            ) : (
+              <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                {t(locale, "noDataYet")}
+              </p>
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  } catch (error) {
+    console.error("Failed to load admin analytics data", error);
+    const fallbackDescription =
+      locale === "zh"
+        ? "无法连接到数据库，请检查后重试。"
+        : "Analytics data is currently unavailable. Please check the database connection and try again.";
+
+    return (
+      <div className="space-y-10">
+        {header}
+        <section className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-100">
+          <h2 className="text-lg font-semibold">{t(locale, "failedToLoadStats")}</h2>
+          <p className="mt-2 text-sm">{fallbackDescription}</p>
+        </section>
+      </div>
+    );
+  }
 }
 
 function StatCard({ title, value, subtitle }: { title: string; value: number; subtitle?: string }) {
