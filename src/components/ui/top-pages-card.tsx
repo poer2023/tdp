@@ -26,8 +26,8 @@ type TopPage = {
 };
 
 type PeriodRange = {
-  from: Date;
-  to: Date;
+  from: string | number | Date;
+  to: string | number | Date;
 };
 
 type TopPagesCardProps = {
@@ -71,10 +71,14 @@ export function TopPagesCard({
   const delta = deltas?.[activePeriod] ?? null;
   const isZh = locale === "zh";
 
+  const toDate = (value: PeriodRange["from"]) => (value instanceof Date ? value : new Date(value));
+
   const formattedRange = useMemo(() => {
     if (!range) return { from: null, to: null };
-    const formatDate = (date: Date) =>
-      isZh ? format(date, "yyyy年MM月dd日", { locale: zhCN }) : format(date, "MMM dd, yyyy");
+    const formatDate = (value: PeriodRange["from"]) => {
+      const date = toDate(value);
+      return isZh ? format(date, "yyyy年MM月dd日", { locale: zhCN }) : format(date, "MMM dd, yyyy");
+    };
     return {
       from: formatDate(range.from),
       to: formatDate(range.to),

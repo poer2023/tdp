@@ -290,8 +290,8 @@ export default async function AdminAnalyticsPage() {
     } as const;
 
     const rangesByPeriod = {
-      "7d": { from: weekAgo, to: today },
-      "30d": { from: monthAgo, to: today },
+      "7d": { from: weekAgo.toISOString(), to: today.toISOString() },
+      "30d": { from: monthAgo.toISOString(), to: today.toISOString() },
     } as const;
 
     const deltasByPeriod = {
@@ -304,6 +304,12 @@ export default async function AdminAnalyticsPage() {
     } as const;
 
     const localeTotal = localeStats.reduce((sum, stat) => sum + stat._count.locale, 0);
+
+    const chartData = last7Days.map((stat) => ({
+      date: stat.date.toISOString(),
+      totalViews: stat.totalViews,
+      uniqueVisitors: stat.uniqueVisitors,
+    }));
 
     // Calculate today's unique visitors
     const todayUniqueVisitors = await prisma.visitor.count({
@@ -340,8 +346,8 @@ export default async function AdminAnalyticsPage() {
             <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
               {t(locale, "trendChart")}
             </h2>
-            {last7Days.length > 0 ? (
-              <TrendLineChart data={last7Days} locale={locale} />
+            {chartData.length > 0 ? (
+              <TrendLineChart data={chartData} locale={locale} />
             ) : (
               <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
                 {t(locale, "noDataYet")}

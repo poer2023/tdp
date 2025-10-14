@@ -3,13 +3,22 @@
 /**
  * TrendLineChart Component - SVG Line/Area Chart
  */
-export function TrendLineChart({
-  data,
-  locale,
-}: {
-  data: Array<{ date: Date; totalViews: number; uniqueVisitors: number }>;
-  locale: "en" | "zh";
-}) {
+type TrendLineEntry = {
+  date: string | number | Date;
+  totalViews: number;
+  uniqueVisitors: number;
+};
+
+/**
+ * Ensure we are working with Date instances even after serialization
+ */
+function toDate(value: TrendLineEntry["date"]): Date {
+  if (value instanceof Date) return value;
+  if (typeof value === "number") return new Date(value);
+  return new Date(value);
+}
+
+export function TrendLineChart({ data, locale }: { data: TrendLineEntry[]; locale: "en" | "zh" }) {
   if (data.length === 0) return null;
 
   // Chart dimensions
@@ -20,12 +29,17 @@ export function TrendLineChart({
   const chartHeight = height - padding.top - padding.bottom;
 
   // Normalize data
-  const maxViews = Math.max(...data.map((d) => d.totalViews), 1);
+  const normalizedData = data.map((entry) => ({
+    ...entry,
+    date: toDate(entry.date),
+  }));
+
+  const maxViews = Math.max(...normalizedData.map((d) => d.totalViews), 1);
 
   // Calculate points for PV (totalViews) line
-  const denominator = Math.max(data.length - 1, 1);
+  const denominator = Math.max(normalizedData.length - 1, 1);
 
-  const pvPoints = data.map((d, i) => {
+  const pvPoints = normalizedData.map((d, i) => {
     const x = padding.left + (i / denominator) * chartWidth;
     const y = padding.top + chartHeight - (d.totalViews / maxViews) * chartHeight;
     return { x, y, value: d.totalViews, uv: d.uniqueVisitors };
@@ -103,11 +117,14 @@ export function TrendLineChart({
         })}
 
         {/* X-axis labels (dates) */}
-        {data.map((d, i) => {
-          const showLabel = i === 0 || i === data.length - 1 || i === Math.floor(data.length / 2);
+        {normalizedData.map((d, i) => {
+          const showLabel =
+            i === 0 ||
+            i === normalizedData.length - 1 ||
+            i === Math.floor(normalizedData.length / 2);
           if (!showLabel) return null;
 
-          const x = padding.left + (i / (data.length - 1)) * chartWidth;
+          const x = padding.left + (i / Math.max(normalizedData.length - 1, 1)) * chartWidth;
           return (
             <text
               key={i}
@@ -177,13 +194,13 @@ export function TrendLineChart({
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-full bg-blue-500" />
           <span className="text-zinc-600 dark:text-zinc-400">
-            PV ({data.reduce((sum, d) => sum + d.totalViews, 0).toLocaleString()})
+            PV ({normalizedData.reduce((sum, d) => sum + d.totalViews, 0).toLocaleString()})
           </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-full border-2 border-blue-500 bg-white dark:bg-zinc-900" />
           <span className="text-zinc-600 dark:text-zinc-400">
-            UV ({data.reduce((sum, d) => sum + d.uniqueVisitors, 0).toLocaleString()})
+            UV ({normalizedData.reduce((sum, d) => sum + d.uniqueVisitors, 0).toLocaleString()})
           </span>
         </div>
       </div>
