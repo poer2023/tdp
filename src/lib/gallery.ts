@@ -343,6 +343,40 @@ function toGalleryImage(image: {
     storageType: image.storageType,
   };
 
+  const normalizeLocalAsset = (url: string | null | undefined): string | null => {
+    if (!url) return null;
+    const [rawBase, ...queryParts] = url.split("?");
+    const base = rawBase || "";
+    // Only normalize known local prefixes; keep remote URLs untouched
+    const isApiPrefix = base.startsWith("/api/uploads/");
+    const isRewritePrefix = base.startsWith("/uploads/");
+    if (!isApiPrefix && !isRewritePrefix) {
+      return url;
+    }
+
+    const query = queryParts.length > 0 ? `?${queryParts.join("?")}` : "";
+    const relative = isApiPrefix
+      ? base.slice("/api/uploads/".length)
+      : base.slice("/uploads/".length);
+    const normalizedRelative = path
+      .normalize(relative)
+      .replace(/^(\.\.(\/|\\))+/, "")
+      .replace(/^[/\\]+/, "");
+    const uploadsRoot = path.join(process.cwd(), "public", "uploads");
+    const onDisk = path.join(uploadsRoot, normalizedRelative);
+    if (!fs.existsSync(onDisk)) {
+      return null;
+    }
+    const normalizedBase = `/api/uploads/${normalizedRelative.replace(/\\/g, "/")}`;
+    return `${normalizedBase}${query}`;
+  };
+
+  if (!mapped.storageType || mapped.storageType === "local") {
+    mapped.microThumbPath = normalizeLocalAsset(mapped.microThumbPath);
+    mapped.smallThumbPath = normalizeLocalAsset(mapped.smallThumbPath);
+    mapped.mediumPath = normalizeLocalAsset(mapped.mediumPath);
+  }
+
   // Runtime fallback: 如果 DB 尚未写入缩略图，但本地磁盘已有 *_micro.webp / *_small.webp / *_medium.webp，
   // 则在返回给前端时补齐 URL，避免回退到原图，显著降低首页体积。
   // 注意：生产环境可能使用 S3/CDN，服务进程本地并不存在缩略图文件。

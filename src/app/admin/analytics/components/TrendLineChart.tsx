@@ -21,7 +21,6 @@ export function TrendLineChart({
 
   // Normalize data
   const maxViews = Math.max(...data.map((d) => d.totalViews), 1);
-  const maxUV = Math.max(...data.map((d) => d.uniqueVisitors), 1);
 
   // Calculate points for PV (totalViews) line
   const denominator = Math.max(data.length - 1, 1);

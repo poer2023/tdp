@@ -23,7 +23,9 @@ export default async function AdminEditPostPage({ params }: { params: { id: stri
         >
           ← 返回列表
         </Link>
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">编辑文章</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+          编辑文章
+        </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           更新 Markdown 内容、封面与发布状态。
         </p>

@@ -13,7 +13,9 @@ export default async function AdminGalleryPage() {
     <div className="space-y-10">
       <header className="space-y-3">
         <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Gallery</p>
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">相册管理</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+          相册管理
+        </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           上传、整理博客配图，让首页和文章更具视觉表现力。
         </p>

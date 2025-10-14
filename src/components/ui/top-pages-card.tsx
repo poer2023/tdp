@@ -4,7 +4,7 @@ import * as React from "react";
 import { useMemo } from "react";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
-import { ChevronDown, ChevronUp, Info } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Select,
@@ -66,7 +66,6 @@ export function TopPagesCard({
   className,
 }: TopPagesCardProps) {
   const [activePeriod, setActivePeriod] = React.useState<PeriodOption>("7d");
-  const pages = data[activePeriod] ?? [];
   const totalViews = totals[activePeriod] ?? 0;
   const range = ranges[activePeriod];
   const delta = deltas?.[activePeriod] ?? null;
@@ -74,46 +73,49 @@ export function TopPagesCard({
 
   const formattedRange = useMemo(() => {
     if (!range) return { from: null, to: null };
+    const formatDate = (date: Date) =>
+      isZh ? format(date, "yyyy年MM月dd日", { locale: zhCN }) : format(date, "MMM dd, yyyy");
     return {
-      from: format(range.from, isZh ? "MM月dd日" : "MMM dd", isZh ? { locale: zhCN } : undefined),
-      to: format(range.to, isZh ? "MM月dd日" : "MMM dd", isZh ? { locale: zhCN } : undefined),
+      from: formatDate(range.from),
+      to: formatDate(range.to),
     };
   }, [range, isZh]);
 
   const stackedData = useMemo(() => {
+    const pages = data[activePeriod] ?? [];
     if (pages.length === 0 || totalViews === 0) return [];
 
-    return pages.slice(0, 8).map((page, index) => {
-      const percent = (page.views / totalViews) * 100;
+    // Take top 8 pages and calculate their total views
+    const topPages = pages.slice(0, 8);
+    const topPagesTotal = topPages.reduce((sum, page) => sum + page.views, 0);
+
+    // Calculate percentage based on top pages total, not global total
+    return topPages.map((page, index) => {
+      const percent = topPagesTotal > 0 ? (page.views / topPagesTotal) * 100 : 0;
       return {
         ...page,
         percent,
         colorClass: COLORS[index % COLORS.length],
       };
     });
-  }, [pages, totalViews]);
+  }, [activePeriod, data, totalViews]);
 
   return (
     <Card className={cn("flex h-full flex-col gap-4", className)}>
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <p className="text-xs font-semibold tracking-[0.3em] text-zinc-500 uppercase dark:text-zinc-400">
-              {isZh ? "热门页面" : "Top Pages"}
-            </p>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-              {isZh ? "访问占比" : "Traffic Share"}
-            </h2>
-          </div>
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            {isZh ? "页面访问" : "Page Views"}
+          </h2>
 
           <Select
             value={activePeriod}
             onValueChange={(value) => setActivePeriod(value as PeriodOption)}
           >
-            <SelectTrigger className="w-36">
+            <SelectTrigger className="w-[120px]">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent align="end">
               <SelectItem value="7d">{isZh ? "近 7 天" : "Last 7 days"}</SelectItem>
               <SelectItem value="30d" disabled={(data["30d"] ?? []).length === 0}>
                 {isZh ? "近 30 天" : "Last 30 days"}
@@ -163,7 +165,6 @@ export function TopPagesCard({
         {formattedRange.from && formattedRange.to && (
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
             <span>{formattedRange.from}</span>
-            <span>→</span>
             <span>{formattedRange.to}</span>
           </div>
         )}
@@ -175,17 +176,17 @@ export function TopPagesCard({
             {isZh ? "暂无足够数据。" : "Not enough data yet."}
           </p>
         ) : (
-          <TooltipProvider>
-            <div className="flex h-10 w-full gap-0.5 overflow-hidden rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800/60">
+          <TooltipProvider delayDuration={0}>
+            <div className="flex h-10 w-full gap-1 overflow-visible rounded-lg bg-zinc-100 dark:bg-zinc-800/60">
               {stackedData.map((item, index) => (
                 <Tooltip key={`${item.path}-${activePeriod}-${index}`}>
                   <TooltipTrigger asChild>
                     <div
                       className={cn(
-                        "h-full cursor-pointer rounded-lg transition-[opacity,width] hover:opacity-80 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-zinc-900",
+                        "h-full cursor-pointer rounded-md transition-all hover:-translate-y-1 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-zinc-900",
                         item.colorClass
                       )}
-                      style={{ width: `${Math.max(item.percent, 1)}%`, minWidth: "24px" }}
+                      style={{ width: `${Math.max(item.percent, 1)}%`, minWidth: "32px" }}
                       aria-label={`${item.label}: ${item.views.toLocaleString()} ${isZh ? "次访问" : "views"} (${item.percent.toFixed(1)}%)`}
                     />
                   </TooltipTrigger>
@@ -203,28 +204,6 @@ export function TopPagesCard({
             </div>
           </TooltipProvider>
         )}
-
-        <Separator />
-
-        <div className="mt-auto flex items-start gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                {isZh
-                  ? "显示页面浏览量占比，悬停彩色条可查看详细信息。"
-                  : "Shows the distribution of page views. Hover the colored bar to inspect details."}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <p className="leading-relaxed">
-            {isZh
-              ? "基于页面浏览量的占比图表，可帮助识别重点推广内容与长尾页面。"
-              : "Traffic share helps you spot hero content, long-tail pages, and promotion opportunities."}
-          </p>
-        </div>
       </CardContent>
     </Card>
   );

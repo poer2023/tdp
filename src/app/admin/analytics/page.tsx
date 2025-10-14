@@ -309,7 +309,7 @@ export default async function AdminAnalyticsPage() {
     <div className="space-y-10">
       <header className="space-y-3">
         <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">{t(locale, "analytics")}</p>
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
           {t(locale, "analytics")}
         </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{t(locale, "trafficInsights")}</p>
