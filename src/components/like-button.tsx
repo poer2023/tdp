@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useOptimistic, useTransition, useRef } from "react";
+import { useState, useEffect, useTransition, useRef } from "react";
 
 type LikeButtonProps = {
   slug: string;
@@ -22,14 +22,11 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
   const [isPending, startTransition] = useTransition();
   const lastClickTime = useRef<number>(0);
 
-  // Optimistic state for instant UI updates
-  const [optimisticState, setOptimisticState] = useOptimistic<LikeState, void>(
-    serverState,
-    (state) => ({
-      likeCount: state.likeCount + 1,
-      isLiked: true,
-    })
-  );
+  const [displayState, setDisplayState] = useState<LikeState>(serverState);
+
+  useEffect(() => {
+    setDisplayState(serverState);
+  }, [serverState]);
 
   // Fetch initial like count and whether this session already liked
   useEffect(() => {
@@ -65,10 +62,15 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
     // Clear any previous errors
     setError(null);
 
-    // Optimistically update UI immediately
-    startTransition(async () => {
-      setOptimisticState();
+    const previousState = serverState;
+    const optimisticState: LikeState = {
+      likeCount: serverState.likeCount + 1,
+      isLiked: true,
+    };
+    setDisplayState(optimisticState);
 
+    // Optimistically update UI immediately, then reconcile with server response
+    startTransition(async () => {
       try {
         const res = await fetch(`/api/posts/${slug}/like`, {
           method: "POST",
@@ -104,7 +106,9 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
           isLiked: true,
         });
       } catch (err) {
-        // Rollback on error - server state remains unchanged
+        // Rollback on error - restore UI state
+        setDisplayState(previousState);
+
         const errorMessage = err instanceof Error ? err.message : "Failed to like post";
         setError(errorMessage);
         console.error("Failed to like post:", err);
@@ -114,9 +118,6 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
       }
     });
   };
-
-  // Use optimistic state for display
-  const displayState = optimisticState;
 
   return (
     <div className="flex flex-col gap-2">

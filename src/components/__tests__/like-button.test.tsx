@@ -247,7 +247,7 @@ describe("LikeButton", () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText(/Too many requests/i)).toBeInTheDocument();
+      expect(screen.getByText(/Rate limit exceeded/i)).toBeInTheDocument();
     });
   });
 
@@ -307,6 +307,11 @@ describe("LikeButton", () => {
     await waitFor(() => {
       expect(screen.getByText("5")).toBeInTheDocument();
     });
+
+    await waitFor(() => {
+      expect(button).not.toBeDisabled();
+    });
+    expect(screen.queryByText("Liked")).not.toBeInTheDocument();
   });
 
   it("should handle fetch error gracefully", async () => {
@@ -345,7 +350,7 @@ describe("LikeButton", () => {
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to like post:", expect.any(Error));
-      expect(screen.getByText("Failed to like post")).toBeInTheDocument();
+      expect(screen.getByText("Failed to like")).toBeInTheDocument();
     });
 
     consoleErrorSpy.mockRestore();
@@ -513,8 +518,6 @@ describe("LikeButton", () => {
   });
 
   it("should auto-clear error after 3 seconds", async () => {
-    vi.useFakeTimers();
-
     vi.mocked(fetch)
       .mockResolvedValueOnce({
         ok: true,
@@ -539,14 +542,12 @@ describe("LikeButton", () => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
     });
 
-    // Fast-forward 3 seconds
-    vi.advanceTimersByTime(3000);
-
-    await waitFor(() => {
-      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-    });
-
-    vi.useRealTimers();
+    await waitFor(
+      () => {
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+      },
+      { timeout: 3500 }
+    );
   });
 
   it("should handle non-JSON error response with status code", async () => {

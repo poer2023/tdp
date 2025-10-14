@@ -3,7 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { listPublishedPosts } from "@/lib/posts";
 import { localePath } from "@/lib/locale-path";
-import { Tag } from "@/components/ui/tag";
 
 // Querying Prisma – lock runtime to Node.js
 export const runtime = "nodejs";
@@ -11,13 +10,6 @@ export const runtime = "nodejs";
 type PageProps = {
   params: Promise<{ locale: string }>;
 };
-
-// 计算阅读时长（中文：400字/分钟，英文：200词/分钟）
-function calculateReadingTime(content: string, isZh: boolean): number {
-  const wordsPerMinute = isZh ? 400 : 200;
-  const wordCount = content.length;
-  return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
-}
 
 export default async function LocalizedPostsPage({ params }: PageProps) {
   const { locale } = await params;
