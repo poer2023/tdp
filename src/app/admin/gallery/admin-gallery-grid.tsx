@@ -142,7 +142,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {images.map((image) => (
+        {images.map((image, index) => (
           <figure
             key={image.id}
             className="group relative overflow-hidden rounded-3xl border border-zinc-200/70 bg-white/80 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-zinc-800/70 dark:bg-zinc-900/70"
@@ -165,6 +165,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                 alt={image.title ?? "相册照片"}
                 fill
                 sizes="(max-width: 768px) 50vw, 33vw"
+                priority={index === 0}
                 className="object-cover transition duration-500 group-hover:scale-105"
               />
             </div>

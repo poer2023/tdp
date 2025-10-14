@@ -47,7 +47,7 @@ export default async function AdminHomePage() {
     <div className="space-y-6 sm:space-y-8 md:space-y-10">
       {/* Page Header - Simplified */}
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
           {t(locale, "overview")}
         </h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">

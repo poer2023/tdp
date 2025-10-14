@@ -42,12 +42,17 @@ export default function imageLoader({
   // External images (e.g., Google profile pictures): return as-is
   if (src.startsWith("http://") || src.startsWith("https://")) {
     if (src.startsWith("https://lh3.googleusercontent.com/")) {
-      const sizedSrc = src.replace(/=s(\d+)-c$/, `=s${width}-c`);
-      if (sizedSrc !== src) {
-        return sizedSrc;
+      // Check if URL already has size parameter
+      if (/=s(\d+)-c$/.test(src)) {
+        // Replace existing size parameter
+        return src.replace(/=s(\d+)-c$/, `=s${width}-c`);
+      } else {
+        // Add size parameter to URL
+        return `${src}=s${width}-c`;
       }
     }
-    return withDimensions(src);
+    // For other external URLs, return as-is without adding query params
+    return src;
   }
 
   // Other local images: use Next.js default optimization

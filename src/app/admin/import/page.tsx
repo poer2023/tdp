@@ -95,7 +95,9 @@ export default function ImportPage() {
       {/* Page Header - unified style */}
       <header className="space-y-3">
         <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Operations</p>
-        <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">内容导入</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+          内容导入
+        </h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           上传一个包含 Markdown 文章的 ZIP，先预览再应用更改。
         </p>

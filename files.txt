@@ -57,14 +57,17 @@ docs/archive/planning/I18N_FIX_PLAN.md
 docs/archive/planning/ROADMAP_i18n_Upgrade.md
 docs/archive/planning/i18n-COMPLETION-SUMMARY.md
 docs/auto-deployment-setup.md
+docs/deployment-workflow.md
 docs/docker-build.md
 docs/docker-deployment.md
 docs/moments.md
 docs/self-host-deployment.md
+docs/test-strategy.md
 docs/user-configuration-checklist.md
 e2e/accessibility.spec.ts
 e2e/admin-analytics-access.spec.ts
 e2e/admin-gallery-ui.spec.ts
+e2e/auth-email-otp.spec.ts
 e2e/auth-improved.spec.ts
 e2e/content-export-improved.spec.ts
 e2e/content-import-improved.spec.ts

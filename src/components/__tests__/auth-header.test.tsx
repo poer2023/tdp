@@ -78,7 +78,7 @@ describe("AuthHeader", () => {
     expect(signInButton.textContent).toContain("Sign in");
   });
 
-  it("should navigate to login when sign-in button is clicked", () => {
+  it("should redirect to login with encoded callback when sign-in button is clicked", () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: "unauthenticated",
@@ -86,7 +86,11 @@ describe("AuthHeader", () => {
     });
 
     Object.defineProperty(window, "location", {
-      value: { pathname: "/posts/test", search: "", hash: "" },
+      value: {
+        pathname: "/posts/test",
+        search: "?draft=true",
+        hash: "#comments",
+      },
       writable: true,
     });
 
@@ -95,7 +99,8 @@ describe("AuthHeader", () => {
     const signInButton = screen.getByRole("button");
     fireEvent.click(signInButton);
 
-    expect(pushMock).toHaveBeenCalledWith("/login?callbackUrl=%2Fposts%2Ftest");
+    const expectedUrl = `/login?callbackUrl=${encodeURIComponent("/posts/test?draft=true#comments")}`;
+    expect(pushMock).toHaveBeenCalledWith(expectedUrl);
   });
 
   it("should show user menu button when authenticated", () => {
@@ -437,7 +442,7 @@ describe("AuthHeader", () => {
     expect(menu).toHaveAttribute("aria-orientation", "vertical");
   });
 
-  it("should render sign-in button with label", () => {
+  it("should render sign-in button without icon", () => {
     vi.mocked(useSession).mockReturnValue({
       data: null,
       status: "unauthenticated",
