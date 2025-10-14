@@ -7,13 +7,17 @@ const pushMock = vi.fn();
 // Mock next-auth
 vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
-  signIn: vi.fn(),
   signOut: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: pushMock,
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
   }),
 }));
 
@@ -447,7 +451,7 @@ describe("AuthHeader", () => {
 
     const { container } = render(<AuthHeader />);
 
-    const signInButton = screen.getByRole("button", { name: "Sign in" });
+    const signInButton = screen.getByRole("button", { name: /sign in/i });
     expect(signInButton).toBeInTheDocument();
     expect(container.querySelector("svg")).toBeNull();
   });

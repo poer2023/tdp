@@ -33,6 +33,12 @@ export default function imageLoader({
     return withDimensions(src);
   }
 
+  // /uploads/ paths: convert to /api/uploads/ (due to rewrite rule in next.config.ts)
+  if (src.startsWith("/uploads/")) {
+    const apiSrc = src.replace("/uploads/", "/api/uploads/");
+    return withDimensions(apiSrc);
+  }
+
   // External images (e.g., Google profile pictures): return as-is
   if (src.startsWith("http://") || src.startsWith("https://")) {
     if (src.startsWith("https://lh3.googleusercontent.com/")) {

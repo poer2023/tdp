@@ -98,8 +98,8 @@ export function AuthHeader() {
               alt={user.name || "User"}
               width={28}
               height={28}
+              sizes="28px"
               className="rounded-full object-cover"
-              style={{ width: "auto", height: "auto" }}
               data-testid="user-avatar"
             />
           ) : (
@@ -161,7 +161,8 @@ export function AuthHeader() {
       type="button"
       aria-busy={isLoading ? "true" : undefined}
       onClick={() => {
-        const callbackUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        const { pathname, search = "", hash = "" } = window.location;
+        const callbackUrl = `${pathname}${search}${hash}`;
         router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       }}
       className="flex items-center gap-1.5 rounded-md border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-50 focus:ring-2 focus:ring-zinc-400 focus:outline-none md:text-sm dark:border-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-900"

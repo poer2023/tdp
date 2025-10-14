@@ -166,7 +166,7 @@ export function ScrollSyncHero({
 
   return (
     <section className="relative">
-      <header className="mx-auto mb-10 flex max-w-5xl flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <header className="mx-auto mb-10 max-w-5xl">
         <div className="space-y-4">
           <p className="text-sm font-semibold tracking-[0.3em] text-zinc-400 uppercase">
             {locale === "zh" ? "最新动态" : "Latest Updates"}
@@ -175,20 +175,6 @@ export function ScrollSyncHero({
             {heroTitle}
           </h1>
           <p className="max-w-xl text-base text-zinc-600 dark:text-zinc-400">{heroSubtitle}</p>
-        </div>
-        <div className="flex flex-wrap gap-3 md:justify-end">
-          <Link
-            href="#posts"
-            className="inline-flex items-center rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 transition hover:border-zinc-400 hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:border-zinc-700 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
-          >
-            {locale === "zh" ? "查看最新文章" : "View Latest Posts"}
-          </Link>
-          <Link
-            href="#gallery"
-            className="inline-flex items-center rounded-full border border-transparent bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 [&]:!text-white [&]:dark:!text-zinc-900"
-          >
-            {locale === "zh" ? "浏览相册" : "Browse Gallery"}
-          </Link>
         </div>
       </header>
 
@@ -202,56 +188,56 @@ export function ScrollSyncHero({
           display: none;
         }
 
-        /* 视口渐变遮罩 */
+        /* 视口渐变遮罩 - 增强边缘模糊效果 */
         .viewport-mask {
           mask-image: linear-gradient(
             to bottom,
             transparent 0%,
-            black 15%,
-            black 85%,
+            black 20%,
+            black 80%,
             transparent 100%
           );
           -webkit-mask-image: linear-gradient(
             to bottom,
             transparent 0%,
-            black 15%,
-            black 85%,
+            black 20%,
+            black 80%,
             transparent 100%
           );
         }
 
-        /* 标题容器顶部优化遮罩 */
+        /* 标题容器顶部优化遮罩 - 统一渐变范围 */
         .viewport-mask-top {
           mask-image: linear-gradient(
             to bottom,
             transparent 0%,
-            black 10%,
-            black 85%,
+            black 20%,
+            black 80%,
             transparent 100%
           );
           -webkit-mask-image: linear-gradient(
             to bottom,
             transparent 0%,
-            black 10%,
-            black 85%,
+            black 20%,
+            black 80%,
             transparent 100%
           );
         }
 
-        /* 横向滚动容器边缘渐变 */
+        /* 横向滚动容器边缘渐变 - 增强左右模糊 */
         .horizontal-mask {
           mask-image: linear-gradient(
             to right,
             transparent 0%,
-            black 3%,
-            black 97%,
+            black 8%,
+            black 92%,
             transparent 100%
           );
           -webkit-mask-image: linear-gradient(
             to right,
             transparent 0%,
-            black 3%,
-            black 97%,
+            black 8%,
+            black 92%,
             transparent 100%
           );
         }
@@ -325,7 +311,7 @@ export function ScrollSyncHero({
           <div
             ref={leftRef}
             className="scroll-container viewport-mask-top flex-1 overflow-hidden"
-            style={{ paddingTop: "40vh", paddingBottom: "40vh" }}
+            style={{ paddingTop: "calc(40vh + 68px)", paddingBottom: "40vh" }}
           >
             <div ref={leftContentRef} className="space-y-2 will-change-transform">
               {items.length > 0 ? (
@@ -360,7 +346,7 @@ export function ScrollSyncHero({
           <div
             ref={rightRef}
             className="scroll-container viewport-mask flex-1 overflow-y-auto"
-            style={{ paddingTop: "40vh", paddingBottom: "40vh" }}
+            style={{ paddingTop: "calc(40vh + 424px)", paddingBottom: "40vh" }}
           >
             <div ref={rightContentRef} className="space-y-6">
               {items.length > 0 ? (
