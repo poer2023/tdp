@@ -9,7 +9,7 @@ export default function ContentIOPage() {
     <div className="space-y-10">
       {/* Header */}
       <header className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
           Content I/O
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">Import & Export tools</p>
