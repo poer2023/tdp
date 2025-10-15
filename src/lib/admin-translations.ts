@@ -135,6 +135,10 @@ export const adminTranslations = {
     annualSpend: "Annual spend",
     markdownExportDescription: "Download a Markdown snapshot of your current subscriptions.",
     filterByCycle: "Filter by billing cycle",
+    noEndDate: "No end date",
+    progress: "Progress",
+    trendDescription: "Month-over-month spending trend",
+    currentMonth: "Current month",
   },
   zh: {
     // Layout
@@ -262,6 +266,10 @@ export const adminTranslations = {
     annualSpend: "年度支出",
     markdownExportDescription: "导出当前订阅数据的 Markdown 快照。",
     filterByCycle: "按计费周期筛选",
+    noEndDate: "无结束日期",
+    progress: "进度",
+    trendDescription: "月度支出趋势",
+    currentMonth: "当前月份",
   },
 } as const;
 

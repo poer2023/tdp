@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { adminTranslations } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
 import { formatCNY, formatOriginalCurrency, SUPPORTED_CURRENCIES } from "@/lib/subscription-shared";
+import { SubscriptionPieChart } from "@/components/subscriptions/subscription-pie-chart";
+import { SubscriptionExpandableCard } from "@/components/subscriptions/subscription-expandable-card";
+import { StatsCard } from "@/components/ui/stats-card";
+import type { ChartDataItem } from "@/components/ui/stats-card";
 
 type BillingCycle = "MONTHLY" | "ANNUAL" | "ONE_TIME";
 
@@ -220,6 +224,20 @@ export default function SubscriptionDashboard({
   const maxLineValue = useMemo(() => {
     if (monthlyTotals.length === 0) return 1;
     return Math.max(...monthlyTotals.map((entry) => entry.value), 1);
+  }, [monthlyTotals]);
+
+  const statsChartData = useMemo((): ChartDataItem[] => {
+    return monthlyTotals.map((entry, index) => ({
+      name: entry.label,
+      value: maxLineValue === 0 ? 0 : (entry.value / maxLineValue) * 100,
+      actualValue: entry.value,
+      color: index === monthlyTotals.length - 1 ? "bg-blue-500" : undefined,
+    }));
+  }, [monthlyTotals, maxLineValue]);
+
+  const currentMonthValue = useMemo(() => {
+    if (monthlyTotals.length === 0) return 0;
+    return monthlyTotals[monthlyTotals.length - 1].value;
   }, [monthlyTotals]);
 
   const linePathData = useMemo(() => {
@@ -672,100 +690,17 @@ export default function SubscriptionDashboard({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-3xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                {translation("chartSubscriptions")}
-              </h3>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">{viewMode}</span>
-            </div>
-            <div className="mt-4 h-48">
-              {barChartData.length === 0 ? (
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {translation("noSubscriptions")}
-                </p>
-              ) : (
-                <div className="flex h-full items-end gap-2">
-                  {barChartData.map((entry) => {
-                    const height = Math.max((entry.value / maxBarValue) * 100, 5);
-                    return (
-                      <div key={entry.id} className="flex-1">
-                        <div
-                          className="relative flex h-full items-end justify-center rounded-md bg-gradient-to-t from-blue-100 to-blue-500 text-sm font-semibold text-white dark:from-blue-900 dark:to-blue-500"
-                          style={{ height: `${height}%` }}
-                        >
-                          <span className="absolute -top-6 text-xs text-zinc-700 dark:text-zinc-200">
-                            {formatCNY(entry.value)}
-                          </span>
-                        </div>
-                        <p className="mt-2 text-center text-xs text-zinc-600 dark:text-zinc-400">
-                          {entry.name}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
+          <SubscriptionPieChart data={barChartData} viewMode={viewMode} locale={locale} />
 
-          <div className="rounded-3xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                {translation("chartTrend")}
-              </h3>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">¥</span>
-            </div>
-            <div className="mt-4 h-48">
-              {monthlyTotals.length === 0 ? (
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {translation("noSubscriptions")}
-                </p>
-              ) : (
-                <svg viewBox="0 0 400 160" className="h-full w-full">
-                  <defs>
-                    <linearGradient id="subscriptionLine" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="#1d4ed8" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#93c5fd" stopOpacity="0.05" />
-                    </linearGradient>
-                  </defs>
-                  {linePathData.area && (
-                    <path d={linePathData.area} fill="url(#subscriptionLine)" />
-                  )}
-                  {linePathData.path && (
-                    <path
-                      d={linePathData.path}
-                      fill="none"
-                      stroke="#2563eb"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                    />
-                  )}
-                  {linePathData.points.map((point) => (
-                    <g key={point.label}>
-                      <circle cx={point.x} cy={point.y} r={4} fill="#1d4ed8" />
-                      <text
-                        x={point.x}
-                        y={point.y - 10}
-                        textAnchor="middle"
-                        className="fill-zinc-600 text-xs dark:fill-zinc-300"
-                      >
-                        {formatCNY(point.value)}
-                      </text>
-                      <text
-                        x={point.x}
-                        y={150}
-                        textAnchor="middle"
-                        className="fill-zinc-500 text-xs dark:fill-zinc-400"
-                      >
-                        {point.label}
-                      </text>
-                    </g>
-                  ))}
-                </svg>
-              )}
-            </div>
-          </div>
+          <StatsCard
+            title={translation("chartTrend")}
+            currentValue={currentMonthValue}
+            valuePrefix="¥"
+            description={translation("trendDescription")}
+            chartData={statsChartData}
+            defaultBarColor="bg-zinc-200 dark:bg-zinc-700"
+            highlightedBarColor="bg-blue-500"
+          />
         </div>
       </section>
 
@@ -778,71 +713,13 @@ export default function SubscriptionDashboard({
           </div>
         ) : (
           filteredItems.map((subscription) => (
-            <article
+            <SubscriptionExpandableCard
               key={subscription.id}
-              className="flex flex-col justify-between rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
-            >
-              <header>
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                  {subscription.name}
-                </h3>
-                <p className="mt-1 text-xs tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-                  {
-                    billingCycleOptions.find((option) => option.value === subscription.billingCycle)
-                      ?.label
-                  }
-                </p>
-              </header>
-
-              <div className="mt-4 space-y-2 text-sm text-zinc-600 dark:text-zinc-300">
-                <p className="flex items-center justify-between">
-                  <span>{translation("originalAmount")}</span>
-                  <span>{formatOriginalCurrency(subscription.amount, subscription.currency)}</span>
-                </p>
-                <p className="flex items-center justify-between">
-                  <span>{translation("convertedAmount")}</span>
-                  <span>{formatCNY(subscription.amountCNY)}</span>
-                </p>
-                <p className="flex items-center justify-between">
-                  <span>{translation("monthlyView")}</span>
-                  <span>{formatCNY(computeMonthlyValue(subscription))}</span>
-                </p>
-                <p className="flex items-center justify-between">
-                  <span>{translation("annualView")}</span>
-                  <span>{formatCNY(computeAnnualValue(subscription))}</span>
-                </p>
-                <p className="flex items-center justify-between">
-                  <span>{translation("startDate")}</span>
-                  <span>{subscription.startDate.slice(0, 10)}</span>
-                </p>
-                <p className="flex items-center justify-between">
-                  <span>{translation("endDate")}</span>
-                  <span>{subscription.endDate ? subscription.endDate.slice(0, 10) : "-"}</span>
-                </p>
-                {subscription.notes && (
-                  <p className="mt-2 rounded-lg bg-zinc-100 px-3 py-2 text-xs leading-relaxed text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                    {subscription.notes}
-                  </p>
-                )}
-              </div>
-
-              <footer className="mt-4 flex items-center gap-2 text-sm">
-                <button
-                  type="button"
-                  onClick={() => handleEdit(subscription)}
-                  className="inline-flex flex-1 items-center justify-center rounded-lg border border-blue-500 px-3 py-1.5 text-blue-600 transition hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-950/40"
-                >
-                  {translation("editSubscription")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(subscription)}
-                  className="inline-flex items-center justify-center rounded-lg border border-rose-500 px-3 py-1.5 text-rose-600 transition hover:bg-rose-50 dark:border-rose-400 dark:text-rose-300 dark:hover:bg-rose-950/40"
-                >
-                  {translation("deleteSubscription")}
-                </button>
-              </footer>
-            </article>
+              subscription={subscription}
+              locale={locale}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))
         )}
       </section>
