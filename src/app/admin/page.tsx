@@ -147,7 +147,7 @@ export default async function AdminHomePage() {
         </h2>
         <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
           <RecentPosts posts={recentPosts} />
-          <RecentUploads images={recentUploads} />
+          <RecentUploads images={recentUploads} locale={locale} />
           <PostStatsTop locale={locale} />
         </div>
       </section>

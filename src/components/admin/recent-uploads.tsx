@@ -1,12 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { GalleryImage } from "@prisma/client";
+import type { AdminLocale } from "@/lib/admin-translations";
+import { localePath } from "@/lib/locale-path";
 
 type RecentUploadsProps = {
   images: GalleryImage[];
+  locale: AdminLocale;
 };
 
-export function RecentUploads({ images }: RecentUploadsProps) {
+export function RecentUploads({ images, locale }: RecentUploadsProps) {
   return (
     <div className="flex min-h-[320px] flex-col rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
       <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
@@ -20,7 +23,7 @@ export function RecentUploads({ images }: RecentUploadsProps) {
           {images.map((image) => (
             <Link
               key={image.id}
-              href={`/gallery/${image.id}`}
+              href={localePath(locale, `/gallery/${image.id}`)}
               className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900"
             >
               <Image
