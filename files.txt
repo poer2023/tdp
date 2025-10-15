@@ -57,6 +57,7 @@ docs/archive/planning/I18N_FIX_PLAN.md
 docs/archive/planning/ROADMAP_i18n_Upgrade.md
 docs/archive/planning/i18n-COMPLETION-SUMMARY.md
 docs/auto-deployment-setup.md
+docs/avatar-loading-fix.md
 docs/deployment-workflow.md
 docs/docker-build.md
 docs/docker-deployment.md
