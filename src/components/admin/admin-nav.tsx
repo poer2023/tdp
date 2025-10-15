@@ -28,7 +28,14 @@ const navSections: NavSection[] = [
   },
   {
     titleKey: "operations",
-    items: [{ labelKey: "contentIO", href: "/admin/content-io", descriptionKey: "importExport" }],
+    items: [
+      { labelKey: "contentIO", href: "/admin/content-io", descriptionKey: "importExport" },
+      {
+        labelKey: "subscriptions",
+        href: "/admin/subscriptions",
+        descriptionKey: "subscriptionDescription",
+      },
+    ],
   },
 ];
 
