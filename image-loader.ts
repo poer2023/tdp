@@ -28,7 +28,7 @@ export default function imageLoader({
     return query ? `${pathname}?${query}` : pathname;
   };
 
-  // API-served images: return as-is (already optimized)
+  // API-served images: return with width/quality hints
   if (src.startsWith("/api/uploads/")) {
     return withDimensions(src);
   }
@@ -39,22 +39,12 @@ export default function imageLoader({
     return withDimensions(apiSrc);
   }
 
-  // External images (e.g., Google profile pictures): return as-is
+  // External images: serve original URLs (custom loader disables Next.js optimizer routes)
   if (src.startsWith("http://") || src.startsWith("https://")) {
-    if (src.startsWith("https://lh3.googleusercontent.com/")) {
-      // Check if URL already has size parameter
-      if (/=s(\d+)-c$/.test(src)) {
-        // Replace existing size parameter
-        return src.replace(/=s(\d+)-c$/, `=s${width}-c`);
-      } else {
-        // Add size parameter to URL
-        return `${src}=s${width}-c`;
-      }
-    }
-    // For other external URLs, return as-is without adding query params
+    // Google profile photos already embed a size segment (e.g. =s96-c). Leave as-is for reliability.
     return src;
   }
 
-  // Other local images: use Next.js default optimization
-  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${normalizedQuality}`;
+  // Data URLs or other local assets: return as-is
+  return src;
 }
