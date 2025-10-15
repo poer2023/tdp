@@ -41,17 +41,16 @@ interface ParticlesAboutContentProps {
   data: AboutContentData;
   locale: AboutLocale;
   layoutClass: string;
-  localePath: (locale: string, path: string) => string;
 }
 
-export function ParticlesAboutContent({
-  data,
-  locale,
-  layoutClass,
-  localePath,
-}: ParticlesAboutContentProps) {
+export function ParticlesAboutContent({ data, locale, layoutClass }: ParticlesAboutContentProps) {
   const { theme } = useTheme();
   const [color, setColor] = useState("#000000");
+
+  // Define localePath internally to avoid RSC serialization issues
+  const localePath = (l: string, path: string) => {
+    return l === "en" ? path : `/${l}${path}`;
+  };
 
   useEffect(() => {
     setColor(theme === "dark" ? "#ffffff" : "#000000");

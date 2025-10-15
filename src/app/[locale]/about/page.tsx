@@ -23,14 +23,7 @@ export default async function LocalizedAboutPage({ params }: PageProps) {
   const l = resolveAboutLocale(locale);
   const data = aboutContent[l];
 
-  return (
-    <ParticlesAboutContent
-      data={data}
-      locale={l}
-      layoutClass={aboutLayoutClass}
-      localePath={localePath}
-    />
-  );
+  return <ParticlesAboutContent data={data} locale={l} layoutClass={aboutLayoutClass} />;
 }
 
 export function generateStaticParams() {
