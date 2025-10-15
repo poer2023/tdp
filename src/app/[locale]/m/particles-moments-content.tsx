@@ -6,20 +6,10 @@ import { useTheme } from "@/hooks/use-theme";
 import { MomentCard } from "@/components/moments/moment-card";
 import { OpenComposerButton } from "@/components/moments/open-composer-button";
 import { DeleteIcon } from "@/components/moments/delete-icon";
-
-type Moment = {
-  id: string;
-  slug: string | null;
-  content: string;
-  images: string[];
-  createdAt: Date;
-  visibility: string;
-  tags: string[];
-  location: unknown;
-};
+import type { MomentListItem } from "@/lib/moments";
 
 interface ParticlesMomentsContentProps {
-  moments: Moment[];
+  moments: MomentListItem[];
   locale: "en" | "zh";
   isAdmin: boolean;
 }

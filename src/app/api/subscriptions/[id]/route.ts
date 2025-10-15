@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { convertToCNY } from "@/lib/subscriptions";
-import { SUPPORTED_CURRENCIES } from "@/lib/subscription-shared";
-import type { SupportedCurrency } from "@/lib/subscription-shared";
+import { isSupportedCurrency } from "@/lib/subscription-shared";
 import { SubscriptionBillingCycle } from "@prisma/client";
 import type { Subscription } from "@prisma/client";
 
@@ -50,7 +49,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 
   const normalizedCurrency = typeof currency === "string" ? currency.toUpperCase() : "CNY";
-  if (!SUPPORTED_CURRENCIES.includes(normalizedCurrency)) {
+  if (!isSupportedCurrency(normalizedCurrency)) {
     return NextResponse.json({ error: "Unsupported currency" }, { status: 400 });
   }
 
@@ -86,10 +85,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     ? billingCycle
     : SubscriptionBillingCycle.MONTHLY;
 
-  const { convertedAmount, rate } = await convertToCNY(
-    numericAmount,
-    normalizedCurrency as SupportedCurrency
-  );
+  const { convertedAmount, rate } = await convertToCNY(numericAmount, normalizedCurrency);
 
   const updated = await prisma.subscription.update({
     where: { id },

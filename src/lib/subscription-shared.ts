@@ -16,6 +16,10 @@ export const SUPPORTED_CURRENCIES = [
 
 export type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];
 
+export function isSupportedCurrency(value: string): value is SupportedCurrency {
+  return SUPPORTED_CURRENCIES.includes(value as SupportedCurrency);
+}
+
 export function formatCNY(value: number) {
   return new Intl.NumberFormat("zh-CN", {
     style: "currency",
