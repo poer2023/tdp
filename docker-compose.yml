@@ -39,6 +39,25 @@ services:
       - tdp-net
     restart: "no"
 
+  # 权限初始化容器 - 修复 Docker volume 权限问题
+  # 容器运行用户(node uid=65532) 与 volume 所有者不匹配导致的写入权限问题
+  init-volumes:
+    image: alpine:latest
+    container_name: tdp-init-volumes
+    volumes:
+      - uploads-data:/data
+    command: >
+      sh -c "
+      echo '==> 初始化上传目录权限...';
+      mkdir -p /data/gallery /data/covers;
+      chown -R 65532:65532 /data;
+      chmod -R 755 /data;
+      echo '==> 权限设置完成';
+      ls -la /data;
+      echo '==> 目录所有者: uid=65532 (node 用户)';
+      "
+    restart: "no"
+
   app:
     # 使用 GHCR 预构建镜像；支持通过环境变量覆盖镜像标签
     image: ghcr.io/poer2023/tdp:${IMAGE_TAG:-latest}
@@ -64,6 +83,8 @@ services:
       postgres:
         condition: service_healthy
       migrate:
+        condition: service_completed_successfully
+      init-volumes:
         condition: service_completed_successfully
     networks:
       - tdp-net
