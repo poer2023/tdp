@@ -232,7 +232,7 @@ export default function SubscriptionDashboard({
 
   const currentMonthValue = useMemo(() => {
     if (monthlyTotals.length === 0) return 0;
-    return monthlyTotals[monthlyTotals.length - 1].value;
+    return monthlyTotals[monthlyTotals.length - 1]?.value ?? 0;
   }, [monthlyTotals]);
 
   const translation = (key: keyof typeof adminTranslations.en) => translate(locale, key);

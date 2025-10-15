@@ -110,14 +110,32 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-  React.ComponentProps<"div"> & {
-    hideLabel?: boolean;
-    hideIndicator?: boolean;
-    indicator?: "line" | "dot" | "dashed";
-    nameKey?: string;
-    labelKey?: string;
-  }) {
+}: React.ComponentProps<"div"> & {
+  active?: boolean;
+  payload?: Array<{
+    dataKey?: string;
+    name?: string;
+    value?: number;
+    color?: string;
+    payload?: Record<string, unknown>;
+  }>;
+  label?: React.ReactNode;
+  labelFormatter?: (value: React.ReactNode, payload: unknown[]) => React.ReactNode;
+  formatter?: (
+    value: number,
+    name: string,
+    item: unknown,
+    index: number,
+    payload: unknown
+  ) => React.ReactNode;
+  color?: string;
+  hideLabel?: boolean;
+  hideIndicator?: boolean;
+  indicator?: "line" | "dot" | "dashed";
+  nameKey?: string;
+  labelKey?: string;
+  labelClassName?: string;
+}) {
   const { config } = useChart();
 
   const tooltipLabel = React.useMemo(() => {
@@ -161,22 +179,24 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
-        {payload.map((item, index) => {
-          const key = `${nameKey || item.name || item.dataKey || "value"}`;
+        {payload.map((item: Record<string, unknown>, index: number) => {
+          const key = `${nameKey || (item.name as string) || (item.dataKey as string) || "value"}`;
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
           const indicatorColor =
-            color || (item as { payload?: { fill?: string } }).payload?.fill || item.color;
+            color ||
+            (item as { payload?: { fill?: string } }).payload?.fill ||
+            (item.color as string);
 
           return (
             <div
-              key={item.dataKey}
+              key={item.dataKey as string}
               className={cn(
                 "[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
                 indicator === "dot" && "items-center"
               )}
             >
               {formatter && item?.value !== undefined && item.name ? (
-                formatter(item.value, item.name, item, index, item.payload)
+                formatter(item.value as number, item.name as string, item, index, item.payload)
               ) : (
                 <>
                   {itemConfig?.icon ? (
@@ -186,13 +206,11 @@ function ChartTooltipContent({
                       <div
                         className={cn(
                           "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
-                          {
-                            "h-2.5 w-2.5": indicator === "dot",
-                            "w-1": indicator === "line",
-                            "w-0 border-[1.5px] border-dashed bg-transparent":
-                              indicator === "dashed",
-                            "my-0.5": nestLabel && indicator === "dashed",
-                          }
+                          indicator === "dot" && "h-2.5 w-2.5",
+                          indicator === "line" && "w-1",
+                          indicator === "dashed" &&
+                            "w-0 border-[1.5px] border-dashed bg-transparent",
+                          nestLabel && indicator === "dashed" && "my-0.5"
                         )}
                         style={
                           {
@@ -212,10 +230,10 @@ function ChartTooltipContent({
                     <div className="grid gap-1.5">
                       {nestLabel ? tooltipLabel : null}
                       <span className="text-muted-foreground">
-                        {itemConfig?.label || item.name}
+                        {itemConfig?.label || (item.name as string)}
                       </span>
                     </div>
-                    {item.value && (
+                    {typeof item.value === "number" && (
                       <span className="text-foreground font-mono font-medium tabular-nums">
                         {item.value.toLocaleString()}
                       </span>
@@ -239,11 +257,16 @@ function ChartLegendContent({
   payload,
   verticalAlign = "bottom",
   nameKey,
-}: React.ComponentProps<"div"> &
-  Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-    hideIcon?: boolean;
-    nameKey?: string;
-  }) {
+}: React.ComponentProps<"div"> & {
+  hideIcon?: boolean;
+  payload?: Array<{
+    value?: string;
+    dataKey?: string;
+    color?: string;
+  }>;
+  verticalAlign?: "top" | "bottom";
+  nameKey?: string;
+}) {
   const { config } = useChart();
 
   if (!payload?.length) {
@@ -258,13 +281,13 @@ function ChartLegendContent({
         className
       )}
     >
-      {payload.map((item) => {
-        const key = `${nameKey || item.dataKey || "value"}`;
+      {payload.map((item: Record<string, unknown>) => {
+        const key = `${nameKey || (item.dataKey as string) || "value"}`;
         const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
         return (
           <div
-            key={item.value}
+            key={item.value as string}
             className={cn(
               "[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3"
             )}
@@ -275,7 +298,7 @@ function ChartLegendContent({
               <div
                 className="h-2 w-2 shrink-0 rounded-[2px]"
                 style={{
-                  backgroundColor: item.color,
+                  backgroundColor: item.color as string,
                 }}
               />
             )}
