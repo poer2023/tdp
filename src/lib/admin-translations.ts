@@ -85,6 +85,7 @@ export const adminTranslations = {
     noDataYet: "No data yet",
     uniqueVisitors: "unique visitors",
     visits: "visits",
+    registeredUsers: "Registered Users",
 
     // Page types
     postsType: "Posts",
@@ -173,6 +174,7 @@ export const adminTranslations = {
     noDataYet: "暂无数据",
     uniqueVisitors: "独立访客",
     visits: "次",
+    registeredUsers: "注册用户",
 
     // Page types
     postsType: "文章",

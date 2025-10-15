@@ -176,6 +176,7 @@ export default async function AdminAnalyticsPage() {
       previousWeekViews,
       previousMonthViews,
       totalVisitors,
+      totalUsers,
       rawPageViews7d,
       rawPageViews30d,
       localeStats,
@@ -220,6 +221,7 @@ export default async function AdminAnalyticsPage() {
         },
       }),
       prisma.visitor.count(),
+      prisma.user.count(),
       prisma.pageView.findMany({
         where: {
           createdAt: {
@@ -339,6 +341,7 @@ export default async function AdminAnalyticsPage() {
             value={totalVisitors > 0 ? Math.round(weekViews / 7) : 0}
             subtitle={t(locale, "dailyAverage")}
           />
+          <StatCard title={t(locale, "registeredUsers")} value={totalUsers} />
         </div>
 
         <section className="grid gap-6 md:grid-cols-2">
