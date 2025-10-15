@@ -6,23 +6,29 @@ import { isSupportedCurrency } from "@/lib/subscription-shared";
 import { SubscriptionBillingCycle } from "@prisma/client";
 import type { Subscription } from "@prisma/client";
 
+function toIsoString(value: Date | string | null | undefined) {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
 function serializeSubscription(subscription: Subscription) {
   return {
     id: subscription.id,
     userId: subscription.userId,
     name: subscription.name,
     currency: subscription.currency,
-    amount: Number(subscription.amount),
-    amountCNY: Number(subscription.amountCNY),
+    amount: Number(subscription.amount ?? 0),
+    amountCNY: Number(subscription.amountCNY ?? 0),
     billingCycle: subscription.billingCycle as SubscriptionBillingCycle,
-    startDate: subscription.startDate.toISOString(),
-    endDate: subscription.endDate ? subscription.endDate.toISOString() : null,
+    startDate: toIsoString(subscription.startDate) ?? new Date(0).toISOString(),
+    endDate: toIsoString(subscription.endDate),
     notes: subscription.notes ?? "",
     originalRateToCNY: subscription.originalRateToCNY
       ? Number(subscription.originalRateToCNY)
       : null,
-    createdAt: subscription.createdAt.toISOString(),
-    updatedAt: subscription.updatedAt.toISOString(),
+    createdAt: toIsoString(subscription.createdAt) ?? new Date(0).toISOString(),
+    updatedAt: toIsoString(subscription.updatedAt) ?? new Date().toISOString(),
   };
 }
 
