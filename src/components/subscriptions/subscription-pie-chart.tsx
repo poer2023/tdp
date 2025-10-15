@@ -56,10 +56,6 @@ export function SubscriptionPieChart({ data, viewMode, locale }: SubscriptionPie
     return config;
   }, [data]);
 
-  const totalValue = useMemo(() => {
-    return data.reduce((acc, item) => acc + item.value, 0);
-  }, [data]);
-
   const chartData = useMemo(() => {
     return data.map((item, index) => ({
       ...item,
@@ -143,7 +139,7 @@ export function SubscriptionPieChart({ data, viewMode, locale }: SubscriptionPie
                 fontSize={12}
                 fontWeight={500}
                 fill="currentColor"
-                formatter={(value: number) => formatCNY(value)}
+                formatter={(value: number) => formatCNY(value) as unknown as React.ReactNode}
               />
             </Pie>
           </PieChart>

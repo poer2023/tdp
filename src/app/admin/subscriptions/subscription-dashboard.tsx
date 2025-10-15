@@ -216,11 +216,6 @@ export default function SubscriptionDashboard({
     return labels;
   }, [filteredItems, locale]);
 
-  const maxBarValue = useMemo(() => {
-    if (barChartData.length === 0) return 1;
-    return Math.max(...barChartData.map((entry) => entry.value), 1);
-  }, [barChartData]);
-
   const maxLineValue = useMemo(() => {
     if (monthlyTotals.length === 0) return 1;
     return Math.max(...monthlyTotals.map((entry) => entry.value), 1);
@@ -239,38 +234,6 @@ export default function SubscriptionDashboard({
     if (monthlyTotals.length === 0) return 0;
     return monthlyTotals[monthlyTotals.length - 1].value;
   }, [monthlyTotals]);
-
-  const linePathData = useMemo(() => {
-    if (monthlyTotals.length === 0) {
-      return {
-        path: "",
-        area: "",
-        points: [] as { x: number; y: number; label: string; value: number }[],
-      };
-    }
-
-    const width = 400;
-    const baseline = 140;
-
-    const coordinates = monthlyTotals.map((entry, index) => {
-      const x =
-        monthlyTotals.length === 1 ? width / 2 : (index / (monthlyTotals.length - 1)) * width;
-      const ratio = maxLineValue === 0 ? 0 : entry.value / maxLineValue;
-      const y = baseline - ratio * 120;
-      return { x, y, label: entry.label, value: entry.value };
-    });
-
-    const path = coordinates
-      .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
-      .join(" ");
-
-    const area =
-      `${coordinates.length ? `M ${coordinates[0].x} ${baseline}` : ""} ` +
-      coordinates.map((point) => `L ${point.x} ${point.y}`).join(" ") +
-      (coordinates.length ? ` L ${coordinates[coordinates.length - 1].x} ${baseline} Z` : "");
-
-    return { path, area, points: coordinates };
-  }, [monthlyTotals, maxLineValue]);
 
   const translation = (key: keyof typeof adminTranslations.en) => translate(locale, key);
 

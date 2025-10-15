@@ -64,8 +64,6 @@ export function StatsCard({
   chartData,
   onActionClick,
   className,
-  defaultBarColor = "bg-zinc-200 dark:bg-zinc-700",
-  highlightedBarColor = "bg-blue-500",
 }: StatsCardProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const barRefs = useRef<(HTMLDivElement | null)[]>([]);
