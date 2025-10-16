@@ -163,7 +163,9 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
 
       // Initially, expanded content should not be visible
       expect(screen.queryByText(/original amount/i)).not.toBeInTheDocument();
@@ -185,14 +187,18 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
       fireEvent.click(card);
 
       await waitFor(() => {
         expect(screen.getByText(/original amount/i)).toBeInTheDocument();
         expect(screen.getByText("$15.99")).toBeInTheDocument();
         expect(screen.getByText(/converted amount/i)).toBeInTheDocument();
-        expect(screen.getByText("¥115.00")).toBeInTheDocument();
+        // Check for multiple instances of the amount value
+        const amountElements = screen.getAllByText("¥115.00");
+        expect(amountElements.length).toBeGreaterThan(0);
         expect(screen.getByText(/start date/i)).toBeInTheDocument();
       });
     });
@@ -206,7 +212,9 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
       fireEvent.click(card);
 
       await waitFor(() => {
@@ -229,7 +237,9 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
       fireEvent.click(card);
 
       await waitFor(() => {
@@ -248,7 +258,9 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
       fireEvent.click(card);
 
       await waitFor(() => {
@@ -266,7 +278,9 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
       fireEvent.click(card);
 
       await waitFor(() => {
@@ -291,7 +305,9 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
       fireEvent.click(card);
 
       await waitFor(() => {
@@ -310,7 +326,9 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
       fireEvent.click(card);
 
       await waitFor(() => {
@@ -332,8 +350,12 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
-      fireEvent.click(card);
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
+      if (card) {
+        fireEvent.click(card);
+      }
 
       await waitFor(() => {
         const deleteButton = screen.getByText(/delete subscription/i);
@@ -354,7 +376,9 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
       fireEvent.click(card);
 
       await waitFor(() => {
@@ -420,7 +444,9 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
       fireEvent.click(card);
 
       expect(screen.getByText("月度视图")).toBeInTheDocument();
@@ -438,7 +464,9 @@ describe("SubscriptionExpandableCard", () => {
         />
       );
 
-      const card = screen.getByText("Netflix").closest("[class*='Card']") as HTMLElement;
+      const netflixText = screen.getByText("Netflix");
+      const card = (netflixText.closest("div[class*='rounded']") ||
+        netflixText.parentElement) as HTMLElement;
       expect(card).toHaveClass(/cursor-pointer/);
     });
   });

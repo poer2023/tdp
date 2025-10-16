@@ -106,6 +106,7 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
   return (
     <form
       onSubmit={handleSubmit}
+      noValidate
       className="space-y-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">

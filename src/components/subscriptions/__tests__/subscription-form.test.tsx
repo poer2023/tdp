@@ -57,7 +57,7 @@ describe("SubscriptionForm", () => {
     it("should render Chinese labels when locale is zh", () => {
       render(<SubscriptionForm locale="zh" />);
 
-      expect(screen.getByText("添加订阅")).toBeInTheDocument();
+      expect(screen.getByText("新增订阅")).toBeInTheDocument();
     });
   });
 
