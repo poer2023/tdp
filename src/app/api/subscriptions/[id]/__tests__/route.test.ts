@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, PUT, DELETE } from "../route";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
-import { prisma } from "@/lib/prisma";
 
 // Mock dependencies
 vi.mock("next-auth", () => ({
@@ -10,7 +9,7 @@ vi.mock("next-auth", () => ({
 }));
 
 vi.mock("@/lib/prisma", () => ({
-  prisma: {
+  default: {
     subscription: {
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -18,6 +17,10 @@ vi.mock("@/lib/prisma", () => ({
     },
   },
 }));
+
+import prisma from "@/lib/prisma";
+
+const mockPrisma = vi.mocked(prisma);
 
 const mockSubscription = {
   id: "test-subscription-id",
@@ -63,9 +66,7 @@ describe("GET /api/subscriptions/[id]", () => {
     });
 
     it("should return subscription when it exists and belongs to user", async () => {
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockSubscription
-      );
+      mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
 
       const request = new NextRequest(
         "http://localhost:3000/api/subscriptions/test-subscription-id"
@@ -79,16 +80,14 @@ describe("GET /api/subscriptions/[id]", () => {
     });
 
     it("should query by correct subscription id", async () => {
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockSubscription
-      );
+      mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
 
       const request = new NextRequest(
         "http://localhost:3000/api/subscriptions/test-subscription-id"
       );
       await GET(request, { params: { id: "test-subscription-id" } });
 
-      expect(prisma.subscription.findUnique).toHaveBeenCalledWith({
+      expect(mockPrisma.subscription.findUnique).toHaveBeenCalledWith({
         where: { id: "test-subscription-id" },
       });
     });
@@ -104,7 +103,7 @@ describe("GET /api/subscriptions/[id]", () => {
     });
 
     it("should return 404 when subscription does not exist", async () => {
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      mockPrisma.subscription.findUnique.mockResolvedValue(null);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions/nonexistent-id");
       const response = await GET(request, { params: { id: "nonexistent-id" } });
@@ -115,7 +114,7 @@ describe("GET /api/subscriptions/[id]", () => {
     });
 
     it("should return 403 when subscription belongs to different user", async () => {
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockPrisma.subscription.findUnique.mockResolvedValue({
         ...mockSubscription,
         userId: "different-user-id",
       });
@@ -136,9 +135,7 @@ describe("GET /api/subscriptions/[id]", () => {
       (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({
         user: { id: "test-user-id" },
       });
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error("Database error")
-      );
+      mockPrisma.subscription.findUnique.mockRejectedValue(new Error("Database error"));
 
       const request = new NextRequest(
         "http://localhost:3000/api/subscriptions/test-subscription-id"
@@ -178,9 +175,7 @@ describe("PUT /api/subscriptions/[id]", () => {
 
     beforeEach(() => {
       (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockSubscription
-      );
+      mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
     });
 
     it("should return 400 when required fields are missing", async () => {
@@ -225,9 +220,7 @@ describe("PUT /api/subscriptions/[id]", () => {
 
     beforeEach(() => {
       (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockSubscription
-      );
+      mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
     });
 
     it("should update subscription with all fields", async () => {
@@ -238,9 +231,7 @@ describe("PUT /api/subscriptions/[id]", () => {
         amountCNY: 143.0,
       };
 
-      (prisma.subscription.update as ReturnType<typeof vi.fn>).mockResolvedValue(
-        updatedSubscription
-      );
+      mockPrisma.subscription.update.mockResolvedValue(updatedSubscription);
 
       const request = new NextRequest(
         "http://localhost:3000/api/subscriptions/test-subscription-id",
@@ -272,9 +263,7 @@ describe("PUT /api/subscriptions/[id]", () => {
         endDate: null,
       };
 
-      (prisma.subscription.update as ReturnType<typeof vi.fn>).mockResolvedValue(
-        updatedSubscription
-      );
+      mockPrisma.subscription.update.mockResolvedValue(updatedSubscription);
 
       const request = new NextRequest(
         "http://localhost:3000/api/subscriptions/test-subscription-id",
@@ -300,7 +289,7 @@ describe("PUT /api/subscriptions/[id]", () => {
     });
 
     it("should call prisma update with correct parameters", async () => {
-      (prisma.subscription.update as ReturnType<typeof vi.fn>).mockResolvedValue(mockSubscription);
+      mockPrisma.subscription.update.mockResolvedValue(mockSubscription);
 
       const request = new NextRequest(
         "http://localhost:3000/api/subscriptions/test-subscription-id",
@@ -320,7 +309,7 @@ describe("PUT /api/subscriptions/[id]", () => {
 
       await PUT(request, { params: { id: "test-subscription-id" } });
 
-      expect(prisma.subscription.update).toHaveBeenCalledWith({
+      expect(mockPrisma.subscription.update).toHaveBeenCalledWith({
         where: { id: "test-subscription-id" },
         data: expect.objectContaining({
           name: "Netflix",
@@ -341,7 +330,7 @@ describe("PUT /api/subscriptions/[id]", () => {
     });
 
     it("should return 404 when subscription does not exist", async () => {
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      mockPrisma.subscription.findUnique.mockResolvedValue(null);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions/nonexistent-id", {
         method: "PUT",
@@ -360,7 +349,7 @@ describe("PUT /api/subscriptions/[id]", () => {
     });
 
     it("should return 403 when subscription belongs to different user", async () => {
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockPrisma.subscription.findUnique.mockResolvedValue({
         ...mockSubscription,
         userId: "different-user-id",
       });
@@ -392,15 +381,11 @@ describe("PUT /api/subscriptions/[id]", () => {
 
     beforeEach(() => {
       (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockSubscription
-      );
+      mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
     });
 
     it("should return 500 when database update fails", async () => {
-      (prisma.subscription.update as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error("Database error")
-      );
+      mockPrisma.subscription.update.mockRejectedValue(new Error("Database error"));
 
       const request = new NextRequest(
         "http://localhost:3000/api/subscriptions/test-subscription-id",
@@ -450,13 +435,11 @@ describe("DELETE /api/subscriptions/[id]", () => {
 
     beforeEach(() => {
       (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockSubscription
-      );
+      mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
     });
 
     it("should delete subscription when it exists and belongs to user", async () => {
-      (prisma.subscription.delete as ReturnType<typeof vi.fn>).mockResolvedValue(mockSubscription);
+      mockPrisma.subscription.delete.mockResolvedValue(mockSubscription);
 
       const request = new NextRequest(
         "http://localhost:3000/api/subscriptions/test-subscription-id",
@@ -473,7 +456,7 @@ describe("DELETE /api/subscriptions/[id]", () => {
     });
 
     it("should call prisma delete with correct id", async () => {
-      (prisma.subscription.delete as ReturnType<typeof vi.fn>).mockResolvedValue(mockSubscription);
+      mockPrisma.subscription.delete.mockResolvedValue(mockSubscription);
 
       const request = new NextRequest(
         "http://localhost:3000/api/subscriptions/test-subscription-id",
@@ -484,7 +467,7 @@ describe("DELETE /api/subscriptions/[id]", () => {
 
       await DELETE(request, { params: { id: "test-subscription-id" } });
 
-      expect(prisma.subscription.delete).toHaveBeenCalledWith({
+      expect(mockPrisma.subscription.delete).toHaveBeenCalledWith({
         where: { id: "test-subscription-id" },
       });
     });
@@ -500,7 +483,7 @@ describe("DELETE /api/subscriptions/[id]", () => {
     });
 
     it("should return 404 when subscription does not exist", async () => {
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      mockPrisma.subscription.findUnique.mockResolvedValue(null);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions/nonexistent-id", {
         method: "DELETE",
@@ -514,7 +497,7 @@ describe("DELETE /api/subscriptions/[id]", () => {
     });
 
     it("should return 403 when subscription belongs to different user", async () => {
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockPrisma.subscription.findUnique.mockResolvedValue({
         ...mockSubscription,
         userId: "different-user-id",
       });
@@ -539,15 +522,11 @@ describe("DELETE /api/subscriptions/[id]", () => {
 
     beforeEach(() => {
       (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
-      (prisma.subscription.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockSubscription
-      );
+      mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
     });
 
     it("should return 500 when database deletion fails", async () => {
-      (prisma.subscription.delete as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error("Database error")
-      );
+      mockPrisma.subscription.delete.mockRejectedValue(new Error("Database error"));
 
       const request = new NextRequest(
         "http://localhost:3000/api/subscriptions/test-subscription-id",

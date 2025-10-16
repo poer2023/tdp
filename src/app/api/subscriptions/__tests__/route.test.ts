@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, POST } from "../route";
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
-import { prisma } from "@/lib/prisma";
 
 // Mock dependencies
 vi.mock("next-auth", () => ({
@@ -10,13 +9,17 @@ vi.mock("next-auth", () => ({
 }));
 
 vi.mock("@/lib/prisma", () => ({
-  prisma: {
+  default: {
     subscription: {
       findMany: vi.fn(),
       create: vi.fn(),
     },
   },
 }));
+
+import prisma from "@/lib/prisma";
+
+const mockPrisma = vi.mocked(prisma);
 
 describe("GET /api/subscriptions", () => {
   beforeEach(() => {
@@ -88,9 +91,7 @@ describe("GET /api/subscriptions", () => {
     });
 
     it("should return all subscriptions for authenticated user", async () => {
-      (prisma.subscription.findMany as ReturnType<typeof vi.fn>).mockResolvedValue(
-        mockSubscriptions
-      );
+      mockPrisma.subscription.findMany.mockResolvedValue(mockSubscriptions);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions");
       const response = await GET(request);
@@ -105,14 +106,14 @@ describe("GET /api/subscriptions", () => {
       const request = new NextRequest("http://localhost:3000/api/subscriptions");
       await GET(request);
 
-      expect(prisma.subscription.findMany).toHaveBeenCalledWith({
+      expect(mockPrisma.subscription.findMany).toHaveBeenCalledWith({
         where: { userId: "test-user-id" },
         orderBy: { createdAt: "desc" },
       });
     });
 
     it("should return empty array when user has no subscriptions", async () => {
-      (prisma.subscription.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+      mockPrisma.subscription.findMany.mockResolvedValue([]);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions");
       const response = await GET(request);
@@ -128,9 +129,7 @@ describe("GET /api/subscriptions", () => {
       (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({
         user: { id: "test-user-id" },
       });
-      (prisma.subscription.findMany as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error("Database connection failed")
-      );
+      mockPrisma.subscription.findMany.mockRejectedValue(new Error("Database connection failed"));
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions");
       const response = await GET(request);
@@ -286,7 +285,7 @@ describe("POST /api/subscriptions", () => {
         updatedAt: new Date(),
       };
 
-      (prisma.subscription.create as ReturnType<typeof vi.fn>).mockResolvedValue(newSubscription);
+      mockPrisma.subscription.create.mockResolvedValue(newSubscription);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions", {
         method: "POST",
@@ -326,7 +325,7 @@ describe("POST /api/subscriptions", () => {
         updatedAt: new Date(),
       };
 
-      (prisma.subscription.create as ReturnType<typeof vi.fn>).mockResolvedValue(newSubscription);
+      mockPrisma.subscription.create.mockResolvedValue(newSubscription);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions", {
         method: "POST",
@@ -348,7 +347,7 @@ describe("POST /api/subscriptions", () => {
     });
 
     it("should associate subscription with authenticated user", async () => {
-      (prisma.subscription.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockPrisma.subscription.create.mockResolvedValue({
         id: "new-id",
         userId: "test-user-id",
         name: "Test",
@@ -377,7 +376,7 @@ describe("POST /api/subscriptions", () => {
 
       await POST(request);
 
-      expect(prisma.subscription.create).toHaveBeenCalledWith(
+      expect(mockPrisma.subscription.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             userId: "test-user-id",
@@ -397,9 +396,7 @@ describe("POST /api/subscriptions", () => {
     });
 
     it("should return 500 when database creation fails", async () => {
-      (prisma.subscription.create as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error("Database error")
-      );
+      mockPrisma.subscription.create.mockRejectedValue(new Error("Database error"));
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions", {
         method: "POST",
