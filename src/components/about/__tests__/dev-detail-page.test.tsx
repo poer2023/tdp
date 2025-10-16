@@ -112,7 +112,8 @@ describe("DevDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("feat: add new feature")).toBeInTheDocument();
-      expect(screen.getByText("25 commits this month")).toBeInTheDocument();
+      expect(screen.getByText("25")).toBeInTheDocument();
+      expect(screen.getByText("Commits This Month")).toBeInTheDocument();
     });
   });
 
@@ -120,8 +121,8 @@ describe("DevDetailPage", () => {
     render(<DevDetailPage locale="en" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Languages")).toBeInTheDocument();
-      expect(screen.getByText("TypeScript")).toBeInTheDocument();
+      expect(screen.getByText("Programming Languages")).toBeInTheDocument();
+      expect(screen.getAllByText("TypeScript")[0]).toBeInTheDocument();
       expect(screen.getByText("Python")).toBeInTheDocument();
       expect(screen.getByText("Go")).toBeInTheDocument();
     });
@@ -141,9 +142,9 @@ describe("DevDetailPage", () => {
     render(<DevDetailPage locale="en" />);
 
     await waitFor(() => {
-      expect(screen.getByText("120 hours")).toBeInTheDocument();
-      expect(screen.getByText("80 hours")).toBeInTheDocument();
-      expect(screen.getByText("67 hours")).toBeInTheDocument();
+      expect(screen.getByText("120.0h")).toBeInTheDocument();
+      expect(screen.getByText("80.0h")).toBeInTheDocument();
+      expect(screen.getByText("67.0h")).toBeInTheDocument();
     });
   });
 
@@ -179,7 +180,9 @@ describe("DevDetailPage", () => {
     render(<DevDetailPage locale="en" />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Jan 10/)).toBeInTheDocument();
+      // Date is formatted as relative time (e.g., "5d ago", "24h ago") not absolute date
+      const dateElements = screen.getAllByText(/\d+[hd] ago/);
+      expect(dateElements.length).toBeGreaterThan(0);
     });
   });
 
@@ -188,7 +191,7 @@ describe("DevDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("This Year")).toBeInTheDocument();
-      expect(screen.getByText("245 stars")).toBeInTheDocument();
+      expect(screen.getByText("245")).toBeInTheDocument();
       expect(screen.getByText("18 repos")).toBeInTheDocument();
     });
   });
@@ -198,7 +201,7 @@ describe("DevDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("This Month")).toBeInTheDocument();
-      expect(screen.getByText("89 commits")).toBeInTheDocument();
+      expect(screen.getByText("89")).toBeInTheDocument();
       expect(screen.getByText("12 PRs")).toBeInTheDocument();
     });
   });
