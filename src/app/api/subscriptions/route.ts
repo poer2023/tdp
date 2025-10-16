@@ -60,10 +60,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { name, currency, amount, billingCycle, startDate, endDate, notes = "" } = body ?? {};
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch (_error) {
+      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    }
+    const payload =
+      typeof body === "object" && body !== null
+        ? (body as {
+            name?: unknown;
+            currency?: unknown;
+            amount?: unknown;
+            billingCycle?: unknown;
+            startDate?: unknown;
+            endDate?: unknown;
+            notes?: unknown;
+          })
+        : {};
+    const { name, currency, amount, billingCycle, startDate, endDate, notes = "" } = payload;
 
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
+    if (typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
@@ -83,6 +100,9 @@ export async function POST(request: NextRequest) {
 
     let parsedStartDate: Date;
     let parsedEndDate: Date | null = null;
+    if (typeof startDate !== "string" && !(startDate instanceof Date)) {
+      return NextResponse.json({ error: "Invalid dates provided" }, { status: 400 });
+    }
 
     try {
       parsedStartDate = new Date(startDate);
@@ -90,6 +110,9 @@ export async function POST(request: NextRequest) {
         throw new Error("Invalid start date");
       }
       if (endDate) {
+        if (typeof endDate !== "string" && !(endDate instanceof Date)) {
+          throw new Error("Invalid end date");
+        }
         parsedEndDate = new Date(endDate);
         if (Number.isNaN(parsedEndDate.getTime())) {
           throw new Error("Invalid end date");
@@ -100,9 +123,15 @@ export async function POST(request: NextRequest) {
     }
 
     const cycleValues = Object.values(SubscriptionBillingCycle);
-    const normalizedCycle = cycleValues.includes(billingCycle)
-      ? billingCycle
-      : SubscriptionBillingCycle.MONTHLY;
+    if (typeof billingCycle !== "string") {
+      return NextResponse.json({ error: "Invalid billing cycle" }, { status: 400 });
+    }
+    const normalizedCycle = cycleValues.includes(billingCycle as SubscriptionBillingCycle)
+      ? (billingCycle as SubscriptionBillingCycle)
+      : null;
+    if (!normalizedCycle) {
+      return NextResponse.json({ error: "Invalid billing cycle" }, { status: 400 });
+    }
 
     const { convertedAmount, rate } = await convertToCNY(numericAmount, normalizedCurrency);
 
@@ -121,7 +150,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ subscription: serializeSubscription(subscription) });
+    return NextResponse.json(
+      { subscription: serializeSubscription(subscription) },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Failed to create subscription:", error);
     return NextResponse.json({ error: "Failed to create subscription" }, { status: 500 });

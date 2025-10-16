@@ -39,12 +39,22 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 
   const { id } = params;
-  const existing = await prisma.subscription.findUnique({
-    where: { id },
-  });
+  let existing: Subscription | null;
+  try {
+    existing = await prisma.subscription.findUnique({
+      where: { id },
+    });
+  } catch (error) {
+    console.error("Failed to fetch subscription before update:", error);
+    return NextResponse.json({ error: "Failed to fetch subscription" }, { status: 500 });
+  }
 
-  if (!existing || existing.userId !== session.user.id) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!existing) {
+    return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
+  }
+
+  if (existing.userId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await request.json();
@@ -91,24 +101,29 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     ? billingCycle
     : SubscriptionBillingCycle.MONTHLY;
 
-  const { convertedAmount, rate } = await convertToCNY(numericAmount, normalizedCurrency);
+  try {
+    const { convertedAmount, rate } = await convertToCNY(numericAmount, normalizedCurrency);
 
-  const updated = await prisma.subscription.update({
-    where: { id },
-    data: {
-      name: name.trim(),
-      currency: normalizedCurrency,
-      amount: numericAmount,
-      amountCNY: convertedAmount,
-      billingCycle: normalizedCycle,
-      startDate: parsedStartDate,
-      endDate: parsedEndDate,
-      notes: typeof notes === "string" ? notes.trim() : "",
-      originalRateToCNY: rate,
-    },
-  });
+    const updated = await prisma.subscription.update({
+      where: { id },
+      data: {
+        name: name.trim(),
+        currency: normalizedCurrency,
+        amount: numericAmount,
+        amountCNY: convertedAmount,
+        billingCycle: normalizedCycle,
+        startDate: parsedStartDate,
+        endDate: parsedEndDate,
+        notes: typeof notes === "string" ? notes.trim() : "",
+        originalRateToCNY: rate,
+      },
+    });
 
-  return NextResponse.json({ subscription: serialize(updated) });
+    return NextResponse.json({ subscription: serialize(updated) });
+  } catch (error) {
+    console.error("Failed to update subscription:", error);
+    return NextResponse.json({ error: "Failed to update subscription" }, { status: 500 });
+  }
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
@@ -118,17 +133,58 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   }
 
   const { id } = params;
-  const existing = await prisma.subscription.findUnique({
-    where: { id },
-  });
-
-  if (!existing || existing.userId !== session.user.id) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  let existing: Subscription | null;
+  try {
+    existing = await prisma.subscription.findUnique({
+      where: { id },
+    });
+  } catch (error) {
+    console.error("Failed to fetch subscription before delete:", error);
+    return NextResponse.json({ error: "Failed to fetch subscription" }, { status: 500 });
   }
 
-  await prisma.subscription.delete({
-    where: { id },
-  });
+  if (!existing) {
+    return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
+  }
 
-  return NextResponse.json({ success: true });
+  if (existing.userId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    await prisma.subscription.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ message: "Subscription deleted successfully" });
+  } catch (error) {
+    console.error("Failed to delete subscription:", error);
+    return NextResponse.json({ error: "Failed to delete subscription" }, { status: 500 });
+  }
+}
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const subscription = await prisma.subscription.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!subscription) {
+      return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
+    }
+
+    if (subscription.userId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    return NextResponse.json({ subscription: serialize(subscription) });
+  } catch (error) {
+    console.error("Failed to fetch subscription:", error);
+    return NextResponse.json({ error: "Failed to fetch subscription" }, { status: 500 });
+  }
 }
