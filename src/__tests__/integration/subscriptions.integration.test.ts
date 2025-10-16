@@ -90,7 +90,7 @@ describe("Subscriptions API Integration", () => {
       });
 
       const createResponse = await createSubscription(createRequest);
-      expect(createResponse.status).toBe(200);
+      expect(createResponse.status).toBe(201);
 
       const createResult = await createResponse.json();
       expect(createResult.subscription.name).toBe("Spotify");
@@ -181,7 +181,7 @@ describe("Subscriptions API Integration", () => {
       expect(deleteResponse.status).toBe(200);
 
       const deleteResult = await deleteResponse.json();
-      expect(deleteResult.success).toBe(true);
+      expect(deleteResult.message).toBe("Subscription deleted successfully");
 
       // 6. Verify deletion - subscription should not exist (list should be empty)
       (prisma.subscription.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
