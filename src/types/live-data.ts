@@ -55,7 +55,7 @@ export interface GameSession {
   gameName: string;
   platform: GamingPlatform["id"];
   playtime: number; // hours
-  lastPlayed: Date;
+  lastPlayed: Date | string; // Date object in code, serialized to ISO string in JSON
   achievements?: string[];
   progress?: number; // percentage
   cover?: string;
@@ -71,11 +71,11 @@ export interface GamingData {
   stats: GamingStats;
   currentlyPlaying: GameSession[];
   recentSessions: Array<{
-    date: Date;
+    date: Date | string; // Date object in code, serialized to ISO string in JSON
     gameName: string;
     duration: number;
   }>;
-  playtimeHeatmap: Record<string, number>; // date -> hours
+  playtimeHeatmap: Array<{ date: Date | string; value: number }>; // 365 days of playtime data
 }
 
 // ============================================================================
@@ -140,7 +140,7 @@ export interface GitHubRepo {
   language: string;
   commitsThisMonth: number;
   lastCommit: {
-    date: Date;
+    date: Date | string; // Date object in code, serialized to ISO string in JSON
     message: string;
   };
 }
@@ -160,7 +160,7 @@ export interface WakaTimeLanguage {
 
 export interface DevData {
   stats: DevStats;
-  contributionHeatmap: Record<string, number>; // date -> commit count
+  contributionHeatmap: Array<{ date: Date | string; value: number }>; // 365 days of contribution data
   activeRepos: GitHubRepo[];
   languages?: WakaTimeLanguage[];
 }
@@ -185,7 +185,7 @@ export interface Article {
   title: string;
   source: string;
   url: string;
-  readAt: Date;
+  readAt: Date | string; // Date object in code, serialized to ISO string in JSON
 }
 
 export interface ReadingStats {
@@ -213,7 +213,7 @@ export interface SocialStats {
 }
 
 export interface SocialInteraction {
-  timestamp: Date;
+  timestamp: Date | string; // Date object in code, serialized to ISO string in JSON
   type: "chat" | "call" | "group";
   platform: string;
   anonymizedId: string; // Anonymized for privacy
@@ -240,7 +240,7 @@ export interface Subscription {
   name: string;
   category: string;
   amount?: string; // Can be anonymized like "$$$"
-  renewalDate?: Date;
+  renewalDate?: Date | string; // Date object in code, serialized to ISO string in JSON
 }
 
 export interface FinanceData {

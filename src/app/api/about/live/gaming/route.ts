@@ -70,15 +70,15 @@ export async function GET() {
 }
 
 function generateMockHeatmapData() {
-  const heatmap: Record<string, number> = {};
+  const heatmap: Array<{ date: Date; value: number }> = [];
   const now = new Date();
   for (let i = 0; i < 365; i++) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
-    const dateStr = date.toISOString().split("T")[0];
-    if (dateStr) {
-      heatmap[dateStr] = Math.random() < 0.7 ? Math.floor(Math.random() * 5) : 0;
-    }
+    heatmap.push({
+      date,
+      value: Math.random() < 0.7 ? Math.floor(Math.random() * 5) : 0,
+    });
   }
   return heatmap;
 }

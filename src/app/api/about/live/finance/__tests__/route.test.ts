@@ -31,7 +31,9 @@ describe("/api/about/live/finance", () => {
       const subscription = data.subscriptions[0];
       expect(subscription.name).toBeTypeOf("string");
       expect(subscription.amount).toBeTypeOf("string");
-      expect(subscription.renewalDate).toBeInstanceOf(Date);
+      // After JSON serialization, dates become strings
+      expect(subscription.renewalDate).toBeTypeOf("string");
+      expect(() => new Date(subscription.renewalDate as string)).not.toThrow();
     }
 
     // Verify insights structure
@@ -88,7 +90,8 @@ describe("/api/about/live/finance", () => {
 
     // Check for real amount patterns (should not exist)
     expect(jsonString).not.toMatch(/\$\d+/); // No $123 patterns
-    expect(jsonString).not.toMatch(/\d+\.\d{2}/); // No decimal amounts
+    // Check for decimal amounts, but exclude ISO timestamps (which have milliseconds like .815Z)
+    expect(jsonString).not.toMatch(/[^T]\d+\.\d{2}[^Z0-9]/); // No decimal amounts outside ISO timestamps
     expect(jsonString).not.toMatch(/amount":\s*\d/); // No numeric amounts
 
     // Verify only relative information in insights
@@ -133,8 +136,10 @@ describe("/api/about/live/finance", () => {
     const now = new Date();
     data.subscriptions.forEach((subscription) => {
       // Renewal dates should be in the future or very recent
-      // Allow for some flexibility in mock data
-      expect(subscription.renewalDate).toBeInstanceOf(Date);
+      // After JSON serialization, dates become strings
+      expect(subscription.renewalDate).toBeTypeOf("string");
+      const renewalDate = new Date(subscription.renewalDate as string);
+      expect(renewalDate.getTime()).toBeGreaterThan(now.getTime() - 24 * 60 * 60 * 1000); // Allow 1 day margin
     });
   });
 

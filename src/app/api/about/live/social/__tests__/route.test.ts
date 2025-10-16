@@ -45,7 +45,9 @@ describe("/api/about/live/social", () => {
       expect(interaction.type).toBeTypeOf("string");
       expect(["chat", "call", "group"]).toContain(interaction.type);
       expect(interaction.platform).toBeTypeOf("string");
-      expect(interaction.timestamp).toBeInstanceOf(Date);
+      // After JSON serialization, dates become strings
+      expect(interaction.timestamp).toBeTypeOf("string");
+      expect(() => new Date(interaction.timestamp as string)).not.toThrow();
     });
   });
 

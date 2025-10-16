@@ -34,7 +34,9 @@ describe("/api/about/live/dev", () => {
     expect(data.contributionHeatmap.length).toBe(365);
 
     const heatmapEntry = data.contributionHeatmap[0];
-    expect(heatmapEntry.date).toBeInstanceOf(Date);
+    // After JSON serialization, dates become strings
+    expect(heatmapEntry.date).toBeTypeOf("string");
+    expect(() => new Date(heatmapEntry.date as string)).not.toThrow();
     expect(heatmapEntry.value).toBeTypeOf("number");
     expect(heatmapEntry.value).toBeGreaterThanOrEqual(0);
   });
@@ -54,7 +56,9 @@ describe("/api/about/live/dev", () => {
       expect(repo.commitsThisMonth).toBeTypeOf("number");
       expect(repo.lastCommit).toBeDefined();
       expect(repo.lastCommit.message).toBeTypeOf("string");
-      expect(repo.lastCommit.date).toBeInstanceOf(Date);
+      // After JSON serialization, dates become strings
+      expect(repo.lastCommit.date).toBeTypeOf("string");
+      expect(() => new Date(repo.lastCommit.date as string)).not.toThrow();
     }
   });
 

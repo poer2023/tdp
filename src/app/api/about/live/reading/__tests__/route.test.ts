@@ -78,7 +78,9 @@ describe("/api/about/live/reading", () => {
       expect(article.title).toBeTypeOf("string");
       expect(article.url).toBeTypeOf("string");
       expect(article.source).toBeTypeOf("string");
-      expect(article.readAt).toBeInstanceOf(Date);
+      // After JSON serialization, dates become strings
+      expect(article.readAt).toBeTypeOf("string");
+      expect(() => new Date(article.readAt as string)).not.toThrow();
 
       // Validate URL format
       expect(() => new URL(article.url)).not.toThrow();

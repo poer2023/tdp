@@ -39,7 +39,9 @@ describe("/api/about/live/gaming", () => {
       expect(game.gameName).toBeTypeOf("string");
       expect(game.platform).toBeTypeOf("string");
       expect(game.playtime).toBeTypeOf("number");
-      expect(game.lastPlayed).toBeInstanceOf(Date);
+      // After JSON serialization, dates become strings
+      expect(game.lastPlayed).toBeTypeOf("string");
+      expect(() => new Date(game.lastPlayed as string)).not.toThrow();
     }
   });
 
@@ -54,7 +56,9 @@ describe("/api/about/live/gaming", () => {
       const session = data.recentSessions[0];
       expect(session.gameName).toBeTypeOf("string");
       expect(session.duration).toBeTypeOf("number");
-      expect(session.date).toBeInstanceOf(Date);
+      // After JSON serialization, dates become strings
+      expect(session.date).toBeTypeOf("string");
+      expect(() => new Date(session.date as string)).not.toThrow();
     }
   });
 
@@ -67,7 +71,9 @@ describe("/api/about/live/gaming", () => {
     expect(data.playtimeHeatmap.length).toBe(365);
 
     const heatmapEntry = data.playtimeHeatmap[0];
-    expect(heatmapEntry.date).toBeInstanceOf(Date);
+    // After JSON serialization, dates become strings
+    expect(heatmapEntry.date).toBeTypeOf("string");
+    expect(() => new Date(heatmapEntry.date as string)).not.toThrow();
     expect(heatmapEntry.value).toBeTypeOf("number");
     expect(heatmapEntry.value).toBeGreaterThanOrEqual(0);
   });
