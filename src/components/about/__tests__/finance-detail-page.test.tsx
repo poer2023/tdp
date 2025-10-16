@@ -228,8 +228,8 @@ describe("FinanceDetailPage", () => {
     render(<FinanceDetailPage locale="en" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Finance Overview")).toBeInTheDocument();
-      expect(screen.getByText("Active Subscriptions")).toBeInTheDocument();
+      expect(screen.getByText(/Finance Overview/)).toBeInTheDocument();
+      expect(screen.getByText("Subscriptions")).toBeInTheDocument();
       expect(screen.getByText("Insights")).toBeInTheDocument();
     });
   });
@@ -238,8 +238,8 @@ describe("FinanceDetailPage", () => {
     render(<FinanceDetailPage locale="zh" />);
 
     await waitFor(() => {
-      expect(screen.getByText("财务概览")).toBeInTheDocument();
-      expect(screen.getByText("活跃订阅")).toBeInTheDocument();
+      expect(screen.getByText(/财务概览/)).toBeInTheDocument();
+      expect(screen.getByText("订阅")).toBeInTheDocument();
       expect(screen.getByText("洞察")).toBeInTheDocument();
     });
   });

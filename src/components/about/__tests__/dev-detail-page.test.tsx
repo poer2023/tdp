@@ -92,7 +92,7 @@ describe("DevDetailPage", () => {
     render(<DevDetailPage locale="en" />);
 
     await waitFor(() => {
-      expect(screen.getByText("GitHub Contributions")).toBeInTheDocument();
+      expect(screen.getByText("Contribution Heatmap")).toBeInTheDocument();
     });
   });
 

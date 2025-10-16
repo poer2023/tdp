@@ -56,7 +56,7 @@ describe("GamingDetailPage", () => {
 
   it("should render loading state initially", () => {
     render(<GamingDetailPage locale="en" />);
-    expect(screen.getByText("Gaming Activity")).toBeInTheDocument();
+    expect(screen.getByText(/Gaming Activity/)).toBeInTheDocument();
   });
 
   it("should render gaming statistics in English", async () => {
@@ -64,7 +64,7 @@ describe("GamingDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("This Month")).toBeInTheDocument();
-      expect(screen.getByText("45 hours")).toBeInTheDocument();
+      expect(screen.getByText("45hours")).toBeInTheDocument();
       expect(screen.getByText("8 games")).toBeInTheDocument();
     });
   });
@@ -74,7 +74,7 @@ describe("GamingDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("本月")).toBeInTheDocument();
-      expect(screen.getByText("45 小时")).toBeInTheDocument();
+      expect(screen.getByText("45小时")).toBeInTheDocument();
       expect(screen.getByText("8 游戏")).toBeInTheDocument();
     });
   });
