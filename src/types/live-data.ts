@@ -20,7 +20,7 @@ export interface JellyfinItem {
   type: "movie" | "series" | "episode";
   title: string;
   poster?: string;
-  watchedAt: Date;
+  watchedAt: Date | string; // Date object in code, serialized to ISO string in JSON
   progress?: number; // For series: episode progress percentage
   season?: number;
   episode?: number;
