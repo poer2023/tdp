@@ -23,8 +23,8 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
           privacyDescription: "所有金额已归一化处理,仅展示相对趋势和百分比",
           monthlyTrend: "月度支出趋势",
           categoryDistribution: "支出类别分布",
-          subscriptions: "订阅服务",
-          insights: "消费洞察",
+          subscriptions: "订阅",
+          insights: "洞察",
           renewalDate: "续费日期",
           months: [
             "1月",
@@ -77,6 +77,10 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  if (process.env.NODE_ENV === "test") {
+    console.log("Finance subscriptions label", t.subscriptions);
+  }
 
   if (loading) {
     return (

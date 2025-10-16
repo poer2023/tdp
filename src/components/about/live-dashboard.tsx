@@ -35,7 +35,7 @@ export function LiveDashboard({ locale }: LiveDashboardProps) {
         console.error("Failed to fetch highlights:", error);
         setLoading(false);
       });
-  }, []);
+  }, [locale]);
 
   const t =
     locale === "zh"

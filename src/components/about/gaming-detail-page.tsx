@@ -218,7 +218,7 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
                   let achievementsLabel: string | null = null;
 
                   if (Array.isArray(achievements) && achievements.length > 0) {
-                    achievementsLabel = achievements[0];
+                    achievementsLabel = achievements[0] ?? null;
                   } else if (typeof achievements === "number") {
                     achievementsLabel = game.totalAchievements
                       ? `${achievements} / ${game.totalAchievements}`

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { aboutContent, aboutLayoutClass, resolveAboutLocale } from "@/lib/about-content";
-import { localePath } from "@/lib/locale-path";
 import { ParticlesAboutContent } from "./particles-about-content";
 
 type PageProps = {

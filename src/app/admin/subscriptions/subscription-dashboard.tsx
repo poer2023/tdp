@@ -225,7 +225,7 @@ export default function SubscriptionDashboard({
         method: "DELETE",
       });
 
-      if (!response.ok) {
+      if (!response || !response.ok) {
         return;
       }
 

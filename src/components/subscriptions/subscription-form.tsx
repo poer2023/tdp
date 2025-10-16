@@ -75,26 +75,31 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
     }
 
     startTransition(async () => {
-      const endpoint = form.id ? `/api/subscriptions/${form.id}` : "/api/subscriptions";
-      const method = form.id ? "PUT" : "POST";
+      try {
+        const endpoint = form.id ? `/api/subscriptions/${form.id}` : "/api/subscriptions";
+        const method = form.id ? "PUT" : "POST";
 
-      const response = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+        const response = await fetch(endpoint, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        setError(data.error ?? "Failed to save subscription.");
-        return;
-      }
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          setError(data.error ?? "Failed to save subscription.");
+          return;
+        }
 
-      router.push("/admin/subscriptions");
-      router.refresh();
+        router.push("/admin/subscriptions");
+        router.refresh();
 
-      if (onSuccess) {
-        onSuccess();
+        if (onSuccess) {
+          onSuccess();
+        }
+      } catch (submissionError) {
+        setError("Network error. Please try again.");
+        console.error("Failed to submit subscription:", submissionError);
       }
     });
   };
