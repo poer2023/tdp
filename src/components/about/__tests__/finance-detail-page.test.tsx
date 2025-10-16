@@ -47,14 +47,14 @@ describe("FinanceDetailPage", () => {
 
   it("should render loading state initially", () => {
     render(<FinanceDetailPage locale="en" />);
-    expect(screen.getByText("Finance Overview")).toBeInTheDocument();
+    expect(screen.getByText(/Finance Overview/)).toBeInTheDocument();
   });
 
   it("should display privacy notice in English", async () => {
     render(<FinanceDetailPage locale="en" />);
 
     await waitFor(() => {
-      expect(screen.getByText(/All financial data is anonymized/)).toBeInTheDocument();
+      expect(screen.getByText(/All amounts are normalized/)).toBeInTheDocument();
     });
   });
 
@@ -62,7 +62,7 @@ describe("FinanceDetailPage", () => {
     render(<FinanceDetailPage locale="zh" />);
 
     await waitFor(() => {
-      expect(screen.getByText(/所有财务数据均已匿名化/)).toBeInTheDocument();
+      expect(screen.getByText(/所有金额已归一化处理/)).toBeInTheDocument();
     });
   });
 
@@ -78,7 +78,7 @@ describe("FinanceDetailPage", () => {
     render(<FinanceDetailPage locale="en" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Spending Categories")).toBeInTheDocument();
+      expect(screen.getByText("Spending by Category")).toBeInTheDocument();
       expect(screen.getByText("Housing")).toBeInTheDocument();
       expect(screen.getByText("Food")).toBeInTheDocument();
       expect(screen.getByText("Transportation")).toBeInTheDocument();
@@ -103,7 +103,7 @@ describe("FinanceDetailPage", () => {
     render(<FinanceDetailPage locale="en" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Active Subscriptions")).toBeInTheDocument();
+      expect(screen.getByText("Subscriptions")).toBeInTheDocument();
       expect(screen.getByText("Netflix")).toBeInTheDocument();
       expect(screen.getByText("Spotify")).toBeInTheDocument();
     });
@@ -177,8 +177,9 @@ describe("FinanceDetailPage", () => {
     await waitFor(() => {
       // Chart should be visible with normalized data (0-100%)
       expect(screen.getByText("Monthly Spending Trend")).toBeInTheDocument();
-      // Should show month labels
-      expect(screen.getByText(/Jan|Feb|Mar/)).toBeInTheDocument();
+      // Should show month labels - use getAllByText for multiple matches
+      const monthLabels = screen.getAllByText(/^(Jan|Feb|Mar)$/);
+      expect(monthLabels.length).toBeGreaterThan(0);
     });
   });
 
@@ -186,7 +187,7 @@ describe("FinanceDetailPage", () => {
     render(<FinanceDetailPage locale="en" />);
 
     await waitFor(() => {
-      expect(screen.getByText("Spending Categories")).toBeInTheDocument();
+      expect(screen.getByText("Spending by Category")).toBeInTheDocument();
       // All categories should be visible
       mockFinanceData.categories.forEach((category) => {
         expect(screen.getByText(category.name)).toBeInTheDocument();
