@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useExpandable } from "@/components/hooks/use-expandable";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +32,6 @@ type SubscriptionRecord = {
 type SubscriptionExpandableCardProps = {
   subscription: SubscriptionRecord;
   locale: AdminLocale;
-  onEdit: (subscription: SubscriptionRecord) => void;
   onDelete: (subscription: SubscriptionRecord) => void;
 };
 
@@ -98,7 +98,6 @@ function getBadgeVariant(cycle: BillingCycle): "default" | "secondary" | "outlin
 export function SubscriptionExpandableCard({
   subscription,
   locale,
-  onEdit,
   onDelete,
 }: SubscriptionExpandableCardProps) {
   const { isExpanded, toggleExpand, animatedHeight } = useExpandable(false);
@@ -214,13 +213,12 @@ export function SubscriptionExpandableCard({
               )}
 
               <div className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                <button
-                  type="button"
-                  onClick={() => onEdit(subscription)}
+                <Link
+                  href={`/admin/subscriptions/${subscription.id}`}
                   className="inline-flex flex-1 items-center justify-center rounded-lg border border-blue-500 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-950/40"
                 >
                   {translate(locale, "editSubscription")}
-                </button>
+                </Link>
                 <button
                   type="button"
                   onClick={() => onDelete(subscription)}

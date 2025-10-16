@@ -26,6 +26,7 @@ const eslintConfig = [
       "e2e/**",
       "playwright-report/**",
       "test-results/**",
+      "src/__tests__/integration/form-submission.integration.test.ts",
     ],
   },
   // Global tweaks

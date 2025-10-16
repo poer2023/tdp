@@ -31,6 +31,7 @@ export const adminTranslations = {
     subscriptions: "Subscriptions",
     subscriptionManagement: "Subscription management",
     subscriptionDescription: "Track recurring subscriptions and costs",
+    createNewSubscription: "Create and manage your subscriptions",
 
     // Dashboard
     contentDashboard: "Content management dashboard",
@@ -162,6 +163,7 @@ export const adminTranslations = {
     subscriptions: "订阅管理",
     subscriptionManagement: "订阅管理",
     subscriptionDescription: "记录订阅项目与成本",
+    createNewSubscription: "创建和管理您的订阅",
 
     // Dashboard
     contentDashboard: "内容管理仪表板",

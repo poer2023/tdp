@@ -2,9 +2,10 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { adminTranslations } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
-import { formatCNY, formatOriginalCurrency, SUPPORTED_CURRENCIES } from "@/lib/subscription-shared";
+import { formatCNY, formatOriginalCurrency } from "@/lib/subscription-shared";
 import { SubscriptionPieChart } from "@/components/subscriptions/subscription-pie-chart";
 import { SubscriptionExpandableCard } from "@/components/subscriptions/subscription-expandable-card";
 import { StatsCard } from "@/components/ui/stats-card";
@@ -28,33 +29,11 @@ type SubscriptionRecord = {
   updatedAt: string;
 };
 
-type FormState = {
-  id: string | null;
-  name: string;
-  currency: string;
-  amount: string;
-  billingCycle: BillingCycle;
-  startDate: string;
-  endDate: string;
-  notes: string;
-};
-
 const billingCycleOptions: { value: BillingCycle; label: string }[] = [
   { value: "MONTHLY", label: "Monthly" },
   { value: "ANNUAL", label: "Annual" },
   { value: "ONE_TIME", label: "One-time" },
 ];
-
-const INITIAL_FORM: FormState = {
-  id: null,
-  name: "",
-  currency: "CNY",
-  amount: "",
-  billingCycle: "MONTHLY",
-  startDate: "",
-  endDate: "",
-  notes: "",
-};
 
 function translate(locale: AdminLocale, key: keyof typeof adminTranslations.en) {
   return adminTranslations[locale][key];
@@ -146,12 +125,10 @@ export default function SubscriptionDashboard({
 }: SubscriptionDashboardProps) {
   const router = useRouter();
   const [items, setItems] = useState<SubscriptionRecord[]>(initialSubscriptions);
-  const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [viewMode, setViewMode] = useState<ViewMode>("MONTHLY");
   const [cycleFilter, setCycleFilter] = useState<BillingCycle | "ALL">("ALL");
   const [isExporting, setIsExporting] = useState(false);
-  const [isSubmitting, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
 
   const filteredItems = useMemo(() => {
     if (cycleFilter === "ALL") {
@@ -237,26 +214,6 @@ export default function SubscriptionDashboard({
 
   const translation = (key: keyof typeof adminTranslations.en) => translate(locale, key);
 
-  const isEditing = Boolean(form.id);
-
-  const handleEdit = (record: SubscriptionRecord) => {
-    setForm({
-      id: record.id,
-      name: record.name,
-      currency: record.currency,
-      amount: record.amount.toString(),
-      billingCycle: record.billingCycle,
-      startDate: record.startDate.slice(0, 10),
-      endDate: record.endDate ? record.endDate.slice(0, 10) : "",
-      notes: record.notes ?? "",
-    });
-  };
-
-  const resetForm = () => {
-    setForm(INITIAL_FORM);
-    setError(null);
-  };
-
   const handleDelete = async (record: SubscriptionRecord) => {
     const confirmed = window.confirm(
       `${translation("confirmDelete")}\n${translation("confirmDeleteDescription")}`
@@ -269,64 +226,10 @@ export default function SubscriptionDashboard({
       });
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        setError(data.error ?? "Failed to delete subscription.");
         return;
       }
 
       setItems((prev) => prev.filter((item) => item.id !== record.id));
-      router.refresh();
-    });
-  };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-
-    const payload = {
-      name: form.name,
-      currency: form.currency,
-      amount: form.amount,
-      billingCycle: form.billingCycle,
-      startDate: form.startDate,
-      endDate: form.endDate || null,
-      notes: form.notes,
-    };
-
-    if (!payload.name || !payload.amount || !payload.startDate) {
-      setError("Please complete all required fields.");
-      return;
-    }
-
-    startTransition(async () => {
-      const endpoint = form.id ? `/api/subscriptions/${form.id}` : "/api/subscriptions";
-      const method = form.id ? "PUT" : "POST";
-
-      const response = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        setError(data.error ?? "Failed to save subscription.");
-        return;
-      }
-
-      const data = await response.json();
-      const saved: SubscriptionRecord = data.subscription;
-
-      setItems((previous) => {
-        const existing = previous.findIndex((item) => item.id === saved.id);
-        if (existing >= 0) {
-          const next = [...previous];
-          next[existing] = saved;
-          return next;
-        }
-        return [saved, ...previous];
-      });
-      resetForm();
       router.refresh();
     });
   };
@@ -432,169 +335,21 @@ export default function SubscriptionDashboard({
         </div>
       </section>
 
-      <section>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+      <section className="flex items-center justify-between rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div>
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            {translation("subscriptionManagement")}
+          </h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            {translation("createNewSubscription")}
+          </p>
+        </div>
+        <Link
+          href="/admin/subscriptions/new"
+          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500"
         >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                {isEditing ? translation("editSubscription") : translation("addSubscription")}
-              </h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                {translation("subscriptionManagement")}
-              </p>
-            </div>
-            {isEditing && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="text-sm text-blue-600 hover:underline dark:text-blue-400"
-              >
-                {translation("newSubscription")}
-              </button>
-            )}
-          </div>
-
-          {error && (
-            <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
-              {error}
-            </p>
-          )}
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="space-y-1">
-              <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-                {translation("subscriptionName")}
-              </span>
-              <input
-                required
-                name="name"
-                value={form.name}
-                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
-                placeholder="Netflix, GitHub, Adobe..."
-              />
-            </label>
-
-            <label className="space-y-1">
-              <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-                {translation("billingCycle")}
-              </span>
-              <select
-                name="billingCycle"
-                value={form.billingCycle}
-                onChange={(event) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    billingCycle: event.target.value as BillingCycle,
-                  }))
-                }
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
-              >
-                {billingCycleOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="space-y-1">
-              <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-                {translation("currency")}
-              </span>
-              <select
-                name="currency"
-                value={form.currency}
-                onChange={(event) => setForm((prev) => ({ ...prev, currency: event.target.value }))}
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
-              >
-                {SUPPORTED_CURRENCIES.map((currency) => (
-                  <option key={currency} value={currency}>
-                    {currency}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="space-y-1">
-              <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-                {translation("originalAmount")}
-              </span>
-              <input
-                required
-                name="amount"
-                inputMode="decimal"
-                value={form.amount}
-                onChange={(event) => setForm((prev) => ({ ...prev, amount: event.target.value }))}
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
-                placeholder="0.00"
-              />
-            </label>
-
-            <label className="space-y-1">
-              <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-                {translation("startDate")}
-              </span>
-              <input
-                required
-                type="date"
-                name="startDate"
-                value={form.startDate}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, startDate: event.target.value }))
-                }
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
-              />
-            </label>
-
-            <label className="space-y-1">
-              <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-                {translation("endDate")}
-              </span>
-              <input
-                type="date"
-                name="endDate"
-                value={form.endDate}
-                onChange={(event) => setForm((prev) => ({ ...prev, endDate: event.target.value }))}
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
-              />
-            </label>
-          </div>
-
-          <label className="block space-y-1">
-            <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-              {translation("notes")}
-            </span>
-            <textarea
-              name="notes"
-              value={form.notes}
-              onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
-              rows={3}
-              placeholder="Remarks, renewal reminders, account info..."
-            />
-          </label>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-400"
-            >
-              {isSubmitting ? `${translation("saveChanges")}...` : translation("saveChanges")}
-            </button>
-            <button
-              type="button"
-              onClick={resetForm}
-              className="inline-flex items-center justify-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-            >
-              {translation("cancel")}
-            </button>
-          </div>
-        </form>
+          {translation("addSubscription")}
+        </Link>
       </section>
 
       <section className="space-y-4">
@@ -680,7 +435,6 @@ export default function SubscriptionDashboard({
               key={subscription.id}
               subscription={subscription}
               locale={locale}
-              onEdit={handleEdit}
               onDelete={handleDelete}
             />
           ))

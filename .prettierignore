@@ -24,6 +24,9 @@ public/uploads/*
 
 # (no special ignores for e2e; keep them checked by Prettier)
 
+# Integration tests with JSX in .ts files
+src/__tests__/integration/form-submission.integration.test.ts
+
 # Local tooling and reports (do not format)
 .claude/
 playwright-report/

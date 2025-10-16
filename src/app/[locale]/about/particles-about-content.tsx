@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Particles } from "@/components/ui/particles";
 import { useTheme } from "@/hooks/use-theme";
+import { LiveHighlightsSection } from "@/components/about/live-highlights-section";
 import type { AboutLocale } from "@/lib/about-content";
 
 type AboutContentData = {
@@ -112,6 +113,9 @@ export function ParticlesAboutContent({ data, locale, layoutClass }: ParticlesAb
             ))}
           </div>
         </section>
+
+        {/* Live Updates Section */}
+        <LiveHighlightsSection locale={locale} />
 
         <section className="space-y-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-baseline md:justify-between">
