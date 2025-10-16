@@ -93,8 +93,11 @@ export function SocialDetailPage({ locale }: SocialDetailPageProps) {
 
   if (!data) return null;
 
-  const formatTimestamp = (date: Date) => {
-    const d = new Date(date);
+  const formatTimestamp = (date: Date | string) => {
+    const d = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(d.getTime())) {
+      return locale === "zh" ? "未知" : "unknown";
+    }
     const now = new Date();
     const diff = now.getTime() - d.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));

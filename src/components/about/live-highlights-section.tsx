@@ -48,7 +48,7 @@ export function LiveHighlightsSection({ locale }: LiveHighlightsSectionProps) {
     "🖥️": <Server className="h-5 w-5" />,
   };
 
-  const localePath = (path: string) => (locale === "en" ? path : `/${locale}${path}`);
+  const localePath = (path: string) => `/${locale}${path}`;
 
   if (loading) {
     return (

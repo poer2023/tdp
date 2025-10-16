@@ -221,7 +221,19 @@ export function SubscriptionExpandableCard({
                 </Link>
                 <button
                   type="button"
-                  onClick={() => onDelete(subscription)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    if (typeof window !== "undefined") {
+                      const confirmMessage = `${
+                        translate(locale, "confirmDelete")
+                      }\n\n${translate(locale, "confirmDeleteDescription")}`;
+                      const confirmed = window.confirm(confirmMessage);
+                      if (!confirmed) {
+                        return;
+                      }
+                    }
+                    onDelete(subscription);
+                  }}
                   className="inline-flex items-center justify-center rounded-lg border border-rose-500 px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 dark:border-rose-400 dark:text-rose-300 dark:hover:bg-rose-950/40"
                 >
                   {translate(locale, "deleteSubscription")}

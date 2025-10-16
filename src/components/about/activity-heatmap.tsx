@@ -1,9 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+type HeatmapEntry = {
+  date: Date | string;
+  value: number;
+};
+
+const normalizeDate = (value: Date | string) => {
+  const parsed = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toISOString().split("T")[0] || "";
+};
 
 interface HeatmapProps {
-  data: Record<string, number>; // date string -> value
+  data: HeatmapEntry[];
   maxValue?: number;
   colorScheme?: "green" | "blue" | "purple";
   className?: string;
@@ -17,13 +28,30 @@ export function ActivityHeatmap({
 }: HeatmapProps) {
   const [hoveredCell, setHoveredCell] = useState<{ date: string; value: number } | null>(null);
 
+  const { valueByDate, computedMax } = useMemo(() => {
+    const map = new Map<string, number>();
+    let highest = 0;
+
+    data.forEach(({ date, value }) => {
+      const key = normalizeDate(date);
+      if (!key) return;
+      map.set(key, value);
+      if (value > highest) {
+        highest = value;
+      }
+    });
+
+    return { valueByDate: map, computedMax: highest };
+  }, [data]);
+
   // Calculate max value if not provided
-  const max = maxValue || Math.max(...Object.values(data));
+  const max = maxValue ?? computedMax;
+  const safeMax = max === 0 ? 1 : max;
 
   // Get color intensity based on value
   const getColor = (value: number) => {
     if (value === 0) return "bg-neutral-100 dark:bg-neutral-800";
-    const intensity = Math.ceil((value / max) * 4);
+    const intensity = Math.ceil((value / safeMax) * 4);
 
     const colors = {
       green: [
@@ -89,7 +117,7 @@ export function ActivityHeatmap({
             <div key={weekIdx} className="flex flex-col gap-[2px]">
               {week.map((date, dayIdx) => {
                 const dateStr = date.toISOString().split("T")[0] || "";
-                const value = (dateStr && data[dateStr]) || 0;
+                const value = dateStr ? valueByDate.get(dateStr) ?? 0 : 0;
 
                 return (
                   <div
@@ -123,7 +151,9 @@ export function ActivityHeatmap({
           <div
             key={level}
             className={`h-3 w-3 rounded-sm ${
-              level === 0 ? "bg-neutral-100 dark:bg-neutral-800" : getColor((max / 4) * level)
+              level === 0
+                ? "bg-neutral-100 dark:bg-neutral-800"
+                : getColor((safeMax / 4) * level)
             }`}
           />
         ))}

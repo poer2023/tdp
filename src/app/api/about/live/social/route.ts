@@ -33,7 +33,7 @@ export async function GET() {
         timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000),
         type: "group",
         platform: "Discord",
-        anonymizedId: "group_g7h8i9",
+        anonymizedId: "user_g7h8i9",
         duration: undefined,
       },
       {

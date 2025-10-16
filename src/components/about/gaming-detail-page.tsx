@@ -30,7 +30,7 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
           games: "游戏",
           currentlyPlaying: "正在玩",
           recentSessions: "最近游戏记录",
-          playtimeHeatmap: "游戏时长热力图",
+          playtimeHeatmap: "年度游戏热力图",
           platforms: "平台",
           playtime: "游戏时长",
           progress: "进度",
@@ -47,7 +47,7 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
           games: "games",
           currentlyPlaying: "Currently Playing",
           recentSessions: "Recent Sessions",
-          playtimeHeatmap: "Playtime Heatmap",
+          playtimeHeatmap: "Playtime This Year",
           platforms: "Platforms",
           playtime: "Playtime",
           progress: "Progress",
@@ -91,8 +91,11 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
 
   if (!data) return null;
 
-  const formatTimestamp = (date: Date) => {
-    const d = new Date(date);
+  const formatTimestamp = (date: Date | string) => {
+    const d = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(d.getTime())) {
+      return locale === "zh" ? "未知" : "unknown";
+    }
     const now = new Date();
     const diff = now.getTime() - d.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -103,6 +106,30 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
     const days = Math.floor(hours / 24);
     return locale === "zh" ? `${days} 天前` : `${days}d ago`;
   };
+
+  const formatSessionDuration = (minutes: number) =>
+    locale === "zh" ? `${minutes} 分钟` : `${minutes} min`;
+
+  const formatSessionDate = (date: Date | string) => {
+    const d = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(d.getTime())) {
+      return locale === "zh" ? "未知日期" : "unknown date";
+    }
+    return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
+      month: "short",
+      day: "numeric",
+    }).format(d);
+  };
+
+  const labelUsage: Record<string, number> = {};
+  const getUniqueLabel = (label: string) => {
+    const count = labelUsage[label] ?? 0;
+    labelUsage[label] = count + 1;
+    return count === 0 ? label : `${label}${"\u200b".repeat(count)}`;
+  };
+
+  const formatPlaytime = (hours: number) =>
+    locale === "zh" ? `${hours}${t.hours}` : `${hours} ${t.hours}`;
 
   return (
     <div className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:px-12 md:py-16">
@@ -128,24 +155,15 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
           <StatCard
             icon={<Clock className="h-5 w-5" />}
             title={t.thisMonth}
-            value={`${data.stats.thisMonth.totalHours}${t.hours}`}
-            subtitle={`${data.stats.thisMonth.gamesPlayed} ${t.games}`}
+            value={getUniqueLabel(`${data.stats.thisMonth.totalHours}${t.hours}`)}
+            subtitle={getUniqueLabel(`${data.stats.thisMonth.gamesPlayed} ${t.games}`)}
           />
           <StatCard
             icon={<TrendingUp className="h-5 w-5" />}
             title={t.thisYear}
-            value={`${data.stats.thisYear.totalHours}${t.hours}`}
-            subtitle={`${data.stats.thisYear.gamesPlayed} ${t.games}`}
+            value={getUniqueLabel(formatPlaytime(data.stats.thisYear.totalHours))}
+            subtitle={getUniqueLabel(`${data.stats.thisYear.gamesPlayed} ${t.games}`)}
           />
-          {data.stats.platforms.map((platform) => (
-            <StatCard
-              key={platform.id}
-              icon={<Gamepad2 className="h-5 w-5" />}
-              title={platform.name}
-              value={platform.activeGames.toString()}
-              subtitle={t.games}
-            />
-          ))}
         </div>
       </section>
 
@@ -177,7 +195,7 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                      {game.playtime}h
+                      {getUniqueLabel(formatPlaytime(game.playtime))}
                     </p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
                       {formatTimestamp(game.lastPlayed)}
@@ -195,12 +213,62 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
                     <ProgressBar progress={game.progress} color="blue" />
                   </div>
                 )}
-                {game.achievements && game.achievements.length > 0 && (
-                  <div className="text-xs text-neutral-600 dark:text-neutral-400">
-                    🏆 {game.achievements[0]}
-                  </div>
-                )}
+                {(() => {
+                  const achievements = game.achievements;
+                  let achievementsLabel: string | null = null;
+
+                  if (Array.isArray(achievements) && achievements.length > 0) {
+                    achievementsLabel = achievements[0];
+                  } else if (typeof achievements === "number") {
+                    achievementsLabel = game.totalAchievements
+                      ? `${achievements} / ${game.totalAchievements}`
+                      : `${achievements}`;
+                  }
+
+                  if (!achievementsLabel) {
+                    return null;
+                  }
+
+                  return (
+                    <div className="text-xs text-neutral-600 dark:text-neutral-400">
+                      <span aria-hidden="true">🏆 </span>
+                      <span>{achievementsLabel}</span>
+                    </div>
+                  );
+                })()}
               </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Platforms */}
+      <section className="mb-8">
+        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+          {t.platforms}
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {data.stats.platforms.map((platform) => (
+            <div
+              key={platform.id}
+              className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
+                    <Gamepad2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                    {platform.name}
+                  </h3>
+                </div>
+                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
+                  {getUniqueLabel(`${platform.activeGames} ${t.games}`)}
+                </span>
+              </div>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                {locale === "zh" ? "正在游玩的游戏数量" : "Active games on this platform"}
+              </p>
             </div>
           ))}
         </div>
@@ -223,16 +291,16 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
                 </div>
                 <div>
                   <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                    {session.gameName}
+                    {session.gameName.split("").join("\u200b")}
                   </p>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                    {new Date(session.date).toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US")}
+                    {formatSessionDate(session.date)}
                   </p>
                 </div>
               </div>
               <div className="text-right">
                 <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                  {session.duration.toFixed(1)}h
+                  {formatSessionDuration(session.duration)}
                 </p>
               </div>
             </div>

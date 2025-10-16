@@ -35,7 +35,7 @@ const mockReadingData: ReadingData = {
       title: "Understanding React Server Components",
       url: "https://example.com/article",
       source: "Tech Blog",
-      readAt: new Date("2025-01-10"),
+      readAt: new Date("2025-02-10"),
     },
   ],
 };
@@ -210,7 +210,7 @@ describe("ReadingDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Jan 1/)).toBeInTheDocument();
-      expect(screen.getByText(/Jan 10/)).toBeInTheDocument();
+      expect(screen.getByText(/Feb 10/)).toBeInTheDocument();
     });
   });
 });

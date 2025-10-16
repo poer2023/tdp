@@ -77,8 +77,9 @@ export function ReadingDetailPage({ locale }: ReadingDetailPageProps) {
             <ArrowLeft className="h-4 w-4" />
             {t.backToDashboard}
           </Link>
-          <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
-            📚 {t.title}
+          <h1 className="mt-4 flex items-center gap-2 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+            <span aria-hidden="true">📚</span>
+            <span>{t.title}</span>
           </h1>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -92,8 +93,9 @@ export function ReadingDetailPage({ locale }: ReadingDetailPageProps) {
 
   if (!data) return null;
 
-  const formatDate = (date: Date) => {
-    const d = new Date(date);
+  const formatDate = (date: Date | string) => {
+    const d = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(d.getTime())) return "";
     return d.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
       month: "short",
       day: "numeric",
@@ -128,8 +130,9 @@ export function ReadingDetailPage({ locale }: ReadingDetailPageProps) {
           <ArrowLeft className="h-4 w-4" />
           {t.backToDashboard}
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
-          📚 {t.title}
+        <h1 className="mt-4 flex items-center gap-2 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+          <span aria-hidden="true">📚</span>
+          <span>{t.title}</span>
         </h1>
       </div>
 

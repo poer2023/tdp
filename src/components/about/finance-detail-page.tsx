@@ -103,9 +103,10 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
 
   if (!data) return null;
 
-  const formatDate = (date?: Date) => {
+  const formatDate = (date?: Date | string) => {
     if (!date) return "";
-    const d = new Date(date);
+    const d = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(d.getTime())) return "";
     return d.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
       month: "short",
       day: "numeric",

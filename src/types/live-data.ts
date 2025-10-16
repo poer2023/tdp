@@ -56,7 +56,8 @@ export interface GameSession {
   platform: GamingPlatform["id"];
   playtime: number; // hours
   lastPlayed: Date | string; // Date object in code, serialized to ISO string in JSON
-  achievements?: string[];
+  achievements?: string[] | number;
+  totalAchievements?: number;
   progress?: number; // percentage
   cover?: string;
 }
