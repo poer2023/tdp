@@ -14,8 +14,8 @@ vi.mock("next-auth", () => ({
   getServerSession: vi.fn(),
 }));
 
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
+vi.mock("@/lib/prisma", () => {
+  const mockPrisma = {
     subscription: {
       findMany: vi.fn(),
       findUnique: vi.fn(),
@@ -23,8 +23,12 @@ vi.mock("@/lib/prisma", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
-  },
-}));
+  };
+  return {
+    prisma: mockPrisma,
+    default: mockPrisma,
+  };
+});
 
 describe("Subscriptions API Integration", () => {
   const mockSession = {

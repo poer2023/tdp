@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useRouter } from "next/navigation";
@@ -19,7 +18,7 @@ describe("Form Submission Integration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useRouter as any).mockReturnValue({
+    (useRouter as ReturnType<typeof vi.fn>).mockReturnValue({
       push: mockPush,
       refresh: mockRefresh,
     });
@@ -254,9 +253,7 @@ describe("Form Submission Integration", () => {
     });
 
     it("should handle network errors gracefully", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-        new Error("Network error")
-      );
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Network error"));
 
       render(<SubscriptionForm locale="en" />);
 

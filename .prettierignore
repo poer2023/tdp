@@ -24,8 +24,8 @@ public/uploads/*
 
 # (no special ignores for e2e; keep them checked by Prettier)
 
-# Integration tests with JSX in .ts files
-src/__tests__/integration/form-submission.integration.test.ts
+# Integration tests with JSX in .ts files (renamed to .tsx, keeping for reference)
+# src/__tests__/integration/form-submission.integration.test.tsx
 
 # Local tooling and reports (do not format)
 .claude/
