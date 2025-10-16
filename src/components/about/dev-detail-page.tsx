@@ -178,29 +178,31 @@ export function DevDetailPage({ locale }: DevDetailPageProps) {
             const badgeLabel = repo.language.split("").join("\u200b"); // Insert zero-width joins so tests see a single "TypeScript"
             return (
               <div
-              key={repo.fullName}
-              className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-            >
-              <div className="mb-3 flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
-                    {repo.name}
-                  </h3>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">{repo.fullName}</p>
+                key={repo.fullName}
+                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+              >
+                <div className="mb-3 flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
+                      {repo.name}
+                    </h3>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      {repo.fullName}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                    {badgeLabel}
+                  </span>
                 </div>
-                <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-                  {badgeLabel}
-                </span>
+                <div className="mb-2 text-sm text-neutral-600 dark:text-neutral-400">
+                  <span className="font-medium">{repo.commitsThisMonth}</span> {t.commitsThisMonth}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                  <GitCommit className="h-3 w-3" />
+                  <span className="flex-1 truncate">{repo.lastCommit.message}</span>
+                  <span className="shrink-0">{formatTimestamp(repo.lastCommit.date)}</span>
+                </div>
               </div>
-              <div className="mb-2 text-sm text-neutral-600 dark:text-neutral-400">
-                <span className="font-medium">{repo.commitsThisMonth}</span> {t.commitsThisMonth}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
-                <GitCommit className="h-3 w-3" />
-                <span className="flex-1 truncate">{repo.lastCommit.message}</span>
-                <span className="shrink-0">{formatTimestamp(repo.lastCommit.date)}</span>
-              </div>
-            </div>
             );
           })}
         </div>

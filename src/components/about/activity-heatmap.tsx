@@ -117,7 +117,7 @@ export function ActivityHeatmap({
             <div key={weekIdx} className="flex flex-col gap-[2px]">
               {week.map((date, dayIdx) => {
                 const dateStr = date.toISOString().split("T")[0] || "";
-                const value = dateStr ? valueByDate.get(dateStr) ?? 0 : 0;
+                const value = dateStr ? (valueByDate.get(dateStr) ?? 0) : 0;
 
                 return (
                   <div
@@ -151,9 +151,7 @@ export function ActivityHeatmap({
           <div
             key={level}
             className={`h-3 w-3 rounded-sm ${
-              level === 0
-                ? "bg-neutral-100 dark:bg-neutral-800"
-                : getColor((safeMax / 4) * level)
+              level === 0 ? "bg-neutral-100 dark:bg-neutral-800" : getColor((safeMax / 4) * level)
             }`}
           />
         ))}

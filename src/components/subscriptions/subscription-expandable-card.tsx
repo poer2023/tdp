@@ -224,9 +224,10 @@ export function SubscriptionExpandableCard({
                   onClick={(event) => {
                     event.stopPropagation();
                     if (typeof window !== "undefined") {
-                      const confirmMessage = `${
-                        translate(locale, "confirmDelete")
-                      }\n\n${translate(locale, "confirmDeleteDescription")}`;
+                      const confirmMessage = `${translate(
+                        locale,
+                        "confirmDelete"
+                      )}\n\n${translate(locale, "confirmDeleteDescription")}`;
                       const confirmed = window.confirm(confirmMessage);
                       if (!confirmed) {
                         return;
