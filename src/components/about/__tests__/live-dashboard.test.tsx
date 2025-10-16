@@ -58,7 +58,10 @@ describe("LiveDashboard", () => {
   beforeEach(() => {
     vi.mocked(fetch).mockResolvedValue({
       ok: true,
-      json: async () => mockHighlights,
+      json: async () => ({
+        highlights: mockHighlights,
+        lastUpdated: new Date(),
+      }),
     } as Response);
   });
 
@@ -247,7 +250,10 @@ describe("LiveDashboard", () => {
   it("should handle empty highlights gracefully", async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => [],
+      json: async () => ({
+        highlights: [],
+        lastUpdated: new Date(),
+      }),
     } as Response);
 
     render(<LiveDashboard locale="en" />);
