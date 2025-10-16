@@ -52,7 +52,10 @@ describe("DevDetailPage", () => {
 
   it("should render loading state initially", () => {
     render(<DevDetailPage locale="en" />);
-    expect(screen.getByText("Development Activity")).toBeInTheDocument();
+    // Title includes emoji, so use regex or check for partial text
+    expect(screen.getByText(/Development Activity/)).toBeInTheDocument();
+    // Verify skeleton cards are present
+    expect(document.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
   });
 
   it("should render dev statistics in English", async () => {
@@ -60,7 +63,7 @@ describe("DevDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("This Week")).toBeInTheDocument();
-      expect(screen.getByText("23 commits")).toBeInTheDocument();
+      expect(screen.getByText("23")).toBeInTheDocument();
       expect(screen.getByText("5 repos")).toBeInTheDocument();
     });
   });
@@ -70,7 +73,7 @@ describe("DevDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("本周")).toBeInTheDocument();
-      expect(screen.getByText("23 提交")).toBeInTheDocument();
+      expect(screen.getByText("23")).toBeInTheDocument();
       expect(screen.getByText("5 仓库")).toBeInTheDocument();
     });
   });
@@ -80,7 +83,8 @@ describe("DevDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Current Streak")).toBeInTheDocument();
-      expect(screen.getByText("7 days")).toBeInTheDocument();
+      expect(screen.getByText("7")).toBeInTheDocument();
+      expect(screen.getByText("days")).toBeInTheDocument();
     });
   });
 

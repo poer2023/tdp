@@ -121,7 +121,9 @@ describe("subscription-shared utilities", () => {
 
       it("should format negative amounts correctly", () => {
         const result = formatCNY(-50.25);
-        expect(result).toMatch(/-50\.25/);
+        // Should include currency symbol and negative sign
+        expect(result).toMatch(/-[¥CN]/);
+        expect(result).toMatch(/50\.25/);
       });
     });
 
@@ -232,7 +234,8 @@ describe("subscription-shared utilities", () => {
 
       it("should handle negative amounts", () => {
         const result = formatOriginalCurrency(-50, "USD");
-        expect(result).toMatch(/-50/);
+        // Should include currency symbol and negative sign with proper formatting
+        expect(result).toMatch(/-\$50\.00/);
       });
 
       it("should handle very large amounts", () => {
