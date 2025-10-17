@@ -31,6 +31,58 @@ const nextConfig: NextConfig = {
         hostname: "lh3.googleusercontent.com",
         pathname: "**",
       },
+      // Bilibili image CDN (supports both HTTP and HTTPS)
+      {
+        protocol: "http",
+        hostname: "i0.hdslb.com",
+        pathname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "i1.hdslb.com",
+        pathname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "i2.hdslb.com",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "i0.hdslb.com",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "i1.hdslb.com",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "i2.hdslb.com",
+        pathname: "**",
+      },
+      // Douban image CDN
+      {
+        protocol: "https",
+        hostname: "img1.doubanio.com",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "img2.doubanio.com",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "img3.doubanio.com",
+        pathname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "img9.doubanio.com",
+        pathname: "**",
+      },
     ],
   },
   async headers() {

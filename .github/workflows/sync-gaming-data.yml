@@ -1,0 +1,17 @@
+name: Sync Gaming Data
+
+on:
+  schedule:
+    # Run every 3 hours
+    - cron: "0 */3 * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Gaming Data Sync
+        run: |
+          curl -X POST ${{ secrets.SITE_URL }}/api/admin/gaming/sync \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
+            -H "Content-Type: application/json"

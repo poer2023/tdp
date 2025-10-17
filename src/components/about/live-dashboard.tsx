@@ -23,18 +23,54 @@ interface LiveDashboardProps {
 export function LiveDashboard({ locale }: LiveDashboardProps) {
   const [data, setData] = useState<LiveHighlightsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/about/highlights")
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch highlights:", error);
-        setLoading(false);
-      });
+    let isMounted = true;
+
+    async function loadHighlights() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/about/highlights");
+        if (!response.ok) {
+          throw new Error(`Failed to load highlights: ${response.status}`);
+        }
+
+        const payload = (await response.json()) as Partial<LiveHighlightsData>;
+
+        if (!isMounted) return;
+
+        if (!payload?.highlights || !Array.isArray(payload.highlights)) {
+          throw new Error("Invalid highlights payload");
+        }
+
+        setData({
+          highlights: payload.highlights,
+          lastUpdated: payload.lastUpdated ? new Date(payload.lastUpdated) : new Date(),
+        });
+      } catch (err) {
+        if (!isMounted) return;
+        console.error("Failed to fetch highlights:", err);
+        setData(null);
+        const message =
+          locale === "zh"
+            ? "无法加载最新动态，请稍后再试。"
+            : "Unable to load live activity data right now. Please try again later.";
+        setError(message);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadHighlights();
+
+    return () => {
+      isMounted = false;
+    };
   }, [locale]);
 
   const t =
@@ -47,6 +83,7 @@ export function LiveDashboard({ locale }: LiveDashboardProps) {
           lastUpdated: "最后更新",
           loading: "加载中...",
           noData: "暂无数据",
+          error: "无法加载最新动态，请稍后再试。",
         }
       : {
           title: "Live Activity Dashboard",
@@ -56,6 +93,7 @@ export function LiveDashboard({ locale }: LiveDashboardProps) {
           lastUpdated: "Last updated",
           loading: "Loading...",
           noData: "No data available",
+          error: "Unable to load live activity data right now. Please try again later.",
         };
 
   const formatTimestamp = (date: Date) => {
@@ -97,6 +135,10 @@ export function LiveDashboard({ locale }: LiveDashboardProps) {
       {loading ? (
         <div>
           <SkeletonGrid count={4} />
+        </div>
+      ) : error ? (
+        <div className="rounded-xl border border-neutral-200 bg-white p-12 text-center dark:border-neutral-800 dark:bg-neutral-900">
+          <p className="text-neutral-600 dark:text-neutral-400">{error || t.error}</p>
         </div>
       ) : !data ? (
         <div className="rounded-xl border border-neutral-200 bg-white p-12 text-center dark:border-neutral-800 dark:bg-neutral-900">

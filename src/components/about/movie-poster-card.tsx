@@ -6,10 +6,9 @@ import type { JellyfinItem } from "@/types/live-data";
 
 interface MoviePosterCardProps {
   item: JellyfinItem;
-  onClick?: () => void;
 }
 
-export function MoviePosterCard({ item, onClick }: MoviePosterCardProps) {
+export function MoviePosterCard({ item }: MoviePosterCardProps) {
   const formatDate = (date: Date | string) => {
     return new Intl.DateTimeFormat("en-US", {
       month: "short",
@@ -17,12 +16,22 @@ export function MoviePosterCard({ item, onClick }: MoviePosterCardProps) {
     }).format(new Date(date));
   };
 
+  // Determine if the item has a valid URL
+  const hasUrl = item.url && item.url !== "#";
+
+  const CardWrapper = hasUrl ? "a" : "div";
+  const wrapperProps = hasUrl
+    ? {
+        href: item.url,
+        target: "_blank",
+        rel: "noopener noreferrer",
+      }
+    : {};
+
   return (
-    <div
-      className={`group relative overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900 ${
-        onClick ? "cursor-pointer" : ""
-      }`}
-      onClick={onClick}
+    <CardWrapper
+      className="group relative block overflow-hidden rounded-xl bg-neutral-100 transition-transform hover:scale-[1.02] dark:bg-neutral-900"
+      {...wrapperProps}
     >
       {/* Poster */}
       <div className="relative aspect-[2/3] overflow-hidden bg-neutral-200 dark:bg-neutral-800">
@@ -84,6 +93,6 @@ export function MoviePosterCard({ item, onClick }: MoviePosterCardProps) {
           </div>
         )}
       </div>
-    </div>
+    </CardWrapper>
   );
 }
