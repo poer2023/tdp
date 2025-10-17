@@ -34,7 +34,7 @@ async function getGamingData(): Promise<GamingData> {
   const startOfYear = new Date(now.getFullYear(), 0, 1);
 
   // Get game sessions for calculations
-  const [monthSessions, yearSessions, recentSessions, allGames] = await Promise.all([
+  const [monthSessions, yearSessions, recentSessions, allGames, steamProfile] = await Promise.all([
     // This month's sessions
     prisma.gameSession.findMany({
       where: { startTime: { gte: lastMonth } },
@@ -74,7 +74,15 @@ async function getGamingData(): Promise<GamingData> {
         },
       },
     }),
+
+    // Steam profile
+    prisma.steamProfile.findFirst({
+      orderBy: { lastSyncAt: "desc" },
+    }),
   ]);
+
+  // Get total games count
+  const totalGames = await prisma.game.count();
 
   // Calculate stats
   const stats = {
@@ -87,6 +95,7 @@ async function getGamingData(): Promise<GamingData> {
       totalHours: Math.round(yearSessions.reduce((sum, s) => sum + s.duration, 0) / 60),
       gamesPlayed: new Set(yearSessions.map((s) => s.gameId)).size,
     },
+    totalGames,
   };
 
   // Currently playing games
@@ -132,6 +141,14 @@ async function getGamingData(): Promise<GamingData> {
     currentlyPlaying,
     recentSessions: recentSessionsData,
     playtimeHeatmap: heatmap,
+    profile: steamProfile
+      ? {
+          steamId: steamProfile.steamId,
+          personaName: steamProfile.personaName,
+          avatar: steamProfile.avatar,
+          profileUrl: steamProfile.profileUrl,
+        }
+      : undefined,
   };
 }
 
@@ -208,6 +225,7 @@ function getMockData(): GamingData {
       platforms: [{ id: "steam", name: "Steam", activeGames: 0 }],
       thisMonth: { totalHours: 0, gamesPlayed: 0 },
       thisYear: { totalHours: 0, gamesPlayed: 0 },
+      totalGames: 0,
     },
     currentlyPlaying: [],
     recentSessions: [],

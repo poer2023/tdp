@@ -97,6 +97,14 @@ export interface GamingStats {
   platforms: GamingPlatform[];
   thisMonth: { totalHours: number; gamesPlayed: number };
   thisYear: { totalHours: number; gamesPlayed: number };
+  totalGames: number;
+}
+
+export interface SteamProfile {
+  steamId: string;
+  personaName: string;
+  avatar: string;
+  profileUrl: string;
 }
 
 export interface GamingData {
@@ -108,6 +116,7 @@ export interface GamingData {
     duration: number;
   }>;
   playtimeHeatmap: Array<{ date: Date | string; value: number }>; // 365 days of playtime data
+  profile?: SteamProfile; // Steam profile information
 }
 
 // ============================================================================

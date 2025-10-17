@@ -67,6 +67,27 @@ export class GamingSyncService {
       let achievementsUpdated = 0;
 
       for (const steamGame of ownedGames) {
+        // Fetch high-quality game cover from Steam (prioritize recently played games)
+        const isRecentlyPlayed = recentGames.some((g) => g.appid === steamGame.appid);
+        let gameCover: string | undefined;
+
+        if (isRecentlyPlayed) {
+          // For recently played games, fetch high-quality cover
+          try {
+            const gameDetails = await steamClient.getGameDetails(steamGame.appid);
+            if (gameDetails) {
+              gameCover = gameDetails.cover;
+            }
+          } catch (error) {
+            console.warn(`Failed to fetch details for ${steamGame.name}:`, error);
+          }
+        }
+
+        // Fallback to logo URL
+        if (!gameCover && steamGame.img_logo_url) {
+          gameCover = steamClient.getGameLogoURL(steamGame.appid, steamGame.img_logo_url);
+        }
+
         // Upsert game
         const game = await prisma.game.upsert({
           where: {
@@ -79,15 +100,11 @@ export class GamingSyncService {
             platformId: steamGame.appid.toString(),
             platform: GamePlatform.STEAM,
             name: steamGame.name,
-            cover: steamGame.img_logo_url
-              ? steamClient.getGameLogoURL(steamGame.appid, steamGame.img_logo_url)
-              : undefined,
+            cover: gameCover,
           },
           update: {
             name: steamGame.name,
-            cover: steamGame.img_logo_url
-              ? steamClient.getGameLogoURL(steamGame.appid, steamGame.img_logo_url)
-              : undefined,
+            cover: gameCover,
           },
         });
 
