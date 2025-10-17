@@ -65,9 +65,16 @@ docs/moments.md
 docs/self-host-deployment.md
 docs/test-strategy.md
 docs/user-configuration-checklist.md
+e2e/about-live-dashboard.spec.ts
+e2e/about-live-dev.spec.ts
+e2e/about-live-finance.spec.ts
+e2e/about-live-gaming.spec.ts
+e2e/about-live-reading.spec.ts
+e2e/about-live-social.spec.ts
 e2e/accessibility.spec.ts
 e2e/admin-analytics-access.spec.ts
 e2e/admin-gallery-ui.spec.ts
+e2e/admin-subscriptions.spec.ts
 e2e/auth-email-otp.spec.ts
 e2e/auth-improved.spec.ts
 e2e/content-export-improved.spec.ts
