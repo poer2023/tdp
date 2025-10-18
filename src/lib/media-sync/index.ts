@@ -64,7 +64,7 @@ export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> 
             watchedAt: normalized.watchedAt,
             progress: normalized.progress,
             duration: normalized.duration,
-            metadata: normalized.metadata as Prisma.JsonValue,
+            metadata: normalized.metadata as Prisma.InputJsonValue,
             updatedAt: new Date(),
           },
           create: normalized as Prisma.MediaWatchCreateInput,
@@ -72,7 +72,7 @@ export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> 
 
         successCount++;
       } catch (error) {
-        console.error(`[${platform}] Failed to sync item ${item.aid}:`, error);
+        console.error(`[${platform}] Failed to sync item ${item.history.bvid}:`, error);
         failedCount++;
       }
     }
@@ -180,7 +180,7 @@ export async function syncDouban(config: DoubanConfig): Promise<SyncResult> {
             url: normalized.url,
             watchedAt: normalized.watchedAt,
             rating: normalized.rating,
-            metadata: normalized.metadata as Prisma.JsonValue,
+            metadata: normalized.metadata as Prisma.InputJsonValue,
             updatedAt: new Date(),
           },
           create: normalized as Prisma.MediaWatchCreateInput,

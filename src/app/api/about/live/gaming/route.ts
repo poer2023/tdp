@@ -145,8 +145,10 @@ async function getGamingData(): Promise<GamingData> {
       ? {
           steamId: steamProfile.steamId,
           personaName: steamProfile.personaName,
-          avatar: steamProfile.avatar,
-          profileUrl: steamProfile.profileUrl,
+          avatar: steamProfile.avatar || "/images/about/game-zzz.svg",
+          profileUrl:
+            steamProfile.profileUrl ||
+            `https://steamcommunity.com/profiles/${steamProfile.steamId}`,
         }
       : undefined,
   };
@@ -199,7 +201,8 @@ async function generateHeatmapData(days: number) {
   const dateMap = new Map<string, number>();
 
   for (const session of sessions) {
-    const dateKey = session.startTime.toISOString().split("T")[0];
+    const [dateKey] = session.startTime.toISOString().split("T");
+    if (!dateKey) continue;
     const hours = session.duration / 60;
     dateMap.set(dateKey, (dateMap.get(dateKey) || 0) + hours);
   }
@@ -209,7 +212,11 @@ async function generateHeatmapData(days: number) {
   for (let i = 0; i < days; i++) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
-    const dateKey = date.toISOString().split("T")[0];
+    const [dateKey] = date.toISOString().split("T");
+    if (!dateKey) {
+      heatmap.push({ date, value: 0 });
+      continue;
+    }
     const value = Math.round((dateMap.get(dateKey) || 0) * 10) / 10;
 
     heatmap.push({ date, value });

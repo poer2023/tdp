@@ -66,13 +66,16 @@ export async function fetchDoubanWatched(
           if (!idMatch) return;
 
           const id = idMatch[1];
+          if (!id) {
+            return;
+          }
           const title = $item.find(".title em").text().trim();
           const cover = $item.find(".pic img").attr("src") || "";
 
           // Extract rating (e.g., "rating5-t" means 5 stars)
           const ratingClass = $item.find(".rating").attr("class") || "";
           const ratingMatch = ratingClass.match(/rating(\d)-t/);
-          const rating = ratingMatch ? parseInt(ratingMatch[1]) : 0;
+          const rating = ratingMatch ? parseInt(ratingMatch[1] ?? "0", 10) : 0;
 
           // Extract watch date
           const dateText = $item.find(".date").text().trim();
@@ -132,14 +135,16 @@ function parseDoubanDate(dateText: string): string {
 
   // Handle "今天" (today)
   if (dateText === "今天") {
-    return now.toISOString().split("T")[0];
+    const [today] = now.toISOString().split("T");
+    return today ?? now.toISOString();
   }
 
   // Handle "昨天" (yesterday)
   if (dateText === "昨天") {
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday.toISOString().split("T")[0];
+    const [isoYesterday] = yesterday.toISOString().split("T");
+    return isoYesterday ?? yesterday.toISOString();
   }
 
   // Handle "MM-DD" format (assume current year)
@@ -154,7 +159,8 @@ function parseDoubanDate(dateText: string): string {
   }
 
   // Fallback to today
-  return now.toISOString().split("T")[0];
+  const [fallback] = now.toISOString().split("T");
+  return fallback ?? now.toISOString();
 }
 
 /**

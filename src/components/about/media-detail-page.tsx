@@ -18,8 +18,8 @@ interface MediaDetailPageProps {
 export function MediaDetailPage({ locale }: MediaDetailPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver>();
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Filter states
   const [platform, setPlatform] = useState<MediaApiParams["platform"]>(
@@ -133,7 +133,8 @@ export function MediaDetailPage({ locale }: MediaDetailPageProps) {
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+        const intersectingEntry = entries.find((entry) => entry.isIntersecting);
+        if (intersectingEntry && hasMore && !loadingMore) {
           fetchData(currentPage + 1, true);
         }
       },
@@ -141,7 +142,7 @@ export function MediaDetailPage({ locale }: MediaDetailPageProps) {
     );
 
     const currentLoadMoreRef = loadMoreRef.current;
-    if (currentLoadMoreRef) {
+    if (currentLoadMoreRef && observerRef.current) {
       observerRef.current.observe(currentLoadMoreRef);
     }
 
