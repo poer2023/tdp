@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/auth";
 import { redirect } from "next/navigation";
 import { SyncStatusDashboard } from "@/components/admin/sync-status-dashboard";
 

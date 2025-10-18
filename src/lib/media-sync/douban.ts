@@ -63,16 +63,15 @@ export async function fetchDoubanWatched(
           // Extract ID from the link
           const href = $item.find(".pic a").attr("href") || "";
           const idMatch = href.match(/subject\/(\d+)/);
-          if (!idMatch) return;
-
-          const id = idMatch[1];
+          const id = idMatch?.[1];
+          if (!id) return;
           const title = $item.find(".title em").text().trim();
           const cover = $item.find(".pic img").attr("src") || "";
 
           // Extract rating (e.g., "rating5-t" means 5 stars)
           const ratingClass = $item.find(".rating").attr("class") || "";
           const ratingMatch = ratingClass.match(/rating(\d)-t/);
-          const rating = ratingMatch ? parseInt(ratingMatch[1]) : 0;
+          const rating = ratingMatch?.[1] ? parseInt(ratingMatch[1], 10) : 0;
 
           // Extract watch date
           const dateText = $item.find(".date").text().trim();
@@ -85,7 +84,7 @@ export async function fetchDoubanWatched(
           // Extract additional info from the intro
           const intro = $item.find(".intro").text().trim();
           const yearMatch = intro.match(/(\d{4})/);
-          const year = yearMatch ? yearMatch[1] : undefined;
+          const year = yearMatch?.[1];
 
           pageItems.push({
             id,
@@ -127,19 +126,24 @@ export async function fetchDoubanWatched(
  * Parse Douban date format to ISO date string
  * Examples: "2024-10-15", "10-15", "今天", "昨天"
  */
+function formatIsoDate(date: Date): string {
+  const [isoDate] = date.toISOString().split("T", 1);
+  return isoDate ?? date.toISOString();
+}
+
 function parseDoubanDate(dateText: string): string {
   const now = new Date();
 
   // Handle "今天" (today)
   if (dateText === "今天") {
-    return now.toISOString().split("T")[0];
+    return formatIsoDate(now);
   }
 
   // Handle "昨天" (yesterday)
   if (dateText === "昨天") {
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
-    return yesterday.toISOString().split("T")[0];
+    return formatIsoDate(yesterday);
   }
 
   // Handle "MM-DD" format (assume current year)
@@ -154,7 +158,7 @@ function parseDoubanDate(dateText: string): string {
   }
 
   // Fallback to today
-  return now.toISOString().split("T")[0];
+  return formatIsoDate(now);
 }
 
 /**
@@ -171,8 +175,8 @@ export function normalizeDoubanItem(item: DoubanWatchedItem) {
     watchedAt: new Date(item.watchedAt),
     rating: item.rating,
     metadata: {
-      year: item.year,
-      directors: item.directors,
+      ...(item.year ? { year: item.year } : {}),
+      ...(item.directors && item.directors.length > 0 ? { directors: item.directors } : {}),
     },
   };
 }

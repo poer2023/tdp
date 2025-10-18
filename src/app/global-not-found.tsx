@@ -1,20 +1,9 @@
 import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export default function GlobalNotFound() {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en">
       <head>
         <title>404 - Page Not Found</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />

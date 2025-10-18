@@ -153,7 +153,7 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
             <div className="flex items-center gap-4 p-6">
               <div className="relative h-20 w-20 flex-shrink-0">
                 <Image
-                  src={data.profile.avatar}
+                  src={data.profile.avatar ?? "/images/placeholder-cover.svg"}
                   alt={data.profile.personaName}
                   fill
                   className="rounded-full object-cover"
@@ -167,7 +167,10 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
                   Steam ID: {data.profile.steamId}
                 </p>
                 <a
-                  href={data.profile.profileUrl}
+                  href={
+                    data.profile.profileUrl ??
+                    `https://steamcommunity.com/profiles/${data.profile.steamId}`
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-2 inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"

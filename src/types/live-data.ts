@@ -103,8 +103,8 @@ export interface GamingStats {
 export interface SteamProfile {
   steamId: string;
   personaName: string;
-  avatar: string;
-  profileUrl: string;
+  avatar?: string | null;
+  profileUrl?: string | null;
 }
 
 export interface GamingData {

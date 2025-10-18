@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { headers, cookies } from "next/headers";
 import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
@@ -14,16 +13,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
 import { HtmlLangSync } from "@/components/html-lang-sync";
 import { auth } from "@/auth";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -80,9 +69,7 @@ export default async function RootLayout({
 
   return (
     <html lang={htmlLang}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col overflow-x-hidden bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
-      >
+      <body className="flex min-h-screen flex-col overflow-x-hidden bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100">
         {/* Early theme applier to avoid FOUC */}
         <script
           dangerouslySetInnerHTML={{
