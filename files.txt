@@ -9,6 +9,7 @@
 .github/workflows/docker-publish.yml
 .github/workflows/e2e.yml
 .github/workflows/prettier-format.yml
+.github/workflows/sync-gaming-data.yml
 README.md
 docker-compose.yml
 docs/ADMIN_GUIDE.md
@@ -20,7 +21,12 @@ docs/DEPLOYMENT.md
 docs/E2E_AUTH_SETUP.md
 docs/E2E_TESTING.md
 docs/E2E_TESTING_GUIDE.md
+docs/GAMING_DATA_SETUP.md
+docs/GAMING_TESTS.md
+docs/GET_BILIBILI_COOKIE.md
+docs/GET_DOUBAN_COOKIE.md
 docs/MANUAL_TESTING.md
+docs/MEDIA_SYNC_SETUP.md
 docs/MONITORING.md
 docs/PRIVACY_POLICY.md
 docs/TESTING.md
