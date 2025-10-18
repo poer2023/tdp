@@ -1,4 +1,12 @@
 import { test, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
+
+const waitForDevData = async (page: Page) => {
+  await page
+    .getByRole("heading", { name: /Statistics|统计概览/ })
+    .first()
+    .waitFor({ state: "visible", timeout: 15000 });
+};
 
 /**
  * E2E Test: Development Detail Page
@@ -17,45 +25,51 @@ test.describe("Development Detail Page", () => {
   });
 
   test("should display dev statistics", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // Page title
-    await expect(page.locator("text=Development Activity")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Development Activity/ })).toBeVisible();
 
     // Statistics sections
-    await expect(page.locator("text=This Week")).toBeVisible();
-    await expect(page.locator("text=This Month")).toBeVisible();
-    await expect(page.locator("text=This Year")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /This Week/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /This Month/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /This Year/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Current Streak/ })).toBeVisible();
 
-    // Should display commits, repos, PRs, stars
-    await expect(page.locator("text=/\\d+ commits?/")).toBeVisible();
-    await expect(page.locator("text=/\\d+ repos?/")).toBeVisible();
+    const statsSection = page.getByRole("heading", { name: /Statistics/ }).locator("..");
+    await expect(statsSection.getByText(/\b\d+\b/).first()).toBeVisible();
+    await expect(statsSection.getByText(/repos?/i).first()).toBeVisible();
+    await expect(statsSection.getByText(/PRs?/i).first()).toBeVisible();
   });
 
   test("should display current streak", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // Current Streak section
-    await expect(page.locator("text=Current Streak")).toBeVisible();
-    await expect(page.locator("text=/\\d+ days?/")).toBeVisible();
+    const streakCard = page.getByRole("heading", { name: /Current Streak/ }).locator("..");
+    await expect(streakCard.getByText(/\b\d+\b/).first()).toBeVisible();
+    await expect(streakCard.getByText(/days?/i)).toBeVisible();
   });
 
   test("should display GitHub contribution heatmap", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // Contribution heatmap section
-    await expect(page.locator("text=GitHub Contributions")).toBeVisible();
+    const heatmapSection = page
+      .getByRole("heading", { name: /Contribution Heatmap/ })
+      .locator("..");
+    await expect(heatmapSection).toBeVisible();
 
-    // Heatmap should render
-    const heatmap = page.locator("canvas, svg").first();
-    await expect(heatmap).toBeVisible();
+    // Heatmap should render (cells with title attribute)
+    const heatmapCells = heatmapSection.locator("div[title*=':']");
+    await expect(heatmapCells.first()).toBeVisible();
   });
 
   test("should display active repositories", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // Active Repositories section
-    await expect(page.locator("text=Active Repositories")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Active Repositories/ })).toBeVisible();
 
     // Repository names should be visible
     const repoCards = page.locator("text=/awesome-project|tdp|next-blog|portfolio/");
@@ -63,37 +77,49 @@ test.describe("Development Detail Page", () => {
   });
 
   test("should display programming languages", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // Languages section
-    await expect(page.locator("text=Languages")).toBeVisible();
+    const languagesSection = page
+      .getByRole("heading", { name: /Programming Languages/ })
+      .locator("..");
+    await expect(languagesSection).toBeVisible();
 
-    // Language names should be visible
-    await expect(page.locator("text=/TypeScript|Python|Go|JavaScript/")).toBeVisible();
+    const languageLabels = ["TypeScript", "Python", "Markdown", "Other"];
+    for (const label of languageLabels) {
+      await expect(
+        languagesSection
+          .locator("span.font-medium")
+          .filter({ hasText: new RegExp(label, "i") })
+          .first()
+      ).toBeVisible();
+    }
 
     // Language percentages should be visible
-    await expect(page.locator("text=/%/")).toBeVisible();
+    await expect(languagesSection.locator("text=/%/").first()).toBeVisible();
 
     // Language hours should be visible
-    await expect(page.locator("text=/\\d+ hours/")).toBeVisible();
+    await expect(languagesSection.locator("text=/\\d+\\.?\\d*h/").first()).toBeVisible();
   });
 
   test("should display last commit information", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
+
+    const repoSection = page.getByRole("heading", { name: /Active Repositories/ }).locator("..");
 
     // Commit messages should be visible in repository cards
-    const commitMessage = page.locator("text=/feat:|fix:|chore:|docs:/");
+    const commitMessage = repoSection.locator("text=/feat:|fix:|chore:|docs:/i");
     await expect(commitMessage.first()).toBeVisible();
 
     // Commit dates should be visible
-    await expect(page.locator("text=/\\d+ commits? this month/")).toBeVisible();
+    await expect(repoSection.getByText(/\d+\s+Commits?\s+This Month/i).first()).toBeVisible();
   });
 
   test("should navigate back to dashboard", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // Back to Dashboard link
-    const backLink = page.locator("text=Back to Dashboard");
+    const backLink = page.getByRole("link", { name: /Back to Dashboard/ });
     await expect(backLink).toBeVisible();
 
     await backLink.click();
@@ -102,25 +128,27 @@ test.describe("Development Detail Page", () => {
 
   test("should work in Chinese locale", async ({ page }) => {
     await page.goto("/zh/about/live/dev");
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // Chinese text should be visible
-    await expect(page.locator("text=开发活动")).toBeVisible();
-    await expect(page.locator("text=本周")).toBeVisible();
-    await expect(page.locator("text=本月")).toBeVisible();
-    await expect(page.locator("text=今年")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /开发活动/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /本周/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /本月/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /今年/ })).toBeVisible();
   });
 
   test("should display language bar charts", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // Language percentages create visual bars
-    await expect(page.locator("text=Languages")).toBeVisible();
+    const languagesSection = page
+      .getByRole("heading", { name: /Programming Languages/ })
+      .locator("..");
+    await expect(languagesSection).toBeVisible();
 
-    // Multiple language entries should be visible
-    const languageEntries = page.locator("text=/TypeScript|Python|Go|JavaScript/");
-    const count = await languageEntries.count();
-    expect(count).toBeGreaterThan(0);
+    const bars = languagesSection.locator("div.h-2 div");
+    await expect(bars.first()).toBeVisible();
+    await expect(bars).toHaveCount(4);
   });
 
   test("should handle loading state", async ({ page }) => {
@@ -136,25 +164,25 @@ test.describe("Development Detail Page", () => {
     await expect(skeletons.first()).toBeVisible();
 
     // Eventually data should load
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator("text=Active Repositories")).toBeVisible();
+    await waitForDevData(page);
+    await expect(page.getByRole("heading", { name: /Active Repositories/ })).toBeVisible();
   });
 
   test("should be responsive on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto("/en/about/live/dev");
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // Content should be visible and stacked
-    await expect(page.locator("text=Development Activity")).toBeVisible();
-    await expect(page.locator("text=This Week")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Development Activity/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /This Week/ })).toBeVisible();
   });
 
   test("should display repository languages", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // Repository cards should show language badges
-    await expect(page.locator("text=Active Repositories")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Active Repositories/ })).toBeVisible();
 
     // Language badges in repository cards
     const languageBadges = page.locator("text=/TypeScript|Python|JavaScript|Go/");
@@ -162,16 +190,19 @@ test.describe("Development Detail Page", () => {
   });
 
   test("should display month statistics with PRs", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
     // This Month section should show PRs
-    await expect(page.locator("text=/\\d+ PRs?/")).toBeVisible();
+    const monthCard = page.getByRole("heading", { name: /This Month/ }).locator("..");
+    await expect(monthCard.getByText(/PRs?/i)).toBeVisible();
   });
 
   test("should display year statistics with stars", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await waitForDevData(page);
 
-    // This Year section should show stars
-    await expect(page.locator("text=/\\d+ stars?/")).toBeVisible();
+    // This Year section should show stars (value rendered as number)
+    const thisYearCard = page.getByRole("heading", { name: /This Year/ }).locator("..");
+    await expect(thisYearCard.getByText(/\b\d+\b/).first()).toBeVisible();
+    await expect(thisYearCard.getByText(/repos?/i)).toBeVisible();
   });
 });

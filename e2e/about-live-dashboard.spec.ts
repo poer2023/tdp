@@ -18,7 +18,7 @@ test.describe("About Live Dashboard", () => {
 
   test("should display dashboard with all module cards", async ({ page }) => {
     // Wait for dashboard to load
-    await expect(page.locator("text=Live Dashboard")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Live Activity Dashboard/ })).toBeVisible();
 
     // Should display at least 5 module cards (dev, gaming, reading, social, finance)
     const cards = page.locator("a[href*='/about/live/']");
@@ -27,47 +27,47 @@ test.describe("About Live Dashboard", () => {
 
   test("should navigate to gaming detail page", async ({ page }) => {
     // Click on gaming module card
-    await page.click("text=Gaming");
+    await page.locator("a[href$='/about/live/gaming']").first().click();
 
     // Should navigate to gaming detail page
     await expect(page).toHaveURL(/\/about\/live\/gaming$/);
-    await expect(page.locator("text=Gaming Activity")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Gaming Activity/ })).toBeVisible();
   });
 
   test("should navigate to dev detail page", async ({ page }) => {
     // Click on dev module card
-    await page.click("text=Development");
+    await page.locator("a[href$='/about/live/dev']").first().click();
 
     // Should navigate to dev detail page
     await expect(page).toHaveURL(/\/about\/live\/dev$/);
-    await expect(page.locator("text=Development Activity")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Development Activity/ })).toBeVisible();
   });
 
   test("should navigate to reading detail page", async ({ page }) => {
     // Click on reading module card
-    await page.click("text=Reading");
+    await page.locator("a[href$='/about/live/reading']").first().click();
 
     // Should navigate to reading detail page
     await expect(page).toHaveURL(/\/about\/live\/reading$/);
-    await expect(page.locator("text=Reading Activity")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Reading Activity/ })).toBeVisible();
   });
 
   test("should navigate to social detail page", async ({ page }) => {
     // Click on social module card
-    await page.click("text=Social");
+    await page.locator("a[href$='/about/live/social']").first().click();
 
     // Should navigate to social detail page
     await expect(page).toHaveURL(/\/about\/live\/social$/);
-    await expect(page.locator("text=Social Activity")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Social Activity/ })).toBeVisible();
   });
 
   test("should navigate to finance detail page", async ({ page }) => {
     // Click on finance module card
-    await page.click("text=Finance");
+    await page.locator("a[href$='/about/live/finance']").first().click();
 
     // Should navigate to finance detail page
     await expect(page).toHaveURL(/\/about\/live\/finance$/);
-    await expect(page.locator("text=Finance Overview")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Finance Overview/ })).toBeVisible();
   });
 
   test("should display loading state before data loads", async ({ page }) => {
@@ -87,19 +87,19 @@ test.describe("About Live Dashboard", () => {
     await page.goto("/zh/about/live");
 
     // Should display Chinese text
-    await expect(page.locator("text=实时仪表盘")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /实时动态仪表盘/ })).toBeVisible();
 
     // Module cards should still be clickable
-    await page.click("text=游戏");
+    await page.locator("a[href$='/zh/about/live/gaming']").first().click();
     await expect(page).toHaveURL(/\/zh\/about\/live\/gaming$/);
-    await expect(page.locator("text=游戏活动")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /游戏活动/ })).toBeVisible();
   });
 
   test("should display module icons", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    await page.waitForSelector("a[href*='/about/live/']", { state: "visible", timeout: 10000 });
 
     // Icons should be visible (SVG elements)
-    const icons = page.locator("svg");
+    const icons = page.locator("svg:visible");
     await expect(icons.first()).toBeVisible();
     const iconCount = await icons.count();
     expect(iconCount).toBeGreaterThan(5);
@@ -131,7 +131,7 @@ test.describe("About Live Dashboard", () => {
     await page.goto("/en/about/live");
 
     // Dashboard should still be visible and functional
-    await expect(page.locator("text=Live Dashboard")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Live Activity Dashboard/ })).toBeVisible();
 
     // Cards should stack vertically on mobile
     const cards = page.locator("a[href*='/about/live/']");
@@ -144,7 +144,7 @@ test.describe("About Live Dashboard", () => {
     await page.goto("/en/about/live");
 
     // Dashboard should display properly
-    await expect(page.locator("text=Live Dashboard")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Live Activity Dashboard/ })).toBeVisible();
 
     // Cards should be in grid layout
     const cards = page.locator("a[href*='/about/live/']");
@@ -172,7 +172,8 @@ test.describe("About Live Dashboard", () => {
     await page.goto("/en/about/live");
 
     // Page should still render without crashing
-    await expect(page.locator("text=Live Dashboard")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Live Activity Dashboard/ })).toBeVisible();
+    await expect(page.getByText(/Unable to load live activity data right now/i)).toBeVisible();
 
     // Should not display module cards (but shouldn't crash)
     const cards = page.locator("a[href*='/about/live/']");
@@ -181,14 +182,12 @@ test.describe("About Live Dashboard", () => {
 
   test("should support keyboard navigation", async ({ page }) => {
     await page.goto("/en/about/live");
-    await page.waitForLoadState("networkidle");
+    const cards = page.locator("a[href*='/about/live/']");
+    await cards.first().waitFor({ state: "visible", timeout: 10000 });
 
-    // Tab through module cards
-    await page.keyboard.press("Tab");
-
-    // First focusable element should be highlighted
-    const focusedElement = await page.evaluate(() => document.activeElement?.tagName);
-    expect(focusedElement).toBeTruthy();
+    // Focus first card and ensure keyboard users can activate it
+    await cards.first().focus();
+    await expect(cards.first()).toBeFocused();
 
     // Enter key should navigate
     await page.keyboard.press("Enter");
@@ -198,12 +197,15 @@ test.describe("About Live Dashboard", () => {
   });
 
   test("should display all Phase 4 modules", async ({ page }) => {
-    await page.waitForLoadState("networkidle");
+    const phaseFourCards = [
+      "a[href$='/about/live/reading']",
+      "a[href$='/about/live/social']",
+      "a[href$='/about/live/finance']",
+    ];
 
-    // Phase 4 modules: reading, social, finance
-    await expect(page.locator("text=Reading")).toBeVisible();
-    await expect(page.locator("text=Social")).toBeVisible();
-    await expect(page.locator("text=Finance")).toBeVisible();
+    for (const selector of phaseFourCards) {
+      await expect(page.locator(selector)).toBeVisible();
+    }
   });
 
   test("should have accessible module cards", async ({ page }) => {

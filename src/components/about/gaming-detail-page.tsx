@@ -146,12 +146,47 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
         </h1>
       </div>
 
+      {/* Steam Profile */}
+      {data.profile && (
+        <section className="mb-8">
+          <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="flex items-center gap-4 p-6">
+              <div className="relative h-20 w-20 flex-shrink-0">
+                <Image
+                  src={data.profile.avatar}
+                  alt={data.profile.personaName}
+                  fill
+                  className="rounded-full object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                  {data.profile.personaName}
+                </h2>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  Steam ID: {data.profile.steamId}
+                </p>
+                <a
+                  href={data.profile.profileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  {locale === "zh" ? "访问Steam主页" : "View Steam Profile"}
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Statistics */}
       <section className="mb-8">
         <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
           {t.stats}
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard
             icon={<Clock className="h-5 w-5" />}
             title={t.thisMonth}
@@ -163,6 +198,12 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
             title={t.thisYear}
             value={getUniqueLabel(formatPlaytime(data.stats.thisYear.totalHours))}
             subtitle={getUniqueLabel(`${data.stats.thisYear.gamesPlayed} ${t.games}`)}
+          />
+          <StatCard
+            icon={<Gamepad2 className="h-5 w-5" />}
+            title={locale === "zh" ? "游戏库" : "Library"}
+            value={getUniqueLabel(`${data.stats.totalGames}`)}
+            subtitle={locale === "zh" ? "总游戏数" : "Total Games"}
           />
         </div>
       </section>

@@ -20,24 +20,55 @@ export interface JellyfinItem {
   type: "movie" | "series" | "episode";
   title: string;
   poster?: string;
+  url?: string; // Link to the item on the original platform
   watchedAt: Date | string; // Date object in code, serialized to ISO string in JSON
   progress?: number; // For series: episode progress percentage
   season?: number;
   episode?: number;
   rating?: number; // 1-5 stars
+  platform?: "bilibili" | "douban" | "jellyfin"; // Platform source
 }
 
 export interface MediaStats {
-  thisWeek: { movies: number; series: number };
-  thisMonth: { movies: number; series: number };
-  thisYear: { totalHours: number; totalItems: number };
+  thisWeek: { movies: number; series: number; bilibili: number; douban: number };
+  thisMonth: { movies: number; series: number; bilibili: number; douban: number };
+  thisYear: { totalHours: number; totalItems: number; bilibili: number; douban: number };
+}
+
+export interface PlatformStats {
+  total: number;
+  movies: number;
+  series: number;
+}
+
+export interface MediaPagination {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  hasMore: boolean;
 }
 
 export interface MediaData {
   stats: MediaStats;
-  recentlyWatched: JellyfinItem[];
+  items: JellyfinItem[]; // Changed from recentlyWatched to items for pagination
   currentlyWatching: JellyfinItem[];
-  watchlist?: JellyfinItem[];
+  pagination: MediaPagination;
+  platformStats: {
+    bilibili: PlatformStats;
+    douban: PlatformStats;
+  };
+}
+
+// API query parameters
+export interface MediaApiParams {
+  platform?: "all" | "bilibili" | "douban";
+  page?: number;
+  limit?: number;
+  dateRange?: "all" | "thisWeek" | "thisMonth" | "thisYear" | "custom";
+  dateFrom?: string; // ISO date string
+  dateTo?: string; // ISO date string
+  completion?: "all" | "completed" | "watching" | "notStarted"; // Bilibili only
+  search?: string; // Title search keyword
 }
 
 // ============================================================================
@@ -66,6 +97,14 @@ export interface GamingStats {
   platforms: GamingPlatform[];
   thisMonth: { totalHours: number; gamesPlayed: number };
   thisYear: { totalHours: number; gamesPlayed: number };
+  totalGames: number;
+}
+
+export interface SteamProfile {
+  steamId: string;
+  personaName: string;
+  avatar: string;
+  profileUrl: string;
 }
 
 export interface GamingData {
@@ -77,6 +116,7 @@ export interface GamingData {
     duration: number;
   }>;
   playtimeHeatmap: Array<{ date: Date | string; value: number }>; // 365 days of playtime data
+  profile?: SteamProfile; // Steam profile information
 }
 
 // ============================================================================

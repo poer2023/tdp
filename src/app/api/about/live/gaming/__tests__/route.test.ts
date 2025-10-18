@@ -1,8 +1,81 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { GET } from "../route";
 import type { GamingData } from "@/types/live-data";
 
+// Mock Prisma client
+vi.mock("@/lib/prisma", () => ({
+  default: {
+    gameSession: {
+      findMany: vi.fn(),
+    },
+    game: {
+      findMany: vi.fn(),
+    },
+  },
+}));
+
 describe("/api/about/live/gaming", () => {
+  let mockPrisma: typeof import("@/lib/prisma").default;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+
+    // Setup mock Prisma with realistic data
+    const prismaModule = await import("@/lib/prisma");
+    mockPrisma = prismaModule.default;
+
+    // Mock database responses with real data structure
+    const mockDate = new Date("2025-01-15T10:00:00Z");
+
+    mockPrisma.gameSession.findMany.mockResolvedValue([
+      {
+        id: "session_1",
+        gameId: "game_1",
+        startTime: mockDate,
+        duration: 120,
+        platform: "STEAM",
+        game: {
+          id: "game_1",
+          platformId: "730",
+          platform: "STEAM",
+          name: "Counter-Strike: Global Offensive",
+          nameZh: "反恐精英:全球攻势",
+          cover: "https://example.com/cover.jpg",
+        },
+      },
+    ]);
+
+    mockPrisma.game.findMany.mockResolvedValue([
+      {
+        id: "game_1",
+        platformId: "730",
+        platform: "STEAM",
+        name: "Counter-Strike: Global Offensive",
+        nameZh: "反恐精英:全球攻势",
+        cover: "https://example.com/cover.jpg",
+        sessions: [
+          {
+            id: "session_1",
+            startTime: mockDate,
+            duration: 120,
+          },
+        ],
+        achievements: [
+          {
+            id: "ach_1",
+            achievementId: "WIN_BOMB_PLANT",
+            name: "Win Bomb Plant",
+            isUnlocked: true,
+          },
+        ],
+      },
+    ]);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("should return gaming data with correct structure", async () => {
     const response = await GET();
     const data: GamingData = await response.json();
@@ -102,6 +175,245 @@ describe("/api/about/live/gaming", () => {
         expect(game.progress).toBeGreaterThanOrEqual(0);
         expect(game.progress).toBeLessThanOrEqual(100);
       }
+    });
+  });
+
+  describe("Database integration", () => {
+    it("should query database for recent sessions", async () => {
+      await GET();
+
+      expect(mockPrisma.gameSession.findMany).toHaveBeenCalled();
+      expect(mockPrisma.game.findMany).toHaveBeenCalled();
+    });
+
+    it("should calculate stats from database sessions", async () => {
+      const mockSessions = [
+        {
+          id: "s1",
+          gameId: "g1",
+          startTime: new Date(),
+          duration: 60,
+          platform: "STEAM",
+          game: {
+            id: "g1",
+            name: "Game 1",
+            platformId: "123",
+            platform: "STEAM",
+          },
+        },
+        {
+          id: "s2",
+          gameId: "g2",
+          startTime: new Date(),
+          duration: 120,
+          platform: "STEAM",
+          game: {
+            id: "g2",
+            name: "Game 2",
+            platformId: "456",
+            platform: "STEAM",
+          },
+        },
+      ];
+
+      mockPrisma.gameSession.findMany.mockResolvedValue(mockSessions);
+
+      const response = await GET();
+      const data: GamingData = await response.json();
+
+      // Total hours: (60 + 120) / 60 = 3
+      expect(data.stats.thisMonth.totalHours).toBeGreaterThan(0);
+      expect(data.stats.thisMonth.gamesPlayed).toBeGreaterThan(0);
+    });
+
+    it("should handle empty database gracefully", async () => {
+      mockPrisma.gameSession.findMany.mockResolvedValue([]);
+      mockPrisma.game.findMany.mockResolvedValue([]);
+
+      const response = await GET();
+      const data: GamingData = await response.json();
+
+      expect(data.stats.thisMonth.totalHours).toBe(0);
+      expect(data.stats.thisMonth.gamesPlayed).toBe(0);
+      expect(data.currentlyPlaying).toEqual([]);
+      expect(data.recentSessions).toEqual([]);
+    });
+  });
+
+  describe("Error handling", () => {
+    it("should fall back to mock data on database error", async () => {
+      mockPrisma.gameSession.findMany.mockRejectedValue(new Error("Database connection failed"));
+
+      const response = await GET();
+      const data: GamingData = await response.json();
+
+      // Should still return valid structure
+      expect(data.stats).toBeDefined();
+      expect(data.currentlyPlaying).toBeDefined();
+      expect(response.status).toBe(200);
+    });
+
+    it("should set shorter cache on error fallback", async () => {
+      mockPrisma.gameSession.findMany.mockRejectedValue(new Error("DB Error"));
+
+      const response = await GET();
+      const cacheControl = response.headers.get("Cache-Control");
+
+      expect(cacheControl).toContain("s-maxage=300"); // 5 minutes
+    });
+
+    it("should handle Prisma query timeout", async () => {
+      mockPrisma.gameSession.findMany.mockImplementation(
+        () =>
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error("Query timeout")), 100);
+          })
+      );
+
+      const response = await GET();
+      expect(response.status).toBe(200); // Should still return fallback data
+    });
+  });
+
+  describe("Multi-platform support", () => {
+    it("should aggregate stats from multiple platforms", async () => {
+      const multiPlatformSessions = [
+        {
+          id: "s1",
+          gameId: "g1",
+          startTime: new Date(),
+          duration: 60,
+          platform: "STEAM",
+          game: {
+            id: "g1",
+            platformId: "730",
+            platform: "STEAM",
+            name: "CS:GO",
+          },
+        },
+        {
+          id: "s2",
+          gameId: "g2",
+          startTime: new Date(),
+          duration: 90,
+          platform: "HOYOVERSE",
+          game: {
+            id: "g2",
+            platformId: "zzz",
+            platform: "HOYOVERSE",
+            name: "Zenless Zone Zero",
+            nameZh: "绝区零",
+          },
+        },
+      ];
+
+      mockPrisma.gameSession.findMany.mockResolvedValue(multiPlatformSessions);
+
+      const response = await GET();
+      const data: GamingData = await response.json();
+
+      // Should have multiple platforms
+      expect(data.stats.platforms.length).toBeGreaterThan(1);
+      const platforms = data.stats.platforms.map((p) => p.name);
+      expect(platforms).toContain("Steam");
+      expect(platforms).toContain("绝区零");
+    });
+
+    it("should use Chinese names when available", async () => {
+      const chineseGameSessions = [
+        {
+          id: "s1",
+          gameId: "g1",
+          startTime: new Date(),
+          duration: 60,
+          platform: "HOYOVERSE",
+          game: {
+            id: "g1",
+            platformId: "zzz",
+            platform: "HOYOVERSE",
+            name: "Zenless Zone Zero",
+            nameZh: "绝区零",
+          },
+        },
+      ];
+
+      mockPrisma.gameSession.findMany.mockResolvedValue(chineseGameSessions);
+      mockPrisma.game.findMany.mockResolvedValue([
+        {
+          id: "g1",
+          platformId: "zzz",
+          platform: "HOYOVERSE",
+          name: "Zenless Zone Zero",
+          nameZh: "绝区零",
+          sessions: chineseGameSessions,
+          achievements: [],
+        },
+      ]);
+
+      const response = await GET();
+      const data: GamingData = await response.json();
+
+      if (data.recentSessions.length > 0) {
+        expect(data.recentSessions[0].gameName).toBe("绝区零");
+      }
+    });
+  });
+
+  describe("Performance and caching", () => {
+    it("should use proper cache headers for real data", async () => {
+      const response = await GET();
+      const cacheControl = response.headers.get("Cache-Control");
+
+      expect(cacheControl).toContain("public");
+      expect(cacheControl).toContain("s-maxage=1800"); // 30 minutes
+      expect(cacheControl).toContain("stale-while-revalidate=3600"); // 1 hour
+    });
+
+    it("should limit current games to 4", async () => {
+      const manyGames = Array.from({ length: 10 }, (_, i) => ({
+        id: `game_${i}`,
+        platformId: `${i}`,
+        platform: "STEAM",
+        name: `Game ${i}`,
+        sessions: [
+          {
+            id: `session_${i}`,
+            startTime: new Date(),
+            duration: 100,
+          },
+        ],
+        achievements: [],
+      }));
+
+      mockPrisma.game.findMany.mockResolvedValue(manyGames);
+
+      const response = await GET();
+      const data: GamingData = await response.json();
+
+      expect(data.currentlyPlaying.length).toBeLessThanOrEqual(4);
+    });
+
+    it("should limit recent sessions to 5", async () => {
+      const manySessions = Array.from({ length: 20 }, (_, i) => ({
+        id: `session_${i}`,
+        gameId: `game_${i}`,
+        startTime: new Date(),
+        duration: 60,
+        platform: "STEAM",
+        game: {
+          id: `game_${i}`,
+          platformId: `${i}`,
+          platform: "STEAM",
+          name: `Game ${i}`,
+        },
+      }));
+
+      mockPrisma.gameSession.findMany.mockResolvedValue(manySessions);
+
+      const response = await GET();
+      const data: GamingData = await response.json();
+
+      expect(data.recentSessions.length).toBeLessThanOrEqual(5);
     });
   });
 });

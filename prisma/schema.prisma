@@ -273,3 +273,177 @@ enum GalleryCategory {
   ORIGINAL
   AI
 }
+
+// ============================================================================
+// Media Watch Records (Bilibili, Douban, Jellyfin)
+// ============================================================================
+
+model MediaWatch {
+  id         String   @id @default(cuid())
+  platform   String   // 'bilibili' | 'douban' | 'jellyfin'
+  externalId String   // External platform's unique ID
+  type       String   // 'movie' | 'series' | 'episode'
+  title      String
+  cover      String?
+  url        String?  // Link to the item on the platform
+  watchedAt  DateTime
+  progress   Int?     // Watch progress (0-100)
+  season     Int?     // For series
+  episode    Int?     // For series
+  rating     Int?     // User rating (1-5)
+  duration   Int?     // Duration in minutes
+  metadata   Json?    // Additional platform-specific data
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([platform, externalId])
+  @@index([platform, watchedAt])
+  @@index([watchedAt])
+}
+
+// ============================================================================
+// Sync Job Tracking
+// ============================================================================
+
+model SyncJob {
+  id           String         @id @default(cuid())
+  platform     String         // 'bilibili' | 'douban' | 'all'
+  status       SyncJobStatus  @default(PENDING)
+  startedAt    DateTime       @default(now())
+  completedAt  DateTime?
+  duration     Int?           // Duration in milliseconds
+  itemsTotal   Int            @default(0)
+  itemsSuccess Int            @default(0)
+  itemsFailed  Int            @default(0)
+  errorMessage String?
+  errorStack   String?
+  triggeredBy  String         @default("cron") // 'cron' | 'manual' | 'system'
+
+  @@index([platform, startedAt])
+  @@index([status])
+}
+
+enum SyncJobStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  PARTIAL
+}
+
+// ============================================================================
+// Gaming Data (Steam, HoYoverse, etc.)
+// ============================================================================
+
+enum GamePlatform {
+  STEAM
+  HOYOVERSE
+  PSN
+  XBOX
+  SWITCH
+}
+
+// 游戏基础信息
+model Game {
+  id          String       @id @default(cuid())
+  platformId  String       // Steam AppID / HoYo GameID
+  platform    GamePlatform
+  name        String
+  nameZh      String?
+  cover       String?
+
+  sessions    GameSession[]
+  achievements GameAchievement[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([platform, platformId])
+  @@index([platform])
+}
+
+// 游戏会话记录(核心表)
+model GameSession {
+  id          String   @id @default(cuid())
+  gameId      String
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  startTime   DateTime
+  endTime     DateTime?
+  duration    Int      // 分钟
+  platform    GamePlatform
+
+  // 绝区零特有字段
+  hoyoLevel   Int?     // 绳网等级
+  hoyoMode    String?  // 游戏模式
+
+  createdAt   DateTime @default(now())
+
+  @@index([gameId, startTime])
+  @@index([startTime])
+  @@index([platform, startTime])
+}
+
+// 成就系统
+model GameAchievement {
+  id              String   @id @default(cuid())
+  gameId          String
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  achievementId   String   // Platform-specific achievement ID
+  name            String
+  nameZh          String?
+  description     String?
+  unlockedAt      DateTime?
+  progress        Float?   // 0-100
+  isUnlocked      Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([gameId, achievementId])
+  @@index([gameId])
+  @@index([isUnlocked])
+}
+
+// Steam 特定数据
+model SteamProfile {
+  id              String   @id @default(cuid())
+  steamId         String   @unique
+  personaName     String
+  profileUrl      String?
+  avatar          String?
+  lastSyncAt      DateTime
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// HoYoverse 特定数据
+model HoyoProfile {
+  id              String   @id @default(cuid())
+  uid             String   @unique
+  nickname        String
+  level           Int
+  loginDays       Int?
+  lastSyncAt      DateTime
+  region          String   @default("cn_gf01")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// 游戏同步日志
+model GamingSyncLog {
+  id          String       @id @default(cuid())
+  platform    GamePlatform
+  status      SyncJobStatus @default(PENDING)
+  message     String?
+  errorStack  String?
+  syncedAt    DateTime     @default(now())
+  duration    Int?         // Duration in milliseconds
+
+  @@index([platform, syncedAt])
+  @@index([status])
+}
