@@ -167,9 +167,9 @@ http://localhost:3000/admin/sync-dashboard
 
 # Cron 表达式格式: 分 时 日 月 周
 
-SYNC_CRON_SCHEDULE=0 _/3 _ \* \* # 每 3 小时（默认）
+SYNC*CRON_SCHEDULE=0 */3 \_ \* \* # 每 3 小时（默认）
 
-# SYNC_CRON_SCHEDULE=0 0 _/6 _ \* # 每 6 小时
+# SYNC*CRON_SCHEDULE=0 0 */6 \_ \* # 每 6 小时
 
 # SYNC_CRON_SCHEDULE=0 2 \* \* \* # 每天凌晨 2 点
 

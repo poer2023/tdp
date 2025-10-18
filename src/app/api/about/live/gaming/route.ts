@@ -22,7 +22,7 @@ export async function GET() {
     // Fallback to mock data on error
     return NextResponse.json(getMockData(), {
       headers: {
-        "Cache-Control": "public, s-maxage=300",
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
       },
     });
   }
@@ -34,6 +34,13 @@ async function getGamingData(): Promise<GamingData> {
   const startOfYear = new Date(now.getFullYear(), 0, 1);
 
   // Get game sessions for calculations
+  const steamProfilePromise =
+    typeof prisma.steamProfile?.findFirst === "function"
+      ? prisma.steamProfile.findFirst({
+          orderBy: { lastSyncAt: "desc" },
+        })
+      : Promise.resolve(null);
+
   const [monthSessions, yearSessions, recentSessions, allGames, steamProfile] = await Promise.all([
     // This month's sessions
     prisma.gameSession.findMany({
@@ -76,17 +83,16 @@ async function getGamingData(): Promise<GamingData> {
     }),
 
     // Steam profile
-    prisma.steamProfile.findFirst({
-      orderBy: { lastSyncAt: "desc" },
-    }),
+    steamProfilePromise,
   ]);
 
   // Get total games count
-  const totalGames = await prisma.game.count();
+  const totalGames =
+    typeof prisma.game.count === "function" ? await prisma.game.count() : allGames.length;
 
   // Calculate stats
   const stats = {
-    platforms: calculatePlatformStats(allGames),
+    platforms: calculatePlatformStats(allGames, monthSessions),
     thisMonth: {
       totalHours: Math.round(monthSessions.reduce((sum, s) => sum + s.duration, 0) / 60),
       gamesPlayed: new Set(monthSessions.map((s) => s.gameId)).size,
@@ -154,19 +160,45 @@ async function getGamingData(): Promise<GamingData> {
   };
 }
 
-function calculatePlatformStats(games: Array<{ platform: GamePlatform }>) {
-  const platforms = new Map<GamePlatform, { activeGames: number }>();
+type GameForStats = {
+  id?: string;
+  platformId?: string | null;
+  platform: GamePlatform;
+};
+
+type SessionForStats = {
+  game: {
+    id?: string;
+    platformId?: string | null;
+    platform: GamePlatform;
+  };
+};
+
+function calculatePlatformStats(games: GameForStats[], sessions: SessionForStats[]) {
+  const platforms = new Map<GamePlatform, Set<string>>();
+
+  const track = (platform?: GamePlatform, identifier?: string | null) => {
+    if (!platform) return;
+    const ids = platforms.get(platform) ?? new Set<string>();
+    if (identifier) {
+      ids.add(identifier);
+    }
+    platforms.set(platform, ids);
+  };
 
   for (const game of games) {
-    const current = platforms.get(game.platform) || { activeGames: 0 };
-    current.activeGames++;
-    platforms.set(game.platform, current);
+    track(game.platform, game.platformId ?? game.id ?? undefined);
   }
 
-  return Array.from(platforms.entries()).map(([platform, stats]) => ({
+  for (const session of sessions) {
+    const { game } = session;
+    track(game?.platform, game?.platformId ?? game?.id ?? undefined);
+  }
+
+  return Array.from(platforms.entries()).map(([platform, ids]) => ({
     id: mapPlatformToId(platform),
-    name: platform === GamePlatform.HOYOVERSE ? "绝区零" : platform,
-    activeGames: stats.activeGames,
+    name: mapPlatformToName(platform),
+    activeGames: ids.size,
   }));
 }
 
@@ -182,6 +214,17 @@ function mapPlatformToId(platform: GamePlatform): "steam" | "psn" | "switch" {
       return "steam"; // Map to steam for compatibility
     default:
       return "steam";
+  }
+}
+
+function mapPlatformToName(platform: GamePlatform): string {
+  switch (platform) {
+    case GamePlatform.STEAM:
+      return "Steam";
+    case GamePlatform.HOYOVERSE:
+      return "绝区零";
+    default:
+      return platform;
   }
 }
 

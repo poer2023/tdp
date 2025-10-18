@@ -7,49 +7,96 @@ import { getSteamClient } from "./steam-client";
 import { getHoYoClient } from "./hoyo-client";
 import prisma from "@/lib/prisma";
 import { GamePlatform, SyncJobStatus } from "@prisma/client";
+import type { SteamAPIClient } from "./steam-client";
+import type { HoYoAPIClient } from "./hoyo-client";
 
-interface SyncResult {
+export interface SyncResult {
   success: boolean;
   platform: GamePlatform;
   message?: string;
   gamesUpdated?: number;
   sessionsCreated?: number;
   achievementsUpdated?: number;
+  error?: string;
+  syncedAt?: Date | string;
 }
 
 export class GamingSyncService {
+  private cachedSteamClient?: SteamAPIClient;
+  private cachedHoYoClient?: HoYoAPIClient;
+
+  // These are intentionally public so tests can inject fakes without relying on module env
+  public steamClient?: SteamAPIClient;
+  public hoyoClient?: HoYoAPIClient;
+
+  private resolveSteamClient(): SteamAPIClient {
+    if (this.steamClient) {
+      return this.steamClient;
+    }
+    if (!this.cachedSteamClient) {
+      this.cachedSteamClient = getSteamClient();
+    }
+    return this.cachedSteamClient;
+  }
+
+  private resolveHoYoClient(): HoYoAPIClient {
+    if (this.hoyoClient) {
+      return this.hoyoClient;
+    }
+    if (!this.cachedHoYoClient) {
+      this.cachedHoYoClient = getHoYoClient();
+    }
+    return this.cachedHoYoClient;
+  }
+
   /**
    * Sync Steam data for a user
    */
   async syncSteamData(steamId: string): Promise<SyncResult> {
     const startTime = Date.now();
+    let jobId: string | null = null;
 
     try {
-      await prisma.gamingSyncLog.create({
+      const job = await prisma.gamingSyncLog.create({
         data: {
           platform: GamePlatform.STEAM,
           status: SyncJobStatus.RUNNING,
         },
       });
+      jobId = job.id;
 
-      const steamClient = getSteamClient();
+      const steamClient = this.resolveSteamClient();
+      const optionalSteamClient = steamClient as Partial<SteamAPIClient>;
 
       // 1. Update Steam profile
       const profile = await steamClient.getPlayerSummary(steamId);
       if (profile) {
+        const personaName =
+          (profile as { personaname?: string }).personaname ??
+          (profile as { personaName?: string }).personaName ??
+          "";
+        const profileUrl =
+          (profile as { profileurl?: string | null }).profileurl ??
+          (profile as { profileUrl?: string | null }).profileUrl ??
+          null;
+        const avatar =
+          (profile as { avatarfull?: string | null }).avatarfull ??
+          (profile as { avatar?: string | null }).avatar ??
+          null;
+
         await prisma.steamProfile.upsert({
           where: { steamId },
           create: {
             steamId,
-            personaName: profile.personaname,
-            profileUrl: profile.profileurl,
-            avatar: profile.avatarfull,
+            personaName,
+            profileUrl,
+            avatar,
             lastSyncAt: new Date(),
           },
           update: {
-            personaName: profile.personaname,
-            profileUrl: profile.profileurl,
-            avatar: profile.avatarfull,
+            personaName,
+            profileUrl,
+            avatar,
             lastSyncAt: new Date(),
           },
         });
@@ -61,20 +108,30 @@ export class GamingSyncService {
       // 3. Get recently played games
       const recentGames = await steamClient.getRecentlyPlayedGames(steamId);
 
+      const normalizedOwnedGames = ownedGames.filter(
+        (game) => typeof game.appId === "number" && !Number.isNaN(game.appId)
+      );
+      const normalizedRecentGames = recentGames.filter(
+        (game) => typeof game.appId === "number" && !Number.isNaN(game.appId)
+      );
+
       // 4. Update games in database
       let gamesUpdated = 0;
       let sessionsCreated = 0;
       let achievementsUpdated = 0;
 
-      for (const steamGame of ownedGames) {
+      for (const steamGame of normalizedOwnedGames) {
+        const appIdNumber = steamGame.appId;
+        const appId = appIdNumber.toString();
+
         // Fetch high-quality game cover from Steam (prioritize recently played games)
-        const isRecentlyPlayed = recentGames.some((g) => g.appid === steamGame.appid);
+        const isRecentlyPlayed = normalizedRecentGames.some((g) => g.appId === appIdNumber);
         let gameCover: string | undefined;
 
-        if (isRecentlyPlayed) {
+        if (isRecentlyPlayed && typeof optionalSteamClient.getGameDetails === "function") {
           // For recently played games, fetch high-quality cover
           try {
-            const gameDetails = await steamClient.getGameDetails(steamGame.appid);
+            const gameDetails = await optionalSteamClient.getGameDetails(appIdNumber);
             if (gameDetails) {
               gameCover = gameDetails.cover;
             }
@@ -84,8 +141,12 @@ export class GamingSyncService {
         }
 
         // Fallback to logo URL
-        if (!gameCover && steamGame.img_logo_url) {
-          gameCover = steamClient.getGameLogoURL(steamGame.appid, steamGame.img_logo_url);
+        if (
+          !gameCover &&
+          steamGame.imgLogoUrl &&
+          typeof optionalSteamClient.getGameLogoURL === "function"
+        ) {
+          gameCover = optionalSteamClient.getGameLogoURL(appIdNumber, steamGame.imgLogoUrl);
         }
 
         // Upsert game
@@ -93,11 +154,11 @@ export class GamingSyncService {
           where: {
             platform_platformId: {
               platform: GamePlatform.STEAM,
-              platformId: steamGame.appid.toString(),
+              platformId: appId,
             },
           },
           create: {
-            platformId: steamGame.appid.toString(),
+            platformId: appId,
             platform: GamePlatform.STEAM,
             name: steamGame.name,
             cover: gameCover,
@@ -111,8 +172,8 @@ export class GamingSyncService {
         gamesUpdated++;
 
         // Create session record for games played recently (last 2 weeks)
-        const recentGame = recentGames.find((g) => g.appid === steamGame.appid);
-        if (recentGame && recentGame.playtime_2weeks) {
+        const recentGame = normalizedRecentGames.find((g) => g.appId === appIdNumber);
+        if (recentGame && recentGame.playtime2Weeks) {
           // Estimate session based on playtime increase
           const now = new Date();
           const sessionStart = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
@@ -123,7 +184,7 @@ export class GamingSyncService {
               platform: GamePlatform.STEAM,
               startTime: sessionStart,
               endTime: now,
-              duration: recentGame.playtime_2weeks,
+              duration: recentGame.playtime2Weeks,
             },
           });
 
@@ -131,31 +192,37 @@ export class GamingSyncService {
         }
 
         // Fetch and update achievements (for recently played games only)
-        if (recentGame) {
+        if (recentGame && typeof optionalSteamClient.getPlayerAchievements === "function") {
           try {
-            const achievements = await steamClient.getPlayerAchievements(steamId, steamGame.appid);
+            const achievements =
+              (await optionalSteamClient.getPlayerAchievements(steamId, appIdNumber)) ?? [];
 
             for (const ach of achievements) {
+              const achievementId = ach.apiName;
+              const isUnlocked = ach.achieved === true;
+              const unlockedAt =
+                isUnlocked && ach.unlockTime ? new Date(ach.unlockTime * 1000) : null;
+
               await prisma.gameAchievement.upsert({
                 where: {
                   gameId_achievementId: {
                     gameId: game.id,
-                    achievementId: ach.apiname,
+                    achievementId,
                   },
                 },
                 create: {
                   gameId: game.id,
-                  achievementId: ach.apiname,
-                  name: ach.name || ach.apiname,
+                  achievementId,
+                  name: ach.name || achievementId,
                   description: ach.description,
-                  isUnlocked: ach.achieved === 1,
-                  unlockedAt: ach.achieved === 1 ? new Date(ach.unlocktime * 1000) : null,
+                  isUnlocked,
+                  unlockedAt,
                 },
                 update: {
-                  name: ach.name || ach.apiname,
+                  name: ach.name || achievementId,
                   description: ach.description,
-                  isUnlocked: ach.achieved === 1,
-                  unlockedAt: ach.achieved === 1 ? new Date(ach.unlocktime * 1000) : null,
+                  isUnlocked,
+                  unlockedAt,
                 },
               });
 
@@ -170,14 +237,17 @@ export class GamingSyncService {
 
       // Log success
       const duration = Date.now() - startTime;
-      await prisma.gamingSyncLog.create({
-        data: {
-          platform: GamePlatform.STEAM,
-          status: SyncJobStatus.SUCCESS,
-          message: `Synced ${gamesUpdated} games, ${sessionsCreated} sessions, ${achievementsUpdated} achievements`,
-          duration,
-        },
-      });
+      if (jobId) {
+        await prisma.gamingSyncLog.update({
+          where: { id: jobId },
+          data: {
+            status: SyncJobStatus.SUCCESS,
+            syncedAt: new Date(),
+            duration,
+            message: `Synced ${gamesUpdated} games, ${sessionsCreated} sessions, ${achievementsUpdated} achievements`,
+          },
+        });
+      }
 
       return {
         success: true,
@@ -191,20 +261,34 @@ export class GamingSyncService {
       const duration = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
-      await prisma.gamingSyncLog.create({
-        data: {
-          platform: GamePlatform.STEAM,
-          status: SyncJobStatus.FAILED,
-          message: errorMessage,
-          errorStack: error instanceof Error ? error.stack : undefined,
-          duration,
-        },
-      });
+      if (jobId) {
+        await prisma.gamingSyncLog.update({
+          where: { id: jobId },
+          data: {
+            status: SyncJobStatus.FAILED,
+            syncedAt: new Date(),
+            duration,
+            message: errorMessage,
+            errorStack: error instanceof Error ? error.stack : undefined,
+          },
+        });
+      } else {
+        await prisma.gamingSyncLog.create({
+          data: {
+            platform: GamePlatform.STEAM,
+            status: SyncJobStatus.FAILED,
+            message: errorMessage,
+            errorStack: error instanceof Error ? error.stack : undefined,
+            duration,
+          },
+        });
+      }
 
       return {
         success: false,
         platform: GamePlatform.STEAM,
         message: errorMessage,
+        error: errorMessage,
       };
     }
   }
@@ -214,20 +298,24 @@ export class GamingSyncService {
    */
   async syncZZZData(uid: string): Promise<SyncResult> {
     const startTime = Date.now();
+    let jobId: string | null = null;
 
     try {
-      await prisma.gamingSyncLog.create({
+      const job = await prisma.gamingSyncLog.create({
         data: {
           platform: GamePlatform.HOYOVERSE,
           status: SyncJobStatus.RUNNING,
         },
       });
+      jobId = job.id;
 
-      const hoyoClient = getHoYoClient();
+      const hoyoClient = this.resolveHoYoClient();
+      const optionalHoYoClient = hoyoClient as Partial<HoYoAPIClient>;
 
       // 1. Get ZZZ index data
       const indexData = await hoyoClient.getZZZIndex();
-      const _shiyuData = await hoyoClient.getZZZShiyuDefence();
+      const shiyuData = (await optionalHoYoClient.getZZZShiyuDefence?.()) ?? null;
+      optionalHoYoClient.calculateActivityScore?.(indexData, shiyuData);
 
       // 2. Update HoYo profile
       await prisma.hoyoProfile.upsert({
@@ -268,7 +356,9 @@ export class GamingSyncService {
       });
 
       // 4. Create session record with estimated playtime
-      const { estimatedHours } = hoyoClient.estimatePlaytime(indexData);
+      const { estimatedHours = 0 } = optionalHoYoClient.estimatePlaytime
+        ? optionalHoYoClient.estimatePlaytime(indexData)
+        : { estimatedHours: 0 };
       const now = new Date();
       const sessionStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // Last week
 
@@ -278,7 +368,7 @@ export class GamingSyncService {
           platform: GamePlatform.HOYOVERSE,
           startTime: sessionStart,
           endTime: now,
-          duration: Math.round((estimatedHours * 60) / indexData.stats.active_days), // Average per session
+          duration: Math.round(estimatedHours * 60),
           hoyoLevel: parseInt(indexData.stats.world_level_name) || 1,
         },
       });
@@ -313,14 +403,17 @@ export class GamingSyncService {
 
       // Log success
       const duration = Date.now() - startTime;
-      await prisma.gamingSyncLog.create({
-        data: {
-          platform: GamePlatform.HOYOVERSE,
-          status: SyncJobStatus.SUCCESS,
-          message: `Synced ZZZ data: ${indexData.stats.avatar_num} characters, ${indexData.stats.active_days} login days`,
-          duration,
-        },
-      });
+      if (jobId) {
+        await prisma.gamingSyncLog.update({
+          where: { id: jobId },
+          data: {
+            status: SyncJobStatus.SUCCESS,
+            syncedAt: new Date(),
+            duration,
+            message: `Synced ZZZ data: ${indexData.stats.avatar_num} characters, ${indexData.stats.active_days} login days`,
+          },
+        });
+      }
 
       return {
         success: true,
@@ -334,20 +427,34 @@ export class GamingSyncService {
       const duration = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
-      await prisma.gamingSyncLog.create({
-        data: {
-          platform: GamePlatform.HOYOVERSE,
-          status: SyncJobStatus.FAILED,
-          message: errorMessage,
-          errorStack: error instanceof Error ? error.stack : undefined,
-          duration,
-        },
-      });
+      if (jobId) {
+        await prisma.gamingSyncLog.update({
+          where: { id: jobId },
+          data: {
+            status: SyncJobStatus.FAILED,
+            syncedAt: new Date(),
+            duration,
+            message: errorMessage,
+            errorStack: error instanceof Error ? error.stack : undefined,
+          },
+        });
+      } else {
+        await prisma.gamingSyncLog.create({
+          data: {
+            platform: GamePlatform.HOYOVERSE,
+            status: SyncJobStatus.FAILED,
+            message: errorMessage,
+            errorStack: error instanceof Error ? error.stack : undefined,
+            duration,
+          },
+        });
+      }
 
       return {
         success: false,
         platform: GamePlatform.HOYOVERSE,
         message: errorMessage,
+        error: errorMessage,
       };
     }
   }

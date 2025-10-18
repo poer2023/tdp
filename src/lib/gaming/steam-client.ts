@@ -4,7 +4,7 @@
  * https://developer.valvesoftware.com/wiki/Steam_Web_API
  */
 
-interface SteamGame {
+interface SteamApiGame {
   appid: number;
   name: string;
   playtime_forever: number; // minutes
@@ -13,7 +13,7 @@ interface SteamGame {
   img_logo_url?: string;
 }
 
-interface SteamPlayerSummary {
+interface SteamApiPlayerSummary {
   steamid: string;
   personaname: string;
   profileurl: string;
@@ -25,24 +25,24 @@ interface SteamPlayerSummary {
 interface SteamRecentlyPlayedResponse {
   response: {
     total_count: number;
-    games?: SteamGame[];
+    games?: SteamApiGame[];
   };
 }
 
 interface SteamOwnedGamesResponse {
   response: {
     game_count: number;
-    games?: SteamGame[];
+    games?: SteamApiGame[];
   };
 }
 
 interface SteamPlayerSummaryResponse {
   response: {
-    players: SteamPlayerSummary[];
+    players: SteamApiPlayerSummary[];
   };
 }
 
-interface SteamAchievement {
+interface SteamApiAchievement {
   apiname: string;
   achieved: number; // 1 or 0
   unlocktime: number; // Unix timestamp
@@ -51,10 +51,10 @@ interface SteamAchievement {
 }
 
 interface SteamAchievementsResponse {
-  playerstats: {
+  playerstats?: {
     steamID: string;
     gameName: string;
-    achievements?: SteamAchievement[];
+    achievements?: SteamApiAchievement[];
     success: boolean;
   };
 }
@@ -71,6 +71,32 @@ interface SteamAppDetailsResponse {
   };
 }
 
+export interface SteamGame {
+  appId: number;
+  name: string;
+  playtimeForever: number;
+  playtime2Weeks?: number;
+  imgIconUrl?: string;
+  imgLogoUrl?: string;
+}
+
+export interface SteamPlayerSummary {
+  steamId: string;
+  personaName: string;
+  profileUrl: string;
+  avatar: string;
+  avatarMedium: string;
+  avatarFull: string;
+}
+
+export interface SteamAchievement {
+  apiName: string;
+  achieved: boolean;
+  unlockTime: number;
+  name?: string;
+  description?: string;
+}
+
 export class SteamAPIClient {
   private apiKey: string;
   private baseURL = "https://api.steampowered.com";
@@ -81,6 +107,38 @@ export class SteamAPIClient {
       throw new Error("Steam API key is required");
     }
     this.apiKey = apiKey;
+  }
+
+  private normalizeGame(game: SteamApiGame): SteamGame {
+    return {
+      appId: game.appid,
+      name: game.name,
+      playtimeForever: game.playtime_forever ?? 0,
+      playtime2Weeks: game.playtime_2weeks,
+      imgIconUrl: game.img_icon_url,
+      imgLogoUrl: game.img_logo_url,
+    };
+  }
+
+  private normalizePlayerSummary(player: SteamApiPlayerSummary): SteamPlayerSummary {
+    return {
+      steamId: player.steamid,
+      personaName: player.personaname,
+      profileUrl: player.profileurl,
+      avatar: player.avatar,
+      avatarMedium: player.avatarmedium,
+      avatarFull: player.avatarfull,
+    };
+  }
+
+  private normalizeAchievement(achievement: SteamApiAchievement): SteamAchievement {
+    return {
+      apiName: achievement.apiname,
+      achieved: achievement.achieved === 1,
+      unlockTime: achievement.unlocktime,
+      name: achievement.name,
+      description: achievement.description,
+    };
   }
 
   /**
@@ -97,11 +155,16 @@ export class SteamAPIClient {
 
     const response = await fetch(`${url}?${params.toString()}`);
     if (!response.ok) {
-      throw new Error(`Steam API error: ${response.statusText}`);
+      throw new Error(`Failed to fetch owned games: ${response.status} ${response.statusText}`);
     }
 
     const data: SteamOwnedGamesResponse = await response.json();
-    return data.response.games || [];
+    const games = data.response?.games;
+    if (!Array.isArray(games)) {
+      return [];
+    }
+
+    return games.map((game) => this.normalizeGame(game));
   }
 
   /**
@@ -117,11 +180,18 @@ export class SteamAPIClient {
 
     const response = await fetch(`${url}?${params.toString()}`);
     if (!response.ok) {
-      throw new Error(`Steam API error: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch recently played games: ${response.status} ${response.statusText}`
+      );
     }
 
     const data: SteamRecentlyPlayedResponse = await response.json();
-    return data.response.games || [];
+    const games = data.response?.games;
+    if (!Array.isArray(games)) {
+      return [];
+    }
+
+    return games.map((game) => this.normalizeGame(game));
   }
 
   /**
@@ -140,7 +210,11 @@ export class SteamAPIClient {
     }
 
     const data: SteamPlayerSummaryResponse = await response.json();
-    return data.response.players[0] || null;
+    const player = data.response?.players?.[0];
+    if (!player) {
+      return null;
+    }
+    return this.normalizePlayerSummary(player);
   }
 
   /**
@@ -162,11 +236,20 @@ export class SteamAPIClient {
       }
 
       const data: SteamAchievementsResponse = await response.json();
-      if (!data.playerstats.success) {
+      const playerStats = data.playerstats;
+      if (!playerStats) {
+        return [];
+      }
+      if (playerStats.success === false) {
         return [];
       }
 
-      return data.playerstats.achievements || [];
+      const achievements = playerStats.achievements;
+      if (!Array.isArray(achievements)) {
+        return [];
+      }
+
+      return achievements.map((achievement) => this.normalizeAchievement(achievement));
     } catch {
       // Fail gracefully for games without achievements
       return [];
@@ -233,7 +316,7 @@ export function getSteamClient(): SteamAPIClient {
   if (!steamClient) {
     const apiKey = process.env.STEAM_API_KEY;
     if (!apiKey) {
-      throw new Error("STEAM_API_KEY environment variable is not set");
+      throw new Error("STEAM_API_KEY not configured");
     }
     steamClient = new SteamAPIClient(apiKey);
   }

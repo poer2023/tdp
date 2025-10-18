@@ -27,16 +27,9 @@ interface ZZZIndexData {
 }
 
 interface ZZZShiyuDefence {
-  schedule_id: number;
-  begin_time: { year: number; month: number; day: number };
-  end_time: { year: number; month: number; day: number };
-  ratings: Record<
-    string,
-    {
-      times: string; // 挑战次数
-      rating: string; // 评级
-    }
-  >;
+  has_data?: boolean;
+  ratings: Record<string, number | { times: string; rating: string }>;
+  floors?: Array<{ floor_id: number; rating: string }>;
 }
 
 interface HoYoLabResponse<T> {
@@ -105,7 +98,11 @@ export class HoYoAPIClient {
   async getZZZShiyuDefence(): Promise<ZZZShiyuDefence | null> {
     try {
       const endpoint = `/game_record/app/zzz/api/challenge?role_id=${this.uid}&server=${this.region}&schedule_type=1`;
-      return await this.request<ZZZShiyuDefence>(endpoint);
+      const data = await this.request<ZZZShiyuDefence>(endpoint);
+      if (!data?.has_data) {
+        return null;
+      }
+      return data;
     } catch (error) {
       // Shiyu Defence data may not be available
       console.warn("Failed to fetch Shiyu Defence data:", error);
@@ -151,20 +148,22 @@ export class HoYoAPIClient {
   calculateActivityScore(data: ZZZIndexData, shiyuData: ZZZShiyuDefence | null): number {
     let score = 0;
 
-    // Base score from characters and level
-    score += Math.min(data.stats.avatar_num * 5, 40);
+    const characterBonus = Math.min(data.stats.avatar_num * 6, 45);
+    const activeDayBonus = Math.min(data.stats.active_days, 35);
+    score += characterBonus + activeDayBonus;
 
-    // Add score for Shiyu Defence participation
-    if (shiyuData) {
-      const totalChallenges = Object.values(shiyuData.ratings).reduce(
-        (sum, rating) => sum + parseInt(rating.times || "0"),
-        0
-      );
-      score += Math.min(totalChallenges * 10, 30);
+    if (shiyuData?.has_data) {
+      const floorsCleared = shiyuData.floors?.length ?? 0;
+      const ratingTotal = Object.values(shiyuData.ratings ?? {}).reduce<number>((sum, value) => {
+        if (typeof value === "number") {
+          return sum + value;
+        }
+        const numericTimes = parseInt(value?.times ?? "0", 10);
+        return sum + (Number.isFinite(numericTimes) ? numericTimes : 0);
+      }, 0);
+      const shiyuBonus = Math.min(floorsCleared * 3 + ratingTotal * 2, 30);
+      score += shiyuBonus;
     }
-
-    // Add bonus for active days
-    score += Math.min(data.stats.active_days / 10, 30);
 
     return Math.min(Math.round(score), 100);
   }
@@ -181,8 +180,11 @@ export function getHoYoClient(): HoYoAPIClient {
     const uid = process.env.HOYO_UID;
     const region = process.env.HOYO_REGION || "cn_gf01";
 
-    if (!cookie || !uid) {
-      throw new Error("HOYO_COOKIE and HOYO_UID environment variables are required");
+    if (!cookie) {
+      throw new Error("HOYO_COOKIE not configured");
+    }
+    if (!uid) {
+      throw new Error("HOYO_UID not configured");
     }
 
     hoyoClient = new HoYoAPIClient(cookie, uid, region);

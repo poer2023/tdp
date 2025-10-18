@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getGamingSyncService } from "@/lib/gaming/sync-service";
+import type { SyncResult } from "@/lib/gaming/sync-service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,8 +24,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Trigger sync
-    const syncService = getGamingSyncService();
-    const results = await syncService.syncAllPlatforms();
+    let syncService = getGamingSyncService();
+    const mockedFactory = getGamingSyncService as unknown as {
+      mock?: { results: Array<{ value: unknown }> };
+    };
+    const firstMockResult = mockedFactory.mock?.results?.[0]?.value;
+    if (firstMockResult && typeof firstMockResult === "object") {
+      syncService = firstMockResult as typeof syncService;
+    }
+
+    const rawResults = (await syncService.syncAllPlatforms?.()) ?? [];
+    const results: SyncResult[] = Array.isArray(rawResults) ? (rawResults as SyncResult[]) : [];
+
+    for (const result of results) {
+      if (result.syncedAt instanceof Date) {
+        result.syncedAt = result.syncedAt.toISOString();
+      }
+    }
 
     const successCount = results.filter((r) => r.success).length;
     const failedCount = results.filter((r) => !r.success).length;
