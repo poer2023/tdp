@@ -5,6 +5,10 @@
   --background: #ffffff; /* 纯白底色 */
   --foreground: #111111;
 
+  /* Font fallbacks used when remote fonts are unavailable */
+  --font-geist-sans: "Inter", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  --font-geist-mono: "Menlo", "Consolas", "Liberation Mono", "Courier New", monospace;
+
   /* 搜索组件焦点样式 */
   --search-focus-ring: 0 0 0 2px rgba(59, 130, 246, 0.2);
   --search-focus-border: #3b82f6;

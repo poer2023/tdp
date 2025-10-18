@@ -4,7 +4,7 @@
  */
 
 import { prisma } from "../prisma";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { fetchBilibiliHistory, normalizeBilibiliItem, type BilibiliConfig } from "./bilibili";
 import { fetchDoubanWatched, normalizeDoubanItem, type DoubanConfig } from "./douban";
 
@@ -50,6 +50,11 @@ export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> 
       try {
         const normalized = normalizeBilibiliItem(item);
 
+        const metadataValue =
+          normalized.metadata !== undefined && normalized.metadata !== null
+            ? (normalized.metadata as Prisma.InputJsonValue)
+            : Prisma.JsonNull;
+
         await prisma.mediaWatch.upsert({
           where: {
             platform_externalId: {
@@ -64,15 +69,18 @@ export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> 
             watchedAt: normalized.watchedAt,
             progress: normalized.progress,
             duration: normalized.duration,
-            metadata: normalized.metadata as Prisma.JsonValue,
+            metadata: metadataValue,
             updatedAt: new Date(),
           },
-          create: normalized as Prisma.MediaWatchCreateInput,
+          create: {
+            ...normalized,
+            metadata: metadataValue,
+          } as Prisma.MediaWatchCreateInput,
         });
 
         successCount++;
       } catch (error) {
-        console.error(`[${platform}] Failed to sync item ${item.aid}:`, error);
+        console.error(`[${platform}] Failed to sync item ${item.history.bvid}:`, error);
         failedCount++;
       }
     }
@@ -167,6 +175,11 @@ export async function syncDouban(config: DoubanConfig): Promise<SyncResult> {
       try {
         const normalized = normalizeDoubanItem(item);
 
+        const metadataValue =
+          normalized.metadata !== undefined && normalized.metadata !== null
+            ? (normalized.metadata as Prisma.InputJsonValue)
+            : Prisma.JsonNull;
+
         await prisma.mediaWatch.upsert({
           where: {
             platform_externalId: {
@@ -180,10 +193,13 @@ export async function syncDouban(config: DoubanConfig): Promise<SyncResult> {
             url: normalized.url,
             watchedAt: normalized.watchedAt,
             rating: normalized.rating,
-            metadata: normalized.metadata as Prisma.JsonValue,
+            metadata: metadataValue,
             updatedAt: new Date(),
           },
-          create: normalized as Prisma.MediaWatchCreateInput,
+          create: {
+            ...normalized,
+            metadata: metadataValue,
+          } as Prisma.MediaWatchCreateInput,
         });
 
         successCount++;
