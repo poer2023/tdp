@@ -1,6 +1,6 @@
 // Admin dashboard home
 import prisma from "@/lib/prisma";
-import { PostStatus } from "@prisma/client";
+import { PostStatus, type Prisma } from "@prisma/client";
 import { MetricCard } from "@/components/admin/metric-card";
 import { ActionCard } from "@/components/admin/action-card";
 import { RecentPosts } from "@/components/admin/recent-posts";
@@ -12,11 +12,91 @@ export const revalidate = 0;
 // Force Node.js runtime because this page queries Prisma directly
 export const runtime = "nodejs";
 
+const SKIP_DB = process.env.E2E_SKIP_DB === "1" || process.env.E2E_SKIP_DB === "true";
+type RecentPostsResult = Prisma.PostGetPayload<{
+  include: { author: { select: { name: true } } };
+}>[];
+type RecentUploadsResult = Awaited<ReturnType<typeof prisma.galleryImage.findMany>>;
+
+type AdminOverviewData = {
+  totalPosts: number;
+  publishedPosts: number;
+  draftPosts: number;
+  totalGallery: number;
+  livePhotos: number;
+  geotaggedPhotos: number;
+  recentPosts: RecentPostsResult;
+  recentUploads: RecentUploadsResult;
+};
+
+function getFallbackOverview(): AdminOverviewData {
+  return {
+    totalPosts: 0,
+    publishedPosts: 0,
+    draftPosts: 0,
+    totalGallery: 0,
+    livePhotos: 0,
+    geotaggedPhotos: 0,
+    recentPosts: [] as RecentPostsResult,
+    recentUploads: [] as RecentUploadsResult,
+  };
+}
+
+async function loadAdminOverview(): Promise<AdminOverviewData> {
+  if (SKIP_DB) {
+    return getFallbackOverview();
+  }
+
+  try {
+    const [
+      totalPosts,
+      publishedPosts,
+      draftPosts,
+      totalGallery,
+      livePhotos,
+      geotaggedPhotos,
+      recentPosts,
+      recentUploads,
+    ] = await Promise.all([
+      prisma.post.count(),
+      prisma.post.count({ where: { status: PostStatus.PUBLISHED } }),
+      prisma.post.count({ where: { status: PostStatus.DRAFT } }),
+      prisma.galleryImage.count(),
+      prisma.galleryImage.count({ where: { isLivePhoto: true } }),
+      prisma.galleryImage.count({ where: { NOT: { latitude: null } } }),
+      prisma.post.findMany({
+        orderBy: { updatedAt: "desc" },
+        take: 5,
+        include: { author: { select: { name: true } } },
+      }),
+      prisma.galleryImage.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+    ]);
+
+    return {
+      totalPosts,
+      publishedPosts,
+      draftPosts,
+      totalGallery,
+      livePhotos,
+      geotaggedPhotos,
+      recentPosts,
+      recentUploads,
+    };
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Failed to load admin overview metrics, falling back to zero state.", error);
+    }
+    return getFallbackOverview();
+  }
+}
+
 export default async function AdminHomePage() {
   const locale = await getAdminLocale();
 
-  // Fetch content statistics and recent activity in parallel
-  const [
+  const {
     totalPosts,
     publishedPosts,
     draftPosts,
@@ -25,23 +105,7 @@ export default async function AdminHomePage() {
     geotaggedPhotos,
     recentPosts,
     recentUploads,
-  ] = await Promise.all([
-    prisma.post.count(),
-    prisma.post.count({ where: { status: PostStatus.PUBLISHED } }),
-    prisma.post.count({ where: { status: PostStatus.DRAFT } }),
-    prisma.galleryImage.count(),
-    prisma.galleryImage.count({ where: { isLivePhoto: true } }),
-    prisma.galleryImage.count({ where: { NOT: { latitude: null } } }),
-    prisma.post.findMany({
-      orderBy: { updatedAt: "desc" },
-      take: 5,
-      include: { author: { select: { name: true } } },
-    }),
-    prisma.galleryImage.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    }),
-  ]);
+  } = await loadAdminOverview();
 
   return (
     <div className="space-y-6 sm:space-y-8 md:space-y-10">

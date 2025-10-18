@@ -9,6 +9,7 @@ import prisma from "@/lib/prisma";
 import { GamePlatform, SyncJobStatus } from "@prisma/client";
 import type { SteamAPIClient } from "./steam-client";
 import type { HoYoAPIClient } from "./hoyo-client";
+import { decryptCredential, isEncrypted } from "../encryption";
 
 export interface SyncResult {
   success: boolean;
@@ -460,27 +461,88 @@ export class GamingSyncService {
   }
 
   /**
-   * Sync all gaming platforms
+   * Sync all gaming platforms using credentials from database
    */
   async syncAllPlatforms(): Promise<SyncResult[]> {
     const results: SyncResult[] = [];
 
-    // Sync Steam
-    const steamId = process.env.STEAM_USER_ID;
-    if (steamId) {
-      const steamResult = await this.syncSteamData(steamId);
-      results.push(steamResult);
-    } else {
-      console.warn("STEAM_USER_ID not configured, skipping Steam sync");
-    }
+    try {
+      // Fetch all valid gaming credentials from database
+      const credentials = await prisma.externalCredential.findMany({
+        where: {
+          platform: {
+            in: ["STEAM", "HOYOVERSE"],
+          },
+          isValid: true,
+        },
+      });
 
-    // Sync HoYoverse/ZZZ
-    const hoyoUid = process.env.HOYO_UID;
-    if (hoyoUid) {
-      const zzzResult = await this.syncZZZData(hoyoUid);
-      results.push(zzzResult);
-    } else {
-      console.warn("HOYO_UID not configured, skipping ZZZ sync");
+      // Sync Steam platforms
+      const steamCredentials = credentials.filter((c) => c.platform === "STEAM");
+      for (const credential of steamCredentials) {
+        const steamId =
+          (credential.metadata as { steamId?: string })?.steamId ||
+          process.env.STEAM_USER_ID;
+
+        if (steamId) {
+          const steamResult = await this.syncSteamData(steamId);
+          results.push(steamResult);
+        } else {
+          console.warn(
+            `Steam credential ${credential.id} missing steamId in metadata, skipping`
+          );
+        }
+      }
+
+      // Fallback to environment variable if no Steam credentials configured
+      if (steamCredentials.length === 0 && process.env.STEAM_USER_ID) {
+        console.log("No Steam credentials in database, using environment variable");
+        const steamResult = await this.syncSteamData(process.env.STEAM_USER_ID);
+        results.push(steamResult);
+      }
+
+      // Sync HoYoverse/ZZZ platforms
+      const hoyoCredentials = credentials.filter((c) => c.platform === "HOYOVERSE");
+      for (const credential of hoyoCredentials) {
+        const hoyoUid =
+          (credential.metadata as { uid?: string })?.uid || process.env.HOYO_UID;
+
+        if (hoyoUid) {
+          const zzzResult = await this.syncZZZData(hoyoUid);
+          results.push(zzzResult);
+        } else {
+          console.warn(
+            `HoYoverse credential ${credential.id} missing uid in metadata, skipping`
+          );
+        }
+      }
+
+      // Fallback to environment variable if no HoYoverse credentials configured
+      if (hoyoCredentials.length === 0 && process.env.HOYO_UID) {
+        console.log("No HoYoverse credentials in database, using environment variable");
+        const zzzResult = await this.syncZZZData(process.env.HOYO_UID);
+        results.push(zzzResult);
+      }
+
+      if (results.length === 0) {
+        console.warn(
+          "No valid gaming credentials found in database and no environment variables configured"
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching gaming credentials from database:", error);
+      // Fallback to environment variables on database error
+      const steamId = process.env.STEAM_USER_ID;
+      if (steamId) {
+        const steamResult = await this.syncSteamData(steamId);
+        results.push(steamResult);
+      }
+
+      const hoyoUid = process.env.HOYO_UID;
+      if (hoyoUid) {
+        const zzzResult = await this.syncZZZData(hoyoUid);
+        results.push(zzzResult);
+      }
     }
 
     return results;

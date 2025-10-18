@@ -32,6 +32,9 @@ export const adminTranslations = {
     subscriptionManagement: "Subscription management",
     subscriptionDescription: "Track recurring subscriptions and costs",
     createNewSubscription: "Create and manage your subscriptions",
+    credentials: "Credentials",
+    credentialManagement: "Credential management",
+    credentialDescription: "Manage API keys, cookies, and authentication tokens",
 
     // Dashboard
     contentDashboard: "Content management dashboard",
@@ -140,6 +143,81 @@ export const adminTranslations = {
     progress: "Progress",
     trendDescription: "Month-over-month spending trend",
     currentMonth: "Current month",
+
+    // Credentials
+    credentialList: "Credential List",
+    addCredential: "Add Credential",
+    editCredential: "Edit Credential",
+    deleteCredential: "Delete Credential",
+    validateCredential: "Validate",
+    credentialName: "Credential Name",
+    credentialType: "Type",
+    credentialValue: "Value",
+    credentialPlatform: "Platform",
+    credentialStatus: "Status",
+    credentialMetadata: "Metadata",
+    credentialCreatedAt: "Created",
+    credentialUpdatedAt: "Updated",
+    lastValidated: "Last Validated",
+    validUntil: "Valid Until",
+    lastUsed: "Last Used",
+    usageCount: "Usage Count",
+    failureCount: "Failure Count",
+    lastError: "Last Error",
+    isValid: "Valid",
+    isInvalid: "Invalid",
+    validationSuccess: "Validation successful",
+    validationFailed: "Validation failed",
+
+    // Credential Types
+    apiKey: "API Key",
+    cookie: "Cookie",
+    oauthToken: "OAuth Token",
+
+    // Platforms
+    steam: "Steam",
+    hoyoverse: "HoYoverse",
+    bilibili: "Bilibili",
+    douban: "Douban",
+    jellyfin: "Jellyfin",
+
+    // Credential Form
+    enterCredentialName: "Enter credential name",
+    enterCredentialValue: "Enter credential value",
+    selectCredentialType: "Select credential type",
+    selectPlatform: "Select platform",
+    optionalMetadata: "Optional metadata (JSON)",
+    credentialValuePlaceholder: "Paste your credential value here",
+
+    // Credential Actions
+    noCredentials: "No credentials yet",
+    createFirstCredential: "Create your first credential to get started.",
+    confirmDeleteCredential: "Delete this credential?",
+    confirmDeleteCredentialDescription: "This action will permanently remove the credential and cannot be undone.",
+    credentialSaved: "Credential saved successfully",
+    credentialDeleted: "Credential deleted successfully",
+    credentialValidated: "Credential validated",
+
+    // Sync Jobs
+    syncJobs: "Sync Jobs",
+    syncJobId: "Job ID",
+    syncJobPlatform: "Platform",
+    syncJobStatus: "Status",
+    syncJobStartedAt: "Started",
+    syncJobCompletedAt: "Completed",
+    syncJobDuration: "Duration",
+    syncJobItemsTotal: "Total Items",
+    syncJobItemsSuccess: "Success",
+    syncJobItemsFailed: "Failed",
+    syncJobMessage: "Message",
+    syncJobError: "Error",
+    triggeredBy: "Triggered By",
+    jobType: "Job Type",
+    associatedCredential: "Associated Credential",
+
+    // Sync Dashboard
+    syncDashboard: "Sync Dashboard",
+    syncDashboardDescription: "Manage data sync tasks and platform status",
   },
   zh: {
     // Layout
@@ -164,6 +242,9 @@ export const adminTranslations = {
     subscriptionManagement: "订阅管理",
     subscriptionDescription: "记录订阅项目与成本",
     createNewSubscription: "创建和管理您的订阅",
+    credentials: "凭据管理",
+    credentialManagement: "凭据管理",
+    credentialDescription: "管理 API 密钥、Cookie 和身份验证令牌",
 
     // Dashboard
     contentDashboard: "内容管理仪表板",
@@ -272,6 +353,81 @@ export const adminTranslations = {
     progress: "进度",
     trendDescription: "月度支出趋势",
     currentMonth: "当前月份",
+
+    // Credentials
+    credentialList: "凭据列表",
+    addCredential: "添加凭据",
+    editCredential: "编辑凭据",
+    deleteCredential: "删除凭据",
+    validateCredential: "验证",
+    credentialName: "凭据名称",
+    credentialType: "类型",
+    credentialValue: "值",
+    credentialPlatform: "平台",
+    credentialStatus: "状态",
+    credentialMetadata: "元数据",
+    credentialCreatedAt: "创建时间",
+    credentialUpdatedAt: "更新时间",
+    lastValidated: "最后验证",
+    validUntil: "有效期至",
+    lastUsed: "最后使用",
+    usageCount: "使用次数",
+    failureCount: "失败次数",
+    lastError: "最后错误",
+    isValid: "有效",
+    isInvalid: "无效",
+    validationSuccess: "验证成功",
+    validationFailed: "验证失败",
+
+    // Credential Types
+    apiKey: "API 密钥",
+    cookie: "Cookie",
+    oauthToken: "OAuth 令牌",
+
+    // Platforms
+    steam: "Steam",
+    hoyoverse: "米哈游",
+    bilibili: "哔哩哔哩",
+    douban: "豆瓣",
+    jellyfin: "Jellyfin",
+
+    // Credential Form
+    enterCredentialName: "输入凭据名称",
+    enterCredentialValue: "输入凭据值",
+    selectCredentialType: "选择凭据类型",
+    selectPlatform: "选择平台",
+    optionalMetadata: "可选元数据（JSON）",
+    credentialValuePlaceholder: "在此粘贴您的凭据值",
+
+    // Credential Actions
+    noCredentials: "暂无凭据",
+    createFirstCredential: "创建第一个凭据以开始使用。",
+    confirmDeleteCredential: "删除此凭据？",
+    confirmDeleteCredentialDescription: "此操作将永久删除凭据，无法撤销。",
+    credentialSaved: "凭据保存成功",
+    credentialDeleted: "凭据删除成功",
+    credentialValidated: "凭据已验证",
+
+    // Sync Jobs
+    syncJobs: "同步任务",
+    syncJobId: "任务 ID",
+    syncJobPlatform: "平台",
+    syncJobStatus: "状态",
+    syncJobStartedAt: "开始时间",
+    syncJobCompletedAt: "完成时间",
+    syncJobDuration: "持续时间",
+    syncJobItemsTotal: "总条目",
+    syncJobItemsSuccess: "成功",
+    syncJobItemsFailed: "失败",
+    syncJobMessage: "消息",
+    syncJobError: "错误",
+    triggeredBy: "触发者",
+    jobType: "任务类型",
+    associatedCredential: "关联凭据",
+
+    // Sync Dashboard
+    syncDashboard: "同步仪表板",
+    syncDashboardDescription: "管理数据同步任务和平台状态",
   },
 } as const;
 

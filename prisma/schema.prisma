@@ -8,12 +8,12 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?        @unique
   emailVerified DateTime?
   image         String?
-  role          UserRole  @default(AUTHOR)
+  role          UserRole       @default(AUTHOR)
   accounts      Account[]
   moments       Moment[]
   posts         Post[]
@@ -234,6 +234,214 @@ model Subscription {
   @@index([createdAt])
 }
 
+model MediaWatch {
+  id         String   @id @default(cuid())
+  platform   String
+  externalId String
+  type       String
+  title      String
+  cover      String?
+  url        String?
+  watchedAt  DateTime
+  progress   Int?
+  season     Int?
+  episode    Int?
+  rating     Int?
+  duration   Int?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([platform, externalId])
+  @@index([platform, watchedAt])
+  @@index([watchedAt])
+}
+
+model SyncJob {
+  id           String        @id @default(cuid())
+  platform     String
+  status       SyncJobStatus @default(PENDING)
+  startedAt    DateTime      @default(now())
+  completedAt  DateTime?
+  duration     Int?
+  itemsTotal   Int           @default(0)
+  itemsSuccess Int           @default(0)
+  itemsFailed  Int           @default(0)
+  errorMessage String?
+  errorStack   String?
+  triggeredBy  String        @default("cron")
+
+  @@index([platform, startedAt])
+  @@index([status])
+}
+
+model Game {
+  id           String            @id @default(cuid())
+  platformId   String
+  platform     GamePlatform
+  name         String
+  nameZh       String?
+  cover        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  achievements GameAchievement[]
+  sessions     GameSession[]
+
+  @@unique([platform, platformId])
+  @@index([platform])
+}
+
+model GameSession {
+  id        String       @id @default(cuid())
+  gameId    String
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int
+  platform  GamePlatform
+  hoyoLevel Int?
+  hoyoMode  String?
+  createdAt DateTime     @default(now())
+  game      Game         @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, startTime])
+  @@index([startTime])
+  @@index([platform, startTime])
+}
+
+model GameAchievement {
+  id            String    @id @default(cuid())
+  gameId        String
+  achievementId String
+  name          String
+  nameZh        String?
+  description   String?
+  unlockedAt    DateTime?
+  progress      Float?
+  isUnlocked    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  game          Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, achievementId])
+  @@index([gameId])
+  @@index([isUnlocked])
+}
+
+model SteamProfile {
+  id          String   @id @default(cuid())
+  steamId     String   @unique
+  personaName String
+  profileUrl  String?
+  avatar      String?
+  lastSyncAt  DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model HoyoProfile {
+  id         String   @id @default(cuid())
+  uid        String   @unique
+  nickname   String
+  level      Int
+  loginDays  Int?
+  lastSyncAt DateTime
+  region     String   @default("cn_gf01")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model GamingSyncLog {
+  id         String        @id @default(cuid())
+  platform   GamePlatform
+  status     SyncJobStatus @default(PENDING)
+  message    String?
+  errorStack String?
+  syncedAt   DateTime      @default(now())
+  duration   Int?
+
+  @@index([platform, syncedAt])
+  @@index([status])
+}
+
+model ExternalCredential {
+  id              String             @id
+  platform        CredentialPlatform
+  type            CredentialType
+  value           String
+  metadata        Json?
+  isValid         Boolean            @default(true)
+  lastValidatedAt DateTime?
+  validUntil      DateTime?
+  failureCount    Int                @default(0)
+  lastError       String?
+  usageCount      Int                @default(0)
+  lastUsedAt      DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime
+
+  // New fields for sync automation
+  autoSync        Boolean            @default(false)
+  syncFrequency   String?            // daily, weekly, manual
+  nextCheckAt     DateTime?
+
+  // Relations
+  syncJobs        SyncJobLog[]       @relation("CredentialSyncJobs")
+
+  @@index([lastValidatedAt])
+  @@index([platform, isValid])
+  @@index([nextCheckAt])
+}
+
+model SyncJobLog {
+  id           String               @id
+  platform     String
+  jobType      String?
+  triggeredBy  String               @default("system")
+  status       SyncJobStatus        @default(PENDING)
+  startedAt    DateTime?
+  completedAt  DateTime?
+  duration     Int?
+  itemsTotal   Int                  @default(0)
+  itemsSuccess Int                  @default(0)
+  itemsFailed  Int                  @default(0)
+  message      String?
+  errorStack   String?
+  errorDetails Json?
+  credentialId String?
+  metrics      Json?
+  createdAt    DateTime             @default(now())
+
+  // Relations
+  credential   ExternalCredential?  @relation("CredentialSyncJobs", fields: [credentialId], references: [id], onDelete: SetNull)
+
+  @@index([platform, startedAt])
+  @@index([status, startedAt])
+  @@index([triggeredBy, createdAt])
+  @@index([credentialId])
+}
+
+model SyncStatistics {
+  id                 String   @id
+  platform           String
+  date               DateTime @db.Date
+  totalJobs          Int      @default(0)
+  successJobs        Int      @default(0)
+  failedJobs         Int      @default(0)
+  partialJobs        Int      @default(0)
+  avgDuration        Int?
+  minDuration        Int?
+  maxDuration        Int?
+  totalItems         Int      @default(0)
+  successItems       Int      @default(0)
+  failedItems        Int      @default(0)
+  credentialFailures Int      @default(0)
+  updatedAt          DateTime
+
+  @@unique([platform, date])
+  @@index([date])
+  @@index([platform, date])
+}
+
 enum SubscriptionBillingCycle {
   MONTHLY
   ANNUAL
@@ -274,56 +482,6 @@ enum GalleryCategory {
   AI
 }
 
-// ============================================================================
-// Media Watch Records (Bilibili, Douban, Jellyfin)
-// ============================================================================
-
-model MediaWatch {
-  id         String   @id @default(cuid())
-  platform   String   // 'bilibili' | 'douban' | 'jellyfin'
-  externalId String   // External platform's unique ID
-  type       String   // 'movie' | 'series' | 'episode'
-  title      String
-  cover      String?
-  url        String?  // Link to the item on the platform
-  watchedAt  DateTime
-  progress   Int?     // Watch progress (0-100)
-  season     Int?     // For series
-  episode    Int?     // For series
-  rating     Int?     // User rating (1-5)
-  duration   Int?     // Duration in minutes
-  metadata   Json?    // Additional platform-specific data
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@unique([platform, externalId])
-  @@index([platform, watchedAt])
-  @@index([watchedAt])
-}
-
-// ============================================================================
-// Sync Job Tracking
-// ============================================================================
-
-model SyncJob {
-  id           String         @id @default(cuid())
-  platform     String         // 'bilibili' | 'douban' | 'all'
-  status       SyncJobStatus  @default(PENDING)
-  startedAt    DateTime       @default(now())
-  completedAt  DateTime?
-  duration     Int?           // Duration in milliseconds
-  itemsTotal   Int            @default(0)
-  itemsSuccess Int            @default(0)
-  itemsFailed  Int            @default(0)
-  errorMessage String?
-  errorStack   String?
-  triggeredBy  String         @default("cron") // 'cron' | 'manual' | 'system'
-
-  @@index([platform, startedAt])
-  @@index([status])
-}
-
 enum SyncJobStatus {
   PENDING
   RUNNING
@@ -331,10 +489,6 @@ enum SyncJobStatus {
   FAILED
   PARTIAL
 }
-
-// ============================================================================
-// Gaming Data (Steam, HoYoverse, etc.)
-// ============================================================================
 
 enum GamePlatform {
   STEAM
@@ -344,106 +498,16 @@ enum GamePlatform {
   SWITCH
 }
 
-// 游戏基础信息
-model Game {
-  id          String       @id @default(cuid())
-  platformId  String       // Steam AppID / HoYo GameID
-  platform    GamePlatform
-  name        String
-  nameZh      String?
-  cover       String?
-
-  sessions    GameSession[]
-  achievements GameAchievement[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([platform, platformId])
-  @@index([platform])
+enum CredentialPlatform {
+  STEAM
+  HOYOVERSE
+  BILIBILI
+  DOUBAN
+  JELLYFIN
 }
 
-// 游戏会话记录(核心表)
-model GameSession {
-  id          String   @id @default(cuid())
-  gameId      String
-  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-
-  startTime   DateTime
-  endTime     DateTime?
-  duration    Int      // 分钟
-  platform    GamePlatform
-
-  // 绝区零特有字段
-  hoyoLevel   Int?     // 绳网等级
-  hoyoMode    String?  // 游戏模式
-
-  createdAt   DateTime @default(now())
-
-  @@index([gameId, startTime])
-  @@index([startTime])
-  @@index([platform, startTime])
-}
-
-// 成就系统
-model GameAchievement {
-  id              String   @id @default(cuid())
-  gameId          String
-  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-
-  achievementId   String   // Platform-specific achievement ID
-  name            String
-  nameZh          String?
-  description     String?
-  unlockedAt      DateTime?
-  progress        Float?   // 0-100
-  isUnlocked      Boolean  @default(false)
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([gameId, achievementId])
-  @@index([gameId])
-  @@index([isUnlocked])
-}
-
-// Steam 特定数据
-model SteamProfile {
-  id              String   @id @default(cuid())
-  steamId         String   @unique
-  personaName     String
-  profileUrl      String?
-  avatar          String?
-  lastSyncAt      DateTime
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-// HoYoverse 特定数据
-model HoyoProfile {
-  id              String   @id @default(cuid())
-  uid             String   @unique
-  nickname        String
-  level           Int
-  loginDays       Int?
-  lastSyncAt      DateTime
-  region          String   @default("cn_gf01")
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-// 游戏同步日志
-model GamingSyncLog {
-  id          String       @id @default(cuid())
-  platform    GamePlatform
-  status      SyncJobStatus @default(PENDING)
-  message     String?
-  errorStack  String?
-  syncedAt    DateTime     @default(now())
-  duration    Int?         // Duration in milliseconds
-
-  @@index([platform, syncedAt])
-  @@index([status])
+enum CredentialType {
+  COOKIE
+  API_KEY
+  OAUTH_TOKEN
 }

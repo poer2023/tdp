@@ -9,15 +9,26 @@ interface LiveHighlightsSectionProps {
   locale: "en" | "zh";
 }
 
+type SyncStatus = {
+  platform: string;
+  lastSyncAt: string | null;
+  status: string;
+};
+
 export function LiveHighlightsSection({ locale }: LiveHighlightsSectionProps) {
   const [data, setData] = useState<LiveHighlightsData | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/about/highlights")
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
+    // Fetch highlights and sync status in parallel
+    Promise.all([
+      fetch("/api/about/highlights").then((res) => res.json()),
+      fetch("/api/about/sync-status").then((res) => res.json()).catch(() => ({ platforms: [] })),
+    ])
+      .then(([highlightsData, syncData]) => {
+        setData(highlightsData);
+        setSyncStatus(syncData.platforms || []);
         setLoading(false);
       })
       .catch((error) => {
@@ -117,6 +128,47 @@ export function LiveHighlightsSection({ locale }: LiveHighlightsSectionProps) {
           </Link>
         ))}
       </div>
+
+      {/* Sync Status Indicator */}
+      {syncStatus.length > 0 && (
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <div className="flex items-center justify-between">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+              {locale === "zh" ? "数据同步状态" : "Data Sync Status"}
+            </div>
+            <div className="flex gap-3">
+              {syncStatus.map((status) => {
+                const isFresh =
+                  status.lastSyncAt &&
+                  new Date().getTime() - new Date(status.lastSyncAt).getTime() < 24 * 60 * 60 * 1000;
+
+                return (
+                  <div
+                    key={status.platform}
+                    className="flex items-center gap-1.5 text-xs"
+                    title={
+                      status.lastSyncAt
+                        ? `Last synced: ${new Date(status.lastSyncAt).toLocaleString()}`
+                        : "Never synced"
+                    }
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${
+                        isFresh
+                          ? "bg-green-500 dark:bg-green-400"
+                          : "bg-yellow-500 dark:bg-yellow-400"
+                      }`}
+                    />
+                    <span className="capitalize text-zinc-600 dark:text-zinc-400">
+                      {status.platform}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* View Full Dashboard Button */}
       <div className="pt-4 text-center">

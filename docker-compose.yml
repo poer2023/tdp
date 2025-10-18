@@ -17,6 +17,29 @@ services:
     networks:
       - tdp-net
 
+  # Pre-migration backup service
+  # Creates a database backup before running migrations to ensure zero data loss
+  backup:
+    image: postgres:16-alpine
+    container_name: tdp-backup
+    env_file:
+      - .env
+    volumes:
+      - ./backups:/backups
+      - ./scripts:/scripts:ro
+    command: >
+      sh -c "
+      echo '==> Creating pre-migration backup...';
+      /scripts/backup-database.sh;
+      echo '==> Backup completed successfully';
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tdp-net
+    restart: "no"
+
   migrate:
     # 数据库迁移服务 - 一次性运行
     # 使用本地构建的 migrator 阶段镜像，确保内置 Prisma CLI 与 prisma/ 目录
@@ -35,6 +58,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      backup:
+        condition: service_completed_successfully
     networks:
       - tdp-net
     restart: "no"
