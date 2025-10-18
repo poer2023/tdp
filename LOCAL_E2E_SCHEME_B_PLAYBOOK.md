@@ -82,6 +82,7 @@ npx playwright test \
 适用时机
 
 - 开发新功能或修 bug，想高频快速反馈，只跑与新改动直接相关的测试。
+- 新增功能受 `FEATURE_*` 控制时，确保先在本地设置开关并验证降级/兜底状态（见 `docs/modular-development-playbook.md`）。
 
 操作步骤（视情况组合使用）
 

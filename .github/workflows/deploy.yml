@@ -113,7 +113,19 @@ jobs:
             echo "==> Pulling latest Docker images"
             docker compose pull
 
-            echo "==> Restarting services"
+            echo "==> Creating database backup before migration"
+            ./scripts/backup-database.sh || {
+              echo "⚠️ Backup failed, but continuing with deployment"
+              echo "This is a warning - please check backup script configuration"
+            }
+
+            echo "==> Verifying migration status"
+            ./scripts/verify-migration.sh --check-only || {
+              echo "⚠️ Pre-migration check failed, but continuing"
+              echo "This may indicate schema drift - review migration history"
+            }
+
+            echo "==> Restarting services (includes automatic migration)"
             docker compose up -d --remove-orphans
 
             echo "==> Waiting for HTTP health (port 3000) up to 300s"

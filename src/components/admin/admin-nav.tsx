@@ -35,6 +35,16 @@ const navSections: NavSection[] = [
         href: "/admin/subscriptions",
         descriptionKey: "subscriptionDescription",
       },
+      {
+        labelKey: "credentials",
+        href: "/admin/credentials",
+        descriptionKey: "credentialDescription",
+      },
+      {
+        labelKey: "syncDashboard",
+        href: "/admin/sync",
+        descriptionKey: "syncDashboardDescription",
+      },
     ],
   },
 ];

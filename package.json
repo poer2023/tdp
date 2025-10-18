@@ -52,6 +52,8 @@
     "test:coverage-summary": "node scripts/coverage-summary.js",
     "db:dedupe:gallery": "tsx scripts/dedupe-gallery.ts",
     "db:generate-thumbs": "tsx scripts/generate-thumbnails.ts",
+    "generate-key": "tsx scripts/generate-encryption-key.ts",
+    "migrate-encrypt-credentials": "tsx scripts/migrate-encrypt-credentials.ts",
     "prepare": "husky || true"
   },
   "dependencies": {
@@ -90,7 +92,7 @@
     "react-dom": "19.1.0",
     "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
-    "recharts": "^3.2.1",
+    "recharts": "^3.3.0",
     "remark-gfm": "^4.0.1",
     "sharp": "^0.34.4"
   },

@@ -7,6 +7,7 @@ import { prisma } from "../prisma";
 import type { Prisma } from "@prisma/client";
 import { fetchBilibiliHistory, normalizeBilibiliItem, type BilibiliConfig } from "./bilibili";
 import { fetchDoubanWatched, normalizeDoubanItem, type DoubanConfig } from "./douban";
+import { decryptCredential, isEncrypted } from "../encryption";
 
 export interface SyncResult {
   platform: string;
@@ -253,38 +254,142 @@ export async function syncDouban(config: DoubanConfig): Promise<SyncResult> {
 }
 
 /**
- * Sync all platforms
+ * Sync all platforms using credentials from database
  */
 export async function syncAllPlatforms(): Promise<SyncResult[]> {
   console.log("[Media Sync] Starting sync for all platforms...");
 
   const results: SyncResult[] = [];
 
-  // Sync Bilibili
-  if (
-    process.env.BILIBILI_SESSDATA &&
-    process.env.BILIBILI_BILI_JCT &&
-    process.env.BILIBILI_BUVID3
-  ) {
-    const bilibiliResult = await syncBilibili({
-      sessdata: process.env.BILIBILI_SESSDATA,
-      biliJct: process.env.BILIBILI_BILI_JCT,
-      buvid3: process.env.BILIBILI_BUVID3,
+  try {
+    // Fetch all valid media credentials from database
+    const credentials = await prisma.externalCredential.findMany({
+      where: {
+        platform: {
+          in: ["BILIBILI", "DOUBAN"],
+        },
+        isValid: true,
+      },
     });
-    results.push(bilibiliResult);
-  } else {
-    console.warn("[Bilibili] Skipping sync - missing credentials");
-  }
 
-  // Sync Douban
-  if (process.env.DOUBAN_USER_ID) {
-    const doubanResult = await syncDouban({
-      userId: process.env.DOUBAN_USER_ID,
-      cookie: process.env.DOUBAN_COOKIE,
-    });
-    results.push(doubanResult);
-  } else {
-    console.warn("[Douban] Skipping sync - missing user ID");
+    // Sync Bilibili platforms
+    const bilibiliCredentials = credentials.filter((c) => c.platform === "BILIBILI");
+    for (const credential of bilibiliCredentials) {
+      // Decrypt credential value if encrypted
+      const credentialValue = isEncrypted(credential.value)
+        ? decryptCredential(credential.value)
+        : credential.value;
+
+      // Parse cookie value to extract required fields
+      const cookieParts = credentialValue.split(";").reduce(
+        (acc, part) => {
+          const [key, value] = part.trim().split("=");
+          if (key && value) {
+            acc[key.trim()] = value.trim();
+          }
+          return acc;
+        },
+        {} as Record<string, string>
+      );
+
+      const sessdata = cookieParts["SESSDATA"];
+      const biliJct = cookieParts["bili_jct"];
+      const buvid3 = cookieParts["buvid3"];
+
+      if (sessdata && biliJct && buvid3) {
+        const bilibiliResult = await syncBilibili({
+          sessdata,
+          biliJct,
+          buvid3,
+        });
+        results.push(bilibiliResult);
+      } else {
+        console.warn(
+          `[Bilibili] Credential ${credential.id} missing required cookie fields, skipping`
+        );
+      }
+    }
+
+    // Fallback to environment variables if no Bilibili credentials configured
+    if (
+      bilibiliCredentials.length === 0 &&
+      process.env.BILIBILI_SESSDATA &&
+      process.env.BILIBILI_BILI_JCT &&
+      process.env.BILIBILI_BUVID3
+    ) {
+      console.log("[Bilibili] No credentials in database, using environment variables");
+      const bilibiliResult = await syncBilibili({
+        sessdata: process.env.BILIBILI_SESSDATA,
+        biliJct: process.env.BILIBILI_BILI_JCT,
+        buvid3: process.env.BILIBILI_BUVID3,
+      });
+      results.push(bilibiliResult);
+    }
+
+    // Sync Douban platforms
+    const doubanCredentials = credentials.filter((c) => c.platform === "DOUBAN");
+    for (const credential of doubanCredentials) {
+      const userId =
+        (credential.metadata as { userId?: string })?.userId ||
+        process.env.DOUBAN_USER_ID;
+
+      if (userId) {
+        // Decrypt credential value if encrypted
+        const credentialValue = isEncrypted(credential.value)
+          ? decryptCredential(credential.value)
+          : credential.value;
+
+        const doubanResult = await syncDouban({
+          userId,
+          cookie: credentialValue,
+        });
+        results.push(doubanResult);
+      } else {
+        console.warn(
+          `[Douban] Credential ${credential.id} missing userId in metadata, skipping`
+        );
+      }
+    }
+
+    // Fallback to environment variables if no Douban credentials configured
+    if (doubanCredentials.length === 0 && process.env.DOUBAN_USER_ID) {
+      console.log("[Douban] No credentials in database, using environment variables");
+      const doubanResult = await syncDouban({
+        userId: process.env.DOUBAN_USER_ID,
+        cookie: process.env.DOUBAN_COOKIE,
+      });
+      results.push(doubanResult);
+    }
+
+    if (results.length === 0) {
+      console.warn(
+        "[Media Sync] No valid media credentials found in database and no environment variables configured"
+      );
+    }
+  } catch (error) {
+    console.error("[Media Sync] Error fetching credentials from database:", error);
+
+    // Fallback to environment variables on database error
+    if (
+      process.env.BILIBILI_SESSDATA &&
+      process.env.BILIBILI_BILI_JCT &&
+      process.env.BILIBILI_BUVID3
+    ) {
+      const bilibiliResult = await syncBilibili({
+        sessdata: process.env.BILIBILI_SESSDATA,
+        biliJct: process.env.BILIBILI_BILI_JCT,
+        buvid3: process.env.BILIBILI_BUVID3,
+      });
+      results.push(bilibiliResult);
+    }
+
+    if (process.env.DOUBAN_USER_ID) {
+      const doubanResult = await syncDouban({
+        userId: process.env.DOUBAN_USER_ID,
+        cookie: process.env.DOUBAN_COOKIE,
+      });
+      results.push(doubanResult);
+    }
   }
 
   const totalSuccess = results.filter((r) => r.success).length;
