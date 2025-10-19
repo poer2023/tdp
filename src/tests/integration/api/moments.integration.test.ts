@@ -147,16 +147,15 @@ describe("Moments API Integration", () => {
   it("should paginate moments correctly", async () => {
     // 1. 创建10个moments
     const user = await createTestUser("ADMIN");
-    await Promise.all(
-      Array.from({ length: 10 }, (_, i) =>
-        db.moment.create({
-          data: {
-            authorId: user.id,
-            content: `Moment ${i + 1}`,
-          },
-        })
-      )
-    );
+    for (let i = 0; i < 10; i++) {
+      // Use sequential inserts to avoid overwhelming shared CI/database instances
+      await db.moment.create({
+        data: {
+          authorId: user.id,
+          content: `Moment ${i + 1}`,
+        },
+      });
+    }
 
     // 2. 第一页（前5个）
     const firstPage = await db.moment.findMany({
