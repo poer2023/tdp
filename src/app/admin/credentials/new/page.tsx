@@ -9,6 +9,7 @@ import { CredentialForm } from "@/components/admin/credential-form";
 import { t } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
 import Link from "next/link";
+import { CredentialPlatform, CredentialType } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -28,7 +29,7 @@ async function createCredential(formData: FormData) {
   if (metadataStr && metadataStr.trim()) {
     try {
       metadata = JSON.parse(metadataStr);
-    } catch (e) {
+    } catch (_error) {
       // Invalid JSON, ignore
     }
   }
@@ -36,8 +37,8 @@ async function createCredential(formData: FormData) {
   await prisma.externalCredential.create({
     data: {
       id,
-      platform: platform as any,
-      type: type as any,
+      platform: platform as CredentialPlatform,
+      type: type as CredentialType,
       value,
       metadata,
       isValid: true,

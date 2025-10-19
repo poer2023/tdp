@@ -1,256 +1,35 @@
-"use client";
+import dynamic from "next/dynamic";
+import { features } from "@/config/features";
+import { ModuleLoadingSkeleton } from "@/components/error-boundaries/module-error-fallback";
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { PostStatus, PostLocale } from "@prisma/client";
+const ExportClient = dynamic(
+  () => import("./export-client").then((mod) => ({ default: mod.ExportClient })),
+  {
+    ssr: false,
+    loading: () => <ModuleLoadingSkeleton rows={4} />,
+  }
+);
 
-export default function ExportPage() {
-  const searchParams = useSearchParams();
-  const [filters, setFilters] = useState({
-    from: "",
-    to: "",
-    statuses: [] as PostStatus[],
-    locales: [] as PostLocale[],
-  });
-  const [isExporting, setIsExporting] = useState(false);
+export default function AdminExportPage() {
+  if (!features.get("adminExport")) {
+    return (
+      <div className="space-y-6">
+        <header className="space-y-3">
+          <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Operations</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+            内容导出
+          </h1>
+        </header>
+        <section className="rounded-3xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+          内容导出功能已禁用。请将
+          <code className="mx-1 rounded bg-zinc-100 px-1 py-0.5 text-xs text-zinc-700">
+            FEATURE_ADMIN_EXPORT
+          </code>
+          设置为 on 并重新部署。
+        </section>
+      </div>
+    );
+  }
 
-  // Read query parameters on mount
-  useEffect(() => {
-    const from = searchParams.get("from");
-    const to = searchParams.get("to");
-    const statusesParam = searchParams.get("statuses");
-    const localesParam = searchParams.get("locales");
-
-    setFilters({
-      from: from || "",
-      to: to || "",
-      statuses: statusesParam
-        ? statusesParam.split(",").map((s) => {
-            const upper = s.toUpperCase();
-            return upper === "DRAFT" ? PostStatus.DRAFT : PostStatus.PUBLISHED;
-          })
-        : [],
-      locales: localesParam
-        ? localesParam.split(",").map((l) => {
-            const upper = l.toUpperCase();
-            return upper === "ZH" ? PostLocale.ZH : PostLocale.EN;
-          })
-        : [],
-    });
-  }, [searchParams]);
-
-  const handleExport = async () => {
-    setIsExporting(true);
-
-    try {
-      // Build query string
-      const params = new URLSearchParams();
-      if (filters.from) params.set("from", new Date(filters.from).toISOString());
-      if (filters.to) params.set("to", new Date(filters.to).toISOString());
-      if (filters.statuses.length > 0) params.set("statuses", filters.statuses.join(","));
-      if (filters.locales.length > 0) params.set("locales", filters.locales.join(","));
-
-      // Fetch export
-      const res = await fetch(`/api/admin/content/export?${params.toString()}`);
-
-      if (!res.ok) {
-        const error = await res.json();
-        alert(`Export failed: ${error.error || "Unknown error"}`);
-        return;
-      }
-
-      // Download file
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `content-export-${new Date().toISOString().split("T")[0]}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Export error:", error);
-      alert("Export failed");
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const toggleStatus = (status: PostStatus) => {
-    setFilters((prev) => ({
-      ...prev,
-      statuses: prev.statuses.includes(status)
-        ? prev.statuses.filter((s) => s !== status)
-        : [...prev.statuses, status],
-    }));
-  };
-
-  const toggleLocale = (locale: PostLocale) => {
-    setFilters((prev) => ({
-      ...prev,
-      locales: prev.locales.includes(locale)
-        ? prev.locales.filter((l) => l !== locale)
-        : [...prev.locales, locale],
-    }));
-  };
-
-  return (
-    <div className="space-y-10">
-      {/* Page Header - unified style */}
-      <header className="space-y-3">
-        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Operations</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
-          内容导出
-        </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          将文章导出为带 YAML Frontmatter 的 Markdown，用于备份或迁移。
-        </p>
-      </header>
-
-      {/* Export Form - unified card */}
-      <section className="space-y-6 rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
-        {/* Date Range */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
-            日期范围
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <label htmlFor="from" className="block text-sm text-zinc-600 dark:text-zinc-400">
-                From
-              </label>
-              <input
-                type="date"
-                id="from"
-                value={filters.from}
-                onChange={(e) => setFilters((prev) => ({ ...prev, from: e.target.value }))}
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="to" className="block text-sm text-zinc-600 dark:text-zinc-400">
-                To
-              </label>
-              <input
-                type="date"
-                id="to"
-                value={filters.to}
-                onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))}
-                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-              />
-            </div>
-          </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">留空表示不限制日期</p>
-        </div>
-
-        {/* Status Filter */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
-            状态
-          </h2>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={filters.statuses.includes(PostStatus.PUBLISHED)}
-                onChange={() => toggleStatus(PostStatus.PUBLISHED)}
-                className="h-4 w-4 border-zinc-300 text-zinc-900 focus:ring-0 focus:ring-offset-0 dark:border-zinc-700"
-              />
-              <span className="text-sm text-zinc-900 dark:text-zinc-100">Published</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={filters.statuses.includes(PostStatus.DRAFT)}
-                onChange={() => toggleStatus(PostStatus.DRAFT)}
-                className="h-4 w-4 border-zinc-300 text-zinc-900 focus:ring-0 focus:ring-offset-0 dark:border-zinc-700"
-              />
-              <span className="text-sm text-zinc-900 dark:text-zinc-100">Draft</span>
-            </label>
-          </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">不勾选表示导出所有状态</p>
-        </div>
-
-        {/* Locale Filter */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
-            语言
-          </h2>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={filters.locales.includes(PostLocale.EN)}
-                onChange={() => toggleLocale(PostLocale.EN)}
-                className="h-4 w-4 border-zinc-300 text-zinc-900 focus:ring-0 focus:ring-offset-0 dark:border-zinc-700"
-              />
-              <span className="text-sm text-zinc-900 dark:text-zinc-100">English</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={filters.locales.includes(PostLocale.ZH)}
-                onChange={() => toggleLocale(PostLocale.ZH)}
-                className="h-4 w-4 border-zinc-300 text-zinc-900 focus:ring-0 focus:ring-offset-0 dark:border-zinc-700"
-              />
-              <span className="text-sm text-zinc-900 dark:text-zinc-100">Chinese</span>
-            </label>
-          </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">不勾选表示导出所有语言</p>
-        </div>
-
-        {/* Export Button */}
-        <div>
-          <button
-            onClick={handleExport}
-            disabled={isExporting}
-            data-testid="export-button"
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-900 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-          >
-            {isExporting ? "Exporting..." : "导出内容"}
-          </button>
-          <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400">
-            下载包含 Markdown 与 manifest.json 的 ZIP
-          </p>
-        </div>
-      </section>
-
-      {/* Documentation - unified card */}
-      <section className="space-y-4 rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
-        <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
-          导出格式
-        </h2>
-        <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-          <p>
-            Exported files follow the Markdown format specification documented in
-            <code className="ml-1 rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-900">
-              docs/CONTENT_FORMAT.md
-            </code>
-          </p>
-          <p>Structure:</p>
-          <ul className="ml-4 list-inside list-disc space-y-1">
-            <li>
-              <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-900">
-                content/en/*.md
-              </code>{" "}
-              - English posts
-            </li>
-            <li>
-              <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-900">
-                content/zh/*.md
-              </code>{" "}
-              - Chinese posts
-            </li>
-            <li>
-              <code className="rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-900">
-                manifest.json
-              </code>{" "}
-              - Export metadata
-            </li>
-          </ul>
-        </div>
-      </section>
-    </div>
-  );
+  return <ExportClient />;
 }

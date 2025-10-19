@@ -17,7 +17,6 @@ import crypto from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16; // 128 bits
-const AUTH_TAG_LENGTH = 16; // 128 bits
 
 /**
  * Get encryption key from environment variable
@@ -99,12 +98,14 @@ export function decryptCredential(encryptedData: string): string {
   // Parse encrypted data format: iv:authTag:ciphertext
   const parts = encryptedData.split(":");
   if (parts.length !== 3) {
-    throw new Error(
-      "Invalid encrypted data format. Expected format: iv:authTag:ciphertext"
-    );
+    throw new Error("Invalid encrypted data format. Expected format: iv:authTag:ciphertext");
   }
 
   const [ivBase64, authTagBase64, ciphertext] = parts;
+
+  if (!ivBase64 || !authTagBase64 || !ciphertext) {
+    throw new Error("Invalid encrypted data: missing components");
+  }
 
   try {
     const key = getEncryptionKey();
@@ -116,8 +117,7 @@ export function decryptCredential(encryptedData: string): string {
     decipher.setAuthTag(authTag);
 
     // Decrypt data
-    let plaintext = decipher.update(ciphertext, "base64", "utf8");
-    plaintext += decipher.final("utf8");
+    const plaintext = decipher.update(ciphertext, "base64", "utf8") + decipher.final("utf8");
 
     return plaintext;
   } catch (error) {

@@ -36,7 +36,7 @@ export default async function SyncLogsPage({
   const jobId = params.jobId;
 
   // Build where clause
-  const where: any = {};
+  const where: Record<string, string> = {};
 
   if (jobId) {
     where.id = jobId;
@@ -124,10 +124,10 @@ export default async function SyncLogsPage({
                   }).toString()}`
                 : "#"
             }
-            className={`px-4 py-2 text-sm font-medium rounded-lg border ${
+            className={`rounded-lg border px-4 py-2 text-sm font-medium ${
               hasPrevPage
-                ? "bg-white text-zinc-900 border-zinc-300 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                : "bg-zinc-100 text-zinc-400 border-zinc-200 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600 dark:border-zinc-700"
+                ? "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                : "cursor-not-allowed border-zinc-200 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-600"
             }`}
             aria-disabled={!hasPrevPage}
           >
@@ -150,10 +150,10 @@ export default async function SyncLogsPage({
                   }).toString()}`
                 : "#"
             }
-            className={`px-4 py-2 text-sm font-medium rounded-lg border ${
+            className={`rounded-lg border px-4 py-2 text-sm font-medium ${
               hasNextPage
-                ? "bg-white text-zinc-900 border-zinc-300 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                : "bg-zinc-100 text-zinc-400 border-zinc-200 cursor-not-allowed dark:bg-zinc-800 dark:text-zinc-600 dark:border-zinc-700"
+                ? "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                : "cursor-not-allowed border-zinc-200 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-600"
             }`}
             aria-disabled={!hasNextPage}
           >

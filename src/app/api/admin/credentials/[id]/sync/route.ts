@@ -8,10 +8,7 @@ import prisma from "@/lib/prisma";
 import { getGamingSyncService } from "@/lib/gaming/sync-service";
 import { syncBilibili, syncDouban } from "@/lib/media-sync";
 
-export async function POST(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
 
@@ -38,8 +35,7 @@ export async function POST(
       case "STEAM": {
         // Extract Steam ID from metadata or environment
         const steamId =
-          (credential.metadata as { steamId?: string })?.steamId ||
-          process.env.STEAM_USER_ID;
+          (credential.metadata as { steamId?: string })?.steamId || process.env.STEAM_USER_ID;
 
         if (!steamId) {
           return NextResponse.json(
@@ -48,8 +44,11 @@ export async function POST(
           );
         }
 
+        // Use API key from database credential
+        const apiKey = credential.value;
+
         const gamingSyncService = getGamingSyncService();
-        syncResult = await gamingSyncService.syncSteamData(steamId);
+        syncResult = await gamingSyncService.syncSteamData(steamId, apiKey);
 
         // Update credential usage
         await prisma.externalCredential.update({
@@ -67,9 +66,7 @@ export async function POST(
 
       case "HOYOVERSE": {
         // Extract HoYo UID from metadata or environment
-        const hoyoUid =
-          (credential.metadata as { uid?: string })?.uid ||
-          process.env.HOYO_UID;
+        const hoyoUid = (credential.metadata as { uid?: string })?.uid || process.env.HOYO_UID;
 
         if (!hoyoUid) {
           return NextResponse.json(
@@ -98,17 +95,17 @@ export async function POST(
       case "BILIBILI": {
         // Parse Bilibili cookie
         const cookieParts: Record<string, string> = {};
-        credential.value.split(';').forEach((part) => {
-          const [key, value] = part.trim().split('=');
+        credential.value.split(";").forEach((part) => {
+          const [key, value] = part.trim().split("=");
           if (key && value) {
             cookieParts[key] = value;
           }
         });
 
         syncResult = await syncBilibili({
-          sessdata: cookieParts.SESSDATA || '',
-          biliJct: cookieParts.bili_jct || '',
-          buvid3: cookieParts.buvid3 || '',
+          sessdata: cookieParts.SESSDATA || "",
+          biliJct: cookieParts.bili_jct || "",
+          buvid3: cookieParts.buvid3 || "",
         });
 
         // Update credential usage
@@ -156,10 +153,7 @@ export async function POST(
       }
 
       case "JELLYFIN": {
-        return NextResponse.json(
-          { error: "Jellyfin sync not implemented yet" },
-          { status: 501 }
-        );
+        return NextResponse.json({ error: "Jellyfin sync not implemented yet" }, { status: 501 });
       }
 
       default:

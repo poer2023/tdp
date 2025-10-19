@@ -2,7 +2,7 @@ import Link from "next/link";
 
 type MetricCardProps = {
   label: string;
-  value: number;
+  value: number | string;
   meta?: string;
   href?: string;
   alert?: boolean;

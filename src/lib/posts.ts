@@ -1,6 +1,7 @@
 import { PostStatus, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { pinyin } from "pinyin-pro";
+import { shouldSkipDb, withDbFallback } from "@/lib/utils/db-fallback";
 
 export type PublicPost = {
   id: string;
@@ -55,105 +56,90 @@ export type UpdatePostInput = {
 
 type PostWithAuthor = Prisma.PostGetPayload<{ include: { author: true } }>;
 
-const SKIP_DB = process.env.E2E_SKIP_DB === "1" || process.env.E2E_SKIP_DB === "true";
+const SKIP_DB = shouldSkipDb();
 
 export async function listPublishedPosts(): Promise<PublicPost[]> {
-  if (SKIP_DB) return [];
-  try {
-    const posts = await prisma.post.findMany({
-      where: { status: PostStatus.PUBLISHED },
-      include: { author: true },
-      orderBy: { publishedAt: "desc" },
-    });
-    return posts.map(toPublicPost);
-  } catch (_e) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("DB unavailable in listPublishedPosts, returning empty list.", _e);
-    }
-    return [];
-  }
+  return withDbFallback(
+    async () => {
+      const posts = await prisma.post.findMany({
+        where: { status: PostStatus.PUBLISHED },
+        include: { author: true },
+        orderBy: { publishedAt: "desc" },
+      });
+      return posts.map(toPublicPost);
+    },
+    async () => []
+  );
 }
 
 export async function listAllPosts(): Promise<PublicPost[]> {
-  if (SKIP_DB) return [];
-  try {
-    const posts = await prisma.post.findMany({
-      include: { author: true },
-      orderBy: { createdAt: "desc" },
-    });
-    return posts.map(toPublicPost);
-  } catch (_e) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("DB unavailable in listAllPosts, returning empty list.", _e);
-    }
-    return [];
-  }
+  return withDbFallback(
+    async () => {
+      const posts = await prisma.post.findMany({
+        include: { author: true },
+        orderBy: { createdAt: "desc" },
+      });
+      return posts.map(toPublicPost);
+    },
+    async () => []
+  );
 }
 
 export async function listPostSummaries(): Promise<PostSummary[]> {
-  if (SKIP_DB) return [];
-  try {
-    const posts = await prisma.post.findMany({
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        status: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    return posts.map((post) => ({
-      id: post.id,
-      title: post.title,
-      slug: post.slug,
-      status: post.status as PostStatus,
-    }));
-  } catch (_e) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("DB unavailable in listPostSummaries, returning empty list.", _e);
-    }
-    return [];
-  }
+  return withDbFallback(
+    async () => {
+      const posts = await prisma.post.findMany({
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          status: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      return posts.map((post) => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        status: post.status as PostStatus,
+      }));
+    },
+    async () => []
+  );
 }
 
 export async function getPostBySlug(
   slug: string,
   locale: "EN" | "ZH" = "EN"
 ): Promise<PublicPost | null> {
-  if (SKIP_DB) return null;
-  try {
-    const post = await prisma.post.findUnique({
-      where: {
-        locale_slug: {
-          locale,
-          slug,
+  return withDbFallback(
+    async () => {
+      const post = await prisma.post.findUnique({
+        where: {
+          locale_slug: {
+            locale,
+            slug,
+          },
         },
-      },
-      include: { author: true },
-    });
-    return post ? toPublicPost(post) : null;
-  } catch (_e) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("DB unavailable in getPostBySlug, returning null.", _e);
-    }
-    return null;
-  }
+        include: { author: true },
+      });
+      return post ? toPublicPost(post) : null;
+    },
+    async () => null
+  );
 }
 
 export async function getPostById(id: string): Promise<PublicPost | null> {
-  if (SKIP_DB) return null;
-  try {
-    const post = await prisma.post.findUnique({
-      where: { id },
-      include: { author: true },
-    });
-    return post ? toPublicPost(post) : null;
-  } catch (_e) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("DB unavailable in getPostById, returning null.", _e);
-    }
-    return null;
-  }
+  return withDbFallback(
+    async () => {
+      const post = await prisma.post.findUnique({
+        where: { id },
+        include: { author: true },
+      });
+      return post ? toPublicPost(post) : null;
+    },
+    async () => null
+  );
 }
 
 export async function createPost(input: CreatePostInput): Promise<PublicPost> {

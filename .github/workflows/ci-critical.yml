@@ -92,6 +92,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
 
+      - name: Run credentials module tests
+        run: npm run test:credentials
+        env:
+          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+
   integration-test:
     name: Integration Tests
     runs-on: ubuntu-latest

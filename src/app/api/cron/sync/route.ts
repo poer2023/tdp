@@ -28,7 +28,6 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { syncAllPlatforms as syncMedia } from "@/lib/media-sync";
 import { GamingSyncService } from "@/lib/gaming/sync-service";
-import { decryptCredential, isEncrypted } from "@/lib/encryption";
 
 type SyncFrequency = "hourly" | "daily" | "weekly" | "disabled";
 
@@ -69,7 +68,10 @@ function shouldSyncCredential(
 
     case "daily":
       if (hoursSinceLastSync >= 24) {
-        return { shouldSync: true, reason: `Last sync ${(hoursSinceLastSync / 24).toFixed(1)}d ago` };
+        return {
+          shouldSync: true,
+          reason: `Last sync ${(hoursSinceLastSync / 24).toFixed(1)}d ago`,
+        };
       }
       return {
         shouldSync: false,
@@ -79,7 +81,10 @@ function shouldSyncCredential(
     case "weekly":
       if (hoursSinceLastSync >= 168) {
         // 7 * 24
-        return { shouldSync: true, reason: `Last sync ${(hoursSinceLastSync / 168).toFixed(1)}w ago` };
+        return {
+          shouldSync: true,
+          reason: `Last sync ${(hoursSinceLastSync / 168).toFixed(1)}w ago`,
+        };
       }
       return {
         shouldSync: false,
@@ -117,12 +122,6 @@ export async function GET(request: NextRequest) {
         autoSync: true,
       },
       include: {
-        syncJobLogs: {
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1,
-        },
         syncJobs: {
           orderBy: {
             startedAt: "desc",
@@ -138,12 +137,10 @@ export async function GET(request: NextRequest) {
     const syncSchedules: SyncSchedule[] = credentials.map((credential) => {
       const frequency = (credential.syncFrequency || "disabled") as SyncFrequency;
 
-      // Get last sync time from either SyncJobLog or SyncJob
-      const lastSyncJobLog = credential.syncJobLogs[0];
-      const lastSyncJob = credential.syncJobs[0];
+      // Get last sync time from SyncJob
+      const lastSyncJob = credential.syncJobs?.[0];
 
-      const lastSyncAt =
-        lastSyncJobLog?.createdAt || lastSyncJob?.startedAt || null;
+      const lastSyncAt = lastSyncJob?.startedAt || null;
 
       const { shouldSync, reason } = shouldSyncCredential(frequency, lastSyncAt);
 
@@ -167,9 +164,7 @@ export async function GET(request: NextRequest) {
     // Log sync decisions
     syncSchedules.forEach((schedule) => {
       const prefix = schedule.shouldSync ? "✅ SYNC" : "⏭️  SKIP";
-      console.log(
-        `${prefix} ${schedule.platform} (${schedule.frequency}): ${schedule.reason}`
-      );
+      console.log(`${prefix} ${schedule.platform} (${schedule.frequency}): ${schedule.reason}`);
     });
 
     // Execute syncs
@@ -181,7 +176,7 @@ export async function GET(request: NextRequest) {
         if (!acc[schedule.platform]) {
           acc[schedule.platform] = [];
         }
-        acc[schedule.platform].push(schedule);
+        acc[schedule.platform]?.push(schedule);
         return acc;
       },
       {} as Record<string, SyncSchedule[]>

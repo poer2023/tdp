@@ -1,12 +1,40 @@
-// Admin dashboard home
+/**
+ * Admin Dashboard Home
+ *
+ * @modular Metrics and activity sections can be feature-gated with `FEATURE_ADMIN_DASHBOARD`
+ * @see docs/modular-development-playbook.md
+ */
+
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import prisma from "@/lib/prisma";
 import { PostStatus, type Prisma } from "@prisma/client";
-import { MetricCard } from "@/components/admin/metric-card";
 import { ActionCard } from "@/components/admin/action-card";
-import { RecentPosts } from "@/components/admin/recent-posts";
-import { RecentUploads } from "@/components/admin/recent-uploads";
-import { PostStatsTop } from "@/components/admin/post-stats-top";
 import { getAdminLocale, t } from "@/lib/admin-i18n";
+import { features } from "@/config/features";
+import { AdminErrorBoundary } from "@/components/error-boundaries/admin-error-boundary";
+import { ModuleLoadingSkeleton } from "@/components/error-boundaries/module-error-fallback";
+
+// Dynamic imports for dashboard sections
+const DashboardMetrics = dynamic(
+  () =>
+    import("@/components/admin/dashboard-metrics").then((mod) => ({
+      default: mod.DashboardMetrics,
+    })),
+  {
+    loading: () => <ModuleLoadingSkeleton rows={2} />,
+  }
+);
+
+const DashboardActivity = dynamic(
+  () =>
+    import("@/components/admin/dashboard-activity").then((mod) => ({
+      default: mod.DashboardActivity,
+    })),
+  {
+    loading: () => <ModuleLoadingSkeleton rows={3} />,
+  }
+);
 
 export const revalidate = 0;
 // Force Node.js runtime because this page queries Prisma directly
@@ -107,9 +135,11 @@ export default async function AdminHomePage() {
     recentUploads,
   } = await loadAdminOverview();
 
+  const dashboardEnabled = features.get("adminDashboard");
+
   return (
     <div className="space-y-6 sm:space-y-8 md:space-y-10">
-      {/* Page Header - Simplified */}
+      {/* Page Header */}
       <header>
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
           {t(locale, "overview")}
@@ -119,21 +149,26 @@ export default async function AdminHomePage() {
         </p>
       </header>
 
-      {/* Metrics Grid - 2 Cards (comments removed) */}
-      <section className="grid gap-6 sm:grid-cols-2">
-        <MetricCard
-          label={t(locale, "postsLabel")}
-          value={totalPosts}
-          meta={`${t(locale, "published")} ${publishedPosts} · ${t(locale, "drafts")} ${draftPosts}`}
-          href="/admin/posts"
-        />
-        <MetricCard
-          label={t(locale, "galleryLabel")}
-          value={totalGallery}
-          meta={`${t(locale, "live")} ${livePhotos} · ${t(locale, "geotagged")} ${geotaggedPhotos}`}
-          href="/admin/gallery"
-        />
-      </section>
+      {/* Metrics Grid - Feature-gated with dynamic loading */}
+      {dashboardEnabled ? (
+        <AdminErrorBoundary>
+          <Suspense fallback={<ModuleLoadingSkeleton rows={2} />}>
+            <DashboardMetrics
+              totalPosts={totalPosts}
+              publishedPosts={publishedPosts}
+              draftPosts={draftPosts}
+              totalGallery={totalGallery}
+              livePhotos={livePhotos}
+              geotaggedPhotos={geotaggedPhotos}
+              locale={locale}
+            />
+          </Suspense>
+        </AdminErrorBoundary>
+      ) : (
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+          统计功能已禁用
+        </div>
+      )}
 
       {/* Quick Actions Grid */}
       <section className="space-y-4">
@@ -204,19 +239,22 @@ export default async function AdminHomePage() {
         </div>
       </section>
 
-      {/* Recent Activity Grid */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
-          {t(locale, "recentActivity")}
-        </h2>
-        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-          <RecentPosts posts={recentPosts} />
-          <RecentUploads images={recentUploads} locale={locale} />
-          <PostStatsTop locale={locale} />
+      {/* Recent Activity Grid - Feature-gated with dynamic loading */}
+      {dashboardEnabled ? (
+        <AdminErrorBoundary>
+          <Suspense fallback={<ModuleLoadingSkeleton rows={3} />}>
+            <DashboardActivity
+              recentPosts={recentPosts}
+              recentUploads={recentUploads}
+              locale={locale}
+            />
+          </Suspense>
+        </AdminErrorBoundary>
+      ) : (
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+          活动记录功能已禁用
         </div>
-      </section>
-
-      {/* No page footer for admin dashboard */}
+      )}
     </div>
   );
 }

@@ -7,16 +7,39 @@ import { localePath } from "@/lib/locale-path";
 type RecentUploadsProps = {
   images: GalleryImage[];
   locale: AdminLocale;
+  isServiceDegraded?: boolean;
 };
 
-export function RecentUploads({ images, locale }: RecentUploadsProps) {
+export function RecentUploads({ images, locale, isServiceDegraded = false }: RecentUploadsProps) {
   return (
     <div className="flex min-h-[320px] flex-col rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
       <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
         Recent Uploads
       </h3>
 
-      {images.length === 0 ? (
+      {isServiceDegraded ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
+          <svg
+            className="h-8 w-8 text-amber-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <p className="text-sm text-amber-600 dark:text-amber-500">
+            Service temporarily unavailable
+          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Gallery data is currently inaccessible
+          </p>
+        </div>
+      ) : images.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-500">No uploads yet</p>
       ) : (
         <div className="grid grid-cols-3 gap-2">

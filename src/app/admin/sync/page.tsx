@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { SyncMetricsOverview } from "@/components/admin/sync-metrics-overview";
 import { RecentSyncJobs } from "@/components/admin/recent-sync-jobs";
 import Link from "next/link";
+import { features } from "@/config/features";
 
 export const revalidate = 0;
 export const runtime = "nodejs";
@@ -23,6 +24,7 @@ async function getSyncDashboardData() {
         successJobs: 0,
         failedJobs: 0,
         partialJobs: 0,
+        runningJobs: 0,
       },
     };
   }
@@ -64,6 +66,7 @@ async function getSyncDashboardData() {
       successJobs: await prisma.syncJobLog.count({ where: { status: "SUCCESS" } }),
       failedJobs: await prisma.syncJobLog.count({ where: { status: "FAILED" } }),
       partialJobs: await prisma.syncJobLog.count({ where: { status: "PARTIAL" } }),
+      runningJobs: await prisma.syncJobLog.count({ where: { status: "RUNNING" } }),
     };
 
     return {
@@ -81,13 +84,44 @@ async function getSyncDashboardData() {
         successJobs: 0,
         failedJobs: 0,
         partialJobs: 0,
+        runningJobs: 0,
       },
     };
   }
 }
 
 export default async function SyncDashboardPage() {
+  if (!features.get("adminSync")) {
+    return (
+      <div className="space-y-6">
+        <header className="space-y-3">
+          <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Sync</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+            同步仪表板
+          </h1>
+        </header>
+        <section className="rounded-3xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+          同步功能已被禁用。请将{" "}
+          <code className="mx-1 rounded bg-zinc-100 px-1 py-0.5 text-xs text-zinc-700">
+            FEATURE_ADMIN_SYNC
+          </code>{" "}
+          设置为 on 并重新部署以启用此页面。
+        </section>
+      </div>
+    );
+  }
+
   const { recentJobs, credentials, stats } = await getSyncDashboardData();
+
+  // Calculate derived metrics for SyncMetricsOverview
+  const successRate = stats.totalJobs > 0 ? (stats.successJobs / stats.totalJobs) * 100 : 0;
+
+  // Calculate average duration from recent successful jobs
+  const successfulJobs = recentJobs.filter((j) => j.status === "SUCCESS" && j.duration);
+  const avgDuration =
+    successfulJobs.length > 0
+      ? successfulJobs.reduce((sum, j) => sum + (j.duration || 0), 0) / successfulJobs.length
+      : 0;
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -124,7 +158,14 @@ export default async function SyncDashboardPage() {
       </header>
 
       {/* Metrics Overview */}
-      <SyncMetricsOverview stats={stats} />
+      <SyncMetricsOverview
+        totalJobs={stats.totalJobs}
+        successJobs={stats.successJobs}
+        failedJobs={stats.failedJobs}
+        runningJobs={stats.runningJobs}
+        successRate={successRate}
+        avgDuration={avgDuration}
+      />
 
       {/* Platform Status Cards */}
       <div>
@@ -132,7 +173,9 @@ export default async function SyncDashboardPage() {
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {credentials.length === 0 ? (
             <div className="col-span-full rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-900">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">暂无配置的凭据</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {SKIP_DB ? "当前处于离线模式，无法加载凭据。" : "暂无配置的凭据"}
+              </p>
               <Link
                 href="/admin/credentials/new"
                 className="mt-4 inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
@@ -153,9 +196,7 @@ export default async function SyncDashboardPage() {
                   </span>
                   <span
                     className={`inline-flex h-2 w-2 rounded-full ${
-                      cred.isValid
-                        ? "bg-green-500 dark:bg-green-400"
-                        : "bg-red-500 dark:bg-red-400"
+                      cred.isValid ? "bg-green-500 dark:bg-green-400" : "bg-red-500 dark:bg-red-400"
                     }`}
                   />
                 </div>

@@ -36,7 +36,7 @@ export function SyncMetricsOverview({
       />
       <MetricCard
         label="Average Duration"
-        value={`${(avgDuration / 1000).toFixed(1)}s`}
+        value={avgDuration > 0 ? `${(avgDuration / 1000).toFixed(1)}s` : "N/A"}
         meta="Based on recent successful jobs"
       />
     </section>

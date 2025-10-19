@@ -18,10 +18,10 @@
 
 ### 1.1 开关数据来源
 
-| 场景             | 推荐做法                                                    |
-| ---------------- | ----------------------------------------------------------- |
-| 本地/开发        | `.env` / `.env.local` 中定义 `FEATURE_*` 环境变量           |
-| CI / 生产        | 使用 Vercel/Render 等托管平台的环境变量，统一在脚本中读取   |
+| 场景             | 推荐做法                                                   |
+| ---------------- | ---------------------------------------------------------- |
+| 本地/开发        | `.env` / `.env.local` 中定义 `FEATURE_*` 环境变量          |
+| CI / 生产        | 使用 Vercel/Render 等托管平台的环境变量，统一在脚本中读取  |
 | 高级需求（灰度） | 增加远程配置 JSON（例如 S3、KV）或数据库表 `feature_flags` |
 
 ### 1.2 基础实现
@@ -117,6 +117,10 @@ export default function AdminCredentialsPage() {
 2. **依赖服务超时**：在 `src/lib/*` 中对外部请求统一设置超时与重试，失败时返回缓存或默认值。
 3. **客户端失败**：组件层在 `catch` 中展示提示（例如“暂时无法加载凭据列表”）而非抛出错误。
 
+已实现的辅助工具：
+
+- `src/lib/utils/db-fallback.ts`：封装 `withDbFallback`/`shouldSkipDb`，目前已应用于 Posts、Gallery 域。继续推进 Search/Credentials 时应复用该工具，避免重复的 `try/catch` 与日志格式。
+
 建议在 `src/lib/<domain>/fallbacks.ts` 写明默认值，便于测试复用。
 
 ---
@@ -125,12 +129,12 @@ export default function AdminCredentialsPage() {
 
 ### 4.1 目录与命名
 
-| 测试层级 | 位置示例                                   | 触发时机                                    |
-| -------- | ------------------------------------------ | ------------------------------------------- |
-| 单元测试 | `src/lib/credentials/__tests__/*.test.ts`  | `npm run test:related credentials`          |
-| 组件测试 | `src/components/.../__tests__/*.test.tsx`  | 同上，针对 UI 状态和交互                   |
-| 集成测试 | `src/tests/integration/credentials/*.ts`   | 后端 API/服务逻辑变更时                     |
-| E2E      | `e2e/admin-credentials.spec.ts`            | 功能联调或上线前；CI 回归阶段               |
+| 测试层级 | 位置示例                                  | 触发时机                           |
+| -------- | ----------------------------------------- | ---------------------------------- |
+| 单元测试 | `src/lib/credentials/__tests__/*.test.ts` | `npm run test:related credentials` |
+| 组件测试 | `src/components/.../__tests__/*.test.tsx` | 同上，针对 UI 状态和交互           |
+| 集成测试 | `src/tests/integration/credentials/*.ts`  | 后端 API/服务逻辑变更时            |
+| E2E      | `e2e/admin-credentials.spec.ts`           | 功能联调或上线前；CI 回归阶段      |
 
 可在 `package.json` 中增加脚本：
 
@@ -160,17 +164,32 @@ CI 工作流按分层触发：PR 仅跑相关脚本 + lint/type-check；主干�
 2. **日志**：在功能入口打印 `console.info("[feature] adminCredentials enabled")`，错误捕获时打 `console.error`。
 3. **报警**：Sentry/New Relic 等平台可以根据打点快速判断开关开启后是否异常。
 4. **回滚流程**：出现问题 → 关闭环境变量 → 触发重新部署 → 记录在变更日志。
+5. **API 安全**：后台凭据 API 仅允许管理员访问，并会在响应中脱敏 `value` 字段；新接入的工具需遵守该约束。
+6. **状态巡检**：使用 `npm run features:list` 查看当前各功能开关状态，必要时生成 `--json` 报告写入运维记录。
+
+### Feature Flag 对照表
+
+| Flag                        | 控制页面 / 模块                 | 关闭时行为                                   |
+| --------------------------- | ------------------------------- | -------------------------------------------- |
+| `FEATURE_ADMIN_CREDENTIALS` | 凭据管理页 `/admin/credentials` | 返回 `ComingSoonFallback`，隐藏凭据列表/交互 |
+| `FEATURE_ADMIN_DASHBOARD`   | 仪表盘 `/admin`                 | 展示零态骨架或兜底提示                       |
+| `FEATURE_ADMIN_ANALYTICS`   | 访问分析 `/admin/analytics`     | 返回禁用提示，或在 DB 异常时走空态           |
+| `FEATURE_ADMIN_GALLERY`     | 相册管理 `/admin/gallery`       | 阻止上传/列表渲染，提示开启开关              |
+| `FEATURE_ADMIN_POSTS`       | 文章列表/编辑 `/admin/posts`    | 返回禁用提示                                 |
+| `FEATURE_ADMIN_SYNC`        | 同步仪表板 `/admin/sync`        | 返回禁用提示；DB 离线时仅展示空态            |
+| `FEATURE_ADMIN_EXPORT`      | 内容导出 `/admin/export`        | 返回禁用提示，不加载客户端交互               |
+| `FEATURE_GALLERY_INSIGHTS`  | 图库洞察（后续）                | 暂未接入，可用于 A/B 测试                    |
 
 ---
 
 ## 6. 实施里程碑
 
-| 阶段 | 内容                                                         | 负责人 |
-| ---- | ------------------------------------------------------------ | ------ |
-| M1   | 新增 `features.ts`、`FeatureToggle`、文档与示例代码          | Dev    |
-| M2   | 后台凭据与仪表盘页面改造为动态加载 + 降级处理                | Dev    |
-| M3   | 脚本与 CI 分层执行（新增模块化测试脚本、更新 pipelines）     | DevOps |
-| M4   | 引入监控/日志规范，完善回滚手册（更新 docs & README）        | DevOps |
+| 阶段 | 内容                                                     | 负责人 |
+| ---- | -------------------------------------------------------- | ------ |
+| M1   | 新增 `features.ts`、`FeatureToggle`、文档与示例代码      | Dev    |
+| M2   | 后台凭据与仪表盘页面改造为动态加载 + 降级处理            | Dev    |
+| M3   | 脚本与 CI 分层执行（新增模块化测试脚本、更新 pipelines） | DevOps |
+| M4   | 引入监控/日志规范，完善回滚手册（更新 docs & README）    | DevOps |
 
 ---
 

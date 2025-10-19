@@ -1,8 +1,7 @@
 import prisma from "@/lib/prisma";
 import fs from "fs";
 import path from "path";
-
-const SKIP_DB = process.env.E2E_SKIP_DB === "1" || process.env.E2E_SKIP_DB === "true";
+import { withDbFallback } from "@/lib/utils/db-fallback";
 
 export type GalleryCategory = "REPOST" | "ORIGINAL" | "AI";
 
@@ -72,24 +71,7 @@ export async function listGalleryImages(
   limit?: number,
   category?: GalleryCategory
 ): Promise<GalleryImage[]> {
-  // Prefer DB; if DB not reachable, fallback to filesystem (for E2E only)
-  try {
-    const args = (
-      typeof limit === "number"
-        ? {
-            where: category ? { category } : undefined,
-            orderBy: { createdAt: "desc" },
-            take: limit,
-          }
-        : {
-            where: category ? { category } : undefined,
-            orderBy: { createdAt: "desc" },
-          }
-    ) as Parameters<typeof prisma.galleryImage.findMany>[0];
-    const images = await prisma.galleryImage.findMany(args);
-    return images.map(toGalleryImage);
-  } catch (_e) {
-    if (!SKIP_DB) throw _e;
+  const loadFromFilesystem = () => {
     try {
       const base = path.join(process.cwd(), "public", "uploads", "gallery");
       const files = fs.existsSync(base)
@@ -121,9 +103,30 @@ export async function listGalleryImages(
         storageType: "local",
       }));
     } catch {
-      return [];
+      return [] as GalleryImage[];
     }
-  }
+  };
+
+  return withDbFallback(
+    async () => {
+      const args = (
+        typeof limit === "number"
+          ? {
+              where: category ? { category } : undefined,
+              orderBy: { createdAt: "desc" },
+              take: limit,
+            }
+          : {
+              where: category ? { category } : undefined,
+              orderBy: { createdAt: "desc" },
+            }
+      ) as Parameters<typeof prisma.galleryImage.findMany>[0];
+      const images = await prisma.galleryImage.findMany(args);
+      return images.map(toGalleryImage);
+    },
+    loadFromFilesystem,
+    "gallery:listGalleryImages"
+  );
 }
 
 export async function addGalleryImage(input: CreateGalleryImageInput): Promise<GalleryImage> {
@@ -189,13 +192,13 @@ export async function deleteGalleryImage(id: string): Promise<void> {
 }
 
 export async function getGalleryImageById(id: string): Promise<GalleryImage | null> {
-  try {
-    const image = await prisma.galleryImage.findUnique({ where: { id } });
-    if (!image) return null;
-    return toGalleryImage(image);
-  } catch (e) {
-    if (!SKIP_DB) throw e;
-    try {
+  return withDbFallback(
+    async () => {
+      const image = await prisma.galleryImage.findUnique({ where: { id } });
+      if (!image) return null;
+      return toGalleryImage(image);
+    },
+    async () => {
       const base = path.join(process.cwd(), "public", "uploads", "gallery");
       if (!fs.existsSync(base)) return null;
       const files = fs
@@ -225,10 +228,9 @@ export async function getGalleryImageById(id: string): Promise<GalleryImage | nu
         capturedAt: null,
         storageType: "local",
       };
-    } catch {
-      return null;
-    }
-  }
+    },
+    "gallery:getGalleryImageById"
+  );
 }
 
 export async function getAdjacentImageIds(id: string): Promise<{
@@ -237,28 +239,28 @@ export async function getAdjacentImageIds(id: string): Promise<{
   prevPath?: string;
   nextPath?: string;
 }> {
-  try {
-    const currentImage = await prisma.galleryImage.findUnique({ where: { id } });
-    if (!currentImage) return { prev: null, next: null };
-    const prevImage = await prisma.galleryImage.findFirst({
-      where: { createdAt: { lt: currentImage.createdAt } },
-      orderBy: { createdAt: "desc" },
-      select: { id: true, filePath: true, mediumPath: true },
-    });
-    const nextImage = await prisma.galleryImage.findFirst({
-      where: { createdAt: { gt: currentImage.createdAt } },
-      orderBy: { createdAt: "asc" },
-      select: { id: true, filePath: true, mediumPath: true },
-    });
-    return {
-      prev: prevImage?.id || null,
-      next: nextImage?.id || null,
-      prevPath: prevImage?.mediumPath ?? prevImage?.filePath ?? undefined,
-      nextPath: nextImage?.mediumPath ?? nextImage?.filePath ?? undefined,
-    };
-  } catch (_e) {
-    if (!SKIP_DB) return { prev: null, next: null };
-    try {
+  return withDbFallback(
+    async () => {
+      const currentImage = await prisma.galleryImage.findUnique({ where: { id } });
+      if (!currentImage) return { prev: null, next: null };
+      const prevImage = await prisma.galleryImage.findFirst({
+        where: { createdAt: { lt: currentImage.createdAt } },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, filePath: true, mediumPath: true },
+      });
+      const nextImage = await prisma.galleryImage.findFirst({
+        where: { createdAt: { gt: currentImage.createdAt } },
+        orderBy: { createdAt: "asc" },
+        select: { id: true, filePath: true, mediumPath: true },
+      });
+      return {
+        prev: prevImage?.id || null,
+        next: nextImage?.id || null,
+        prevPath: prevImage?.mediumPath ?? prevImage?.filePath ?? undefined,
+        nextPath: nextImage?.mediumPath ?? nextImage?.filePath ?? undefined,
+      };
+    },
+    async () => {
       const base = path.join(process.cwd(), "public", "uploads", "gallery");
       if (!fs.existsSync(base)) return { prev: null, next: null };
       const files = fs
@@ -286,10 +288,9 @@ export async function getAdjacentImageIds(id: string): Promise<{
         prevPath: prevIdx >= 0 ? resolveMediumUrl(files[prevIdx]) : undefined,
         nextPath: nextIdx >= 0 ? resolveMediumUrl(files[nextIdx]) : undefined,
       };
-    } catch {
-      return { prev: null, next: null };
-    }
-  }
+    },
+    "gallery:getAdjacentImageIds"
+  );
 }
 
 function toGalleryImage(image: {
