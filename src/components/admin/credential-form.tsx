@@ -39,7 +39,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
           name="platform"
           required
           defaultValue={credential?.platform || ""}
-          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
         >
           <option value="" disabled>
             {t(locale, "selectPlatform")}
@@ -65,7 +65,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
           name="type"
           required
           defaultValue={credential?.type || ""}
-          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
         >
           <option value="" disabled>
             {t(locale, "selectCredentialType")}
@@ -91,7 +91,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
           rows={6}
           defaultValue={credential?.value || ""}
           placeholder={t(locale, "credentialValuePlaceholder")}
-          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-mono focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
         />
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
           {t(locale, "enterCredentialValue")}
@@ -112,7 +112,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
           rows={4}
           defaultValue={credential?.metadata ? JSON.stringify(credential.metadata, null, 2) : ""}
           placeholder={t(locale, "optionalMetadata")}
-          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-mono focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
         />
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
           {t(locale, "optionalMetadata")}

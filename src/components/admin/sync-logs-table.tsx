@@ -62,50 +62,50 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
           >
             {/* Main Row */}
             <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-12">
                 {/* Platform & Status */}
                 <div className="md:col-span-3">
-                  <div className="font-medium text-sm text-zinc-900 dark:text-zinc-100">
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                     {log.platform.toUpperCase()}
                   </div>
                   <div className="mt-1">{getStatusBadge(log.status)}</div>
                 </div>
 
                 {/* Time & Duration */}
-                <div className="md:col-span-3 text-sm">
+                <div className="text-sm md:col-span-3">
                   <div className="text-zinc-600 dark:text-zinc-400">
                     {log.startedAt
                       ? format(new Date(log.startedAt), "MMM d, yyyy HH:mm:ss")
                       : "Not started"}
                   </div>
                   {log.duration && (
-                    <div className="text-xs text-zinc-500 dark:text-zinc-500 mt-0.5">
+                    <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-500">
                       Duration: {(log.duration / 1000).toFixed(1)}s
                     </div>
                   )}
                 </div>
 
                 {/* Items */}
-                <div className="md:col-span-2 text-sm">
+                <div className="text-sm md:col-span-2">
                   <div className="text-zinc-600 dark:text-zinc-400">
                     {log.itemsSuccess}/{log.itemsTotal} items
                   </div>
                   {log.itemsFailed > 0 && (
-                    <div className="text-xs text-red-600 dark:text-red-400 mt-0.5">
+                    <div className="mt-0.5 text-xs text-red-600 dark:text-red-400">
                       {log.itemsFailed} failed
                     </div>
                   )}
                 </div>
 
                 {/* Triggered By */}
-                <div className="md:col-span-2 text-sm text-zinc-600 dark:text-zinc-400">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-700 rounded dark:bg-zinc-800 dark:text-zinc-300">
+                <div className="text-sm text-zinc-600 md:col-span-2 dark:text-zinc-400">
+                  <span className="inline-flex items-center gap-1 rounded bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                     {log.triggeredBy}
                   </span>
                 </div>
 
                 {/* Expand Button */}
-                <div className="md:col-span-2 text-right">
+                <div className="text-right md:col-span-2">
                   <button
                     onClick={() => toggleExpand(log.id)}
                     className="text-sm text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
@@ -129,7 +129,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                       <div className="mt-1 space-y-1 text-sm">
                         <div>
                           <span className="text-zinc-600 dark:text-zinc-400">Job ID:</span>{" "}
-                          <code className="text-xs font-mono text-zinc-900 dark:text-zinc-100">
+                          <code className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
                             {log.id}
                           </code>
                         </div>
@@ -141,10 +141,8 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                         )}
                         {log.credentialId && (
                           <div>
-                            <span className="text-zinc-600 dark:text-zinc-400">
-                              Credential ID:
-                            </span>{" "}
-                            <code className="text-xs font-mono text-zinc-900 dark:text-zinc-100">
+                            <span className="text-zinc-600 dark:text-zinc-400">Credential ID:</span>{" "}
+                            <code className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
                               {log.credentialId}
                             </code>
                           </div>
@@ -168,7 +166,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                         <h4 className="text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
                           Metrics
                         </h4>
-                        <pre className="mt-1 text-xs overflow-x-auto rounded bg-zinc-100 p-2 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+                        <pre className="mt-1 overflow-x-auto rounded bg-zinc-100 p-2 text-xs text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
                           {JSON.stringify(log.metrics, null, 2)}
                         </pre>
                       </div>
@@ -177,14 +175,12 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
 
                   {/* Right Column */}
                   <div className="space-y-3">
-                    {log.message && log.status === 'FAILED' && (
+                    {log.message && log.status === "FAILED" && (
                       <div>
                         <h4 className="text-xs font-semibold text-red-600 uppercase dark:text-red-400">
                           Error
                         </h4>
-                        <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-                          {log.message}
-                        </p>
+                        <p className="mt-1 text-sm text-red-700 dark:text-red-300">{log.message}</p>
                       </div>
                     )}
 
@@ -193,7 +189,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                         <h4 className="text-xs font-semibold text-red-600 uppercase dark:text-red-400">
                           Stack Trace
                         </h4>
-                        <pre className="mt-1 text-xs overflow-x-auto rounded bg-red-50 p-2 text-red-900 dark:bg-red-950/20 dark:text-red-300">
+                        <pre className="mt-1 overflow-x-auto rounded bg-red-50 p-2 text-xs text-red-900 dark:bg-red-950/20 dark:text-red-300">
                           {log.errorStack}
                         </pre>
                       </div>
@@ -204,7 +200,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                         <h4 className="text-xs font-semibold text-red-600 uppercase dark:text-red-400">
                           Error Details
                         </h4>
-                        <pre className="mt-1 text-xs overflow-x-auto rounded bg-red-50 p-2 text-red-900 dark:bg-red-950/20 dark:text-red-300">
+                        <pre className="mt-1 overflow-x-auto rounded bg-red-50 p-2 text-xs text-red-900 dark:bg-red-950/20 dark:text-red-300">
                           {JSON.stringify(log.errorDetails, null, 2)}
                         </pre>
                       </div>

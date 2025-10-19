@@ -93,7 +93,9 @@ async function migrateCredentials(executeMode: boolean): Promise<MigrationStats>
         });
         console.log(`   ✅ ${credential.platform} (${credential.id}): Encrypted and saved`);
       } else {
-        console.log(`   🔍 ${credential.platform} (${credential.id}): Would be encrypted (dry-run mode)`);
+        console.log(
+          `   🔍 ${credential.platform} (${credential.id}): Would be encrypted (dry-run mode)`
+        );
       }
 
       stats.encrypted++;
@@ -114,7 +116,7 @@ async function migrateCredentials(executeMode: boolean): Promise<MigrationStats>
 
 async function main() {
   console.log("\n🔐 Credential Encryption Migration Tool\n");
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
 
   // Check for execute flag
   const executeMode = process.argv.includes("--execute");

@@ -43,22 +43,22 @@ export function RecentSyncJobs({ jobs }: RecentSyncJobsProps) {
       <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
         <thead className="bg-zinc-50 dark:bg-zinc-800/50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
               Platform
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
               Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
               Duration
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
               Items
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
               Started
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider dark:text-zinc-400">
+            <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
               Actions
             </th>
           </tr>
@@ -73,14 +73,14 @@ export function RecentSyncJobs({ jobs }: RecentSyncJobsProps) {
           ) : (
             jobs.map((job) => (
               <tr key={job.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-zinc-900 dark:text-zinc-100">
                   {job.platform.toUpperCase()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(job.status)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-500 dark:text-zinc-400">
                   {job.duration ? `${(job.duration / 1000).toFixed(1)}s` : "-"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-500 dark:text-zinc-400">
                   {job.itemsSuccess}/{job.itemsTotal}
                   {job.itemsFailed > 0 && (
                     <span className="ml-1 text-red-600 dark:text-red-400">
@@ -88,12 +88,12 @@ export function RecentSyncJobs({ jobs }: RecentSyncJobsProps) {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-500 dark:text-zinc-400">
                   {job.startedAt
                     ? formatDistanceToNow(new Date(job.startedAt), { addSuffix: true })
                     : "-"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                   <Link
                     href={`/admin/sync/logs?jobId=${job.id}`}
                     className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"

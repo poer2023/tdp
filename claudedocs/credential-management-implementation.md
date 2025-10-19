@@ -1,11 +1,13 @@
 # Credential Management System Implementation
 
 ## Overview
+
 Successfully implemented a comprehensive credential management system for the admin dashboard, supporting API keys, cookies, and OAuth tokens across multiple platforms (Steam, HoYoverse, Bilibili, Douban, Jellyfin).
 
 ## Implementation Details
 
 ### Database Schema
+
 The system uses the existing `ExternalCredential` table in PostgreSQL with the following structure:
 
 ```prisma
@@ -47,7 +49,9 @@ enum CredentialType {
 ### Files Created
 
 #### 1. i18n Translations (`src/lib/admin-translations.ts`)
+
 Added comprehensive bilingual (English/Chinese) translations for:
+
 - Navigation menu items
 - Credential form labels and placeholders
 - Status messages and actions
@@ -55,12 +59,16 @@ Added comprehensive bilingual (English/Chinese) translations for:
 - Sync job related translations
 
 #### 2. Navigation Menu (`src/components/admin/admin-nav.tsx`)
+
 Added "Credentials" menu item under the "Operations" section:
+
 - Route: `/admin/credentials`
 - Description: "Manage API keys, cookies, and authentication tokens"
 
 #### 3. Credentials List Page (`src/app/admin/credentials/page.tsx`)
+
 Main credentials management page with:
+
 - **Filtering**: Filter by platform, credential type, and validity status
 - **Card Grid Layout**: Responsive grid showing credential cards
 - **Status Badges**: Visual indicators for valid/invalid credentials
@@ -68,7 +76,9 @@ Main credentials management page with:
 - **Empty State**: Helpful message when no credentials exist
 
 #### 4. New Credential Page (`src/app/admin/credentials/new/page.tsx`)
+
 Create new credentials with:
+
 - Platform selection dropdown (Steam, HoYoverse, Bilibili, Douban, Jellyfin)
 - Type selection dropdown (API Key, Cookie, OAuth Token)
 - Value input textarea
@@ -76,7 +86,9 @@ Create new credentials with:
 - Server action for credential creation
 
 #### 5. Edit Credential Page (`src/app/admin/credentials/[id]/page.tsx`)
+
 Edit existing credentials with:
+
 - Display credential metadata (created date, updated date, status)
 - Statistics display (usage count, failure count, last validated)
 - Edit form with pre-filled values
@@ -84,7 +96,9 @@ Edit existing credentials with:
 - Server actions for update and delete operations
 
 #### 6. Credential Form Component (`src/components/admin/credential-form.tsx`)
+
 Reusable form component used by both new and edit pages:
+
 - Platform selection
 - Type selection
 - Value textarea
@@ -95,6 +109,7 @@ Reusable form component used by both new and edit pages:
 ### Bug Fixes
 
 Fixed TypeScript errors in existing sync-related components:
+
 1. **sync-logs-table.tsx**:
    - Changed imports to use `type` imports for better module resolution
    - Fixed `PARTIAL_SUCCESS` → `PARTIAL` enum value
@@ -108,17 +123,20 @@ Fixed TypeScript errors in existing sync-related components:
 ## Features Implemented
 
 ### ✅ CRUD Operations
+
 - Create new credentials
 - Read/list credentials with filtering
 - Update existing credentials
 - Delete credentials with confirmation
 
 ### ✅ Credential Types Support
+
 - API Keys
 - Browser Cookies
 - OAuth Tokens
 
 ### ✅ Platform Support
+
 - Steam
 - HoYoverse (米哈游)
 - Bilibili (哔哩哔哩)
@@ -126,6 +144,7 @@ Fixed TypeScript errors in existing sync-related components:
 - Jellyfin
 
 ### ✅ Data Management
+
 - Metadata storage (JSON format)
 - Validity tracking
 - Usage statistics
@@ -133,6 +152,7 @@ Fixed TypeScript errors in existing sync-related components:
 - Failure count tracking
 
 ### ✅ User Interface
+
 - Bilingual support (English/Chinese)
 - Responsive design
 - Dark mode support

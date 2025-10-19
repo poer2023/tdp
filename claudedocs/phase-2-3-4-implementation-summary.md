@@ -4,13 +4,13 @@ Complete implementation of credential management enhancements: visualization, en
 
 ## 📋 Implementation Overview
 
-| Phase | Status | Priority | Description |
-|-------|--------|----------|-------------|
-| Phase 2.2 | ✅ Completed | HIGH | Sync history visualization with Recharts |
-| Phase 2.3 | ✅ Completed | HIGH | About page sync status integration |
-| Phase 3.1 | ✅ Completed | MUST | Credential encryption system (AES-256-GCM) |
-| Phase 4.1 | ✅ Completed | HIGH | Automatic sync scheduling (Vercel Cron) |
-| Phase 2.1 | ⏳ Pending | MEDIUM | Configuration wizard (lower priority) |
+| Phase     | Status       | Priority | Description                                |
+| --------- | ------------ | -------- | ------------------------------------------ |
+| Phase 2.2 | ✅ Completed | HIGH     | Sync history visualization with Recharts   |
+| Phase 2.3 | ✅ Completed | HIGH     | About page sync status integration         |
+| Phase 3.1 | ✅ Completed | MUST     | Credential encryption system (AES-256-GCM) |
+| Phase 4.1 | ✅ Completed | HIGH     | Automatic sync scheduling (Vercel Cron)    |
+| Phase 2.1 | ⏳ Pending   | MEDIUM   | Configuration wizard (lower priority)      |
 
 ## 🎯 Phase 2.2: Sync History Visualization
 
@@ -19,6 +19,7 @@ Complete implementation of credential management enhancements: visualization, en
 **Component:** `/src/components/admin/sync-trends-chart.tsx`
 
 **Upgraded Features:**
+
 - Replaced manual CSS-based bar chart with professional Recharts AreaChart
 - Stacked area visualization for success/failed sync jobs
 - Last 30 days trend analysis with date aggregation
@@ -26,11 +27,13 @@ Complete implementation of credential management enhancements: visualization, en
 - Dark mode support with Tailwind classes
 
 **Technical Stack:**
+
 - `recharts` library (AreaChart, ResponsiveContainer, CartesianGrid, Tooltip, Legend)
 - `date-fns` for date formatting
 - TypeScript for type safety
 
 **User Benefits:**
+
 - Professional, interactive charts
 - Clear visual understanding of sync trends
 - Quick identification of sync issues
@@ -43,6 +46,7 @@ Complete implementation of credential management enhancements: visualization, en
 **1. Public API Endpoint:** `/src/app/api/about/sync-status/route.ts`
 
 **Features:**
+
 - Queries both `SyncJobLog` and `SyncJob` tables for comprehensive status
 - Returns platform sync status (platform, lastSyncAt, status)
 - Caching headers for performance (60s cache, 120s stale-while-revalidate)
@@ -52,6 +56,7 @@ Complete implementation of credential management enhancements: visualization, en
 **2. Component Update:** `/src/components/about/live-highlights-section.tsx`
 
 **Features:**
+
 - Parallel data fetching (highlights + sync status)
 - Visual sync status indicators:
   - Green dot: Data fresh (< 24 hours)
@@ -61,6 +66,7 @@ Complete implementation of credential management enhancements: visualization, en
 - Graceful error handling
 
 **User Benefits:**
+
 - Transparency of data freshness on public About page
 - Visual indicators for sync health
 - No authentication required (public endpoint)
@@ -72,6 +78,7 @@ Complete implementation of credential management enhancements: visualization, en
 **1. Encryption Library:** `/src/lib/encryption.ts`
 
 **Security Features:**
+
 - AES-256-GCM encryption algorithm
 - 256-bit key size (32 bytes)
 - 128-bit IV (16 bytes, unique per encryption)
@@ -79,23 +86,26 @@ Complete implementation of credential management enhancements: visualization, en
 - Base64 encoded storage format: `iv:authTag:ciphertext`
 
 **Key Functions:**
+
 ```typescript
-encryptCredential(plaintext)      // Encrypt sensitive data
-decryptCredential(encryptedData)  // Decrypt encrypted data
-isEncrypted(data)                 // Check if already encrypted
-safeEncrypt(data)                 // Idempotent encryption
-validateEncryptionSetup()         // Validate configuration
+encryptCredential(plaintext); // Encrypt sensitive data
+decryptCredential(encryptedData); // Decrypt encrypted data
+isEncrypted(data); // Check if already encrypted
+safeEncrypt(data); // Idempotent encryption
+validateEncryptionSetup(); // Validate configuration
 ```
 
 **2. Key Generation Script:** `/scripts/generate-encryption-key.ts`
 
 **Features:**
+
 - Generates cryptographically secure 32-byte keys
 - Outputs 64-character hexadecimal string
 - Usage instructions and security warnings
 - Environment variable setup guidance
 
 **Usage:**
+
 ```bash
 npm run generate-key
 ```
@@ -103,6 +113,7 @@ npm run generate-key
 **3. Migration Script:** `/scripts/migrate-encrypt-credentials.ts`
 
 **Features:**
+
 - Dry-run mode by default (safe testing)
 - Skips already encrypted credentials
 - Validates encryption before saving
@@ -110,6 +121,7 @@ npm run generate-key
 - Detailed migration statistics
 
 **Usage:**
+
 ```bash
 # Preview only
 npm run migrate-encrypt-credentials
@@ -121,11 +133,13 @@ npm run migrate-encrypt-credentials -- --execute
 **4. Service Integration:**
 
 **Media Sync (`/src/lib/media-sync/index.ts`):**
+
 - Bilibili credential decryption before cookie parsing
 - Douban credential decryption before API calls
 - Backward compatible with unencrypted credentials
 
 **Gaming Sync (`/src/lib/gaming/sync-service.ts`):**
+
 - Analysis completed: No sensitive data in gaming credentials
 - Steam/HoYoverse use public IDs (steamId, uid) in metadata
 - No changes required
@@ -159,6 +173,7 @@ CREDENTIAL_ENCRYPTION_KEY=<64-char-hex-from-generate-key>
 **1. Cron Sync API:** `/src/app/api/cron/sync/route.ts`
 
 **Features:**
+
 - Vercel Cron integration with hourly triggers
 - Smart frequency-based scheduling logic
 - Platform-specific sync orchestration
@@ -174,6 +189,7 @@ CREDENTIAL_ENCRYPTION_KEY=<64-char-hex-from-generate-key>
 | `disabled` | Never | Manually triggered only |
 
 **Scheduling Logic:**
+
 ```typescript
 shouldSyncCredential(frequency, lastSyncAt) {
   // Calculate hours since last sync
@@ -191,19 +207,22 @@ shouldSyncCredential(frequency, lastSyncAt) {
 
 ```json
 {
-  "crons": [{
-    "path": "/api/cron/sync",
-    "schedule": "0 * * * *"  // Every hour at minute 0
-  }]
+  "crons": [
+    {
+      "path": "/api/cron/sync",
+      "schedule": "0 * * * *" // Every hour at minute 0
+    }
+  ]
 }
 ```
 
 **Cron Expression:** `0 * * * *`
+
 - Minute: 0 (at the top of the hour)
-- Hour: * (every hour)
-- Day of month: * (every day)
-- Month: * (every month)
-- Day of week: * (every day of week)
+- Hour: \* (every hour)
+- Day of month: \* (every day)
+- Month: \* (every month)
+- Day of week: \* (every day of week)
 
 ### Environment Configuration
 
@@ -213,6 +232,7 @@ CRON_SECRET=<random-64-char-hex-string>
 ```
 
 **Generate CRON_SECRET:**
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
@@ -314,6 +334,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 **Component:** `/src/components/admin/credential-wizard.tsx`
 
 **Features:**
+
 - Multi-step credential configuration wizard
 - Platform-specific setup guides
 - Interactive tutorials for obtaining credentials
@@ -334,6 +355,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ### Files Created/Modified
 
 **New Files:**
+
 - `/src/lib/encryption.ts` - Encryption library
 - `/scripts/generate-encryption-key.ts` - Key generation
 - `/scripts/migrate-encrypt-credentials.ts` - Migration script
@@ -344,6 +366,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 - `/claudedocs/auto-sync-scheduling-implementation.md` - Scheduling docs
 
 **Modified Files:**
+
 - `/src/components/admin/sync-trends-chart.tsx` - Recharts upgrade
 - `/src/components/about/live-highlights-section.tsx` - Sync status display
 - `/src/lib/media-sync/index.ts` - Credential decryption
@@ -366,6 +389,7 @@ CRON_SECRET=<64-char-hex-random-secret>
 ### Deployment Checklist
 
 **Development:**
+
 - [x] Generate encryption key (`npm run generate-key`)
 - [x] Add `CREDENTIAL_ENCRYPTION_KEY` to `.env.local`
 - [ ] Run migration to encrypt credentials
@@ -373,6 +397,7 @@ CRON_SECRET=<64-char-hex-random-secret>
 - [ ] Test cron endpoint manually
 
 **Production:**
+
 - [ ] Generate separate production encryption key
 - [ ] Add `CREDENTIAL_ENCRYPTION_KEY` to Vercel environment
 - [ ] Backup database before migration
@@ -386,22 +411,26 @@ CRON_SECRET=<64-char-hex-random-secret>
 ### Testing Strategy
 
 **Phase 2.2 (Visualization):**
+
 - Visual inspection of Recharts charts
 - Verify data aggregation accuracy
 - Test responsive design and dark mode
 
 **Phase 2.3 (Sync Status):**
+
 - Verify API returns correct platform statuses
 - Test caching headers
 - Validate visual indicators (green/yellow dots)
 
 **Phase 3.1 (Encryption):**
+
 - Encrypt test credential
 - Verify decryption correctness
 - Test backward compatibility with unencrypted data
 - Validate authentication tag tampering detection
 
 **Phase 4.1 (Auto-Scheduling):**
+
 - Manual cron endpoint trigger
 - Verify frequency logic (hourly/daily/weekly)
 - Test platform-specific sync coordination
@@ -410,19 +439,23 @@ CRON_SECRET=<64-char-hex-random-secret>
 ### Performance Metrics
 
 **Phase 2.2:**
+
 - Chart render time: < 500ms
 - Data aggregation: < 100ms
 
 **Phase 2.3:**
+
 - API response time: < 200ms (cached), < 500ms (uncached)
 - Parallel fetch optimization: highlights + sync status
 
 **Phase 3.1:**
+
 - Encryption: < 10ms per credential
 - Decryption: < 10ms per credential
 - Migration: ~100 credentials/second
 
 **Phase 4.1:**
+
 - Cron execution: < 30 seconds (all platforms)
 - Single platform sync: < 5 seconds
 - Frequency evaluation: < 1ms per credential
@@ -430,6 +463,7 @@ CRON_SECRET=<64-char-hex-random-secret>
 ### Security Considerations
 
 **Encryption (Phase 3.1):**
+
 - ✅ AES-256-GCM industry-standard encryption
 - ✅ Unique IV prevents pattern analysis
 - ✅ Authentication tag prevents tampering
@@ -437,6 +471,7 @@ CRON_SECRET=<64-char-hex-random-secret>
 - ⚠️ Server-side decryption during sync (necessary for API calls)
 
 **Cron Security (Phase 4.1):**
+
 - ✅ CRON_SECRET authentication
 - ✅ Authorization header validation
 - ✅ Unauthorized access logging
@@ -445,6 +480,7 @@ CRON_SECRET=<64-char-hex-random-secret>
 ### Future Enhancements
 
 **Potential Improvements:**
+
 1. **Credential Write Encryption:** Encrypt on credential creation/update APIs
 2. **Configuration Wizard:** Phase 2.1 implementation
 3. **Key Rotation:** Mechanism for encryption key rotation
@@ -475,6 +511,7 @@ CRON_SECRET=<64-char-hex-random-secret>
 ## 📚 Documentation
 
 All implementation details documented in:
+
 - `/claudedocs/admin-system-implementation-complete.md` (Phase 1)
 - `/claudedocs/credential-encryption-implementation.md` (Phase 3.1)
 - `/claudedocs/auto-sync-scheduling-implementation.md` (Phase 4.1)

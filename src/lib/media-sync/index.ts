@@ -330,8 +330,7 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
     const doubanCredentials = credentials.filter((c) => c.platform === "DOUBAN");
     for (const credential of doubanCredentials) {
       const userId =
-        (credential.metadata as { userId?: string })?.userId ||
-        process.env.DOUBAN_USER_ID;
+        (credential.metadata as { userId?: string })?.userId || process.env.DOUBAN_USER_ID;
 
       if (userId) {
         // Decrypt credential value if encrypted
@@ -345,9 +344,7 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
         });
         results.push(doubanResult);
       } else {
-        console.warn(
-          `[Douban] Credential ${credential.id} missing userId in metadata, skipping`
-        );
+        console.warn(`[Douban] Credential ${credential.id} missing userId in metadata, skipping`);
       }
     }
 

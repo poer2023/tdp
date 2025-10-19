@@ -45,9 +45,7 @@ export function CredentialActions({ credentialId, locale }: CredentialActionsPro
         // Refresh page to show updated validation status
         setTimeout(() => router.refresh(), 1500);
       } else {
-        setValidationMessage(
-          locale === "zh" ? `错误: ${data.error}` : `Error: ${data.error}`
-        );
+        setValidationMessage(locale === "zh" ? `错误: ${data.error}` : `Error: ${data.error}`);
       }
     } catch (error) {
       setValidationMessage(
