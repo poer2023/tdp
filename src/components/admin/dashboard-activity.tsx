@@ -42,7 +42,7 @@ export function DashboardActivity({
         {t(locale, "recentActivity")}
       </h2>
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        <RecentPosts posts={recentPosts} isServiceDegraded={isServiceDegraded} />
+        <RecentPosts posts={recentPosts} locale={locale} isServiceDegraded={isServiceDegraded} />
         <RecentUploads
           images={recentUploads}
           locale={locale}

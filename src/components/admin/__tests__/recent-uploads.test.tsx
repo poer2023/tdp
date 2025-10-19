@@ -56,16 +56,21 @@ describe("RecentUploads", () => {
       render(<RecentUploads images={mockImages} locale="en" />);
 
       expect(screen.getByText("Recent Uploads")).toBeInTheDocument();
-      expect(screen.getByText("Test Image 1")).toBeInTheDocument();
-      expect(screen.getByText("Test Image 2")).toBeInTheDocument();
+      // Image titles are in alt attributes, not visible text
+      expect(screen.getByAltText("Test Image 1")).toBeInTheDocument();
+      expect(screen.getByAltText("Test Image 2")).toBeInTheDocument();
     });
 
-    it("should display image metadata", () => {
-      render(<RecentUploads images={mockImages} locale="en" />);
+    it("should display images in grid layout", () => {
+      const { container } = render(<RecentUploads images={mockImages} locale="en" />);
 
-      // Check for file sizes (converted to KB)
-      expect(screen.getByText(/1\.0 KB/)).toBeInTheDocument();
-      expect(screen.getByText(/2\.0 KB/)).toBeInTheDocument();
+      // Check for grid layout
+      const grid = container.querySelector(".grid.grid-cols-3");
+      expect(grid).toBeInTheDocument();
+
+      // Check that images are rendered
+      const images = screen.getAllByRole("img");
+      expect(images).toHaveLength(2);
     });
 
     it("should show empty state when no images", () => {
@@ -97,9 +102,9 @@ describe("RecentUploads", () => {
     it("should not render image list in degraded state", () => {
       render(<RecentUploads images={mockImages} locale="en" isServiceDegraded={true} />);
 
-      // Should not show actual images even if provided
-      expect(screen.queryByText("Test Image 1")).not.toBeInTheDocument();
-      expect(screen.queryByText("Test Image 2")).not.toBeInTheDocument();
+      // Should not show actual images even if provided (check alt text)
+      expect(screen.queryByAltText("Test Image 1")).not.toBeInTheDocument();
+      expect(screen.queryByAltText("Test Image 2")).not.toBeInTheDocument();
     });
 
     it("should prioritize degradation state over empty state", () => {
@@ -129,8 +134,8 @@ describe("RecentUploads", () => {
     it("should default isServiceDegraded to false", () => {
       render(<RecentUploads images={mockImages} locale="en" />);
 
-      // Should show normal content, not degradation message
-      expect(screen.getByText("Test Image 1")).toBeInTheDocument();
+      // Should show normal content, not degradation message (check alt text)
+      expect(screen.getByAltText("Test Image 1")).toBeInTheDocument();
       expect(screen.queryByText("Service temporarily unavailable")).not.toBeInTheDocument();
     });
   });

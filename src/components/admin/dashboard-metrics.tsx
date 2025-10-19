@@ -51,10 +51,10 @@ export function DashboardMetrics({
             />
           </svg>
           <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-            Metrics temporarily unavailable
+            {t(locale, "metricsUnavailable")}
           </p>
           <p className="text-xs text-amber-600/80 dark:text-amber-500/80">
-            Database connection error
+            {t(locale, "databaseConnectionError")}
           </p>
         </div>
       </section>

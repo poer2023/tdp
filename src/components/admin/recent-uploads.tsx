@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { GalleryImage } from "@prisma/client";
-import type { AdminLocale } from "@/lib/admin-translations";
+import { t, type AdminLocale } from "@/lib/admin-translations";
 import { localePath } from "@/lib/locale-path";
 
 type RecentUploadsProps = {
@@ -14,7 +14,7 @@ export function RecentUploads({ images, locale, isServiceDegraded = false }: Rec
   return (
     <div className="flex min-h-[320px] flex-col rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
       <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
-        Recent Uploads
+        {t(locale, "recentUploads")}
       </h3>
 
       {isServiceDegraded ? (
@@ -33,14 +33,14 @@ export function RecentUploads({ images, locale, isServiceDegraded = false }: Rec
             />
           </svg>
           <p className="text-sm text-amber-600 dark:text-amber-500">
-            Service temporarily unavailable
+            {t(locale, "serviceTemporarilyUnavailable")}
           </p>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Gallery data is currently inaccessible
+            {t(locale, "galleryDataInaccessible")}
           </p>
         </div>
       ) : images.length === 0 ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-500">No uploads yet</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-500">{t(locale, "noUploadsYet")}</p>
       ) : (
         <div className="grid grid-cols-3 gap-2">
           {images.map((image) => (

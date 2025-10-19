@@ -86,7 +86,7 @@ describe("DashboardActivity", () => {
         />
       );
 
-      expect(screen.getByText("Test Image")).toBeInTheDocument();
+      expect(screen.getByAltText("Test Image")).toBeInTheDocument();
       expect(screen.getByText("Recent Uploads")).toBeInTheDocument();
     });
 
@@ -128,7 +128,8 @@ describe("DashboardActivity", () => {
       );
 
       // Should show degradation message instead of post content
-      expect(screen.getByText("Service temporarily unavailable")).toBeInTheDocument();
+      const unavailableMessages = screen.getAllByText("Service temporarily unavailable");
+      expect(unavailableMessages.length).toBeGreaterThan(0);
       expect(screen.getByText("Posts data is currently inaccessible")).toBeInTheDocument();
       expect(screen.queryByText("Test Post")).not.toBeInTheDocument();
     });
@@ -203,7 +204,7 @@ describe("DashboardActivity", () => {
 
       // Should show normal content, not degradation messages
       expect(screen.getByText("Test Post")).toBeInTheDocument();
-      expect(screen.getByText("Test Image")).toBeInTheDocument();
+      expect(screen.getByAltText("Test Image")).toBeInTheDocument();
       expect(screen.queryByText("Service temporarily unavailable")).not.toBeInTheDocument();
     });
   });

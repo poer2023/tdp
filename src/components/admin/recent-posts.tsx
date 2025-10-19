@@ -2,17 +2,19 @@ import Link from "next/link";
 import { PostStatus, PostLocale, type Post } from "@prisma/client";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
+import { t, type AdminLocale } from "@/lib/admin-translations";
 
 type RecentPostsProps = {
   posts: (Post & { author: { name: string | null } | null })[];
+  locale: AdminLocale;
   isServiceDegraded?: boolean;
 };
 
-export function RecentPosts({ posts, isServiceDegraded = false }: RecentPostsProps) {
+export function RecentPosts({ posts, locale, isServiceDegraded = false }: RecentPostsProps) {
   return (
     <div className="flex min-h-[320px] flex-col rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
       <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
-        Recent Posts
+        {t(locale, "recentPosts")}
       </h3>
 
       {isServiceDegraded ? (
@@ -31,14 +33,14 @@ export function RecentPosts({ posts, isServiceDegraded = false }: RecentPostsPro
             />
           </svg>
           <p className="text-sm text-amber-600 dark:text-amber-500">
-            Service temporarily unavailable
+            {t(locale, "serviceTemporarilyUnavailable")}
           </p>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Posts data is currently inaccessible
+            {t(locale, "postsDataInaccessible")}
           </p>
         </div>
       ) : posts.length === 0 ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-500">No posts yet</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-500">{t(locale, "noPostsYet")}</p>
       ) : (
         <ul className="space-y-3">
           {posts.map((post) => (

@@ -193,7 +193,8 @@ export const adminTranslations = {
     noCredentials: "No credentials yet",
     createFirstCredential: "Create your first credential to get started.",
     confirmDeleteCredential: "Delete this credential?",
-    confirmDeleteCredentialDescription: "This action will permanently remove the credential and cannot be undone.",
+    confirmDeleteCredentialDescription:
+      "This action will permanently remove the credential and cannot be undone.",
     credentialSaved: "Credential saved successfully",
     credentialDeleted: "Credential deleted successfully",
     credentialValidated: "Credential validated",
@@ -218,6 +219,16 @@ export const adminTranslations = {
     // Sync Dashboard
     syncDashboard: "Sync Dashboard",
     syncDashboardDescription: "Manage data sync tasks and platform status",
+
+    // Service Degradation
+    metricsUnavailable: "Metrics temporarily unavailable",
+    databaseConnectionError: "Database connection error",
+    serviceTemporarilyUnavailable: "Service temporarily unavailable",
+    galleryDataInaccessible: "Gallery data is currently inaccessible",
+    postsDataInaccessible: "Posts data is currently inaccessible",
+    recentUploads: "Recent Uploads",
+    recentPosts: "Recent Posts",
+    noUploadsYet: "No uploads yet",
   },
   zh: {
     // Layout
@@ -428,6 +439,16 @@ export const adminTranslations = {
     // Sync Dashboard
     syncDashboard: "同步仪表板",
     syncDashboardDescription: "管理数据同步任务和平台状态",
+
+    // Service Degradation
+    metricsUnavailable: "指标暂时不可用",
+    databaseConnectionError: "数据库连接错误",
+    serviceTemporarilyUnavailable: "服务暂时不可用",
+    galleryDataInaccessible: "相册数据暂时无法访问",
+    postsDataInaccessible: "文章数据暂时无法访问",
+    recentUploads: "最近上传",
+    recentPosts: "最近文章",
+    noUploadsYet: "暂无上传",
   },
 } as const;
 
