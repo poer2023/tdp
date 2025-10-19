@@ -18,12 +18,14 @@ The TDP project uses environment variable-based feature flags with the following
 
 | Flag Name          | Environment Variable        | Purpose                           | Default |
 | ------------------ | --------------------------- | --------------------------------- | ------- |
-| `adminPosts`       | `FEATURE_ADMIN_POSTS`       | Posts management in admin panel   | `on`    |
-| `adminGallery`     | `FEATURE_ADMIN_GALLERY`     | Gallery management in admin panel | `on`    |
-| `adminCredentials` | `FEATURE_ADMIN_CREDENTIALS` | Credentials management system     | `on`    |
-| `adminAnalytics`   | `FEATURE_ADMIN_ANALYTICS`   | Analytics dashboard               | `on`    |
-| `adminSync`        | `FEATURE_ADMIN_SYNC`        | External platform sync            | `on`    |
-| `adminExport`      | `FEATURE_ADMIN_EXPORT`      | Data export tools                 | `on`    |
+| `adminCredentials` | `FEATURE_ADMIN_CREDENTIALS` | Credentials management system     | `on` ✅ |
+| `adminDashboard`   | `FEATURE_ADMIN_DASHBOARD`   | Dashboard statistics & metrics    | `on` ✅ |
+| `adminAnalytics`   | `FEATURE_ADMIN_ANALYTICS`   | Analytics dashboard               | `on` ✅ |
+| `adminGallery`     | `FEATURE_ADMIN_GALLERY`     | Gallery management in admin panel | `on` ✅ |
+| `adminPosts`       | `FEATURE_ADMIN_POSTS`       | Posts management in admin panel   | `on` ✅ |
+| `adminSync`        | `FEATURE_ADMIN_SYNC`        | External platform sync            | `on` ✅ |
+| `adminExport`      | `FEATURE_ADMIN_EXPORT`      | Data export tools                 | `on` ✅ |
+| `galleryInsights`  | `FEATURE_GALLERY_INSIGHTS`  | Gallery insights & analytics      | `on` ✅ |
 
 ## Operations Guide
 
@@ -49,14 +51,18 @@ grep FEATURE_ .env
 env | grep FEATURE_
 ```
 
-### Enabling a Feature
+### Default Behavior (v2.0+)
+
+**All features are ENABLED by default.** You don't need to set any environment variables unless you want to disable specific features.
+
+### Disabling a Feature
 
 #### Development Environment
 
-1. Edit `.env` file:
+1. Edit `.env` file to explicitly disable:
 
 ```bash
-FEATURE_ADMIN_POSTS=on
+FEATURE_ADMIN_POSTS=off
 ```
 
 2. Restart the development server:
@@ -64,6 +70,10 @@ FEATURE_ADMIN_POSTS=on
 ```bash
 npm run dev
 ```
+
+### Enabling a Feature (Legacy/Override)
+
+Features are enabled by default. Only needed if previously disabled:
 
 #### Production Environment
 

@@ -14,36 +14,37 @@
  * ```
  *
  * Environment Configuration:
- * - Set `FEATURE_<NAME>=on|true|1` to enable
- * - Set `FEATURE_<NAME>=off|false|0` to disable (default)
+ * - All features are ENABLED by default in production
+ * - Set `FEATURE_<NAME>=off|false|0` to explicitly disable a feature
+ * - Set `FEATURE_<NAME>=on|true|1` to explicitly enable (redundant)
  *
  * @see docs/modular-development-playbook.md
  */
 
 const raw = {
   /** Admin credential management system */
-  adminCredentials: process.env.FEATURE_ADMIN_CREDENTIALS ?? "off",
+  adminCredentials: process.env.FEATURE_ADMIN_CREDENTIALS ?? "on",
 
   /** Admin dashboard statistics and metrics */
-  adminDashboard: process.env.FEATURE_ADMIN_DASHBOARD ?? "off",
+  adminDashboard: process.env.FEATURE_ADMIN_DASHBOARD ?? "on",
 
   /** Admin analytics dashboard and reporting */
-  adminAnalytics: process.env.FEATURE_ADMIN_ANALYTICS ?? "off",
+  adminAnalytics: process.env.FEATURE_ADMIN_ANALYTICS ?? "on",
 
   /** Admin gallery management experience */
-  adminGallery: process.env.FEATURE_ADMIN_GALLERY ?? "off",
+  adminGallery: process.env.FEATURE_ADMIN_GALLERY ?? "on",
 
   /** Admin posts management (list/edit/create) */
-  adminPosts: process.env.FEATURE_ADMIN_POSTS ?? "off",
+  adminPosts: process.env.FEATURE_ADMIN_POSTS ?? "on",
 
   /** Admin sync dashboard and job controls */
-  adminSync: process.env.FEATURE_ADMIN_SYNC ?? "off",
+  adminSync: process.env.FEATURE_ADMIN_SYNC ?? "on",
 
   /** Admin content export utilities */
-  adminExport: process.env.FEATURE_ADMIN_EXPORT ?? "off",
+  adminExport: process.env.FEATURE_ADMIN_EXPORT ?? "on",
 
   /** Gallery insights and analytics features */
-  galleryInsights: process.env.FEATURE_GALLERY_INSIGHTS ?? "off",
+  galleryInsights: process.env.FEATURE_GALLERY_INSIGHTS ?? "on",
 } as const;
 
 export type FeatureKey = keyof typeof raw;
