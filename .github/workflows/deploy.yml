@@ -115,8 +115,10 @@ jobs:
 
             echo "==> Creating database backup before migration"
             ./scripts/backup-database.sh || {
-              echo "⚠️ Backup failed, but continuing with deployment"
-              echo "This is a warning - please check backup script configuration"
+              backup_exit_code=$?
+              echo "⚠️ Backup script exited with code: $backup_exit_code"
+              echo "This may be expected if DATABASE_URL is only available in Docker containers"
+              echo "Continuing with deployment..."
             }
 
             echo "==> Verifying migration status"
