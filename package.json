@@ -50,8 +50,15 @@
     "test:e2e:admin-tests": "playwright test e2e/content-operations.spec.ts --project=chromium",
     "test:check-coverage": "bash scripts/check-coverage.sh",
     "test:coverage-summary": "node scripts/coverage-summary.js",
+    "test:features": "vitest run src/config/__tests__",
+    "test:credentials": "vitest run src/app/admin/credentials src/components/admin/credential src/lib/credentials",
+    "test:admin": "vitest run src/app/admin src/components/admin",
+    "test:admin:smoke": "playwright test e2e/content-operations.spec.ts --project=chromium --reporter=line",
     "db:dedupe:gallery": "tsx scripts/dedupe-gallery.ts",
     "db:generate-thumbs": "tsx scripts/generate-thumbnails.ts",
+    "generate-key": "tsx scripts/generate-encryption-key.ts",
+    "migrate-encrypt-credentials": "tsx scripts/migrate-encrypt-credentials.ts",
+    "features:list": "tsx scripts/list-features.ts",
     "prepare": "husky || true"
   },
   "dependencies": {
@@ -90,7 +97,7 @@
     "react-dom": "19.1.0",
     "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
-    "recharts": "^3.2.1",
+    "recharts": "^3.3.0",
     "remark-gfm": "^4.0.1",
     "sharp": "^0.34.4"
   },

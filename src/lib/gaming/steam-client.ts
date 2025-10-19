@@ -312,6 +312,9 @@ export class SteamAPIClient {
  */
 let steamClient: SteamAPIClient | null = null;
 
+/**
+ * Get Steam client with default API key from environment
+ */
 export function getSteamClient(): SteamAPIClient {
   if (!steamClient) {
     const apiKey = process.env.STEAM_API_KEY;
@@ -321,4 +324,15 @@ export function getSteamClient(): SteamAPIClient {
     steamClient = new SteamAPIClient(apiKey);
   }
   return steamClient;
+}
+
+/**
+ * Create Steam client with custom API key
+ * Used when credentials are stored in database
+ */
+export function createSteamClient(apiKey: string): SteamAPIClient {
+  if (!apiKey) {
+    throw new Error("Steam API key is required");
+  }
+  return new SteamAPIClient(apiKey);
 }

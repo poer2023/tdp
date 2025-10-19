@@ -3,11 +3,37 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPostById } from "@/lib/posts";
 import { PostStatus } from "@prisma/client";
+import { features } from "@/config/features";
 import { EditPostForm } from "./post-edit-form";
 
 export const revalidate = 0;
 
 export default async function AdminEditPostPage({ params }: { params: { id: string } }) {
+  if (!features.get("adminPosts")) {
+    return (
+      <div className="space-y-6">
+        <header className="space-y-3">
+          <Link
+            href="/admin/posts"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400"
+          >
+            ← 返回列表
+          </Link>
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+            编辑文章
+          </h1>
+        </header>
+        <section className="rounded-3xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+          文章管理功能已禁用。请启用
+          <code className="mx-1 rounded bg-zinc-100 px-1 py-0.5 text-xs text-zinc-700">
+            FEATURE_ADMIN_POSTS
+          </code>
+          后再尝试编辑。
+        </section>
+      </div>
+    );
+  }
+
   const post = await getPostById(params.id);
 
   if (!post) {

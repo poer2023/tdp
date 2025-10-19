@@ -144,6 +144,14 @@ open http://localhost:3000
   - 导入场景测试：`npx tsx scripts/test-import-scenarios.ts`
   - SEO Rich Results 测试：`npx tsx scripts/test-seo-rich-results.ts`
 
+## 模块化开发工作流
+
+- 新功能默认挂在 `FEATURE_*` 环境变量上，通过 `FeatureToggle` 组件或 `features.get()` 控制上线范围，必要时可即时关闭。
+- 管理端的独立功能通过专用路由目录和 `next/dynamic` 懒加载渲染，配合 Error Boundary 限制故障影响面。
+- 服务端查询和外部依赖在失败时需返回兜底数据（示例：`E2E_SKIP_DB`），避免 Prisma 与第三方抛错导致整页崩溃。
+- 开发阶段建议执行“增量测试”组合：`npm run lint`、`npm run type-check`、相关模块的 Vitest/Playwright 脚本；CI 主流程再调度全量集合。
+- 详尽的实施手册、代码片段及回滚策略见 [docs/modular-development-playbook.md](docs/modular-development-playbook.md)。
+
 ### 部署
 
 - 部署前检查：`./scripts/deploy-checklist.sh`
