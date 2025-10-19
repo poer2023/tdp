@@ -170,12 +170,12 @@ export default async function AdminHomePage() {
         </div>
       )}
 
-      {/* Quick Actions Grid */}
+      {/* Quick Actions Grid - Responsive: 1 col mobile, 2 col tablet, 3 col desktop */}
       <section className="space-y-4">
         <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
           {t(locale, "quickActions")}
         </h2>
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           <ActionCard
             icon={
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -232,9 +232,39 @@ export default async function AdminHomePage() {
                 />
               </svg>
             }
-            title={t(locale, "contentIO")}
+            title={t(locale, "tools")}
             description={t(locale, "importExportContent")}
-            primaryAction={{ label: t(locale, "export"), href: "/admin/export" }}
+            primaryAction={{ label: t(locale, "export"), href: "/admin/tools?tab=export" }}
+          />
+          <ActionCard
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+            }
+            title={t(locale, "syncDashboard")}
+            description={t(locale, "syncNowAction")}
+            primaryAction={{ label: t(locale, "syncNow"), href: "/admin/sync" }}
+          />
+          <ActionCard
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                />
+              </svg>
+            }
+            title={t(locale, "credentials")}
+            description={t(locale, "manageCredentialsAction")}
+            primaryAction={{ label: t(locale, "manage"), href: "/admin/credentials" }}
           />
         </div>
       </section>
