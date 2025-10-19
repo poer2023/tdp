@@ -53,9 +53,10 @@
 
 说明：如后续启用标签（`@smoke @critical @regression @quarantine`），可改用 `--grep` 精准选择；当前阶段以“文件分组”即可满足。
 
-> **与模块化发布结合的建议**  
-> - 当新增模块受 `FEATURE_*` 控制时，先在本地按模块脚本（例如 `npm run test:credentials`）验证逻辑，再补充对应的 Playwright 子集（`e2e/admin-credentials*.spec.ts`）。  
-> - CI 层保留“Smoke + Critical”常态集，确保核心路径独立于实验性开关；全量集回归时，可在 `global-setup` 中显式开启需要验证的功能开关。  
+> **与模块化发布结合的建议**
+>
+> - 当新增模块受 `FEATURE_*` 控制时，先在本地按模块脚本（例如 `npm run test:credentials`）验证逻辑，再补充对应的 Playwright 子集（`e2e/admin-credentials*.spec.ts`）。
+> - CI 层保留“Smoke + Critical”常态集，确保核心路径独立于实验性开关；全量集回归时，可在 `global-setup` 中显式开启需要验证的功能开关。
 > - 详细的功能开关与降级实现见 [docs/modular-development-playbook.md](docs/modular-development-playbook.md)。
 
 ---

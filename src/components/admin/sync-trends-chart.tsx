@@ -68,13 +68,16 @@ export function SyncTrendsChart({ trendData }: SyncTrendsChartProps) {
 
       <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
         {aggregatedData.length === 0 ? (
-          <p className="text-center text-sm text-zinc-500 py-12 dark:text-zinc-400">
+          <p className="py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
             No trend data available
           </p>
         ) : (
           <ResponsiveContainer width="100%" height={320}>
             <AreaChart data={aggregatedData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-zinc-200 dark:stroke-zinc-700" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                className="stroke-zinc-200 dark:stroke-zinc-700"
+              />
               <XAxis
                 dataKey="dateDisplay"
                 className="text-xs text-zinc-500 dark:text-zinc-400"

@@ -9,6 +9,7 @@ Implemented automatic sync scheduling using Vercel Cron Jobs to periodically syn
 ### 1. Cron Sync API (`/src/app/api/cron/sync/route.ts`)
 
 **Features:**
+
 - Automatic sync orchestration for all platforms
 - Smart frequency-based scheduling (hourly/daily/weekly)
 - Platform-specific sync logic coordination
@@ -16,6 +17,7 @@ Implemented automatic sync scheduling using Vercel Cron Jobs to periodically syn
 - Security with CRON_SECRET authentication
 
 **Sync Frequencies:**
+
 - `hourly`: Sync if last sync was >1 hour ago
 - `daily`: Sync if last sync was >24 hours ago
 - `weekly`: Sync if last sync was >7 days ago
@@ -24,9 +26,10 @@ Implemented automatic sync scheduling using Vercel Cron Jobs to periodically syn
 **Endpoint:** `GET /api/cron/sync`
 
 **Security:**
+
 ```typescript
 // Validates authorization header
-Authorization: Bearer <CRON_SECRET>
+Authorization: Bearer<CRON_SECRET>;
 ```
 
 ### 2. Vercel Cron Configuration (`/vercel.json`)
@@ -36,13 +39,14 @@ Authorization: Bearer <CRON_SECRET>
   "crons": [
     {
       "path": "/api/cron/sync",
-      "schedule": "0 * * * *"  // Every hour
+      "schedule": "0 * * * *" // Every hour
     }
   ]
 }
 ```
 
 **Cron Schedule Format (cron expression):**
+
 ```
 * * * * *
 │ │ │ │ │
@@ -54,6 +58,7 @@ Authorization: Bearer <CRON_SECRET>
 ```
 
 **Common Schedules:**
+
 - `0 * * * *` - Every hour at minute 0
 - `0 */2 * * *` - Every 2 hours
 - `0 0 * * *` - Daily at midnight
@@ -72,7 +77,7 @@ Vercel Cron service sends authenticated GET request to `/api/cron/sync` every ho
 const credentials = await prisma.externalCredential.findMany({
   where: {
     isValid: true,
-    autoSync: true,  // Only sync if autoSync is enabled
+    autoSync: true, // Only sync if autoSync is enabled
   },
   include: {
     syncJobLogs: { orderBy: { createdAt: "desc" }, take: 1 },
@@ -84,6 +89,7 @@ const credentials = await prisma.externalCredential.findMany({
 ### 3. Frequency Evaluation
 
 For each credential:
+
 ```typescript
 function shouldSyncCredential(frequency, lastSyncAt) {
   // Calculate time since last sync
@@ -91,10 +97,14 @@ function shouldSyncCredential(frequency, lastSyncAt) {
 
   // Check if sync is due based on frequency
   switch (frequency) {
-    case "hourly": return hoursSinceLastSync >= 1;
-    case "daily": return hoursSinceLastSync >= 24;
-    case "weekly": return hoursSinceLastSync >= 168; // 7 * 24
-    case "disabled": return false;
+    case "hourly":
+      return hoursSinceLastSync >= 1;
+    case "daily":
+      return hoursSinceLastSync >= 24;
+    case "weekly":
+      return hoursSinceLastSync >= 168; // 7 * 24
+    case "disabled":
+      return false;
   }
 }
 ```
@@ -102,12 +112,14 @@ function shouldSyncCredential(frequency, lastSyncAt) {
 ### 4. Platform-Specific Sync
 
 **Media Platforms (Bilibili, Douban):**
+
 ```typescript
 // Sync all media platforms together
 const mediaResults = await syncMedia();
 ```
 
 **Gaming Platforms (Steam, HoYoverse):**
+
 ```typescript
 // Sync each gaming credential separately
 const gamingService = new GamingSyncService();
@@ -134,8 +146,12 @@ return NextResponse.json({
     succeeded: 3,
     failed: 0,
   },
-  schedules: [/* sync decisions */],
-  results: [/* sync outcomes */],
+  schedules: [
+    /* sync decisions */
+  ],
+  results: [
+    /* sync outcomes */
+  ],
 });
 ```
 
@@ -156,6 +172,7 @@ model ExternalCredential {
 ```
 
 **Key Fields for Auto-Sync:**
+
 - `autoSync`: Master switch for automatic syncing
 - `syncFrequency`: How often to sync (hourly/daily/weekly/disabled)
 - `isValid`: Only sync valid credentials
@@ -190,6 +207,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ### 2. Verification
 
 Check Vercel dashboard → Deployments → Cron Jobs to verify:
+
 - Cron job is registered
 - Schedule is correct
 - Last execution status
@@ -263,12 +281,9 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
 To fully enable auto-sync functionality, credential forms need to support:
 
 1. **autoSync Checkbox:**
+
    ```tsx
-   <input
-     type="checkbox"
-     checked={autoSync}
-     onChange={(e) => setAutoSync(e.target.checked)}
-   />
+   <input type="checkbox" checked={autoSync} onChange={(e) => setAutoSync(e.target.checked)} />
    ```
 
 2. **syncFrequency Select:**
@@ -283,13 +298,13 @@ To fully enable auto-sync functionality, credential forms need to support:
 
 ## Frequency Recommendations
 
-| Platform | Recommended Frequency | Reason |
-|----------|----------------------|---------|
-| Bilibili | daily | Video consumption patterns |
-| Douban | daily | Movie/book consumption patterns |
-| Steam | hourly | Real-time gaming activity |
-| HoYoverse | daily | Daily gacha game activities |
-| Jellyfin | daily | Media server consumption |
+| Platform  | Recommended Frequency | Reason                          |
+| --------- | --------------------- | ------------------------------- |
+| Bilibili  | daily                 | Video consumption patterns      |
+| Douban    | daily                 | Movie/book consumption patterns |
+| Steam     | hourly                | Real-time gaming activity       |
+| HoYoverse | daily                 | Daily gacha game activities     |
+| Jellyfin  | daily                 | Media server consumption        |
 
 ## Error Handling
 
@@ -321,15 +336,17 @@ To fully enable auto-sync functionality, credential forms need to support:
 ### Optimization Strategies
 
 1. **Parallel Platform Syncs:**
+
    ```typescript
    // Sync media platforms together
-   await syncMedia();  // Handles Bilibili + Douban
+   await syncMedia(); // Handles Bilibili + Douban
    ```
 
 2. **Frequency-Based Filtering:**
+
    ```typescript
    // Only sync credentials that are due
-   const credentialsToSync = schedules.filter(s => s.shouldSync);
+   const credentialsToSync = schedules.filter((s) => s.shouldSync);
    ```
 
 3. **Rate Limiting:**
@@ -349,7 +366,7 @@ To fully enable auto-sync functionality, credential forms need to support:
 
 ```typescript
 // Vercel Cron automatically sends authorization header
-Authorization: Bearer <CRON_SECRET>
+Authorization: Bearer<CRON_SECRET>;
 
 // API validates secret
 if (authHeader !== `Bearer ${cronSecret}`) {
@@ -405,6 +422,7 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
 ### Vercel Dashboard
 
 Monitor cron job execution:
+
 - Execution count
 - Success/failure rate
 - Average execution time
@@ -413,6 +431,7 @@ Monitor cron job execution:
 ### Application Logs
 
 View detailed sync logs in Vercel Functions logs:
+
 ```
 [Cron Sync] Starting automatic sync job...
 [Cron Sync] Completed in 3456ms: 2 success, 0 failed
@@ -421,6 +440,7 @@ View detailed sync logs in Vercel Functions logs:
 ### Alerting (Optional)
 
 Set up monitoring alerts for:
+
 - Cron job failures
 - Excessive execution time
 - High failure rate
@@ -429,6 +449,7 @@ Set up monitoring alerts for:
 ## Status
 
 ✅ **Completed:**
+
 - Cron sync API implementation
 - Vercel cron configuration
 - Frequency-based scheduling logic
@@ -438,6 +459,7 @@ Set up monitoring alerts for:
 - Error handling and recovery
 
 ⏳ **Remaining:**
+
 - Credential form UI updates (autoSync checkbox, syncFrequency select)
 - E2E testing with cron trigger
 - Production deployment and verification

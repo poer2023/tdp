@@ -35,21 +35,23 @@ function generateEncryptionKey(): string {
 
 function main() {
   console.log("\n🔐 Credential Encryption Key Generator\n");
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
 
   // Generate encryption key
   const encryptionKey = generateEncryptionKey();
 
   console.log("\n✅ Generated new AES-256-GCM encryption key:\n");
   console.log(`   ${encryptionKey}\n`);
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
 
   console.log("\n📝 Setup Instructions:\n");
   console.log("1. Add this line to your .env.local file:");
   console.log(`   CREDENTIAL_ENCRYPTION_KEY=${encryptionKey}\n`);
 
   console.log("2. Ensure .env.local is in your .gitignore (NEVER commit encryption keys!)");
-  console.log("3. For production deployment, add this environment variable to your hosting platform\n");
+  console.log(
+    "3. For production deployment, add this environment variable to your hosting platform\n"
+  );
 
   console.log("⚠️  IMPORTANT SECURITY NOTES:\n");
   console.log("   • Keep this key SECRET and SECURE");
@@ -58,7 +60,7 @@ function main() {
   console.log("   • Losing this key means PERMANENT LOSS of encrypted credential data");
   console.log("   • Key rotation requires re-encryption of all existing credentials\n");
 
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
   console.log("\n✨ Key generation complete!\n");
 }
 

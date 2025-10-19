@@ -24,7 +24,9 @@ export function LiveHighlightsSection({ locale }: LiveHighlightsSectionProps) {
     // Fetch highlights and sync status in parallel
     Promise.all([
       fetch("/api/about/highlights").then((res) => res.json()),
-      fetch("/api/about/sync-status").then((res) => res.json()).catch(() => ({ platforms: [] })),
+      fetch("/api/about/sync-status")
+        .then((res) => res.json())
+        .catch(() => ({ platforms: [] })),
     ])
       .then(([highlightsData, syncData]) => {
         setData(highlightsData);
@@ -140,7 +142,8 @@ export function LiveHighlightsSection({ locale }: LiveHighlightsSectionProps) {
               {syncStatus.map((status) => {
                 const isFresh =
                   status.lastSyncAt &&
-                  new Date().getTime() - new Date(status.lastSyncAt).getTime() < 24 * 60 * 60 * 1000;
+                  new Date().getTime() - new Date(status.lastSyncAt).getTime() <
+                    24 * 60 * 60 * 1000;
 
                 return (
                   <div
@@ -159,7 +162,7 @@ export function LiveHighlightsSection({ locale }: LiveHighlightsSectionProps) {
                           : "bg-yellow-500 dark:bg-yellow-400"
                       }`}
                     />
-                    <span className="capitalize text-zinc-600 dark:text-zinc-400">
+                    <span className="text-zinc-600 capitalize dark:text-zinc-400">
                       {status.platform}
                     </span>
                   </div>

@@ -51,14 +51,12 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <h3 className="text-sm font-semibold text-zinc-700 mb-4 dark:text-zinc-300">
-        Filter Logs
-      </h3>
+      <h3 className="mb-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Filter Logs</h3>
 
       <div className="grid gap-4 sm:grid-cols-3">
         {/* Platform Filter */}
         <div>
-          <label className="block text-xs font-medium text-zinc-600 mb-1 dark:text-zinc-400">
+          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
             Platform
           </label>
           <select
@@ -77,7 +75,7 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
 
         {/* Status Filter */}
         <div>
-          <label className="block text-xs font-medium text-zinc-600 mb-1 dark:text-zinc-400">
+          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
             Status
           </label>
           <select
@@ -96,7 +94,7 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
 
         {/* Triggered By Filter */}
         <div>
-          <label className="block text-xs font-medium text-zinc-600 mb-1 dark:text-zinc-400">
+          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
             Triggered By
           </label>
           <select
@@ -113,17 +111,17 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3 mt-4">
+      <div className="mt-4 flex gap-3">
         <button
           onClick={handleFilter}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
         >
           Apply Filters
         </button>
         {hasFilters && (
           <button
             onClick={handleReset}
-            className="px-4 py-2 text-sm font-medium text-zinc-700 bg-white border border-zinc-300 rounded-lg hover:bg-zinc-50 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 dark:hover:bg-zinc-700"
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
           >
             Reset
           </button>
@@ -135,17 +133,17 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="text-xs text-zinc-500 dark:text-zinc-400">Active filters:</span>
           {currentFilters.platform && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded dark:bg-blue-950/20 dark:text-blue-400">
+            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
               Platform: {currentFilters.platform.toUpperCase()}
             </span>
           )}
           {currentFilters.status && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded dark:bg-blue-950/20 dark:text-blue-400">
+            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
               Status: {currentFilters.status}
             </span>
           )}
           {currentFilters.triggeredBy && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded dark:bg-blue-950/20 dark:text-blue-400">
+            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
               Triggered By: {currentFilters.triggeredBy}
             </span>
           )}

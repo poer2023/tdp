@@ -180,14 +180,17 @@ async function validateHoyoverseCredential(value: string): Promise<ValidationRes
     }
 
     // Test API call (get game list)
-    const response = await fetch("https://api-takumi-record.mihoyo.com/game_record/card/wapi/getGameRecordCard", {
-      headers: {
-        Cookie: value,
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-      },
-      signal: AbortSignal.timeout(5000),
-    });
+    const response = await fetch(
+      "https://api-takumi-record.mihoyo.com/game_record/card/wapi/getGameRecordCard",
+      {
+        headers: {
+          Cookie: value,
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        },
+        signal: AbortSignal.timeout(5000),
+      }
+    );
 
     if (!response.ok) {
       return {

@@ -39,9 +39,7 @@ describe("Encryption Library", () => {
     });
 
     it("should throw error for empty string", () => {
-      expect(() => encryptCredential("")).toThrow(
-        "Cannot encrypt empty credential data"
-      );
+      expect(() => encryptCredential("")).toThrow("Cannot encrypt empty credential data");
     });
 
     it("should handle special characters and Unicode", () => {
@@ -157,17 +155,13 @@ describe("Encryption Library", () => {
     });
 
     it("should return false for valid format but invalid base64", () => {
-      expect(isEncrypted("invalid@base64:another@invalid:third@invalid")).toBe(
-        false
-      );
+      expect(isEncrypted("invalid@base64:another@invalid:third@invalid")).toBe(false);
     });
 
     it("should return true for correctly formatted base64 (even if not from our encryption)", () => {
       const validBase64 = `${Buffer.from("test1").toString(
         "base64"
-      )}:${Buffer.from("test2").toString("base64")}:${Buffer.from(
-        "test3"
-      ).toString("base64")}`;
+      )}:${Buffer.from("test2").toString("base64")}:${Buffer.from("test3").toString("base64")}`;
       expect(isEncrypted(validBase64)).toBe(true);
     });
   });
@@ -203,9 +197,7 @@ describe("Encryption Library", () => {
     });
 
     it("should throw error for empty string", () => {
-      expect(() => safeEncrypt("")).toThrow(
-        "Cannot encrypt empty credential data"
-      );
+      expect(() => safeEncrypt("")).toThrow("Cannot encrypt empty credential data");
     });
 
     it("should encrypt special characters correctly", () => {
@@ -254,11 +246,7 @@ describe("Encryption Library", () => {
 
   describe("End-to-End Encryption Flow", () => {
     it("should encrypt and decrypt multiple credentials independently", () => {
-      const credentials = [
-        "bilibili_cookie_1",
-        "douban_cookie_2",
-        "steam_api_key_3",
-      ];
+      const credentials = ["bilibili_cookie_1", "douban_cookie_2", "steam_api_key_3"];
 
       const encrypted = credentials.map((c) => encryptCredential(c));
       const decrypted = encrypted.map((e) => decryptCredential(e));
