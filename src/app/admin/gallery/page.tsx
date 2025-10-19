@@ -1,9 +1,9 @@
 import { Suspense } from "react";
-import dynamic from "next/dynamic";
 import { listGalleryImages } from "@/lib/gallery";
 import { listPostSummaries } from "@/lib/posts";
 import { features } from "@/config/features";
 import { AdminErrorBoundary } from "@/components/error-boundaries/admin-error-boundary";
+import { AdminGalleryClientShell } from "./gallery-client-shell";
 
 export const revalidate = 0;
 
@@ -15,17 +15,9 @@ const GallerySkeleton = () => (
   </div>
 );
 
-const AdminGalleryClient = dynamic(
-  () => import("./gallery-client").then((mod) => ({ default: mod.AdminGalleryClient })),
-  {
-    ssr: false,
-    loading: GallerySkeleton,
-  }
-);
-
 async function GalleryContent() {
   const [images, posts] = await Promise.all([listGalleryImages(), listPostSummaries()]);
-  return <AdminGalleryClient images={images} posts={posts} />;
+  return <AdminGalleryClientShell images={images} posts={posts} />;
 }
 
 export default async function AdminGalleryPage() {

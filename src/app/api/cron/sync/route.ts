@@ -138,9 +138,8 @@ export async function GET(request: NextRequest) {
       const frequency = (credential.syncFrequency || "disabled") as SyncFrequency;
 
       // Get last sync time from SyncJob
-      const lastSyncJob = credential.syncJobs?.[0];
-
-      const lastSyncAt = lastSyncJob?.startedAt || null;
+      const latestSyncJob = credential.syncJobs?.[0];
+      const lastSyncAt = latestSyncJob?.startedAt ?? latestSyncJob?.createdAt ?? null;
 
       const { shouldSync, reason } = shouldSyncCredential(frequency, lastSyncAt);
 

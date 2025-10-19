@@ -1,14 +1,5 @@
-import dynamic from "next/dynamic";
 import { features } from "@/config/features";
-import { ModuleLoadingSkeleton } from "@/components/error-boundaries/module-error-fallback";
-
-const ExportClient = dynamic(
-  () => import("./export-client").then((mod) => ({ default: mod.ExportClient })),
-  {
-    ssr: false,
-    loading: () => <ModuleLoadingSkeleton rows={4} />,
-  }
-);
+import { ExportClientShell } from "./export-client-shell";
 
 export default function AdminExportPage() {
   if (!features.get("adminExport")) {
@@ -31,5 +22,5 @@ export default function AdminExportPage() {
     );
   }
 
-  return <ExportClient />;
+  return <ExportClientShell />;
 }

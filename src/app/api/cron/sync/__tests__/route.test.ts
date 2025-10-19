@@ -3,20 +3,28 @@ import { GET } from "../route";
 import { NextRequest } from "next/server";
 
 // Mock external dependencies
-const mockPrismaFindMany = vi.fn();
-const mockSyncMedia = vi.fn();
-const mockGamingSyncService = vi.fn();
-
-vi.mock("@/lib/prisma", () => ({
-  default: {
-    externalCredential: {
-      findMany: (...args: any[]) => mockPrismaFindMany(...args),
-    },
-  },
+const { mockPrismaFindMany, mockSyncMedia, mockGamingSyncService } = vi.hoisted(() => ({
+  mockPrismaFindMany: vi.fn(),
+  mockSyncMedia: vi.fn(),
+  mockGamingSyncService: vi.fn(),
 }));
 
+vi.mock("@/lib/prisma", () => {
+  const prismaMock = {
+    externalCredential: {
+      findMany: mockPrismaFindMany,
+    },
+  };
+
+  return {
+    __esModule: true,
+    default: prismaMock,
+    prisma: prismaMock,
+  };
+});
+
 vi.mock("@/lib/media-sync", () => ({
-  syncAllPlatforms: (...args: any[]) => mockSyncMedia(...args),
+  syncAllPlatforms: mockSyncMedia,
 }));
 
 vi.mock("@/lib/gaming/sync-service", () => ({
@@ -31,6 +39,14 @@ vi.mock("@/lib/encryption", () => ({
   isEncrypted: vi.fn(() => false),
 }));
 
+type CronSchedule = {
+  credentialId: string;
+  platform: string;
+  frequency: string;
+  lastSyncAt: string | null;
+  shouldSync: boolean;
+  reason: string;
+};
 // Test environment variables
 const TEST_CRON_SECRET = "test-cron-secret-12345";
 
@@ -106,8 +122,7 @@ describe("GET /api/cron/sync", () => {
         value: "encrypted-credential",
         metadata: { steamId: "12345" },
         syncFrequency: "hourly",
-        syncJobLogs: [{ createdAt: oneHourAgo }],
-        syncJobs: [],
+        syncJobs: [{ startedAt: oneHourAgo }],
       },
     ]);
 
@@ -142,8 +157,7 @@ describe("GET /api/cron/sync", () => {
         value: "encrypted-credential",
         metadata: { steamId: "12345" },
         syncFrequency: "hourly",
-        syncJobLogs: [{ createdAt: thirtyMinutesAgo }],
-        syncJobs: [],
+        syncJobs: [{ startedAt: thirtyMinutesAgo }],
       },
     ]);
 
@@ -169,14 +183,11 @@ describe("GET /api/cron/sync", () => {
         platform: "BILIBILI",
         value: "mock-credential",
         syncFrequency: "daily",
-        syncJobLogs: [{ createdAt: twentyFiveHoursAgo }],
-        syncJobs: [],
+        syncJobs: [{ startedAt: twentyFiveHoursAgo }],
       },
     ]);
 
-    mockSyncMedia.mockResolvedValue([
-      { platform: "bilibili", success: true, message: "Synced" },
-    ]);
+    mockSyncMedia.mockResolvedValue([{ platform: "bilibili", success: true, message: "Synced" }]);
 
     const request = new NextRequest("http://localhost:3000/api/cron/sync", {
       headers: {
@@ -200,14 +211,11 @@ describe("GET /api/cron/sync", () => {
         platform: "DOUBAN",
         value: "mock-credential",
         syncFrequency: "weekly",
-        syncJobLogs: [{ createdAt: eightDaysAgo }],
-        syncJobs: [],
+        syncJobs: [{ startedAt: eightDaysAgo }],
       },
     ]);
 
-    mockSyncMedia.mockResolvedValue([
-      { platform: "douban", success: true, message: "Synced" },
-    ]);
+    mockSyncMedia.mockResolvedValue([{ platform: "douban", success: true, message: "Synced" }]);
 
     const request = new NextRequest("http://localhost:3000/api/cron/sync", {
       headers: {
@@ -229,7 +237,6 @@ describe("GET /api/cron/sync", () => {
         platform: "STEAM",
         value: "mock",
         syncFrequency: "disabled",
-        syncJobLogs: [],
         syncJobs: [],
       },
     ]);
@@ -255,8 +262,7 @@ describe("GET /api/cron/sync", () => {
         value: "encrypted-credential",
         metadata: { steamId: "12345" },
         syncFrequency: "daily",
-        syncJobLogs: [], // No previous sync
-        syncJobs: [],
+        syncJobs: [], // No previous sync
       },
     ]);
 
@@ -279,9 +285,8 @@ describe("GET /api/cron/sync", () => {
     expect(data.summary.succeeded).toBe(1);
 
     // Verify schedule has correct reason
-    const schedule = data.schedules.find(
-      (s: any) => s.credentialId === "cred-1"
-    );
+    const schedules = data.schedules as CronSchedule[];
+    const schedule = schedules.find((s) => s.credentialId === "cred-1");
     expect(schedule?.reason).toContain("Never synced before");
   });
 
@@ -293,8 +298,7 @@ describe("GET /api/cron/sync", () => {
         value: "encrypted-credential",
         metadata: { steamId: "12345" },
         syncFrequency: "hourly",
-        syncJobLogs: [{ createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000) }],
-        syncJobs: [],
+        syncJobs: [{ startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000) }],
       },
     ]);
 
@@ -351,7 +355,6 @@ describe("GET /api/cron/sync", () => {
         autoSync: true,
       },
       include: {
-        syncJobLogs: { orderBy: { createdAt: "desc" }, take: 1 },
         syncJobs: { orderBy: { startedAt: "desc" }, take: 1 },
       },
     });
@@ -367,8 +370,7 @@ describe("GET /api/cron/sync", () => {
         value: "encrypted-credential",
         metadata: { steamId: "12345" },
         syncFrequency: "hourly",
-        syncJobLogs: [{ createdAt: twoHoursAgo }],
-        syncJobs: [],
+        syncJobs: [{ startedAt: twoHoursAgo }],
       },
     ]);
 

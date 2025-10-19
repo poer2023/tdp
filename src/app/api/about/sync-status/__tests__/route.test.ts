@@ -2,19 +2,33 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "../route";
 
 // Mock Prisma client
-const mockSyncJobLogFindFirst = vi.fn();
-const mockSyncJobFindFirst = vi.fn();
+const { mockSyncJobLogFindFirst, mockSyncJobFindFirst } = vi.hoisted(() => ({
+  mockSyncJobLogFindFirst: vi.fn(),
+  mockSyncJobFindFirst: vi.fn(),
+}));
 
-vi.mock("@/lib/prisma", () => ({
-  default: {
+vi.mock("@/lib/prisma", () => {
+  const prismaMock = {
     syncJobLog: {
-      findFirst: (...args: any[]) => mockSyncJobLogFindFirst(...args),
+      findFirst: mockSyncJobLogFindFirst,
     },
     syncJob: {
-      findFirst: (...args: any[]) => mockSyncJobFindFirst(...args),
+      findFirst: mockSyncJobFindFirst,
     },
-  },
-}));
+  };
+
+  return {
+    __esModule: true,
+    default: prismaMock,
+    prisma: prismaMock,
+  };
+});
+
+type PlatformSyncStatus = {
+  platform: string;
+  lastSyncAt: string;
+  status: string;
+};
 
 describe("GET /api/about/sync-status", () => {
   beforeEach(() => {
@@ -54,10 +68,11 @@ describe("GET /api/about/sync-status", () => {
 
     const response = (await GET()) as Response;
     const data = await response.json();
+    const platforms = data.platforms as PlatformSyncStatus[];
 
     expect(response.status).toBe(200);
-    expect(data.platforms).toHaveLength(5);
-    expect(data.platforms).toEqual([
+    expect(platforms).toHaveLength(5);
+    expect(platforms).toEqual([
       {
         platform: "bilibili",
         lastSyncAt: "2025-01-15T10:00:00.000Z",
@@ -120,14 +135,13 @@ describe("GET /api/about/sync-status", () => {
 
     const response = (await GET()) as Response;
     const data = await response.json();
+    const platforms = data.platforms as PlatformSyncStatus[];
 
     expect(response.status).toBe(200);
-    expect(data.platforms).toHaveLength(5);
+    expect(platforms).toHaveLength(5);
 
     // Verify bilibili data came from SyncJob fallback
-    const bilibiliStatus = data.platforms.find(
-      (p: any) => p.platform === "bilibili"
-    );
+    const bilibiliStatus = platforms.find((p) => p.platform === "bilibili");
     expect(bilibiliStatus).toEqual({
       platform: "bilibili",
       lastSyncAt: "2025-01-15T07:00:00.000Z",
@@ -166,8 +180,11 @@ describe("GET /api/about/sync-status", () => {
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data.platforms).toHaveLength(2); // Only bilibili and steam
-    expect(data.platforms).toEqual([
+    const platforms = data.platforms as PlatformSyncStatus[];
+
+    expect(response.status).toBe(200);
+    expect(platforms).toHaveLength(2); // Only bilibili and steam
+    expect(platforms).toEqual([
       {
         platform: "bilibili",
         lastSyncAt: "2025-01-15T10:00:00.000Z",
@@ -196,9 +213,7 @@ describe("GET /api/about/sync-status", () => {
   });
 
   it("should handle database errors gracefully", async () => {
-    mockSyncJobLogFindFirst.mockRejectedValue(
-      new Error("Database connection error")
-    );
+    mockSyncJobLogFindFirst.mockRejectedValue(new Error("Database connection error"));
 
     const response = (await GET()) as Response;
     const data = await response.json();
@@ -240,9 +255,10 @@ describe("GET /api/about/sync-status", () => {
 
     const response = (await GET()) as Response;
     const data = await response.json();
+    const platforms = data.platforms as PlatformSyncStatus[];
 
     // All platform names should be lowercase
-    data.platforms.forEach((platform: any) => {
+    platforms.forEach((platform) => {
       expect(platform.platform).toBe(platform.platform.toLowerCase());
     });
   });
@@ -291,10 +307,9 @@ describe("GET /api/about/sync-status", () => {
 
       const response = (await GET()) as Response;
       const data = await response.json();
+      const platforms = data.platforms as PlatformSyncStatus[];
 
-      const steamStatus = data.platforms.find(
-        (p: any) => p.platform === "steam"
-      );
+      const steamStatus = platforms.find((p) => p.platform === "steam");
       expect(steamStatus?.status).toBe(status);
     }
   });
@@ -312,10 +327,9 @@ describe("GET /api/about/sync-status", () => {
 
     const response = (await GET()) as Response;
     const data = await response.json();
+    const platforms = data.platforms as PlatformSyncStatus[];
 
-    const bilibiliStatus = data.platforms.find(
-      (p: any) => p.platform === "bilibili"
-    );
+    const bilibiliStatus = platforms.find((p) => p.platform === "bilibili");
     expect(bilibiliStatus?.lastSyncAt).toBe(testDate.toISOString());
   });
 

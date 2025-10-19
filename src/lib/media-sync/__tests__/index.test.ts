@@ -1,35 +1,50 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { syncAllPlatforms } from "../index";
 import { encryptCredential, decryptCredential, isEncrypted } from "../../encryption";
+import type { BilibiliHistoryItem } from "../bilibili";
+import type { DoubanWatchedItem } from "../douban";
 
-// Mock Prisma
-const mockPrismaFindMany = vi.fn();
-const mockPrismaCreate = vi.fn();
-const mockPrismaUpdate = vi.fn();
-const mockPrismaUpsert = vi.fn();
-
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    externalCredential: {
-      findMany: (...args: any[]) => mockPrismaFindMany(...args),
-    },
-    syncJob: {
-      create: (...args: any[]) => mockPrismaCreate(...args),
-      update: (...args: any[]) => mockPrismaUpdate(...args),
-    },
-    mediaWatch: {
-      upsert: (...args: any[]) => mockPrismaUpsert(...args),
-    },
-  },
+// Mock Prisma & external services
+const {
+  mockPrismaFindMany,
+  mockPrismaCreate,
+  mockPrismaUpdate,
+  mockPrismaUpsert,
+  mockFetchBilibiliHistory,
+  mockFetchDoubanWatched,
+} = vi.hoisted(() => ({
+  mockPrismaFindMany: vi.fn(),
+  mockPrismaCreate: vi.fn(),
+  mockPrismaUpdate: vi.fn(),
+  mockPrismaUpsert: vi.fn(),
+  mockFetchBilibiliHistory: vi.fn(),
+  mockFetchDoubanWatched: vi.fn(),
 }));
 
-// Mock media-sync modules
-const mockFetchBilibiliHistory = vi.fn();
-const mockFetchDoubanWatched = vi.fn();
+vi.mock("@/lib/prisma", () => {
+  const prismaMock = {
+    externalCredential: {
+      findMany: mockPrismaFindMany,
+    },
+    syncJob: {
+      create: mockPrismaCreate,
+      update: mockPrismaUpdate,
+    },
+    mediaWatch: {
+      upsert: mockPrismaUpsert,
+    },
+  };
+
+  return {
+    __esModule: true,
+    default: prismaMock,
+    prisma: prismaMock,
+  };
+});
 
 vi.mock("../bilibili", () => ({
-  fetchBilibiliHistory: (...args: any[]) => mockFetchBilibiliHistory(...args),
-  normalizeBilibiliItem: (item: any) => ({
+  fetchBilibiliHistory: mockFetchBilibiliHistory,
+  normalizeBilibiliItem: (item: BilibiliHistoryItem) => ({
     platform: "bilibili",
     externalId: item.history.bvid,
     title: item.title,
@@ -43,8 +58,8 @@ vi.mock("../bilibili", () => ({
 }));
 
 vi.mock("../douban", () => ({
-  fetchDoubanWatched: (...args: any[]) => mockFetchDoubanWatched(...args),
-  normalizeDoubanItem: (item: any) => ({
+  fetchDoubanWatched: mockFetchDoubanWatched,
+  normalizeDoubanItem: (item: DoubanWatchedItem & { create_time: string }) => ({
     platform: "douban",
     externalId: item.id,
     title: item.title,

@@ -14,14 +14,14 @@ export async function GET() {
 
   try {
     // Get latest sync jobs for each platform
-    const platforms = ["bilibili", "douban", "steam", "hoyoverse", "jellyfin"];
-    
+    const platforms = ["bilibili", "douban", "steam", "hoyoverse", "jellyfin"] as const;
+
     const syncStatuses = await Promise.all(
       platforms.map(async (platform) => {
         // Get latest sync job for each platform from SyncJobLog
         const latestSync = await prisma.syncJobLog.findFirst({
           where: {
-            platform: platform.toUpperCase() as any,
+            platform: platform.toUpperCase(),
           },
           orderBy: {
             createdAt: "desc",

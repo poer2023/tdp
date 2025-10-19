@@ -1,25 +1,11 @@
-import dynamic from "next/dynamic";
 import prisma from "@/lib/prisma";
 import { getAdminLocale, t } from "@/lib/admin-i18n";
 import { features } from "@/config/features";
 import type { AdminLocale } from "@/lib/admin-translations";
-import type {
-  AnalyticsOverviewData,
-  AnalyticsDashboardProps,
-} from "@/components/admin/analytics-dashboard";
+import type { AnalyticsOverviewData } from "@/components/admin/analytics-dashboard";
+import { AnalyticsDashboardShell } from "./analytics-dashboard-shell";
 
 export const revalidate = 0;
-
-const AnalyticsDashboard = dynamic<AnalyticsDashboardProps>(
-  () =>
-    import("@/components/admin/analytics-dashboard").then((mod) => ({
-      default: mod.AnalyticsDashboard,
-    })),
-  {
-    ssr: false,
-    loading: () => <AnalyticsDashboardSkeleton />,
-  }
-);
 
 const SKIP_DB = process.env.E2E_SKIP_DB === "1" || process.env.E2E_SKIP_DB === "true";
 
@@ -424,7 +410,7 @@ export default async function AdminAnalyticsPage() {
   return (
     <div className="space-y-10">
       <AnalyticsHeader locale={locale} />
-      <AnalyticsDashboard locale={locale} overview={overview} />
+      <AnalyticsDashboardShell locale={locale} overview={overview} />
     </div>
   );
 }
@@ -438,25 +424,5 @@ function AnalyticsHeader({ locale }: { locale: AdminLocale }) {
       </h1>
       <p className="text-sm text-zinc-500 dark:text-zinc-400">{t(locale, "trafficInsights")}</p>
     </header>
-  );
-}
-
-function AnalyticsDashboardSkeleton() {
-  return (
-    <div className="space-y-10">
-      <div className="grid gap-4 md:grid-cols-4">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div
-            key={index}
-            className="h-32 animate-pulse rounded-3xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40"
-          />
-        ))}
-      </div>
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="h-80 animate-pulse rounded-3xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40" />
-        <div className="h-80 animate-pulse rounded-3xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40" />
-      </div>
-      <div className="h-72 animate-pulse rounded-3xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40" />
-    </div>
   );
 }
