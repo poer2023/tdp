@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ExportClientShell } from "../export/export-client-shell";
-import ImportPage from "../import/page";
+import { ImportClient } from "@/components/admin/import-client";
 
 type TabType = "export" | "import" | "backup";
 
@@ -54,7 +54,7 @@ export default function AdminToolsPage() {
       {/* Tab Content */}
       <div className="py-4">
         {activeTab === "export" && <ExportClientShell />}
-        {activeTab === "import" && <ImportPage />}
+        {activeTab === "import" && <ImportClient />}
         {activeTab === "backup" && (
           <div className="border-border bg-muted/50 rounded-lg border p-8 text-center">
             <h3 className="text-lg font-semibold">Backup Feature</h3>
