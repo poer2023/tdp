@@ -19,6 +19,7 @@ docs/CONFIGURATION.md
 docs/CONTENT_FORMAT.md
 docs/DEPLOYMENT.md
 docs/E2E_AUTH_SETUP.md
+docs/E2E_SCALING_GUIDE.md
 docs/E2E_TESTING.md
 docs/E2E_TESTING_GUIDE.md
 docs/GAMING_DATA_SETUP.md
@@ -67,6 +68,10 @@ docs/avatar-loading-fix.md
 docs/deployment-workflow.md
 docs/docker-build.md
 docs/docker-deployment.md
+docs/external-api-degradation-guide.md
+docs/feature-flag-operations.md
+docs/modular-development-playbook.md
+docs/modular-development-todolist.md
 docs/moments.md
 docs/self-host-deployment.md
 docs/test-strategy.md
@@ -88,6 +93,7 @@ e2e/content-import-improved.spec.ts
 e2e/content-operations.spec.ts
 e2e/dark-mode.spec.ts
 e2e/debug-token.spec.ts
+e2e/degradation.spec.ts
 e2e/error-handling.spec.ts
 e2e/fixtures/authenticated.ts
 e2e/fixtures/test-data.ts
