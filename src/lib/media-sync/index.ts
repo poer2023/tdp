@@ -38,13 +38,15 @@ function getJobDelegate(): PrismaClient["syncJobLog"] | PrismaClient["syncJob"] 
 async function createJobLog(data: Record<string, unknown>) {
   const job = getJobDelegate();
   if (!job?.create) throw new Error("Job delegate not available");
-  return job.create({ data });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (job.create as any)({ data });
 }
 
 async function updateJobLog(where: Record<string, unknown>, data: Record<string, unknown>) {
   const job = getJobDelegate();
   if (!job?.update) return; // In tests, we don't need update to exist
-  return job.update({ where, data });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (job.update as any)({ where, data });
 }
 
 async function linkMediaWatchToJob(mediaWatchId: string, syncJobLogId: string) {
