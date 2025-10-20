@@ -29,7 +29,7 @@ const navSections: NavSection[] = [
   {
     titleKey: "operations",
     items: [
-      { labelKey: "contentIO", href: "/admin/content-io", descriptionKey: "importExport" },
+      { labelKey: "tools", href: "/admin/tools", descriptionKey: "toolsDescription" },
       {
         labelKey: "subscriptions",
         href: "/admin/subscriptions",

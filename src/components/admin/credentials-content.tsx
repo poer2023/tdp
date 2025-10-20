@@ -104,7 +104,14 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
           {credential.lastValidatedAt && (
             <div className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
               {t(locale, "lastValidated")}:{" "}
-              {new Date(credential.lastValidatedAt).toLocaleDateString()}
+              {new Date(credential.lastValidatedAt).toLocaleDateString(
+                locale === "zh" ? "zh-CN" : "en-US",
+                {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                }
+              )}
             </div>
           )}
         </Link>

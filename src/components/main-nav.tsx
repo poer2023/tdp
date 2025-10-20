@@ -41,6 +41,11 @@ export function MainNav() {
       label: locale === "zh" ? "关于" : "About",
       match: "/about",
     },
+    {
+      href: localePath(locale, "/about/changelog"),
+      label: locale === "zh" ? "开发日志" : "Changelog",
+      match: "/about/changelog",
+    },
   ];
 
   // Close mobile menu on route change

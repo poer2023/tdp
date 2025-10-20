@@ -235,7 +235,7 @@ model Subscription {
 }
 
 model MediaWatch {
-  id         String   @id @default(cuid())
+  id         String      @id @default(cuid())
   platform   String
   externalId String
   type       String
@@ -249,12 +249,31 @@ model MediaWatch {
   rating     Int?
   duration   Int?
   metadata   Json?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  // Relations
+  syncLogs   MediaWatchSyncLog[] // Many-to-many relationship with SyncJobLog
 
   @@unique([platform, externalId])
   @@index([platform, watchedAt])
   @@index([watchedAt])
+}
+
+// Junction table for many-to-many relationship between MediaWatch and SyncJobLog
+model MediaWatchSyncLog {
+  id            String      @id @default(cuid())
+  mediaWatchId  String
+  syncJobLogId  String
+  syncedAt      DateTime    @default(now())
+
+  mediaWatch    MediaWatch  @relation(fields: [mediaWatchId], references: [id], onDelete: Cascade)
+  syncJobLog    SyncJobLog  @relation("SyncJobLogs", fields: [syncJobLogId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaWatchId, syncJobLogId])
+  @@index([syncJobLogId])
+  @@index([mediaWatchId])
+  @@index([syncedAt])
 }
 
 model SyncJob {
@@ -412,7 +431,8 @@ model SyncJobLog {
   createdAt    DateTime             @default(now())
 
   // Relations
-  credential   ExternalCredential?  @relation("CredentialSyncJobs", fields: [credentialId], references: [id], onDelete: SetNull)
+  credential   ExternalCredential?   @relation("CredentialSyncJobs", fields: [credentialId], references: [id], onDelete: SetNull)
+  syncLogs     MediaWatchSyncLog[]   @relation("SyncJobLogs") // Many-to-many relationship with MediaWatch
 
   @@index([platform, startedAt])
   @@index([status, startedAt])
