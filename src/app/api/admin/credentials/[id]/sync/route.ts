@@ -58,7 +58,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           success: gamingSyncResult.success && mediaSyncResult.success,
           gamingSync: gamingSyncResult,
           mediaSync: mediaSyncResult,
-          message: `Steam synced: ${gamingSyncResult.gamesUpdated || 0} gaming profiles, ${mediaSyncResult.newItems || 0} new media items`,
+          message: `Steam synced: ${gamingSyncResult.gamesUpdated || 0} gaming profiles, ${mediaSyncResult.itemsNew || 0} new media items`,
         };
 
         // Update credential usage
