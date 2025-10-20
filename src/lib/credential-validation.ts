@@ -124,18 +124,28 @@ async function validateBilibiliCredential(value: string): Promise<ValidationResu
  */
 async function validateDoubanCredential(value: string): Promise<ValidationResult> {
   try {
-    // Test API call to validate cookie
-    const response = await fetch("https://www.douban.com/mine/", {
+    // First, check if cookie contains required fields
+    if (!value.includes("bid=") && !value.includes("dbcl2=")) {
+      return {
+        isValid: false,
+        error: "Cookie missing required Douban authentication fields (bid or dbcl2)",
+      };
+    }
+
+    // Try to access a protected page that requires login
+    // Using the account page which always returns 302 redirect if not logged in
+    const response = await fetch("https://www.douban.com/accounts/", {
       headers: {
         Cookie: value,
         "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Referer: "https://www.douban.com/",
       },
-      signal: AbortSignal.timeout(5000),
-      redirect: "manual", // Don't follow redirects (302 = not logged in)
+      signal: AbortSignal.timeout(10000),
+      redirect: "manual", // Don't follow redirects
     });
 
-    // If we get 200, cookie is valid
+    // If we get 200, cookie is valid and we can access the account page
     if (response.status === 200) {
       return {
         isValid: true,
@@ -143,17 +153,52 @@ async function validateDoubanCredential(value: string): Promise<ValidationResult
       };
     }
 
-    // If we get 302, cookie is invalid or expired
-    if (response.status === 302) {
+    // If we get 302, check the redirect location
+    if (response.status === 302 || response.status === 301) {
+      const location = response.headers.get("location") || "";
+
+      // If redirected to login, cookie is invalid
+      if (location.includes("passport.douban.com") || location.includes("login")) {
+        return {
+          isValid: false,
+          error: "Douban cookie is invalid or expired (redirected to login page)",
+        };
+      }
+
+      // Some other redirect - might still be valid
       return {
-        isValid: false,
-        error: "Douban cookie is invalid or expired (redirected to login)",
+        isValid: true,
+        message: "Douban Cookie appears valid (non-login redirect)",
+        metadata: {
+          redirectLocation: location,
+        },
+      };
+    }
+
+    // Try an alternative validation method: access user's movie collection
+    // This is more lenient and works even if the account page behavior changes
+    const collectionUrl = "https://movie.douban.com/mine";
+    const collectionResponse = await fetch(collectionUrl, {
+      headers: {
+        Cookie: value,
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Referer: "https://www.douban.com/",
+      },
+      signal: AbortSignal.timeout(10000),
+      redirect: "manual",
+    });
+
+    if (collectionResponse.status === 200) {
+      return {
+        isValid: true,
+        message: "Douban Cookie is valid (verified via movie collection)",
       };
     }
 
     return {
       isValid: false,
-      error: `Douban returned unexpected status: ${response.status}`,
+      error: `Douban validation failed: status ${response.status} (account page), ${collectionResponse.status} (collection page)`,
     };
   } catch (error) {
     return {

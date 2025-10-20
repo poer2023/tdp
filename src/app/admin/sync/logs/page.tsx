@@ -4,7 +4,7 @@
  */
 
 import prisma from "@/lib/prisma";
-import { SyncJobStatus } from "@prisma/client";
+import { Prisma, SyncJobStatus } from "@prisma/client";
 import { SyncLogsTable } from "@/components/admin/sync-logs-table";
 import { SyncLogsFilters } from "@/components/admin/sync-logs-filters";
 
@@ -18,6 +18,15 @@ type SearchParams = {
   page?: string;
   limit?: string;
   jobId?: string;
+};
+
+type SyncedItem = {
+  id: string;
+  title: string;
+  cover: string | null;
+  url: string | null;
+  watchedAt: Date;
+  externalId: string;
 };
 
 export default async function SyncLogsPage({
@@ -56,6 +65,118 @@ export default async function SyncLogsPage({
     }),
     prisma.syncJobLog.count({ where }),
   ]);
+
+  let logsResult = logs;
+
+  if (logs.length > 0) {
+    const logIds = logs.map((log) => log.id);
+    let hydrated = false;
+
+    const syncLogDelegate = (prisma as {
+      mediaWatchSyncLog?: {
+        findMany?: typeof prisma.mediaWatchSyncLog.findMany;
+      };
+    }).mediaWatchSyncLog;
+
+    if (typeof syncLogDelegate?.findMany === "function") {
+      try {
+        const syncEntries = await syncLogDelegate.findMany({
+          where: { syncJobLogId: { in: logIds } },
+          orderBy: [{ syncJobLogId: "asc" }, { syncedAt: "desc" }],
+          include: {
+            mediaWatch: {
+              select: {
+                id: true,
+                title: true,
+                cover: true,
+                url: true,
+                watchedAt: true,
+                externalId: true,
+              },
+            },
+          },
+        });
+
+        const itemsByLogId = syncEntries.reduce<Record<string, SyncedItem[]>>((acc, entry) => {
+          const item = entry.mediaWatch;
+          if (!item) return acc;
+          const list = acc[entry.syncJobLogId] ?? [];
+          list.push({
+            id: item.id,
+            title: item.title,
+            cover: item.cover,
+            url: item.url,
+            watchedAt: item.watchedAt,
+            externalId: item.externalId,
+          });
+          acc[entry.syncJobLogId] = list;
+          return acc;
+        }, {});
+
+        logsResult = logs.map((log) => ({
+          ...log,
+          syncedItems: itemsByLogId[log.id] ?? [],
+        }));
+        hydrated = true;
+      } catch (error) {
+        if (
+          !(
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            (error.code === "P2021" || error.code === "P2022")
+          )
+        ) {
+          throw error;
+        }
+      }
+    }
+
+    if (!hydrated) {
+      try {
+        const legacyItems = await prisma.mediaWatch.findMany({
+          where: { syncJobLogId: { in: logIds } },
+          orderBy: [{ syncJobLogId: "asc" }, { watchedAt: "desc" }],
+          select: {
+            id: true,
+            title: true,
+            cover: true,
+            url: true,
+            watchedAt: true,
+            externalId: true,
+            syncJobLogId: true,
+          },
+        });
+
+        const itemsByLogId = legacyItems.reduce<Record<string, SyncedItem[]>>((acc, item) => {
+          if (!item.syncJobLogId) return acc;
+          const list = acc[item.syncJobLogId] ?? [];
+          list.push({
+            id: item.id,
+            title: item.title,
+            cover: item.cover,
+            url: item.url,
+            watchedAt: item.watchedAt,
+            externalId: item.externalId,
+          });
+          acc[item.syncJobLogId] = list;
+          return acc;
+        }, {});
+
+        logsResult = logs.map((log) => ({
+          ...log,
+          syncedItems: itemsByLogId[log.id] ?? [],
+        }));
+      } catch (error) {
+        if (
+          !(
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            (error.code === "P2021" || error.code === "P2022")
+          )
+        ) {
+          throw error;
+        }
+      }
+    }
+  }
 
   // Calculate pagination
   const totalPages = Math.ceil(totalCount / limit);
@@ -107,7 +228,7 @@ export default async function SyncLogsPage({
       )}
 
       {/* Logs Table */}
-      <SyncLogsTable logs={logs} />
+      <SyncLogsTable logs={logsResult} />
 
       {/* Pagination */}
       {!jobId && totalPages > 1 && (

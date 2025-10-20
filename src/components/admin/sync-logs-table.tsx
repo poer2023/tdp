@@ -8,9 +8,23 @@
 import { useState } from "react";
 import type { SyncJobLog, SyncJobStatus } from "@prisma/client";
 import { format } from "date-fns";
+import Image from "next/image";
+
+type MediaWatchItem = {
+  id: string;
+  title: string;
+  cover: string | null;
+  url: string | null;
+  watchedAt: Date;
+  externalId: string;
+};
+
+type SyncJobLogWithItems = SyncJobLog & {
+  syncedItems?: MediaWatchItem[];
+};
 
 type SyncLogsTableProps = {
-  logs: SyncJobLog[];
+  logs: SyncJobLogWithItems[];
 };
 
 export function SyncLogsTable({ logs }: SyncLogsTableProps) {
@@ -207,6 +221,61 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                     )}
                   </div>
                 </div>
+
+                {/* Synced Items Section */}
+                {log.syncedItems && log.syncedItems.length > 0 && (
+                  <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                    <h4 className="mb-3 text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
+                      Synced Content ({log.syncedItems.length} items)
+                    </h4>
+                    <div className="max-h-96 space-y-2 overflow-y-auto">
+                      {log.syncedItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex gap-3 rounded-lg border border-zinc-200 bg-white p-3 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800/50"
+                        >
+                          {/* Cover Image */}
+                          {item.cover && (
+                            <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded">
+                              <Image
+                                src={item.cover}
+                                alt={item.title}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                            </div>
+                          )}
+
+                          {/* Content Info */}
+                          <div className="flex-1 min-w-0">
+                            <h5 className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                              {item.title}
+                            </h5>
+                            <div className="mt-1 flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+                              <span>
+                                Watched: {format(new Date(item.watchedAt), "MMM d, yyyy HH:mm")}
+                              </span>
+                              {item.url && (
+                                <>
+                                  <span>·</span>
+                                  <a
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                  >
+                                    View
+                                  </a>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -102,11 +102,14 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           }
         });
 
-        syncResult = await syncBilibili({
-          sessdata: cookieParts.SESSDATA || "",
-          biliJct: cookieParts.bili_jct || "",
-          buvid3: cookieParts.buvid3 || "",
-        });
+        syncResult = await syncBilibili(
+          {
+            sessdata: cookieParts.SESSDATA || "",
+            biliJct: cookieParts.bili_jct || "",
+            buvid3: cookieParts.buvid3 || "",
+          },
+          credential.id
+        );
 
         // Update credential usage
         await prisma.externalCredential.update({
@@ -123,8 +126,9 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       }
 
       case "DOUBAN": {
-        // Extract Douban user ID from metadata
-        const userId = (credential.metadata as { userId?: string })?.userId;
+        // Extract Douban user ID from metadata (support both user_id and userId formats)
+        const metadata = credential.metadata as { userId?: string; user_id?: string };
+        const userId = metadata.userId || metadata.user_id;
 
         if (!userId) {
           return NextResponse.json(
@@ -133,10 +137,13 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           );
         }
 
-        syncResult = await syncDouban({
-          userId,
-          cookie: credential.value,
-        });
+        syncResult = await syncDouban(
+          {
+            userId,
+            cookie: credential.value,
+          },
+          credential.id
+        );
 
         // Update credential usage
         await prisma.externalCredential.update({

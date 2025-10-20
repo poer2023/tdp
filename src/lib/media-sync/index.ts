@@ -23,16 +23,24 @@ export interface SyncResult {
 /**
  * Sync Bilibili watch history
  */
-export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> {
+export async function syncBilibili(
+  config: BilibiliConfig,
+  credentialId?: string
+): Promise<SyncResult> {
   const startTime = Date.now();
-  const platform = "bilibili";
+  const platform = "BILIBILI";
+  const jobId = `sync_bilibili_${Date.now()}`;
 
-  // Create sync job record
-  const job = await prisma.syncJob.create({
+  // Create sync job log record
+  const job = await prisma.syncJobLog.create({
     data: {
+      id: jobId,
       platform,
+      jobType: "media_sync",
       status: "RUNNING",
-      triggeredBy: "cron",
+      triggeredBy: credentialId ? "manual" : "cron",
+      startedAt: new Date(startTime),
+      credentialId,
     },
   });
 
@@ -46,12 +54,17 @@ export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> 
     let successCount = 0;
     let failedCount = 0;
 
+    // Limit to most recent 100 items
+    const itemsToSync = items.slice(0, 100);
+    console.log(`[${platform}] Syncing ${itemsToSync.length} items (limited to 100)`);
+
     // Upsert each item to database
-    for (const item of items) {
+    for (const item of itemsToSync) {
       try {
         const normalized = normalizeBilibiliItem(item);
 
-        await prisma.mediaWatch.upsert({
+        // Upsert MediaWatch record
+        const mediaWatch = await prisma.mediaWatch.upsert({
           where: {
             platform_externalId: {
               platform: normalized.platform,
@@ -71,6 +84,21 @@ export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> 
           create: normalized as Prisma.MediaWatchCreateInput,
         });
 
+        // Create sync log relationship (many-to-many)
+        try {
+          await prisma.mediaWatchSyncLog.create({
+            data: {
+              mediaWatchId: mediaWatch.id,
+              syncJobLogId: job.id,
+            },
+          });
+        } catch (linkError: any) {
+          // If duplicate relationship (already linked), ignore
+          if (linkError.code !== "P2002") {
+            throw linkError;
+          }
+        }
+
         successCount++;
       } catch (error) {
         console.error(`[${platform}] Failed to sync item ${item.history.bvid}:`, error);
@@ -80,16 +108,17 @@ export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> 
 
     const duration = Date.now() - startTime;
 
-    // Update job record
-    await prisma.syncJob.update({
+    // Update job log record
+    await prisma.syncJobLog.update({
       where: { id: job.id },
       data: {
         status: failedCount > 0 ? "PARTIAL" : "SUCCESS",
         completedAt: new Date(),
         duration,
-        itemsTotal: items.length,
+        itemsTotal: itemsToSync.length,
         itemsSuccess: successCount,
         itemsFailed: failedCount,
+        message: `Successfully synced ${successCount}/${itemsToSync.length} items`,
       },
     });
 
@@ -100,7 +129,7 @@ export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> 
     return {
       platform,
       success: true,
-      itemsTotal: items.length,
+      itemsTotal: itemsToSync.length,
       itemsSuccess: successCount,
       itemsFailed: failedCount,
       duration,
@@ -110,14 +139,14 @@ export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> 
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    // Update job record with error
-    await prisma.syncJob.update({
+    // Update job log record with error
+    await prisma.syncJobLog.update({
       where: { id: job.id },
       data: {
         status: "FAILED",
         completedAt: new Date(),
         duration,
-        errorMessage,
+        message: errorMessage,
         errorStack,
       },
     });
@@ -140,16 +169,24 @@ export async function syncBilibili(config: BilibiliConfig): Promise<SyncResult> 
 /**
  * Sync Douban watch history
  */
-export async function syncDouban(config: DoubanConfig): Promise<SyncResult> {
+export async function syncDouban(
+  config: DoubanConfig,
+  credentialId?: string
+): Promise<SyncResult> {
   const startTime = Date.now();
-  const platform = "douban";
+  const platform = "DOUBAN";
+  const jobId = `sync_douban_${Date.now()}`;
 
-  // Create sync job record
-  const job = await prisma.syncJob.create({
+  // Create sync job log record
+  const job = await prisma.syncJobLog.create({
     data: {
+      id: jobId,
       platform,
+      jobType: "media_sync",
       status: "RUNNING",
-      triggeredBy: "cron",
+      triggeredBy: credentialId ? "manual" : "cron",
+      startedAt: new Date(startTime),
+      credentialId,
     },
   });
 
@@ -163,12 +200,17 @@ export async function syncDouban(config: DoubanConfig): Promise<SyncResult> {
     let successCount = 0;
     let failedCount = 0;
 
+    // Limit to most recent 100 items
+    const itemsToSync = items.slice(0, 100);
+    console.log(`[${platform}] Syncing ${itemsToSync.length} items (limited to 100)`);
+
     // Upsert each item to database
-    for (const item of items) {
+    for (const item of itemsToSync) {
       try {
         const normalized = normalizeDoubanItem(item);
 
-        await prisma.mediaWatch.upsert({
+        // Upsert MediaWatch record
+        const mediaWatch = await prisma.mediaWatch.upsert({
           where: {
             platform_externalId: {
               platform: normalized.platform,
@@ -187,6 +229,21 @@ export async function syncDouban(config: DoubanConfig): Promise<SyncResult> {
           create: normalized as Prisma.MediaWatchCreateInput,
         });
 
+        // Create sync log relationship (many-to-many)
+        try {
+          await prisma.mediaWatchSyncLog.create({
+            data: {
+              mediaWatchId: mediaWatch.id,
+              syncJobLogId: job.id,
+            },
+          });
+        } catch (linkError: any) {
+          // If duplicate relationship (already linked), ignore
+          if (linkError.code !== "P2002") {
+            throw linkError;
+          }
+        }
+
         successCount++;
       } catch (error) {
         console.error(`[${platform}] Failed to sync item ${item.id}:`, error);
@@ -196,16 +253,17 @@ export async function syncDouban(config: DoubanConfig): Promise<SyncResult> {
 
     const duration = Date.now() - startTime;
 
-    // Update job record
-    await prisma.syncJob.update({
+    // Update job log record
+    await prisma.syncJobLog.update({
       where: { id: job.id },
       data: {
         status: failedCount > 0 ? "PARTIAL" : "SUCCESS",
         completedAt: new Date(),
         duration,
-        itemsTotal: items.length,
+        itemsTotal: itemsToSync.length,
         itemsSuccess: successCount,
         itemsFailed: failedCount,
+        message: `Successfully synced ${successCount}/${itemsToSync.length} items`,
       },
     });
 
@@ -216,7 +274,7 @@ export async function syncDouban(config: DoubanConfig): Promise<SyncResult> {
     return {
       platform,
       success: true,
-      itemsTotal: items.length,
+      itemsTotal: itemsToSync.length,
       itemsSuccess: successCount,
       itemsFailed: failedCount,
       duration,
@@ -226,14 +284,14 @@ export async function syncDouban(config: DoubanConfig): Promise<SyncResult> {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
 
-    // Update job record with error
-    await prisma.syncJob.update({
+    // Update job log record with error
+    await prisma.syncJobLog.update({
       where: { id: job.id },
       data: {
         status: "FAILED",
         completedAt: new Date(),
         duration,
-        errorMessage,
+        message: errorMessage,
         errorStack,
       },
     });
@@ -329,8 +387,9 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
     // Sync Douban platforms
     const doubanCredentials = credentials.filter((c) => c.platform === "DOUBAN");
     for (const credential of doubanCredentials) {
-      const userId =
-        (credential.metadata as { userId?: string })?.userId || process.env.DOUBAN_USER_ID;
+      // Support both user_id and userId formats in metadata
+      const metadata = credential.metadata as { userId?: string; user_id?: string };
+      const userId = metadata.userId || metadata.user_id || process.env.DOUBAN_USER_ID;
 
       if (userId) {
         // Decrypt credential value if encrypted
