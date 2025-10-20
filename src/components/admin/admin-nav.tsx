@@ -99,32 +99,28 @@ export function AdminNav({
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className={`group relative block overflow-hidden rounded-lg px-3 py-2.5 transition-all duration-200 ${
+                      className={`group block rounded-lg px-3 py-2.5 transition-all duration-150 ${
                         isActive
                           ? "bg-zinc-100 dark:bg-zinc-900/60"
-                          : "hover:translate-x-0.5 hover:bg-zinc-100 dark:hover:bg-zinc-900/30"
+                          : "hover:bg-zinc-100 dark:hover:bg-zinc-900/30"
                       }`}
                     >
-                      {/* Left border highlight for active state */}
-                      {isActive && (
-                        <div className="absolute top-0 bottom-0 left-0 w-0.5 bg-zinc-900 dark:bg-zinc-100" />
-                      )}
                       <div className="flex items-center justify-between">
                         <span
-                          className={`text-sm font-medium transition-colors ${
+                          className={`text-sm font-medium ${
                             isActive
                               ? "text-zinc-900 dark:text-zinc-100"
-                              : "text-zinc-700 group-hover:text-zinc-900 dark:text-zinc-300 dark:group-hover:text-zinc-100"
+                              : "text-zinc-700 dark:text-zinc-300"
                           }`}
                         >
                           {t(locale, item.labelKey)}
                         </span>
                       </div>
                       <p
-                        className={`mt-0.5 text-xs leading-tight transition-colors ${
+                        className={`mt-0.5 text-xs leading-tight ${
                           isActive
                             ? "text-zinc-600 dark:text-zinc-400"
-                            : "text-zinc-500 group-hover:text-zinc-600 dark:text-zinc-500 dark:group-hover:text-zinc-400"
+                            : "text-zinc-500 dark:text-zinc-500"
                         }`}
                       >
                         {t(locale, item.descriptionKey)}

@@ -7,6 +7,7 @@ import { prisma } from "../prisma";
 import type { Prisma } from "@prisma/client";
 import { fetchBilibiliHistory, normalizeBilibiliItem, type BilibiliConfig } from "./bilibili";
 import { fetchDoubanWatched, normalizeDoubanItem, type DoubanConfig } from "./douban";
+import { fetchSteamRecentlyPlayed, normalizeSteamGame, type SteamConfig } from "./steam";
 import { decryptCredential, isEncrypted } from "../encryption";
 
 export interface SyncResult {
@@ -15,6 +16,8 @@ export interface SyncResult {
   itemsTotal: number;
   itemsSuccess: number;
   itemsFailed: number;
+  itemsNew: number; // New items added
+  itemsExisting: number; // Items already in database (skipped)
   duration: number; // milliseconds
   error?: string;
   errorStack?: string;
@@ -47,66 +50,66 @@ export async function syncBilibili(
   try {
     console.log(`[${platform}] Starting sync...`);
 
-    // Fetch history from Bilibili (fetch 10 pages = 200 items)
-    const items = await fetchBilibiliHistory(config, 10);
-    console.log(`[${platform}] Fetched ${items.length} items`);
+    // Fetch history from Bilibili (fetch 50 pages = ~1000 items, which is the API limit)
+    const items = await fetchBilibiliHistory(config, 50);
+    console.log(`[${platform}] Fetched ${items.length} items from API`);
+
+    // Extract external IDs for all items
+    const externalIds = items.map((item) => item.kid.toString());
+
+    // Batch query existing items from database
+    const existingRecords = await prisma.mediaWatch.findMany({
+      where: {
+        platform: "BILIBILI",
+        externalId: { in: externalIds },
+      },
+      select: { externalId: true },
+    });
+
+    const existingSet = new Set(existingRecords.map((r) => r.externalId));
+    console.log(`[${platform}] Found ${existingSet.size} existing items in database`);
+
+    // Filter out items that already exist
+    const newItems = items.filter((item) => !existingSet.has(item.kid.toString()));
+    console.log(`[${platform}] ${newItems.length} new items to sync`);
 
     let successCount = 0;
     let failedCount = 0;
 
-    // Limit to most recent 100 items
-    const itemsToSync = items.slice(0, 100);
-    console.log(`[${platform}] Syncing ${itemsToSync.length} items (limited to 100)`);
-
-    // Upsert each item to database
-    for (const item of itemsToSync) {
+    // Only insert new items
+    for (const item of newItems) {
       try {
         const normalized = normalizeBilibiliItem(item);
 
-        // Upsert MediaWatch record
-        const mediaWatch = await prisma.mediaWatch.upsert({
-          where: {
-            platform_externalId: {
-              platform: normalized.platform,
-              externalId: normalized.externalId,
-            },
-          },
-          update: {
-            title: normalized.title,
-            cover: normalized.cover,
-            url: normalized.url,
-            watchedAt: normalized.watchedAt,
-            progress: normalized.progress,
-            duration: normalized.duration,
-            metadata: normalized.metadata as Prisma.InputJsonValue,
-            updatedAt: new Date(),
-          },
-          create: normalized as Prisma.MediaWatchCreateInput,
+        // Insert new MediaWatch record
+        const mediaWatch = await prisma.mediaWatch.create({
+          data: normalized as Prisma.MediaWatchCreateInput,
         });
 
-        // Create sync log relationship (many-to-many)
-        try {
-          await prisma.mediaWatchSyncLog.create({
-            data: {
-              mediaWatchId: mediaWatch.id,
-              syncJobLogId: job.id,
-            },
-          });
-        } catch (linkError: any) {
-          // If duplicate relationship (already linked), ignore
-          if (linkError.code !== "P2002") {
-            throw linkError;
-          }
-        }
+        // Create sync log relationship
+        await prisma.mediaWatchSyncLog.create({
+          data: {
+            mediaWatchId: mediaWatch.id,
+            syncJobLogId: job.id,
+          },
+        });
 
         successCount++;
       } catch (error) {
         console.error(`[${platform}] Failed to sync item ${item.history.bvid}:`, error);
+        if (error instanceof Error) {
+          console.error(`[${platform}] Error details:`, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          });
+        }
         failedCount++;
       }
     }
 
     const duration = Date.now() - startTime;
+    const itemsExisting = items.length - newItems.length;
 
     // Update job log record
     await prisma.syncJobLog.update({
@@ -115,23 +118,25 @@ export async function syncBilibili(
         status: failedCount > 0 ? "PARTIAL" : "SUCCESS",
         completedAt: new Date(),
         duration,
-        itemsTotal: itemsToSync.length,
+        itemsTotal: items.length,
         itemsSuccess: successCount,
         itemsFailed: failedCount,
-        message: `Successfully synced ${successCount}/${itemsToSync.length} items`,
+        message: `Synced ${successCount} new items (${itemsExisting} existing, ${failedCount} failed)`,
       },
     });
 
     console.log(
-      `[${platform}] Sync completed: ${successCount} success, ${failedCount} failed in ${duration}ms`
+      `[${platform}] Sync completed: ${successCount} new, ${itemsExisting} existing, ${failedCount} failed in ${duration}ms`
     );
 
     return {
       platform,
       success: true,
-      itemsTotal: itemsToSync.length,
+      itemsTotal: items.length,
       itemsSuccess: successCount,
       itemsFailed: failedCount,
+      itemsNew: successCount,
+      itemsExisting,
       duration,
     };
   } catch (error) {
@@ -159,6 +164,8 @@ export async function syncBilibili(
       itemsTotal: 0,
       itemsSuccess: 0,
       itemsFailed: 0,
+      itemsNew: 0,
+      itemsExisting: 0,
       duration,
       error: errorMessage,
       errorStack,
@@ -169,10 +176,7 @@ export async function syncBilibili(
 /**
  * Sync Douban watch history
  */
-export async function syncDouban(
-  config: DoubanConfig,
-  credentialId?: string
-): Promise<SyncResult> {
+export async function syncDouban(config: DoubanConfig, credentialId?: string): Promise<SyncResult> {
   const startTime = Date.now();
   const platform = "DOUBAN";
   const jobId = `sync_douban_${Date.now()}`;
@@ -195,63 +199,64 @@ export async function syncDouban(
 
     // Fetch watched items from Douban (fetch 25 pages = 375 items to ensure we get everything)
     const items = await fetchDoubanWatched(config, 25);
-    console.log(`[${platform}] Fetched ${items.length} items`);
+    console.log(`[${platform}] Fetched ${items.length} items from API`);
+
+    // Extract external IDs for all items
+    const externalIds = items.map((item) => item.id);
+
+    // Batch query existing items from database
+    const existingRecords = await prisma.mediaWatch.findMany({
+      where: {
+        platform: "DOUBAN",
+        externalId: { in: externalIds },
+      },
+      select: { externalId: true },
+    });
+
+    const existingSet = new Set(existingRecords.map((r) => r.externalId));
+    console.log(`[${platform}] Found ${existingSet.size} existing items in database`);
+
+    // Filter out items that already exist
+    const newItems = items.filter((item) => !existingSet.has(item.id));
+    console.log(`[${platform}] ${newItems.length} new items to sync`);
 
     let successCount = 0;
     let failedCount = 0;
 
-    // Limit to most recent 100 items
-    const itemsToSync = items.slice(0, 100);
-    console.log(`[${platform}] Syncing ${itemsToSync.length} items (limited to 100)`);
-
-    // Upsert each item to database
-    for (const item of itemsToSync) {
+    // Only insert new items
+    for (const item of newItems) {
       try {
         const normalized = normalizeDoubanItem(item);
 
-        // Upsert MediaWatch record
-        const mediaWatch = await prisma.mediaWatch.upsert({
-          where: {
-            platform_externalId: {
-              platform: normalized.platform,
-              externalId: normalized.externalId,
-            },
-          },
-          update: {
-            title: normalized.title,
-            cover: normalized.cover,
-            url: normalized.url,
-            watchedAt: normalized.watchedAt,
-            rating: normalized.rating,
-            metadata: normalized.metadata as Prisma.InputJsonValue,
-            updatedAt: new Date(),
-          },
-          create: normalized as Prisma.MediaWatchCreateInput,
+        // Insert new MediaWatch record
+        const mediaWatch = await prisma.mediaWatch.create({
+          data: normalized as Prisma.MediaWatchCreateInput,
         });
 
-        // Create sync log relationship (many-to-many)
-        try {
-          await prisma.mediaWatchSyncLog.create({
-            data: {
-              mediaWatchId: mediaWatch.id,
-              syncJobLogId: job.id,
-            },
-          });
-        } catch (linkError: any) {
-          // If duplicate relationship (already linked), ignore
-          if (linkError.code !== "P2002") {
-            throw linkError;
-          }
-        }
+        // Create sync log relationship
+        await prisma.mediaWatchSyncLog.create({
+          data: {
+            mediaWatchId: mediaWatch.id,
+            syncJobLogId: job.id,
+          },
+        });
 
         successCount++;
       } catch (error) {
         console.error(`[${platform}] Failed to sync item ${item.id}:`, error);
+        if (error instanceof Error) {
+          console.error(`[${platform}] Error details:`, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          });
+        }
         failedCount++;
       }
     }
 
     const duration = Date.now() - startTime;
+    const itemsExisting = items.length - newItems.length;
 
     // Update job log record
     await prisma.syncJobLog.update({
@@ -260,23 +265,25 @@ export async function syncDouban(
         status: failedCount > 0 ? "PARTIAL" : "SUCCESS",
         completedAt: new Date(),
         duration,
-        itemsTotal: itemsToSync.length,
+        itemsTotal: items.length,
         itemsSuccess: successCount,
         itemsFailed: failedCount,
-        message: `Successfully synced ${successCount}/${itemsToSync.length} items`,
+        message: `Synced ${successCount} new items (${itemsExisting} existing, ${failedCount} failed)`,
       },
     });
 
     console.log(
-      `[${platform}] Sync completed: ${successCount} success, ${failedCount} failed in ${duration}ms`
+      `[${platform}] Sync completed: ${successCount} new, ${itemsExisting} existing, ${failedCount} failed in ${duration}ms`
     );
 
     return {
       platform,
       success: true,
-      itemsTotal: itemsToSync.length,
+      itemsTotal: items.length,
       itemsSuccess: successCount,
       itemsFailed: failedCount,
+      itemsNew: successCount,
+      itemsExisting,
       duration,
     };
   } catch (error) {
@@ -304,6 +311,155 @@ export async function syncDouban(
       itemsTotal: 0,
       itemsSuccess: 0,
       itemsFailed: 0,
+      itemsNew: 0,
+      itemsExisting: 0,
+      duration,
+      error: errorMessage,
+      errorStack,
+    };
+  }
+}
+
+/**
+ * Sync Steam game history
+ */
+export async function syncSteam(config: SteamConfig, credentialId?: string): Promise<SyncResult> {
+  const startTime = Date.now();
+  const platform = "STEAM";
+  const jobId = `sync_steam_${Date.now()}`;
+
+  // Create sync job log record
+  const job = await prisma.syncJobLog.create({
+    data: {
+      id: jobId,
+      platform,
+      jobType: "media_sync",
+      status: "RUNNING",
+      triggeredBy: credentialId ? "manual" : "cron",
+      startedAt: new Date(startTime),
+      credentialId,
+    },
+  });
+
+  try {
+    console.log(`[${platform}] Starting sync...`);
+
+    // Fetch recently played games from Steam (last 2 weeks, max 20 games)
+    const games = await fetchSteamRecentlyPlayed(config, 20);
+    console.log(`[${platform}] Fetched ${games.length} games from API`);
+
+    // Extract external IDs for all games
+    const externalIds = games.map((game) => game.appid.toString());
+
+    // Batch query existing games from database
+    const existingRecords = await prisma.mediaWatch.findMany({
+      where: {
+        platform: "STEAM",
+        externalId: { in: externalIds },
+      },
+      select: { externalId: true },
+    });
+
+    const existingSet = new Set(existingRecords.map((r) => r.externalId));
+    console.log(`[${platform}] Found ${existingSet.size} existing games in database`);
+
+    // Filter out games that already exist
+    const newGames = games.filter((game) => !existingSet.has(game.appid.toString()));
+    console.log(`[${platform}] ${newGames.length} new games to sync`);
+
+    let successCount = 0;
+    let failedCount = 0;
+
+    // Only insert new games
+    for (const game of newGames) {
+      try {
+        const normalized = normalizeSteamGame(game);
+
+        // Insert new MediaWatch record
+        const mediaWatch = await prisma.mediaWatch.create({
+          data: normalized as Prisma.MediaWatchCreateInput,
+        });
+
+        // Create sync log relationship
+        await prisma.mediaWatchSyncLog.create({
+          data: {
+            mediaWatchId: mediaWatch.id,
+            syncJobLogId: job.id,
+          },
+        });
+
+        successCount++;
+      } catch (error) {
+        console.error(`[${platform}] Failed to sync game ${game.appid}:`, error);
+        if (error instanceof Error) {
+          console.error(`[${platform}] Error details:`, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          });
+        }
+        failedCount++;
+      }
+    }
+
+    const duration = Date.now() - startTime;
+    const itemsExisting = games.length - newGames.length;
+
+    // Update job log record
+    await prisma.syncJobLog.update({
+      where: { id: job.id },
+      data: {
+        status: failedCount > 0 ? "PARTIAL" : "SUCCESS",
+        completedAt: new Date(),
+        duration,
+        itemsTotal: games.length,
+        itemsSuccess: successCount,
+        itemsFailed: failedCount,
+        message: `Synced ${successCount} new games (${itemsExisting} existing, ${failedCount} failed)`,
+      },
+    });
+
+    console.log(
+      `[${platform}] Sync completed: ${successCount} new, ${itemsExisting} existing, ${failedCount} failed in ${duration}ms`
+    );
+
+    return {
+      platform,
+      success: true,
+      itemsTotal: games.length,
+      itemsSuccess: successCount,
+      itemsFailed: failedCount,
+      itemsNew: successCount,
+      itemsExisting,
+      duration,
+    };
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    // Update job log record with error
+    await prisma.syncJobLog.update({
+      where: { id: job.id },
+      data: {
+        status: "FAILED",
+        completedAt: new Date(),
+        duration,
+        message: errorMessage,
+        errorStack,
+      },
+    });
+
+    console.error(`[${platform}] Sync failed:`, error);
+
+    return {
+      platform,
+      success: false,
+      itemsTotal: 0,
+      itemsSuccess: 0,
+      itemsFailed: 0,
+      itemsNew: 0,
+      itemsExisting: 0,
       duration,
       error: errorMessage,
       errorStack,
@@ -324,7 +480,7 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
     const credentials = await prisma.externalCredential.findMany({
       where: {
         platform: {
-          in: ["BILIBILI", "DOUBAN"],
+          in: ["BILIBILI", "DOUBAN", "STEAM"],
         },
         isValid: true,
       },
@@ -417,6 +573,39 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
       results.push(doubanResult);
     }
 
+    // Sync Steam platforms
+    const steamCredentials = credentials.filter((c) => c.platform === "STEAM");
+    for (const credential of steamCredentials) {
+      // Get Steam ID from metadata
+      const metadata = credential.metadata as { steamId?: string };
+      const steamId = metadata.steamId || process.env.STEAM_ID;
+
+      if (steamId) {
+        // Decrypt credential value if encrypted (API Key)
+        const apiKey = isEncrypted(credential.value)
+          ? decryptCredential(credential.value)
+          : credential.value;
+
+        const steamResult = await syncSteam({
+          apiKey,
+          steamId,
+        });
+        results.push(steamResult);
+      } else {
+        console.warn(`[Steam] Credential ${credential.id} missing steamId in metadata, skipping`);
+      }
+    }
+
+    // Fallback to environment variables if no Steam credentials configured
+    if (steamCredentials.length === 0 && process.env.STEAM_API_KEY && process.env.STEAM_ID) {
+      console.log("[Steam] No credentials in database, using environment variables");
+      const steamResult = await syncSteam({
+        apiKey: process.env.STEAM_API_KEY,
+        steamId: process.env.STEAM_ID,
+      });
+      results.push(steamResult);
+    }
+
     if (results.length === 0) {
       console.warn(
         "[Media Sync] No valid media credentials found in database and no environment variables configured"
@@ -445,6 +634,14 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
         cookie: process.env.DOUBAN_COOKIE,
       });
       results.push(doubanResult);
+    }
+
+    if (process.env.STEAM_API_KEY && process.env.STEAM_ID) {
+      const steamResult = await syncSteam({
+        apiKey: process.env.STEAM_API_KEY,
+        steamId: process.env.STEAM_ID,
+      });
+      results.push(steamResult);
     }
   }
 
