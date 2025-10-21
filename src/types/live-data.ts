@@ -178,7 +178,7 @@ export interface InfraData {
 export interface GitHubRepo {
   name: string;
   fullName: string;
-  language: string;
+  language: string | null;
   commitsThisMonth: number;
   lastCommit: {
     date: Date | string; // Date object in code, serialized to ISO string in JSON
