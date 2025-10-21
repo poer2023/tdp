@@ -175,7 +175,8 @@ export function DevDetailPage({ locale }: DevDetailPageProps) {
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {data.activeRepos.map((repo) => {
-            const badgeLabel = repo.language.split("").join("\u200b"); // Insert zero-width joins so tests see a single "TypeScript"
+            const language = repo.language ?? "Unknown";
+            const badgeLabel = language.split("").join("\u200b"); // Insert zero-width joins so tests see a single "TypeScript"
             return (
               <div
                 key={repo.fullName}
