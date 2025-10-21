@@ -322,6 +322,63 @@ async function validateJellyfinCredential(value: string): Promise<ValidationResu
 }
 
 /**
+ * Validate GitHub Personal Access Token
+ */
+async function validateGitHubCredential(value: string): Promise<ValidationResult> {
+  try {
+    // GitHub tokens should start with specific prefixes
+    const validPrefixes = ["ghp_", "gho_", "ghu_", "ghs_", "ghr_"];
+    const hasValidPrefix = validPrefixes.some((prefix) => value.startsWith(prefix));
+
+    if (!hasValidPrefix && value.length < 40) {
+      return {
+        isValid: false,
+        error: "Invalid GitHub token format (must start with ghp_, gho_, ghu_, ghs_, or ghr_)",
+      };
+    }
+
+    // Test API call to get authenticated user
+    const response = await fetch("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${value}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!response.ok) {
+      return {
+        isValid: false,
+        error: `GitHub API returned ${response.status}: ${response.statusText}`,
+      };
+    }
+
+    const data = await response.json();
+    if (data.login) {
+      return {
+        isValid: true,
+        message: "GitHub Personal Access Token is valid",
+        metadata: {
+          username: data.login,
+          name: data.name,
+          publicRepos: data.public_repos,
+        },
+      };
+    }
+
+    return {
+      isValid: false,
+      error: "Invalid GitHub API response",
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      error: error instanceof Error ? error.message : "Unknown error validating GitHub credential",
+    };
+  }
+}
+
+/**
  * Main validation function
  */
 export async function validateCredential(
@@ -344,6 +401,9 @@ export async function validateCredential(
 
     case "JELLYFIN":
       return validateJellyfinCredential(value);
+
+    case "GITHUB":
+      return validateGitHubCredential(value);
 
     default:
       return {

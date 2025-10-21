@@ -49,6 +49,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
           <option value="BILIBILI">{t(locale, "bilibili")}</option>
           <option value="DOUBAN">{t(locale, "douban")}</option>
           <option value="JELLYFIN">{t(locale, "jellyfin")}</option>
+          <option value="GITHUB">GitHub</option>
         </select>
       </div>
 
@@ -73,6 +74,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
           <option value="API_KEY">{t(locale, "apiKey")}</option>
           <option value="COOKIE">{t(locale, "cookie")}</option>
           <option value="OAUTH_TOKEN">{t(locale, "oauthToken")}</option>
+          <option value="PERSONAL_ACCESS_TOKEN">Personal Access Token</option>
         </select>
       </div>
 

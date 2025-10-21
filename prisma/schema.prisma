@@ -524,6 +524,7 @@ enum CredentialPlatform {
   BILIBILI
   DOUBAN
   JELLYFIN
+  GITHUB
 }
 
 enum CredentialType {
