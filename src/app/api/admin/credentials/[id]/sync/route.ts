@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getGamingSyncService } from "@/lib/gaming/sync-service";
-import { syncBilibili, syncDouban } from "@/lib/media-sync";
+import { syncBilibili, syncDouban, syncSteam } from "@/lib/media-sync";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
@@ -47,8 +47,19 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         // Use API key from database credential
         const apiKey = credential.value;
 
-        const gamingSyncService = getGamingSyncService();
-        syncResult = await gamingSyncService.syncSteamData(steamId, apiKey);
+        // Run both gaming sync (for SteamProfile) and media sync (for MediaWatch) in parallel
+        const [gamingSyncResult, mediaSyncResult] = await Promise.all([
+          getGamingSyncService().syncSteamData(steamId, apiKey),
+          syncSteam({ apiKey, steamId }, credential.id),
+        ]);
+
+        // Combine results
+        syncResult = {
+          success: gamingSyncResult.success && mediaSyncResult.success,
+          gamingSync: gamingSyncResult,
+          mediaSync: mediaSyncResult,
+          message: `Steam synced: ${gamingSyncResult.gamesUpdated || 0} gaming profiles, ${mediaSyncResult.itemsNew || 0} new media items`,
+        };
 
         // Update credential usage
         await prisma.externalCredential.update({

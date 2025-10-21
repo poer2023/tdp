@@ -29,6 +29,10 @@ type SyncedItem = {
   externalId: string;
 };
 
+type LegacySyncedItemRow = SyncedItem & {
+  syncJobLogId: string | null;
+};
+
 export default async function SyncLogsPage({
   searchParams,
 }: {
@@ -72,11 +76,13 @@ export default async function SyncLogsPage({
     const logIds = logs.map((log) => log.id);
     let hydrated = false;
 
-    const syncLogDelegate = (prisma as {
-      mediaWatchSyncLog?: {
-        findMany?: typeof prisma.mediaWatchSyncLog.findMany;
-      };
-    }).mediaWatchSyncLog;
+    const syncLogDelegate = (
+      prisma as {
+        mediaWatchSyncLog?: {
+          findMany?: typeof prisma.mediaWatchSyncLog.findMany;
+        };
+      }
+    ).mediaWatchSyncLog;
 
     if (typeof syncLogDelegate?.findMany === "function") {
       try {
@@ -119,34 +125,72 @@ export default async function SyncLogsPage({
         }));
         hydrated = true;
       } catch (error) {
-        if (
-          !(
-            error instanceof Prisma.PrismaClientKnownRequestError &&
-            (error.code === "P2021" || error.code === "P2022")
-          )
-        ) {
+        const shouldIgnore = (() => {
+          if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
+            return false;
+          }
+
+          if (error.code === "P2021" || error.code === "P2022") {
+            return true;
+          }
+
+          if (error.code === "P2010") {
+            const meta = error.meta;
+            const postgresCode =
+              typeof meta === "object" && meta && "code" in meta
+                ? (meta.code as unknown)
+                : undefined;
+            if (typeof postgresCode === "string" && postgresCode === "42703") {
+              return true;
+            }
+            if (typeof meta === "object" && meta && "message" in meta) {
+              const metaMessage = meta.message as unknown;
+              if (
+                typeof metaMessage === "string" &&
+                metaMessage.includes('column "') &&
+                metaMessage.includes('" does not exist')
+              ) {
+                return true;
+              }
+            }
+          }
+
+          if (
+            typeof error.message === "string" &&
+            error.message.includes('column "') &&
+            error.message.includes('" does not exist')
+          ) {
+            return true;
+          }
+
+          return false;
+        })();
+
+        if (!shouldIgnore) {
           throw error;
         }
       }
     }
 
     if (!hydrated) {
+      // Fallback 1: raw join against MediaWatchSyncLog (works even if Prisma delegate missing)
       try {
-        const legacyItems = await prisma.mediaWatch.findMany({
-          where: { syncJobLogId: { in: logIds } },
-          orderBy: [{ syncJobLogId: "asc" }, { watchedAt: "desc" }],
-          select: {
-            id: true,
-            title: true,
-            cover: true,
-            url: true,
-            watchedAt: true,
-            externalId: true,
-            syncJobLogId: true,
-          },
-        });
+        const joined = await prisma.$queryRaw<LegacySyncedItemRow[]>`
+          SELECT
+            mw."id",
+            mw."title",
+            mw."cover",
+            mw."url",
+            mw."watchedAt",
+            mw."externalId",
+            msl."syncJobLogId"
+          FROM "MediaWatchSyncLog" AS msl
+          INNER JOIN "MediaWatch" AS mw ON mw."id" = msl."mediaWatchId"
+          WHERE msl."syncJobLogId" IN (${Prisma.join(logIds)})
+          ORDER BY msl."syncJobLogId" ASC, msl."syncedAt" DESC
+        `;
 
-        const itemsByLogId = legacyItems.reduce<Record<string, SyncedItem[]>>((acc, item) => {
+        const itemsByLogId = joined.reduce<Record<string, SyncedItem[]>>((acc, item) => {
           if (!item.syncJobLogId) return acc;
           const list = acc[item.syncJobLogId] ?? [];
           list.push({
@@ -165,13 +209,143 @@ export default async function SyncLogsPage({
           ...log,
           syncedItems: itemsByLogId[log.id] ?? [],
         }));
-      } catch (error) {
-        if (
-          !(
-            error instanceof Prisma.PrismaClientKnownRequestError &&
-            (error.code === "P2021" || error.code === "P2022")
-          )
-        ) {
+        hydrated = true;
+      } catch (error: unknown) {
+        // Ignore if the junction table doesn't exist yet in DB
+        const code =
+          error && typeof error === "object" && "code" in error
+            ? (error as { code: string }).code
+            : undefined;
+        const message =
+          error &&
+          typeof error === "object" &&
+          "message" in error &&
+          typeof error.message === "string"
+            ? error.message
+            : "";
+        const metaCode =
+          error &&
+          typeof error === "object" &&
+          "meta" in error &&
+          typeof (error as { meta?: { code?: string } }).meta === "object" &&
+          (error as { meta?: { code?: string } }).meta?.code
+            ? (error as { meta: { code: string } }).meta.code
+            : undefined;
+
+        const metaMessage =
+          error &&
+          typeof error === "object" &&
+          "meta" in error &&
+          typeof (error as { meta?: { message?: unknown } }).meta === "object" &&
+          (error as { meta?: { message?: unknown } }).meta?.message
+            ? String((error as { meta: { message: unknown } }).meta.message)
+            : "";
+
+        const isRelationMissing =
+          (code === "P2010" &&
+            (metaCode === "42P01" || /relation ".+" does not exist/i.test(metaMessage))) ||
+          /relation ".+" does not exist/i.test(message) ||
+          /42P01/.test(message);
+
+        if (!isRelationMissing) {
+          throw error;
+        }
+      }
+    }
+
+    if (!hydrated) {
+      try {
+        // Check if legacy column exists before querying it
+        const legacyColumnCheck = await prisma.$queryRaw<{ exists: boolean }[]>`
+          SELECT EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = current_schema()
+              AND table_name = ${"MediaWatch"}
+              AND column_name = ${"syncJobLogId"}
+          ) AS "exists";
+        `;
+
+        const legacyColumnExists =
+          Array.isArray(legacyColumnCheck) &&
+          legacyColumnCheck.length > 0 &&
+          !!legacyColumnCheck[0]?.exists;
+
+        if (legacyColumnExists) {
+          const legacyItems = await prisma.$queryRaw<LegacySyncedItemRow[]>`
+            SELECT
+              "id",
+              "title",
+              "cover",
+              "url",
+              "watchedAt",
+              "externalId",
+              "syncJobLogId"
+            FROM "MediaWatch"
+            WHERE "syncJobLogId" IN (${Prisma.join(logIds)})
+            ORDER BY "syncJobLogId" ASC, "watchedAt" DESC
+          `;
+
+          const itemsByLogId = legacyItems.reduce<Record<string, SyncedItem[]>>((acc, item) => {
+            if (!item.syncJobLogId) return acc;
+            const list = acc[item.syncJobLogId] ?? [];
+            list.push({
+              id: item.id,
+              title: item.title,
+              cover: item.cover,
+              url: item.url,
+              watchedAt: item.watchedAt,
+              externalId: item.externalId,
+            });
+            acc[item.syncJobLogId] = list;
+            return acc;
+          }, {});
+
+          logsResult = logs.map((log) => ({
+            ...log,
+            syncedItems: itemsByLogId[log.id] ?? [],
+          }));
+          hydrated = true;
+        }
+      } catch (error: unknown) {
+        // Ignore legacy schema errors (e.g., missing column) and only rethrow unknown ones
+        const code =
+          error && typeof error === "object" && "code" in error
+            ? (error as { code: string }).code
+            : undefined;
+        const message =
+          error &&
+          typeof error === "object" &&
+          "message" in error &&
+          typeof error.message === "string"
+            ? error.message
+            : "";
+        const metaMessage =
+          error &&
+          typeof error === "object" &&
+          "meta" in error &&
+          typeof (error as { meta?: { message?: unknown } }).meta === "object" &&
+          (error as { meta?: { message?: unknown } }).meta?.message
+            ? String((error as { meta: { message: unknown } }).meta.message)
+            : "";
+        const metaCode =
+          error &&
+          typeof error === "object" &&
+          "meta" in error &&
+          typeof (error as { meta?: { code?: string } }).meta === "object" &&
+          (error as { meta?: { code?: string } }).meta?.code
+            ? (error as { meta: { code: string } }).meta.code
+            : undefined;
+
+        const isIgnorable =
+          code === "P2021" ||
+          code === "P2022" ||
+          (code === "P2010" &&
+            (metaCode === "42703" || /column ".+" does not exist/i.test(metaMessage))) ||
+          /column ".+" does not exist/i.test(message) ||
+          /42703/.test(message);
+
+        if (!isIgnorable) {
           throw error;
         }
       }

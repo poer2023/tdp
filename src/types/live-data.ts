@@ -61,7 +61,7 @@ export interface MediaData {
 
 // API query parameters
 export interface MediaApiParams {
-  platform?: "all" | "bilibili" | "douban";
+  platform?: "all" | "bilibili" | "douban" | "steam";
   page?: number;
   limit?: number;
   dateRange?: "all" | "thisWeek" | "thisMonth" | "thisYear" | "custom";

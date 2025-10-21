@@ -109,7 +109,7 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
                 {
                   year: "numeric",
                   month: "2-digit",
-                  day: "2-digit"
+                  day: "2-digit",
                 }
               )}
             </div>

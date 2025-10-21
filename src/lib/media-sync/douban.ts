@@ -168,7 +168,7 @@ function parseDoubanDate(dateText: string): string {
  */
 export function normalizeDoubanItem(item: DoubanWatchedItem) {
   return {
-    platform: "douban" as const,
+    platform: "DOUBAN" as const,
     externalId: item.id,
     type: item.type,
     title: item.title,

@@ -109,7 +109,7 @@ export function normalizeBilibiliItem(item: BilibiliHistoryItem) {
     item.duration > 0 && item.progress > 0 ? Math.round((item.progress / item.duration) * 100) : 0;
 
   return {
-    platform: "bilibili" as const,
+    platform: "BILIBILI" as const,
     externalId: item.kid.toString(), // Use kid as unique ID
     type: (item.videos > 1 ? "series" : "movie") as "movie" | "series",
     title: item.title,
