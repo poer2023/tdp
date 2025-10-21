@@ -7,62 +7,119 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String?        @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole       @default(AUTHOR)
+  accounts      Account[]
+  moments       Moment[]
+  posts         Post[]
+  sessions      Session[]
+  subscriptions Subscription[]
+}
+
 model Account {
-  id                String  @id
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refreshToken      String?
-  accessToken       String?
-  expiresAt         Int?
-  tokenType         String?
+  refresh_token     String? @map("refreshToken")
+  access_token      String? @map("accessToken")
+  expires_at        Int?    @map("expiresAt")
+  token_type        String? @map("tokenType")
   scope             String?
-  idToken           String?
-  sessionState      String?
-  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id_token          String? @map("idToken")
+  session_state     String? @map("sessionState")
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
 
-model DailyStats {
-  id             String   @id
-  date           DateTime @unique
-  totalViews     Int      @default(0)
-  uniqueVisitors Int      @default(0)
-  createdAt      DateTime @default(now())
-
-  @@index([date])
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model ExternalCredential {
-  id              String             @id
-  platform        CredentialPlatform
-  type            CredentialType
-  value           String
-  metadata        Json?
-  isValid         Boolean            @default(true)
-  lastValidatedAt DateTime?
-  validUntil      DateTime?
-  failureCount    Int                @default(0)
-  lastError       String?
-  usageCount      Int                @default(0)
-  lastUsedAt      DateTime?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime
-  autoSync        Boolean            @default(false)
-  nextCheckAt     DateTime?
-  syncFrequency   String?
-  SyncJobLog      SyncJobLog[]
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-  @@index([lastValidatedAt])
-  @@index([nextCheckAt])
-  @@index([platform, isValid])
+  @@unique([identifier, token])
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model Post {
+  id              String             @id @default(cuid())
+  title           String
+  slug            String
+  excerpt         String
+  content         String
+  coverImagePath  String?
+  tags            String?
+  status          PostStatus         @default(DRAFT)
+  publishedAt     DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  authorId        String?
+  locale          PostLocale         @default(EN)
+  groupId         String?
+  viewCount       Int                @default(0)
+  relatedPostIds  Json?
+  gallery         GalleryImage[]
+  author          User?              @relation(fields: [authorId], references: [id])
+  aliases         PostAlias[]
+  reactionRecords Reaction[]
+  reactions       ReactionAggregate?
+
+  @@unique([locale, slug])
+  @@unique([groupId, locale])
+  @@index([status, locale])
+  @@index([viewCount])
+  @@index([content(ops: raw("gin_trgm_ops"))], map: "idx_post_content_trgm", type: Gin)
+  @@index([title(ops: raw("gin_trgm_ops"))], map: "idx_post_title_trgm", type: Gin)
+}
+
+model PostAlias {
+  id        String     @id @default(cuid())
+  locale    PostLocale
+  oldSlug   String
+  postId    String
+  createdAt DateTime   @default(now())
+  post      Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([locale, oldSlug])
+  @@index([postId])
+}
+
+model ReactionAggregate {
+  postId    String   @id
+  likeCount Int      @default(0)
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Reaction {
+  id             String   @id @default(cuid())
+  postId         String
+  sessionKeyHash String
+  createdAt      DateTime @default(now())
+  post           Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, sessionKeyHash])
+  @@index([sessionKeyHash])
 }
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model GalleryImage {
-  id                 String          @id
+  id                 String          @id @default(cuid())
   title              String?
   description        String?
   filePath           String
@@ -85,155 +142,58 @@ model GalleryImage {
   microThumbPath     String?
   smallThumbPath     String?
   category           GalleryCategory @default(REPOST)
-  Post               Post?           @relation(fields: [postId], references: [id])
+  post               Post?           @relation(fields: [postId], references: [id])
 
   @@index([locationName(ops: raw("gin_trgm_ops"))], map: "idx_gallery_location_trgm", type: Gin)
   @@index([title(ops: raw("gin_trgm_ops"))], map: "idx_gallery_title_trgm", type: Gin)
 }
 
-model Game {
-  id              String            @id
-  platformId      String
-  platform        GamePlatform
-  name            String
-  nameZh          String?
-  cover           String?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime
-  GameAchievement GameAchievement[]
-  GameSession     GameSession[]
-
-  @@unique([platform, platformId])
-  @@index([platform])
-}
-
-model GameAchievement {
-  id            String    @id
-  gameId        String
-  achievementId String
-  name          String
-  nameZh        String?
-  description   String?
-  unlockedAt    DateTime?
-  progress      Float?
-  isUnlocked    Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime
-  Game          Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
-
-  @@unique([gameId, achievementId])
-  @@index([gameId])
-  @@index([isUnlocked])
-}
-
-model GameSession {
-  id        String       @id
-  gameId    String
-  startTime DateTime
-  endTime   DateTime?
-  duration  Int
-  platform  GamePlatform
-  hoyoLevel Int?
-  hoyoMode  String?
-  createdAt DateTime     @default(now())
-  Game      Game         @relation(fields: [gameId], references: [id], onDelete: Cascade)
-
-  @@index([gameId, startTime])
-  @@index([platform, startTime])
-  @@index([startTime])
-}
-
-model GamingSyncLog {
-  id         String        @id
-  platform   GamePlatform
-  status     SyncJobStatus @default(PENDING)
-  message    String?
-  errorStack String?
-  syncedAt   DateTime      @default(now())
-  duration   Int?
-
-  @@index([platform, syncedAt])
-  @@index([status])
-}
-
-model HoyoProfile {
-  id         String   @id
-  uid        String   @unique
-  nickname   String
-  level      Int
-  loginDays  Int?
-  lastSyncAt DateTime
-  region     String   @default("cn_gf01")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime
-}
-
-model MediaWatch {
-  id                String              @id
-  platform          String
-  externalId        String
-  type              String
-  title             String
-  cover             String?
-  url               String?
-  watchedAt         DateTime
-  progress          Int?
-  season            Int?
-  episode           Int?
-  rating            Int?
-  duration          Int?
-  metadata          Json?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime
-  MediaWatchSyncLog MediaWatchSyncLog[]
-
-  @@unique([platform, externalId])
-  @@index([platform, watchedAt])
-  @@index([watchedAt])
-}
-
-model MediaWatchSyncLog {
-  id           String     @id
-  mediaWatchId String
-  syncJobLogId String
-  syncedAt     DateTime   @default(now())
-  MediaWatch   MediaWatch @relation(fields: [mediaWatchId], references: [id], onDelete: Cascade)
-  SyncJobLog   SyncJobLog @relation(fields: [syncJobLogId], references: [id], onDelete: Cascade)
-
-  @@unique([mediaWatchId, syncJobLogId])
-  @@index([mediaWatchId])
-  @@index([syncJobLogId])
-  @@index([syncedAt])
-}
-
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Moment {
-  id           String           @id
-  authorId     String
-  content      String
-  images       Json?
-  visibility   MomentVisibility @default(PUBLIC)
-  slug         String?          @unique
-  tags         String[]
-  location     Json?
-  lang         String           @default("en-US")
-  status       MomentStatus     @default(PUBLISHED)
-  scheduledAt  DateTime?
-  replyToId    String?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime
-  deletedAt    DateTime?
-  User         User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  Moment       Moment?          @relation("MomentToMoment", fields: [replyToId], references: [id])
-  other_Moment Moment[]         @relation("MomentToMoment")
+  id          String           @id @default(cuid())
+  authorId    String
+  content     String
+  images      Json?
+  visibility  MomentVisibility @default(PUBLIC)
+  slug        String?          @unique
+  tags        String[]
+  location    Json?
+  lang        String           @default("en-US")
+  status      MomentStatus     @default(PUBLISHED)
+  scheduledAt DateTime?
+  replyToId   String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
+  author      User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replyTo     Moment?          @relation("MomentThread", fields: [replyToId], references: [id])
+  replies     Moment[]         @relation("MomentThread")
 
   @@index([createdAt, visibility, lang])
   @@index([status])
   @@index([content(ops: raw("gin_trgm_ops"))], map: "idx_moment_content_trgm", type: Gin)
 }
 
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
+model DailyStats {
+  id             String   @id @default(cuid())
+  date           DateTime @unique
+  totalViews     Int      @default(0)
+  uniqueVisitors Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  @@index([date])
+}
+
 model PageView {
-  id        String   @id
+  id        String   @id @default(cuid())
   path      String
   locale    String?
   referer   String?
@@ -243,97 +203,19 @@ model PageView {
   @@index([path])
 }
 
-/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
-model Post {
-  id                String             @id
-  title             String
-  slug              String
-  excerpt           String
-  content           String
-  coverImagePath    String?
-  tags              String?
-  status            PostStatus         @default(DRAFT)
-  publishedAt       DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime
-  authorId          String?
-  locale            PostLocale         @default(EN)
-  groupId           String?
-  viewCount         Int                @default(0)
-  relatedPostIds    Json?
-  GalleryImage      GalleryImage[]
-  User              User?              @relation(fields: [authorId], references: [id])
-  PostAlias         PostAlias[]
-  Reaction          Reaction[]
-  ReactionAggregate ReactionAggregate?
+model Visitor {
+  id          String   @id @default(cuid())
+  fingerprint String   @unique
+  firstVisit  DateTime @default(now())
+  lastVisit   DateTime
+  visitCount  Int      @default(1)
 
-  @@unique([groupId, locale])
-  @@unique([locale, slug])
-  @@index([status, locale])
-  @@index([viewCount])
-  @@index([content(ops: raw("gin_trgm_ops"))], map: "idx_post_content_trgm", type: Gin)
-  @@index([title(ops: raw("gin_trgm_ops"))], map: "idx_post_title_trgm", type: Gin)
-}
-
-model PostAlias {
-  id        String     @id
-  locale    PostLocale
-  oldSlug   String
-  postId    String
-  createdAt DateTime   @default(now())
-  Post      Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@unique([locale, oldSlug])
-  @@index([postId])
-}
-
-model RateLimitHit {
-  id        String   @id
-  key       String
-  createdAt DateTime @default(now())
-
-  @@index([key, createdAt])
-}
-
-model Reaction {
-  id             String   @id
-  postId         String
-  sessionKeyHash String
-  createdAt      DateTime @default(now())
-  Post           Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, sessionKeyHash])
-  @@index([sessionKeyHash])
-}
-
-model ReactionAggregate {
-  postId    String   @id
-  likeCount Int      @default(0)
-  updatedAt DateTime
-  Post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-}
-
-model Session {
-  id           String   @id
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model SteamProfile {
-  id          String   @id
-  steamId     String   @unique
-  personaName String
-  profileUrl  String?
-  avatar      String?
-  lastSyncAt  DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime
+  @@index([fingerprint])
+  @@index([lastVisit])
 }
 
 model Subscription {
-  id                String                   @id
+  id                String                   @id @default(cuid())
   userId            String
   name              String
   currency          String
@@ -345,15 +227,57 @@ model Subscription {
   notes             String?
   originalRateToCNY Decimal?                 @db.Decimal(18, 8)
   createdAt         DateTime                 @default(now())
-  updatedAt         DateTime
-  User              User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt         DateTime                 @updatedAt
+  user              User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([createdAt])
   @@index([userId, billingCycle])
+  @@index([createdAt])
+}
+
+model MediaWatch {
+  id         String      @id @default(cuid())
+  platform   String
+  externalId String
+  type       String
+  title      String
+  cover      String?
+  url        String?
+  watchedAt  DateTime
+  progress   Int?
+  season     Int?
+  episode    Int?
+  rating     Int?
+  duration   Int?
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  // Relations
+  syncLogs   MediaWatchSyncLog[] // Many-to-many relationship with SyncJobLog
+
+  @@unique([platform, externalId])
+  @@index([platform, watchedAt])
+  @@index([watchedAt])
+}
+
+// Junction table for many-to-many relationship between MediaWatch and SyncJobLog
+model MediaWatchSyncLog {
+  id            String      @id @default(cuid())
+  mediaWatchId  String
+  syncJobLogId  String
+  syncedAt      DateTime    @default(now())
+
+  mediaWatch    MediaWatch  @relation(fields: [mediaWatchId], references: [id], onDelete: Cascade)
+  syncJobLog    SyncJobLog  @relation("SyncJobLogs", fields: [syncJobLogId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaWatchId, syncJobLogId])
+  @@index([syncJobLogId])
+  @@index([mediaWatchId])
+  @@index([syncedAt])
 }
 
 model SyncJob {
-  id           String        @id
+  id           String        @id @default(cuid())
   platform     String
   status       SyncJobStatus @default(PENDING)
   startedAt    DateTime      @default(now())
@@ -370,31 +294,150 @@ model SyncJob {
   @@index([status])
 }
 
-model SyncJobLog {
-  id                 String              @id
-  platform           String
-  jobType            String?
-  triggeredBy        String              @default("system")
-  status             SyncJobStatus       @default(PENDING)
-  startedAt          DateTime?
-  completedAt        DateTime?
-  duration           Int?
-  itemsTotal         Int                 @default(0)
-  itemsSuccess       Int                 @default(0)
-  itemsFailed        Int                 @default(0)
-  message            String?
-  errorStack         String?
-  errorDetails       Json?
-  credentialId       String?
-  metrics            Json?
-  createdAt          DateTime            @default(now())
-  MediaWatchSyncLog  MediaWatchSyncLog[]
-  ExternalCredential ExternalCredential? @relation(fields: [credentialId], references: [id])
+model Game {
+  id           String            @id @default(cuid())
+  platformId   String
+  platform     GamePlatform
+  name         String
+  nameZh       String?
+  cover        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  achievements GameAchievement[]
+  sessions     GameSession[]
 
-  @@index([credentialId])
+  @@unique([platform, platformId])
+  @@index([platform])
+}
+
+model GameSession {
+  id        String       @id @default(cuid())
+  gameId    String
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int
+  platform  GamePlatform
+  hoyoLevel Int?
+  hoyoMode  String?
+  createdAt DateTime     @default(now())
+  game      Game         @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, startTime])
+  @@index([startTime])
+  @@index([platform, startTime])
+}
+
+model GameAchievement {
+  id            String    @id @default(cuid())
+  gameId        String
+  achievementId String
+  name          String
+  nameZh        String?
+  description   String?
+  unlockedAt    DateTime?
+  progress      Float?
+  isUnlocked    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  game          Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, achievementId])
+  @@index([gameId])
+  @@index([isUnlocked])
+}
+
+model SteamProfile {
+  id          String   @id @default(cuid())
+  steamId     String   @unique
+  personaName String
+  profileUrl  String?
+  avatar      String?
+  lastSyncAt  DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model HoyoProfile {
+  id         String   @id @default(cuid())
+  uid        String   @unique
+  nickname   String
+  level      Int
+  loginDays  Int?
+  lastSyncAt DateTime
+  region     String   @default("cn_gf01")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model GamingSyncLog {
+  id         String        @id @default(cuid())
+  platform   GamePlatform
+  status     SyncJobStatus @default(PENDING)
+  message    String?
+  errorStack String?
+  syncedAt   DateTime      @default(now())
+  duration   Int?
+
+  @@index([platform, syncedAt])
+  @@index([status])
+}
+
+model ExternalCredential {
+  id              String             @id
+  platform        CredentialPlatform
+  type            CredentialType
+  value           String
+  metadata        Json?
+  isValid         Boolean            @default(true)
+  lastValidatedAt DateTime?
+  validUntil      DateTime?
+  failureCount    Int                @default(0)
+  lastError       String?
+  usageCount      Int                @default(0)
+  lastUsedAt      DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime
+
+  // New fields for sync automation
+  autoSync        Boolean            @default(false)
+  syncFrequency   String?            // daily, weekly, manual
+  nextCheckAt     DateTime?
+
+  // Relations
+  syncJobs        SyncJobLog[]       @relation("CredentialSyncJobs")
+
+  @@index([lastValidatedAt])
+  @@index([platform, isValid])
+  @@index([nextCheckAt])
+}
+
+model SyncJobLog {
+  id           String               @id
+  platform     String
+  jobType      String?
+  triggeredBy  String               @default("system")
+  status       SyncJobStatus        @default(PENDING)
+  startedAt    DateTime?
+  completedAt  DateTime?
+  duration     Int?
+  itemsTotal   Int                  @default(0)
+  itemsSuccess Int                  @default(0)
+  itemsFailed  Int                  @default(0)
+  message      String?
+  errorStack   String?
+  errorDetails Json?
+  credentialId String?
+  metrics      Json?
+  createdAt    DateTime             @default(now())
+
+  // Relations
+  credential   ExternalCredential?   @relation("CredentialSyncJobs", fields: [credentialId], references: [id], onDelete: SetNull)
+  syncLogs     MediaWatchSyncLog[]   @relation("SyncJobLogs") // Many-to-many relationship with MediaWatch
+
   @@index([platform, startedAt])
   @@index([status, startedAt])
   @@index([triggeredBy, createdAt])
+  @@index([credentialId])
 }
 
 model SyncStatistics {
@@ -419,37 +462,60 @@ model SyncStatistics {
   @@index([platform, date])
 }
 
-model User {
-  id            String         @id
-  name          String?
-  email         String?        @unique
-  emailVerified DateTime?
-  image         String?
-  role          UserRole       @default(AUTHOR)
-  Account       Account[]
-  Moment        Moment[]
-  Post          Post[]
-  Session       Session[]
-  Subscription  Subscription[]
+enum SubscriptionBillingCycle {
+  MONTHLY
+  ANNUAL
+  ONE_TIME
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
+enum MomentVisibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
 }
 
-model Visitor {
-  id          String   @id
-  fingerprint String   @unique
-  firstVisit  DateTime @default(now())
-  lastVisit   DateTime
-  visitCount  Int      @default(1)
+enum MomentStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+}
 
-  @@index([fingerprint])
-  @@index([lastVisit])
+enum UserRole {
+  ADMIN
+  AUTHOR
+  READER
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum PostLocale {
+  EN
+  ZH
+}
+
+enum GalleryCategory {
+  REPOST
+  ORIGINAL
+  AI
+}
+
+enum SyncJobStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  PARTIAL
+}
+
+enum GamePlatform {
+  STEAM
+  HOYOVERSE
+  PSN
+  XBOX
+  SWITCH
 }
 
 enum CredentialPlatform {
@@ -465,61 +531,4 @@ enum CredentialType {
   COOKIE
   API_KEY
   OAUTH_TOKEN
-  PERSONAL_ACCESS_TOKEN
-}
-
-enum GalleryCategory {
-  REPOST
-  ORIGINAL
-  AI
-}
-
-enum GamePlatform {
-  STEAM
-  HOYOVERSE
-  PSN
-  XBOX
-  SWITCH
-}
-
-enum MomentStatus {
-  DRAFT
-  PUBLISHED
-  SCHEDULED
-}
-
-enum MomentVisibility {
-  PUBLIC
-  UNLISTED
-  PRIVATE
-}
-
-enum PostLocale {
-  EN
-  ZH
-}
-
-enum PostStatus {
-  DRAFT
-  PUBLISHED
-}
-
-enum SubscriptionBillingCycle {
-  MONTHLY
-  ANNUAL
-  ONE_TIME
-}
-
-enum SyncJobStatus {
-  PENDING
-  RUNNING
-  SUCCESS
-  FAILED
-  PARTIAL
-}
-
-enum UserRole {
-  ADMIN
-  AUTHOR
-  READER
 }

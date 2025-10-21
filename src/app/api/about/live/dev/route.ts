@@ -282,7 +282,7 @@ export async function GET() {
         thisYear: { stars: 0, repos: 0 },
         currentStreak: 0,
       },
-      contributionHeatmap: [],
+      contributionHeatmap: generateMockGitHubHeatmap(),
       activeRepos: [],
       languages: [],
     };
