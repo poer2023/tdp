@@ -60,3 +60,6 @@ notion_public_data.json
 # Local commit documentation
 /doc/*
 !/doc/.gitkeep
+
+# Database backups
+/backups/

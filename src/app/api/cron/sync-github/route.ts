@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { CredentialPlatform } from "@prisma/client";
 import { syncGitHub } from "@/lib/media-sync";
 import { decryptCredential, isEncrypted } from "@/lib/encryption";
 
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
     // Fetch all valid GitHub credentials
     const credentials = await prisma.externalCredential.findMany({
       where: {
-        platform: "GITHUB",
+        platform: CredentialPlatform.GITHUB,
         isValid: true,
       },
     });

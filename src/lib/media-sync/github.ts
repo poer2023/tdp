@@ -16,26 +16,22 @@ export interface GitHubConfig {
 // Resolve Prisma client (supports both default and named exports in tests)
 const prisma = (prismaNamed ?? prismaDefault) as unknown as PrismaClient;
 
-function getJobDelegate(): PrismaClient["syncJobLog"] | PrismaClient["syncJob"] | undefined {
-  const p = prisma as unknown as {
-    syncJobLog?: PrismaClient["syncJobLog"];
-    syncJob?: PrismaClient["syncJob"];
-  };
+function getJobDelegate() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const p: any = prisma as unknown as any;
   return p.syncJobLog ?? p.syncJob;
 }
 
 async function createJobLog(data: Record<string, unknown>) {
   const job = getJobDelegate();
   if (!job?.create) throw new Error("Job delegate not available");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (job.create as any)({ data });
+  return job.create({ data });
 }
 
 async function updateJobLog(where: Record<string, unknown>, data: Record<string, unknown>) {
   const job = getJobDelegate();
   if (!job?.update) return; // In tests, we don't need update to exist
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (job.update as any)({ where, data });
+  return job.update({ where, data });
 }
 
 /**
@@ -148,9 +144,10 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
 
     // 1. Save GitHub Stats snapshot
     try {
-      const ghStats = prisma as unknown as { gitHubStats?: Partial<PrismaClient["gitHubStats"]> };
-      if (ghStats.gitHubStats?.create) {
-        await ghStats.gitHubStats.create({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const p: any = prisma as unknown as any;
+      if (p.gitHubStats?.create) {
+        await p.gitHubStats.create({
           data: {
             commitsWeek: commitsThisWeek,
             reposWeek: reposThisWeek,
@@ -173,12 +170,11 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
 
     // 2. Upsert GitHub Contribution data (365 days)
     try {
-      const ghContribution = prisma as unknown as {
-        gitHubContribution?: Partial<PrismaClient["gitHubContribution"]>;
-      };
-      if (ghContribution.gitHubContribution?.upsert) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const p: any = prisma as unknown as any;
+      if (p.gitHubContribution?.upsert) {
         for (const day of contributionGraph) {
-          await ghContribution.gitHubContribution.upsert({
+          await p.gitHubContribution.upsert({
             where: {
               date: new Date(day.date),
             },
@@ -201,11 +197,12 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
 
     // 3. Update GitHub Repos (mark old repos as inactive, add new ones)
     try {
-      const ghRepo = prisma as unknown as { gitHubRepo?: Partial<PrismaClient["gitHubRepo"]> };
-      if (ghRepo.gitHubRepo) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const p: any = prisma as unknown as any;
+      if (p.gitHubRepo) {
         // Mark all existing repos as inactive first
-        if (ghRepo.gitHubRepo.updateMany) {
-          await ghRepo.gitHubRepo.updateMany({
+        if (p.gitHubRepo.updateMany) {
+          await p.gitHubRepo.updateMany({
             where: {},
             data: { isActive: false },
           });
@@ -232,8 +229,8 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
               };
 
           // Upsert repo
-          if (ghRepo.gitHubRepo.upsert) {
-            await ghRepo.gitHubRepo.upsert({
+          if (p.gitHubRepo.upsert) {
+            await p.gitHubRepo.upsert({
               where: { fullName: repo.full_name },
               update: {
                 name: repo.name,
@@ -267,13 +264,12 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
 
     // 4. Save GitHub Languages snapshot (replace previous snapshot)
     try {
-      const ghLang = prisma as unknown as {
-        gitHubLanguage?: Partial<PrismaClient["gitHubLanguage"]>;
-      };
-      if (ghLang.gitHubLanguage?.deleteMany && ghLang.gitHubLanguage?.createMany) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const p: any = prisma as unknown as any;
+      if (p.gitHubLanguage?.deleteMany && p.gitHubLanguage?.createMany) {
         // Replace previous data to avoid duplicate rows across syncs
-        await ghLang.gitHubLanguage.deleteMany({});
-        await ghLang.gitHubLanguage.createMany({
+        await p.gitHubLanguage.deleteMany({});
+        await p.gitHubLanguage.createMany({
           data: languages.map((lang) => ({
             name: lang.name,
             percentage: lang.percentage,

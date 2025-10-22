@@ -1,26 +1,25 @@
-name: E2E Full Suite (Non-blocking)
+name: E2E Cross-Browser (Weekly)
 
 on:
   schedule:
-    # Run daily at 03:00 UTC for broad coverage with DB
-    - cron: "0 3 * * *"
+    # Every Monday at 04:00 UTC
+    - cron: "0 4 * * 1"
   workflow_dispatch: {}
 
-# Avoid overlapping scheduled runs
 concurrency:
-  group: e2e-full-schedule
+  group: e2e-weekly-browsers
   cancel-in-progress: true
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
-    # Non-blocking by design: surface failures but don't fail the check suite
+    timeout-minutes: 120
     continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
-        shard: ["1/4", "2/4", "3/4", "4/4"]
+        browser: ["chromium", "firefox", "webkit"]
+        shard: ["1/3", "2/3", "3/3"]
 
     services:
       postgres:
@@ -41,7 +40,6 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
       NODE_ENV: test
       NEXTAUTH_SECRET: test-secret-for-e2e-testing-only
-      # Use database-backed paths in app and tests
       E2E_SKIP_DB: "0"
 
     steps:
@@ -72,29 +70,28 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests (Shard ${{ matrix.shard }})
+      - name: Run Playwright tests (Shard ${{ matrix.shard }} | ${{ matrix.browser }})
         run: |
           set -o pipefail
-          SAFE="${{ matrix.shard }}/"
+          SAFE="${{ matrix.browser }}_${{ matrix.shard }}/"
           SAFE=${SAFE//\//_}
-          # Chromium-only for daily coverage; cross-browser covered weekly
-          npx playwright test --project=chromium --reporter=line --shard=${{ matrix.shard }} 2>&1 | tee "ci_e2e_${SAFE}.log"
+          npx playwright test --project=${{ matrix.browser }} --reporter=line --shard=${{ matrix.shard }} 2>&1 | tee "ci_e2e_${SAFE}.log"
 
       - name: Upload shard logs (always)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ci-e2e-logs-${{ strategy.job-index }}
+          name: ci-e2e-weekly-logs-${{ matrix.browser }}-${{ strategy.job-index }}
           path: |
             ci_e2e_*.log
             test-results/**
-          retention-days: 5
+          retention-days: 7
 
       - name: Upload Playwright HTML report (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: ci-e2e-report-${{ strategy.job-index }}
+          name: ci-e2e-weekly-report-${{ matrix.browser }}-${{ strategy.job-index }}
           path: |
             playwright-report/**
-          retention-days: 5
+          retention-days: 7

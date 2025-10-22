@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma";
 import { getGamingSyncService } from "@/lib/gaming/sync-service";
 import { syncBilibili, syncDouban, syncSteam, syncGitHub } from "@/lib/media-sync";
 import { decryptCredential, isEncrypted } from "@/lib/encryption";
+import { CredentialPlatform } from "@prisma/client";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     let syncResult;
 
     switch (credential.platform) {
-      case "STEAM": {
+      case CredentialPlatform.STEAM: {
         // Extract Steam ID from metadata or environment
         const steamId =
           (credential.metadata as { steamId?: string })?.steamId || process.env.STEAM_USER_ID;
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         break;
       }
 
-      case "HOYOVERSE": {
+      case CredentialPlatform.HOYOVERSE: {
         // Extract HoYo UID from metadata or environment
         const hoyoUid = (credential.metadata as { uid?: string })?.uid || process.env.HOYO_UID;
 
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         break;
       }
 
-      case "BILIBILI": {
+      case CredentialPlatform.BILIBILI: {
         // Parse Bilibili cookie
         const cookieParts: Record<string, string> = {};
         credential.value.split(";").forEach((part) => {
@@ -137,7 +138,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         break;
       }
 
-      case "DOUBAN": {
+      case CredentialPlatform.DOUBAN: {
         // Extract Douban user ID from metadata (support both user_id and userId formats)
         const metadata = credential.metadata as { userId?: string; user_id?: string };
         const userId = metadata.userId || metadata.user_id;
@@ -171,7 +172,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         break;
       }
 
-      case "GITHUB": {
+      case CredentialPlatform.GITHUB: {
         // Extract GitHub Personal Access Token from credential value
         const token = isEncrypted(credential.value)
           ? decryptCredential(credential.value)
@@ -198,7 +199,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         break;
       }
 
-      case "JELLYFIN": {
+      case CredentialPlatform.JELLYFIN: {
         return NextResponse.json({ error: "Jellyfin sync not implemented yet" }, { status: 501 });
       }
 

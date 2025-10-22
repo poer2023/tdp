@@ -16,19 +16,14 @@ async function fetchGitHubDataFromDB(): Promise<DevData | null> {
   try {
     console.log("[GitHub DB] Fetching synced GitHub data from database");
 
-    const ghStats = prisma as unknown as { gitHubStats?: Partial<PrismaClient["gitHubStats"]> };
-    const ghContribution = prisma as unknown as {
-      gitHubContribution?: Partial<PrismaClient["gitHubContribution"]>;
-    };
-    const ghRepo = prisma as unknown as { gitHubRepo?: Partial<PrismaClient["gitHubRepo"]> };
-    const ghLanguage = prisma as unknown as {
-      gitHubLanguage?: Partial<PrismaClient["gitHubLanguage"]>;
-    };
+    // Access optional delegates dynamically to avoid type errors when models are absent
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const p: any = prisma as unknown as any;
 
     // Fetch latest stats snapshot
     let latestStats = null;
-    if (ghStats.gitHubStats?.findFirst) {
-      latestStats = await ghStats.gitHubStats.findFirst({
+    if (p.gitHubStats?.findFirst) {
+      latestStats = await p.gitHubStats.findFirst({
         orderBy: { syncedAt: "desc" },
       });
     }
@@ -40,8 +35,8 @@ async function fetchGitHubDataFromDB(): Promise<DevData | null> {
 
     // Fetch contribution heatmap (365 days)
     let contributions: Array<{ date: Date; value: number }> = [];
-    if (ghContribution.gitHubContribution?.findMany) {
-      const contributionRecords = await ghContribution.gitHubContribution.findMany({
+    if (p.gitHubContribution?.findMany) {
+      const contributionRecords = await p.gitHubContribution.findMany({
         orderBy: { date: "desc" },
         take: 365,
       });
@@ -59,8 +54,8 @@ async function fetchGitHubDataFromDB(): Promise<DevData | null> {
       commitsThisMonth: number;
       lastCommit: { date: Date; message: string };
     }> = [];
-    if (ghRepo.gitHubRepo?.findMany) {
-      const repoRecords = await ghRepo.gitHubRepo.findMany({
+    if (p.gitHubRepo?.findMany) {
+      const repoRecords = await p.gitHubRepo.findMany({
         where: { isActive: true },
         orderBy: { syncedAt: "desc" },
         take: 5,
@@ -88,9 +83,9 @@ async function fetchGitHubDataFromDB(): Promise<DevData | null> {
 
     // Fetch latest language statistics (dedupe by name, keep newest, max 4)
     const languages: Array<{ name: string; percentage: number; hours: number }> = [];
-    if (ghLanguage.gitHubLanguage?.findMany) {
+    if (p.gitHubLanguage?.findMany) {
       // Fetch a window of recent records to ensure we can dedupe to unique names
-      const langRecords = await ghLanguage.gitHubLanguage.findMany({
+      const langRecords = await p.gitHubLanguage.findMany({
         orderBy: { syncedAt: "desc" },
         take: 50,
       });
