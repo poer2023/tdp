@@ -3,8 +3,6 @@ import { unstable_cache } from "next/cache";
 import prismaDefault, { prisma as prismaNamed } from "@/lib/prisma";
 import type { PrismaClient } from "@prisma/client";
 import type { DevData } from "@/types/live-data";
-import { GitHubClient } from "@/lib/github-client";
-import { decryptCredential, isEncrypted } from "@/lib/encryption";
 
 // Resolve Prisma client (supports both default and named exports)
 const prisma = (prismaNamed ?? prismaDefault) as unknown as PrismaClient;

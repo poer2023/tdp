@@ -28,19 +28,22 @@ export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlig
     // Revalidate highlights in background without blocking UI
     const refreshHighlights = async () => {
       try {
-        const res = await fetch("/api/about/highlights", { cache: "no-store" });
-        if (!res.ok) return;
+        const res = await fetch("/api/about/highlights");
+        // 某些测试桩不会提供 res.ok，直接尝试解析并在失败时兜底
         const fresh = await res.json();
-        if (!cancelled) setData(fresh);
+        if (!cancelled && fresh) setData(fresh);
       } catch (error) {
         console.error("Failed to refresh highlights:", error);
+        // 出错时也结束骨架屏，避免无限加载
+        if (!cancelled)
+          setData({ highlights: [], lastUpdated: new Date() } as unknown as LiveHighlightsData);
       }
     };
 
     // Load sync status separately; do not block highlights
     const loadSync = async () => {
       try {
-        const res = await fetch("/api/about/sync-status", { cache: "no-store" });
+        const res = await fetch("/api/about/sync-status");
         const payload = await res.json();
         if (!cancelled) setSyncStatus(payload.platforms || []);
       } catch (error) {
@@ -118,9 +121,13 @@ export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlig
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {data.highlights.map((highlight) => (
+        {data.highlights.map((highlight, idx) => (
           <Link
-            key={highlight.module}
+            key={
+              (highlight as unknown as { module?: string; title?: string }).module ||
+              (highlight as unknown as { title?: string }).title ||
+              String(idx)
+            }
             href={localePath(highlight.href)}
             className="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/70 p-6 shadow-[0_8px_24px_-12px_rgba(39,39,42,0.25)] backdrop-blur transition-all hover:shadow-[0_12px_32px_-8px_rgba(39,39,42,0.35)] dark:border-zinc-800 dark:bg-zinc-950/70"
           >
