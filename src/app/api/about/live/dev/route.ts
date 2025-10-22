@@ -10,170 +10,145 @@ import { decryptCredential, isEncrypted } from "@/lib/encryption";
 const prisma = (prismaNamed ?? prismaDefault) as unknown as PrismaClient;
 
 /**
- * Fetch real GitHub data using credentials from database
+ * Fetch GitHub data from database (synced data)
  */
-async function fetchRealGitHubData(): Promise<DevData | null> {
+async function fetchGitHubDataFromDB(): Promise<DevData | null> {
   try {
-    // Find GitHub credential from database
-    const credentials = await prisma.externalCredential.findMany({
-      where: {
-        platform: "GITHUB",
-        isValid: true,
-      },
-      orderBy: {
-        lastUsedAt: "desc",
-      },
-      take: 1,
-    });
+    console.log("[GitHub DB] Fetching synced GitHub data from database");
 
-    if (credentials.length === 0) {
-      console.log("[GitHub API] No valid GitHub credentials found in database");
+    const ghStats = prisma as unknown as { gitHubStats?: Partial<PrismaClient["gitHubStats"]> };
+    const ghContribution = prisma as unknown as {
+      gitHubContribution?: Partial<PrismaClient["gitHubContribution"]>;
+    };
+    const ghRepo = prisma as unknown as { gitHubRepo?: Partial<PrismaClient["gitHubRepo"]> };
+    const ghLanguage = prisma as unknown as {
+      gitHubLanguage?: Partial<PrismaClient["gitHubLanguage"]>;
+    };
+
+    // Fetch latest stats snapshot
+    let latestStats = null;
+    if (ghStats.gitHubStats?.findFirst) {
+      latestStats = await ghStats.gitHubStats.findFirst({
+        orderBy: { syncedAt: "desc" },
+      });
+    }
+
+    if (!latestStats) {
+      console.log("[GitHub DB] No stats data found in database");
       return null;
     }
 
-    const credential = credentials[0];
-    if (!credential) {
-      console.log("[GitHub API] Credential is undefined");
-      return null;
+    // Fetch contribution heatmap (365 days)
+    let contributions: Array<{ date: Date; value: number }> = [];
+    if (ghContribution.gitHubContribution?.findMany) {
+      const contributionRecords = await ghContribution.gitHubContribution.findMany({
+        orderBy: { date: "desc" },
+        take: 365,
+      });
+      contributions = contributionRecords.map((c: { date: Date; value: number }) => ({
+        date: c.date,
+        value: c.value,
+      }));
     }
 
-    // Decrypt credential if encrypted
-    const token = isEncrypted(credential.value)
-      ? decryptCredential(credential.value)
-      : credential.value;
+    // Fetch active repos
+    let activeRepos: Array<{
+      name: string;
+      fullName: string;
+      language: string | null;
+      commitsThisMonth: number;
+      lastCommit: { date: Date; message: string };
+    }> = [];
+    if (ghRepo.gitHubRepo?.findMany) {
+      const repoRecords = await ghRepo.gitHubRepo.findMany({
+        where: { isActive: true },
+        orderBy: { syncedAt: "desc" },
+        take: 5,
+      });
+      activeRepos = repoRecords.map(
+        (r: {
+          name: string;
+          fullName: string;
+          language: string | null;
+          commitsThisMonth: number;
+          lastCommitDate: Date;
+          lastCommitMsg: string;
+        }) => ({
+          name: r.name,
+          fullName: r.fullName,
+          language: r.language,
+          commitsThisMonth: r.commitsThisMonth,
+          lastCommit: {
+            date: r.lastCommitDate,
+            message: r.lastCommitMsg,
+          },
+        })
+      );
+    }
 
-    // Extract username from metadata if available
-    const metadata = credential.metadata as { username?: string } | null;
-    const username = metadata?.username;
+    // Fetch latest language statistics (dedupe by name, keep newest, max 4)
+    const languages: Array<{ name: string; percentage: number; hours: number }> = [];
+    if (ghLanguage.gitHubLanguage?.findMany) {
+      // Fetch a window of recent records to ensure we can dedupe to unique names
+      const langRecords = await ghLanguage.gitHubLanguage.findMany({
+        orderBy: { syncedAt: "desc" },
+        take: 50,
+      });
 
-    // Initialize GitHub client
-    const client = new GitHubClient({ token, username });
-
-    // Calculate time periods
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
-
-    // Fetch data in parallel
-    const [
-      activeRepos,
-      contributionGraph,
-      currentStreak,
-      commitsThisWeek,
-      commitsThisMonth,
-      totalStars,
-      prThisMonth,
-      allRepos,
-    ] = await Promise.all([
-      client.getActiveRepositories(5),
-      client.getContributionGraph(),
-      client.getCurrentStreak(),
-      client.getCommitCount({ since: oneWeekAgo }),
-      client.getCommitCount({ since: oneMonthAgo }),
-      client.getTotalStars(),
-      client.getPullRequests({ state: "all", since: oneMonthAgo }),
-      client.getRepositories({ perPage: 100 }),
-    ]);
-
-    // Count repos with activity in different periods
-    const reposThisWeek = activeRepos.filter((repo) => {
-      const pushedAt = new Date(repo.pushed_at || 0);
-      return pushedAt >= oneWeekAgo;
-    }).length;
-
-    const reposThisYear = allRepos.filter((repo) => {
-      const createdAt = new Date(repo.created_at);
-      return createdAt >= oneYearAgo;
-    }).length;
-
-    // Calculate language statistics from active repos
-    const languageCounts: Record<string, number> = {};
-    activeRepos.forEach((repo) => {
-      if (repo.language) {
-        languageCounts[repo.language] = (languageCounts[repo.language] || 0) + 1;
+      const seen = new Set<string>();
+      for (const l of langRecords) {
+        const name = (l as { name: string }).name;
+        if (name && !seen.has(name)) {
+          seen.add(name);
+          languages.push({
+            name,
+            percentage: (l as { percentage: number }).percentage,
+            hours: (l as { hours: number }).hours,
+          });
+        }
+        if (languages.length >= 4) break;
       }
-    });
+    }
 
-    const totalLangRepos = Object.values(languageCounts).reduce((sum, count) => sum + count, 0);
-    const languages = Object.entries(languageCounts)
-      .map(([name, count]) => ({
-        name,
-        percentage: Math.round((count / totalLangRepos) * 100),
-        hours: parseFloat(((count / totalLangRepos) * 35).toFixed(1)), // Estimate hours
-      }))
-      .sort((a, b) => b.percentage - a.percentage)
-      .slice(0, 4);
-
-    // Prepare active repos data
-    const activeReposData = await Promise.all(
-      activeRepos.map(async (repo) => {
-        const commits = await client
-          .getRepoCommits(repo.owner.login, repo.name, {
-            since: oneMonthAgo.toISOString(),
-            perPage: 1,
-          })
-          .catch(() => []);
-
-        const commitsCount = await client
-          .getRepoCommits(repo.owner.login, repo.name, {
-            since: oneMonthAgo.toISOString(),
-            perPage: 100,
-          })
-          .then((c) => c.length)
-          .catch(() => 0);
-
-        return {
-          name: repo.name,
-          fullName: repo.full_name,
-          language: repo.language,
-          commitsThisMonth: commitsCount,
-          lastCommit: commits[0]
-            ? {
-                date: new Date(commits[0].commit.committer.date),
-                message: commits[0].commit.message.split("\n")[0] || "",
-              }
-            : {
-                date: new Date(repo.pushed_at || repo.updated_at),
-                message: "No recent commits",
-              },
-        };
-      })
-    );
+    // Derive a corrected streak from contributions to safeguard against old snapshots
+    let derivedStreak = 0;
+    if (contributions.length > 0) {
+      const sortedByDate = [...contributions].sort((a, b) => b.date.getTime() - a.date.getTime());
+      const startIndex = sortedByDate[0]?.value === 0 ? 1 : 0;
+      for (let i = startIndex; i < sortedByDate.length; i++) {
+        const day = sortedByDate[i];
+        if (!day) break;
+        if (day.value > 0) derivedStreak++;
+        else break;
+      }
+    }
 
     const data: DevData = {
       stats: {
         thisWeek: {
-          commits: commitsThisWeek,
-          repos: reposThisWeek,
+          commits: latestStats.commitsWeek,
+          repos: latestStats.reposWeek,
         },
         thisMonth: {
-          commits: commitsThisMonth,
-          pullRequests: prThisMonth,
+          commits: latestStats.commitsMonth,
+          pullRequests: latestStats.prsMonth,
         },
         thisYear: {
-          stars: totalStars,
-          repos: reposThisYear,
+          stars: latestStats.starsYear,
+          repos: latestStats.reposYear,
         },
-        currentStreak,
+        // Prefer stored snapshot but correct it when contributions imply a longer streak
+        currentStreak: Math.max(latestStats.currentStreak, derivedStreak),
       },
-      contributionHeatmap: contributionGraph,
-      activeRepos: activeReposData,
-      languages,
+      contributionHeatmap: contributions,
+      activeRepos,
+      languages: languages.length > 0 ? languages : undefined,
     };
 
-    // Update credential usage stats
-    await prisma.externalCredential.update({
-      where: { id: credential.id },
-      data: {
-        lastUsedAt: new Date(),
-        usageCount: { increment: 1 },
-      },
-    });
-
+    console.log("[GitHub DB] Successfully fetched GitHub data from database");
     return data;
   } catch (error) {
-    console.error("[GitHub API] Error fetching real data:", error);
+    console.error("[GitHub DB] Error fetching data from database:", error);
     return null;
   }
 }
@@ -183,7 +158,7 @@ async function fetchRealGitHubData(): Promise<DevData | null> {
  */
 const getCachedGitHubData = unstable_cache(
   async () => {
-    return await fetchRealGitHubData();
+    return await fetchGitHubDataFromDB();
   },
   ["github-dev-data"],
   {

@@ -143,6 +143,14 @@ export class GitHubClient {
   }
 
   /**
+   * Get repository languages (byte size per language)
+   * https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-languages
+   */
+  async getRepoLanguages(owner: string, repo: string): Promise<Record<string, number>> {
+    return this.fetch<Record<string, number>>(`/repos/${owner}/${repo}/languages`);
+  }
+
+  /**
    * Get user's total stars received
    */
   async getTotalStars(): Promise<number> {
@@ -216,13 +224,23 @@ export class GitHubClient {
 
     // Sort by date descending
     const sorted = contributions.sort((a, b) => b.date.getTime() - a.date.getTime());
+    if (sorted.length === 0) return 0;
+
+    // If "today" has 0 contributions, ignore it and start counting from yesterday.
+    // This prevents an unfinished day from breaking an otherwise valid streak.
+    let startIndex = 0;
+    if (sorted[0]?.value === 0) {
+      startIndex = 1;
+    }
 
     let streak = 0;
-    for (const day of sorted) {
+    for (let i = startIndex; i < sorted.length; i++) {
+      const day = sorted[i];
+      if (!day) break;
       if (day.value > 0) {
         streak++;
       } else {
-        break;
+        break; // stop at the first zero before today/yesterday chain
       }
     }
 

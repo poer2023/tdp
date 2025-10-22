@@ -9,7 +9,12 @@ import type { Prisma } from "@prisma/client";
 import { fetchBilibiliHistory, normalizeBilibiliItem, type BilibiliConfig } from "./bilibili";
 import { fetchDoubanWatched, normalizeDoubanItem, type DoubanConfig } from "./douban";
 import { fetchSteamRecentlyPlayed, normalizeSteamGame, type SteamConfig } from "./steam";
+import { syncGitHub, type GitHubConfig } from "./github";
 import { decryptCredential, isEncrypted } from "../encryption";
+
+// Re-export GitHub types and functions for external use
+export type { GitHubConfig };
+export { syncGitHub };
 
 export interface SyncResult {
   platform: string;

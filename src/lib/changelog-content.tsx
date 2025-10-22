@@ -30,6 +30,23 @@ export const changelogContent: Record<ChangelogLocale, ChangelogContent> = {
       "Building in public - tracking features, improvements, and lessons learned along the way.",
     entries: [
       {
+        version: "v1.5.0",
+        date: "October 2025",
+        title: "GitHub Developer Activity Sync",
+        description:
+          "Integrated GitHub REST API to automatically sync developer activity statistics, contributions, repositories, and coding languages to the live developer dashboard.",
+        changes: [
+          "✅ Implemented GitHub activity history synchronization",
+          "✅ Added real-time developer statistics tracking (commits, PRs, repos, stars)",
+          "✅ Integrated 365-day contribution heatmap visualization",
+          "✅ Added active repositories and programming languages display",
+        ],
+        images: [
+          "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=500&h=300&fit=crop",
+          "https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=500&h=300&fit=crop",
+        ],
+      },
+      {
         version: "v1.4.0",
         date: "January 2025",
         title: "Steam Game Sync Integration",
@@ -121,6 +138,23 @@ export const changelogContent: Record<ChangelogLocale, ChangelogContent> = {
     pageTitle: "开发日志",
     pageSubtitle: "公开构建 - 记录功能迭代、改进优化和经验教训。",
     entries: [
+      {
+        version: "v1.5.0",
+        date: "2025年10月",
+        title: "GitHub 开发者活动同步",
+        description:
+          "接入 GitHub REST API，自动同步开发者活动统计、贡献记录、仓库信息和编程语言数据到实时开发者动态面板。",
+        changes: [
+          "✅ 实现 GitHub 活动历史同步功能",
+          "✅ 添加实时开发者统计追踪（commits、PRs、repos、stars）",
+          "✅ 集成 365 天贡献热力图可视化",
+          "✅ 添加活跃仓库和编程语言展示",
+        ],
+        images: [
+          "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=500&h=300&fit=crop",
+          "https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=500&h=300&fit=crop",
+        ],
+      },
       {
         version: "v1.4.0",
         date: "2025年1月",
@@ -214,7 +248,7 @@ export function generateTimelineData(entries: ChangelogEntry[]) {
     id: `${entry.version}-${entry.date}`,
     title: entry.date,
     content: (
-      <div>
+      <div key={`${entry.version}-${entry.date}`}>
         <div className="mb-4">
           <h4 className="mb-1 text-lg font-semibold text-neutral-900 md:text-xl dark:text-neutral-100">
             {entry.version} - {entry.title}

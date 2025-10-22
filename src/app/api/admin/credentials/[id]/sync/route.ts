@@ -6,7 +6,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getGamingSyncService } from "@/lib/gaming/sync-service";
-import { syncBilibili, syncDouban, syncSteam } from "@/lib/media-sync";
+import { syncBilibili, syncDouban, syncSteam, syncGitHub } from "@/lib/media-sync";
+import { decryptCredential, isEncrypted } from "@/lib/encryption";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
@@ -155,6 +156,33 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           },
           credential.id
         );
+
+        // Update credential usage
+        await prisma.externalCredential.update({
+          where: { id },
+          data: {
+            usageCount: { increment: 1 },
+            lastUsedAt: new Date(),
+            failureCount: syncResult.success ? 0 : { increment: 1 },
+            updatedAt: new Date(),
+          },
+        });
+
+        break;
+      }
+
+      case "GITHUB": {
+        // Extract GitHub Personal Access Token from credential value
+        const token = isEncrypted(credential.value)
+          ? decryptCredential(credential.value)
+          : credential.value;
+
+        // Extract username from metadata if available
+        const metadata = credential.metadata as { username?: string } | null;
+        const username = metadata?.username;
+
+        // Run GitHub sync
+        syncResult = await syncGitHub({ token, username }, credential.id);
 
         // Update credential usage
         await prisma.externalCredential.update({
