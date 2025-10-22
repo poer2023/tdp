@@ -149,16 +149,18 @@ async function fetchGitHubDataFromDB(): Promise<DevData | null> {
 /**
  * Cached GitHub data fetcher (15 minutes cache)
  */
-const getCachedGitHubData = unstable_cache(
-  async () => {
-    return await fetchGitHubDataFromDB();
-  },
-  ["github-dev-data"],
-  {
-    revalidate: 900, // Cache for 15 minutes
-    tags: ["github-dev-data"],
-  }
-);
+const getGitHubDataBase = async () => {
+  return await fetchGitHubDataFromDB();
+};
+
+// In test/CI environments, skip caching to avoid incrementalCache requirement
+const getCachedGitHubData =
+  process.env.NODE_ENV === "test" || process.env.CI === "true"
+    ? getGitHubDataBase
+    : unstable_cache(getGitHubDataBase, ["github-dev-data"], {
+        revalidate: 900, // Cache for 15 minutes
+        tags: ["github-dev-data"],
+      });
 
 /**
  * Generate mock GitHub heatmap (fallback)

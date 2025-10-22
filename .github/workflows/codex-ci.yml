@@ -81,7 +81,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          codex --mode auto-edit \
+          codex --model gpt-4 \
             "Read ci/last-failure.log; reproduce locally per AGENTS.md; fix only what's needed for failing specs; run npm run lint && npm run type-check && npx playwright test --reporter=line; keep changes minimal and explain in PR body."
 
       - name: Verify after edits
