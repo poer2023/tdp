@@ -7,6 +7,7 @@ import type { LiveHighlightsData } from "@/types/live-data";
 
 interface LiveHighlightsSectionProps {
   locale: "en" | "zh";
+  initialHighlights?: LiveHighlightsData;
 }
 
 type SyncStatus = {
@@ -15,28 +16,46 @@ type SyncStatus = {
   status: string;
 };
 
-export function LiveHighlightsSection({ locale }: LiveHighlightsSectionProps) {
-  const [data, setData] = useState<LiveHighlightsData | null>(null);
+export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlightsSectionProps) {
+  // Render highlights instantly via SSR-provided data
+  const [data, setData] = useState<LiveHighlightsData | null>(initialHighlights ?? null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [syncLoading, setSyncLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch highlights and sync status in parallel
-    Promise.all([
-      fetch("/api/about/highlights").then((res) => res.json()),
-      fetch("/api/about/sync-status")
-        .then((res) => res.json())
-        .catch(() => ({ platforms: [] })),
-    ])
-      .then(([highlightsData, syncData]) => {
-        setData(highlightsData);
-        setSyncStatus(syncData.platforms || []);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch live highlights:", error);
-        setLoading(false);
-      });
+    let cancelled = false;
+
+    // Revalidate highlights in background without blocking UI
+    const refreshHighlights = async () => {
+      try {
+        const res = await fetch("/api/about/highlights", { cache: "no-store" });
+        if (!res.ok) return;
+        const fresh = await res.json();
+        if (!cancelled) setData(fresh);
+      } catch (error) {
+        console.error("Failed to refresh highlights:", error);
+      }
+    };
+
+    // Load sync status separately; do not block highlights
+    const loadSync = async () => {
+      try {
+        const res = await fetch("/api/about/sync-status", { cache: "no-store" });
+        const payload = await res.json();
+        if (!cancelled) setSyncStatus(payload.platforms || []);
+      } catch (error) {
+        console.error("Failed to load sync status:", error);
+      } finally {
+        if (!cancelled) setSyncLoading(false);
+      }
+    };
+
+    refreshHighlights();
+    loadSync();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const t =
@@ -63,7 +82,7 @@ export function LiveHighlightsSection({ locale }: LiveHighlightsSectionProps) {
 
   const localePath = (path: string) => `/${locale}${path}`;
 
-  if (loading) {
+  if (!data) {
     return (
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-baseline md:justify-between">
@@ -132,7 +151,12 @@ export function LiveHighlightsSection({ locale }: LiveHighlightsSectionProps) {
       </div>
 
       {/* Sync Status Indicator */}
-      {syncStatus.length > 0 && (
+      {/* Sync status (loads progressively) */}
+      {syncLoading ? (
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <div className="h-4 w-40 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+        </div>
+      ) : syncStatus.length > 0 ? (
         <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
           <div className="flex items-center justify-between">
             <div className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -171,7 +195,7 @@ export function LiveHighlightsSection({ locale }: LiveHighlightsSectionProps) {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* View Full Dashboard Button */}
       <div className="pt-4 text-center">

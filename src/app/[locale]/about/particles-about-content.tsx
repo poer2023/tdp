@@ -7,6 +7,7 @@ import { Particles } from "@/components/ui/particles";
 import { useTheme } from "@/hooks/use-theme";
 import { LiveHighlightsSection } from "@/components/about/live-highlights-section";
 import type { AboutLocale } from "@/lib/about-content";
+import type { LiveHighlightsData } from "@/types/live-data";
 
 type AboutContentData = {
   tag: string;
@@ -42,9 +43,15 @@ interface ParticlesAboutContentProps {
   data: AboutContentData;
   locale: AboutLocale;
   layoutClass: string;
+  initialHighlights?: LiveHighlightsData;
 }
 
-export function ParticlesAboutContent({ data, locale, layoutClass }: ParticlesAboutContentProps) {
+export function ParticlesAboutContent({
+  data,
+  locale,
+  layoutClass,
+  initialHighlights,
+}: ParticlesAboutContentProps) {
   const { theme } = useTheme();
   const [color, setColor] = useState("#000000");
 
@@ -115,7 +122,7 @@ export function ParticlesAboutContent({ data, locale, layoutClass }: ParticlesAb
         </section>
 
         {/* Live Updates Section */}
-        <LiveHighlightsSection locale={locale} />
+        <LiveHighlightsSection locale={locale} initialHighlights={initialHighlights} />
 
         <section className="space-y-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-baseline md:justify-between">
