@@ -7,6 +7,7 @@
 .github/workflows/deploy-only.yml
 .github/workflows/deploy.yml
 .github/workflows/docker-publish.yml
+.github/workflows/e2e-weekly-browsers.yml
 .github/workflows/e2e.yml
 .github/workflows/prettier-format.yml
 .github/workflows/sync-gaming-data.yml
