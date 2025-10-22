@@ -31,7 +31,7 @@ COPY prisma ./prisma
 CMD ["npx", "prisma", "migrate", "deploy"]
 
 # === Production Stage: Runtime environment ===
-FROM cgr.dev/chainguard/node:22 AS runner
+FROM cgr.dev/chainguard/node:latest AS runner
 ENV NODE_ENV=production
 ENV HUSKY=0
 ENV HOSTNAME=0.0.0.0
