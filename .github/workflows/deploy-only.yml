@@ -42,6 +42,8 @@ jobs:
       ENV_MAX_UPLOAD_SIZE_MB: ${{ secrets.ENV_MAX_UPLOAD_SIZE_MB }}
       ENV_STORAGE_DRIVER: ${{ secrets.ENV_STORAGE_DRIVER }}
       ENV_LOG_LEVEL: ${{ secrets.ENV_LOG_LEVEL }}
+      # Encryption key for credentials (64 hex chars)
+      ENV_CREDENTIAL_ENCRYPTION_KEY: ${{ secrets.ENV_CREDENTIAL_ENCRYPTION_KEY }}
 
     steps:
       - name: Check required deploy secrets
@@ -66,7 +68,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
-          envs: IMAGE_TAG,GHCR_USERNAME,GHCR_TOKEN,PROJECT_DIR,ENV_DATABASE_URL,ENV_NEXTAUTH_SECRET,ENV_NEXTAUTH_URL,ENV_GOOGLE_CLIENT_ID,ENV_GOOGLE_CLIENT_SECRET,ENV_SITE_NAME,ENV_SITE_TAGLINE,ENV_MAX_UPLOAD_SIZE_MB,ENV_STORAGE_DRIVER,ENV_LOG_LEVEL
+          envs: IMAGE_TAG,GHCR_USERNAME,GHCR_TOKEN,PROJECT_DIR,ENV_DATABASE_URL,ENV_NEXTAUTH_SECRET,ENV_NEXTAUTH_URL,ENV_GOOGLE_CLIENT_ID,ENV_GOOGLE_CLIENT_SECRET,ENV_SITE_NAME,ENV_SITE_TAGLINE,ENV_MAX_UPLOAD_SIZE_MB,ENV_STORAGE_DRIVER,ENV_LOG_LEVEL,ENV_CREDENTIAL_ENCRYPTION_KEY
           script: |
             set -eo pipefail
             echo "Deploying image tag: ${IMAGE_TAG:-latest}"
@@ -80,6 +82,7 @@ jobs:
             NEXTAUTH_URL="${ENV_NEXTAUTH_URL}"
             GOOGLE_CLIENT_ID="${ENV_GOOGLE_CLIENT_ID:-}"
             GOOGLE_CLIENT_SECRET="${ENV_GOOGLE_CLIENT_SECRET:-}"
+            CREDENTIAL_ENCRYPTION_KEY="${ENV_CREDENTIAL_ENCRYPTION_KEY:-}"
             SITE_NAME="${ENV_SITE_NAME:-Hao · 全栈博客}"
             SITE_TAGLINE="${ENV_SITE_TAGLINE:-清新简约的个人博客，记录代码与生活的灵感}"
             MAX_UPLOAD_SIZE_MB="${ENV_MAX_UPLOAD_SIZE_MB:-8}"
