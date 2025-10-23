@@ -5,6 +5,7 @@
 
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
+import { encryptCredential, isEncrypted } from "@/lib/encryption";
 import { CredentialForm } from "@/components/admin/credential-form";
 import { t } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
@@ -34,12 +35,14 @@ async function createCredential(formData: FormData) {
     }
   }
 
+  const storedValue = isEncrypted(value) ? value : encryptCredential(value);
+
   await prisma.externalCredential.create({
     data: {
       id,
       platform: platform as CredentialPlatform,
       type: type as CredentialType,
-      value,
+      value: storedValue,
       metadata,
       isValid: true,
       updatedAt: new Date(),

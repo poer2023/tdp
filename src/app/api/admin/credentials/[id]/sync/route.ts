@@ -46,8 +46,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           );
         }
 
-        // Use API key from database credential
-        const apiKey = credential.value;
+        // Resolve API key (supports encrypted/plaintext)
+        const apiKey = isEncrypted(credential.value)
+          ? decryptCredential(credential.value)
+          : credential.value;
 
         // Run both gaming sync (for SteamProfile) and media sync (for MediaWatch) in parallel
         const [gamingSyncResult, mediaSyncResult] = await Promise.all([
@@ -106,9 +108,14 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       }
 
       case CredentialPlatform.BILIBILI: {
+        // Resolve cookie (supports encrypted/plaintext)
+        const cookieValue = isEncrypted(credential.value)
+          ? decryptCredential(credential.value)
+          : credential.value;
+
         // Parse Bilibili cookie
         const cookieParts: Record<string, string> = {};
-        credential.value.split(";").forEach((part) => {
+        cookieValue.split(";").forEach((part) => {
           const [key, value] = part.trim().split("=");
           if (key && value) {
             cookieParts[key] = value;
@@ -150,10 +157,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           );
         }
 
+        // Resolve cookie (supports encrypted/plaintext)
+        const cookieValue = isEncrypted(credential.value)
+          ? decryptCredential(credential.value)
+          : credential.value;
+
         syncResult = await syncDouban(
           {
             userId,
-            cookie: credential.value,
+            cookie: cookieValue,
           },
           credential.id
         );

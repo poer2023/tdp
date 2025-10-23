@@ -531,6 +531,7 @@ enum CredentialType {
   COOKIE
   API_KEY
   OAUTH_TOKEN
+  PERSONAL_ACCESS_TOKEN
 }
 
 // Infrastructure Monitoring Models

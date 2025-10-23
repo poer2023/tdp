@@ -5,6 +5,7 @@
 
 import { redirect, notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
+import { encryptCredential, isEncrypted } from "@/lib/encryption";
 import { CredentialForm } from "@/components/admin/credential-form";
 import { CredentialActions } from "@/components/admin/credential-actions";
 import { DeleteCredentialButton } from "@/components/admin/delete-credential-button";
@@ -33,12 +34,14 @@ async function updateCredential(id: string, formData: FormData) {
     }
   }
 
+  const storedValue = isEncrypted(value) ? value : encryptCredential(value);
+
   await prisma.externalCredential.update({
     where: { id },
     data: {
       platform,
       type,
-      value,
+      value: storedValue,
       metadata,
       updatedAt: new Date(),
     },
