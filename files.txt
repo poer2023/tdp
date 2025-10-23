@@ -10,6 +10,7 @@
 .github/workflows/e2e-weekly-browsers.yml
 .github/workflows/e2e.yml
 .github/workflows/prettier-format.yml
+.github/workflows/server-logs.yml
 README.md
 docker-compose.yml
 docs/ADMIN_GUIDE.md
