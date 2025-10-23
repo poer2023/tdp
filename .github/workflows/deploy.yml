@@ -107,12 +107,11 @@ jobs:
             # Ensure .env exists and contains encryption key if provided via secrets
             if [ -n "${ENV_CREDENTIAL_ENCRYPTION_KEY:-}" ]; then
               touch .env
-              # Insert or update CREDENTIAL_ENCRYPTION_KEY without echoing the value back to logs
-              if grep -q '^CREDENTIAL_ENCRYPTION_KEY=' .env; then
-                sed -i.bak "s/^CREDENTIAL_ENCRYPTION_KEY=.*/CREDENTIAL_ENCRYPTION_KEY=${ENV_CREDENTIAL_ENCRYPTION_KEY}/" .env && rm -f .env.bak
-              else
-                printf '\nCREDENTIAL_ENCRYPTION_KEY=%s\n' "${ENV_CREDENTIAL_ENCRYPTION_KEY}" >> .env
-              fi
+              # Safely replace existing key (avoid sed -i portability issues)
+              tmpfile=".env.tmp.$$"
+              grep -v '^CREDENTIAL_ENCRYPTION_KEY=' .env > "$tmpfile" 2>/dev/null || true
+              mv "$tmpfile" .env
+              printf '\nCREDENTIAL_ENCRYPTION_KEY=%s\n' "${ENV_CREDENTIAL_ENCRYPTION_KEY}" >> .env
               # Minimal sanity check (length only, do not print the value)
               if [ "${#ENV_CREDENTIAL_ENCRYPTION_KEY}" -ne 64 ]; then
                 echo "❌ ENV_CREDENTIAL_ENCRYPTION_KEY must be 64 hex chars" >&2
