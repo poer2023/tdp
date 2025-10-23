@@ -532,3 +532,52 @@ enum CredentialType {
   API_KEY
   OAUTH_TOKEN
 }
+
+// Infrastructure Monitoring Models
+model Monitor {
+  id            String            @id @default(cuid())
+  name          String
+  type          MonitorType       @default(HTTP)
+  url           String
+  uptimeKumaId  Int               @unique
+  interval      Int               @default(60) // in seconds
+  description   String?
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  heartbeats    MonitorHeartbeat[]
+
+  @@index([uptimeKumaId])
+  @@index([isActive])
+}
+
+model MonitorHeartbeat {
+  id           String        @id @default(cuid())
+  monitorId    String
+  status       MonitorStatus
+  responseTime Int?          // in milliseconds
+  statusCode   Int?
+  message      String?
+  timestamp    DateTime      @default(now())
+  createdAt    DateTime      @default(now())
+  monitor      Monitor       @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId, timestamp])
+  @@index([timestamp])
+  @@index([status])
+}
+
+enum MonitorType {
+  HTTP
+  TCP
+  PING
+  DNS
+  KEYWORD
+}
+
+enum MonitorStatus {
+  UP
+  DOWN
+  PENDING
+  MAINTENANCE
+}

@@ -5,6 +5,26 @@ import type { MediaData, JellyfinItem, MediaApiParams } from "@/types/live-data"
 import type { Prisma } from "@prisma/client";
 
 /**
+ * Convert external image URL to proxied URL to bypass anti-hotlinking
+ */
+function getProxiedImageUrl(imageUrl: string | undefined): string | undefined {
+  if (!imageUrl) return undefined;
+
+  // Only proxy Bilibili and Douban images
+  const needsProxy = imageUrl.includes("hdslb.com") || imageUrl.includes("doubanio.com");
+
+  if (!needsProxy) return imageUrl;
+
+  // Ensure HTTPS
+  const httpsUrl = imageUrl.startsWith("http://")
+    ? imageUrl.replace("http://", "https://")
+    : imageUrl;
+
+  // Return proxied URL
+  return `/api/image-proxy?url=${encodeURIComponent(httpsUrl)}`;
+}
+
+/**
  * Cached statistics calculation function
  * Reduces database queries by caching stats for 15 minutes
  */
@@ -223,7 +243,7 @@ export async function GET(request: Request) {
       id: record.id,
       type: record.type as "movie" | "series" | "episode",
       title: record.title,
-      poster: record.cover ?? undefined,
+      poster: getProxiedImageUrl(record.cover ?? undefined),
       url: record.url ?? undefined,
       watchedAt: record.watchedAt,
       progress: record.progress ?? undefined,
@@ -250,7 +270,7 @@ export async function GET(request: Request) {
       id: record.id,
       type: record.type as "movie" | "series" | "episode",
       title: record.title,
-      poster: record.cover ?? undefined,
+      poster: getProxiedImageUrl(record.cover ?? undefined),
       url: record.url ?? undefined,
       watchedAt: record.watchedAt,
       progress: record.progress ?? undefined,
