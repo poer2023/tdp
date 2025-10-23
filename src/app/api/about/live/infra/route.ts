@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { InfraData } from "@/types/live-data";
+import type { InfraData, Server, SelfHostedService, InfraEvent } from "@/types/live-data";
 
 // Type definitions for API responses
 interface Monitor {
@@ -26,16 +26,7 @@ interface Incident {
   isOngoing: boolean;
 }
 
-interface Service {
-  id: string;
-  name: string;
-  displayName: string;
-  status: string;
-  url?: string;
-  server: string;
-  uptime: number;
-  metadata?: Record<string, unknown>;
-}
+// Note: For self-hosted services, use the shared SelfHostedService type
 
 /**
  * GET /api/about/live/infra
@@ -59,25 +50,31 @@ export async function GET() {
     ]);
 
     // Transform monitor data to match existing InfraData format
-    const services: Service[] =
-      (monitorsData.monitors as Monitor[] | undefined)?.map((monitor) => ({
-        id: monitor.id,
-        name: monitor.name.toLowerCase().replace(/\s+/g, "-"),
-        displayName: monitor.name,
-        status:
-          monitor.status === "UP"
-            ? "running"
-            : monitor.status === "DOWN"
-              ? "stopped"
-              : "maintenance",
-        url: monitor.url,
-        server: "monitoring", // Generic server label
-        uptime: 0, // Will be populated from stats if available
-        metadata: {
-          responseTime: monitor.responseTime,
-          lastCheck: monitor.lastCheck,
-        },
-      })) || [];
+    const services: SelfHostedService[] =
+      (monitorsData.monitors as Monitor[] | undefined)?.map((monitor) => {
+        const metadata: Record<string, string | number> = {};
+        if (typeof monitor.responseTime === "number") {
+          metadata.responseTime = monitor.responseTime;
+        }
+        if (typeof monitor.lastCheck === "string") {
+          metadata.lastCheck = monitor.lastCheck;
+        }
+        return {
+          id: monitor.id,
+          name: monitor.name.toLowerCase().replace(/\s+/g, "-"),
+          displayName: monitor.name,
+          status:
+            monitor.status === "UP"
+              ? "running"
+              : monitor.status === "DOWN"
+                ? "stopped"
+                : "maintenance",
+          url: monitor.url,
+          server: "monitoring", // Generic server label
+          uptime: 0, // Will be populated from stats if available
+          metadata,
+        } satisfies SelfHostedService;
+      }) ?? [];
 
     // Add uptime data from stats
     if (statsData.monitors) {
@@ -85,18 +82,19 @@ export async function GET() {
         const service = services.find((s) => s.id === stat.monitorId);
         if (service) {
           service.uptime = stat.uptime30d || 0;
-          service.metadata = {
-            ...service.metadata,
-            uptime24h: stat.uptime24h,
-            uptime30d: stat.uptime30d,
-            avgResponseTime: stat.avgResponseTime,
-          };
+          const meta: Record<string, string | number> = {
+            ...(service.metadata ?? {}),
+          } as Record<string, string | number>;
+          if (typeof stat.uptime24h === "number") meta.uptime24h = stat.uptime24h;
+          if (typeof stat.uptime30d === "number") meta.uptime30d = stat.uptime30d;
+          if (typeof stat.avgResponseTime === "number") meta.avgResponseTime = stat.avgResponseTime;
+          service.metadata = meta;
         }
       });
     }
 
     // Transform incidents to events
-    const events =
+    const events: InfraEvent[] =
       (incidentsData.incidents as Incident[] | undefined)?.slice(0, 10).map((incident) => ({
         timestamp: new Date(incident.startTime),
         type: incident.isOngoing ? "error" : "warning",
@@ -104,15 +102,15 @@ export async function GET() {
           ? `${incident.monitorName} is currently down`
           : `${incident.monitorName} was down for ${incident.duration || 0} minutes`,
         serviceId: incident.monitorId,
-      })) || [];
+      })) ?? [];
 
     // Create simplified server overview (since Uptime Kuma doesn't provide server metrics)
     // We group monitors by type or create a generic overview
-    const servers = [
+    const servers: Server[] = [
       {
         id: "monitoring-01",
         name: "Monitoring System",
-        location: "Cloud",
+        location: "US",
         status: statsData.overall?.downMonitors > 0 ? "warning" : "healthy",
         specs: {
           cpu: { cores: 0, usage: 0 },
