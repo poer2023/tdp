@@ -7,6 +7,10 @@ on:
         description: "Number of log lines to show"
         required: false
         default: "400"
+      since:
+        description: "Show logs since (e.g., 15m, 1h)"
+        required: false
+        default: "10m"
 
 permissions:
   contents: read
@@ -50,7 +54,7 @@ jobs:
             docker compose ps || true
             echo
             echo "==> app logs (tail)"
-            docker compose logs --tail='${{ github.event.inputs.tail || 400 }}' app || true
+            docker compose logs --since='${{ github.event.inputs.since || "10m" }}' --tail='${{ github.event.inputs.tail || 400 }}' app || true
             echo
             echo "==> postgres logs (tail)"
-            docker compose logs --tail='${{ github.event.inputs.tail || 200 }}' postgres || true
+            docker compose logs --since='${{ github.event.inputs.since || "10m" }}' --tail='${{ github.event.inputs.tail || 200 }}' postgres || true
