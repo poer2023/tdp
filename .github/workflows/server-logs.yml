@@ -11,14 +11,27 @@ on:
         description: "Show logs since (e.g., 15m, 1h)"
         required: false
         default: "10m"
+  # Ensure this workflow produces a successful run on push, so branch
+  # protections that require it do not fail. We run a no-op job in push.
+  push:
+    branches: ["**"]
 
 permissions:
   contents: read
 
 jobs:
+  noop:
+    name: Server Logs (noop on push)
+    if: ${{ github.event_name != 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: No-op
+        run: echo "Server Logs workflow is noop on '${GITHUB_EVENT_NAME}'. Use 'Run workflow' to fetch logs."
+
   logs:
     name: Fetch docker compose logs
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     env:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
