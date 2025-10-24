@@ -5,7 +5,7 @@
 
 import { redirect, notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { encryptCredential, isEncrypted } from "@/lib/encryption";
+import { encryptCredential, isEncrypted, decryptCredential } from "@/lib/encryption";
 import { CredentialForm } from "@/components/admin/credential-form";
 import { CredentialActions } from "@/components/admin/credential-actions";
 import { DeleteCredentialButton } from "@/components/admin/delete-credential-button";
@@ -99,6 +99,12 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
     notFound();
   }
 
+  // Decrypt credential value for form display
+  const decryptedCredential = {
+    ...credential,
+    value: isEncrypted(credential.value) ? decryptCredential(credential.value) : credential.value,
+  };
+
   const updateAction = updateCredential.bind(null, id);
   const deleteAction = deleteCredential.bind(null, id);
 
@@ -181,7 +187,7 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
           )}
         </div>
 
-        <CredentialForm action={updateAction} locale={locale} credential={credential} />
+        <CredentialForm action={updateAction} locale={locale} credential={decryptedCredential} />
       </div>
 
       {/* Actions Section */}
