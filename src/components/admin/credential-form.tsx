@@ -2,13 +2,20 @@
 
 /**
  * Credential Form Component
- * Form for creating and editing credentials
+ * Platform-specific form for creating and editing credentials
  */
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { t } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
-import type { ExternalCredential } from "@prisma/client";
+import type { ExternalCredential, CredentialPlatform } from "@prisma/client";
+import {
+  PLATFORM_CONFIGS,
+  assembleCredentialData,
+  extractCredentialFormValues,
+} from "@/lib/credential-configs";
+import { ChevronDown, ChevronUp, Info } from "lucide-react";
 
 type CredentialFormProps = {
   action: (formData: FormData) => Promise<void>;
@@ -18,15 +25,56 @@ type CredentialFormProps = {
 
 export function CredentialForm({ action, locale, credential }: CredentialFormProps) {
   const router = useRouter();
+  const [selectedPlatform, setSelectedPlatform] = useState<CredentialPlatform | "">(
+    credential?.platform || ""
+  );
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+
+  // Initialize form values when editing existing credential
+  useEffect(() => {
+    if (credential && selectedPlatform) {
+      const extracted = extractCredentialFormValues(
+        selectedPlatform as CredentialPlatform,
+        credential
+      );
+      setFormValues(extracted);
+    }
+  }, [credential, selectedPlatform]);
+
+  const platformConfig = selectedPlatform
+    ? PLATFORM_CONFIGS[selectedPlatform as CredentialPlatform]
+    : null;
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!selectedPlatform) {
+      alert(locale === "zh" ? "请选择平台" : "Please select a platform");
+      return;
+    }
+
+    // Assemble credential data from form values
+    const { type, value, metadata } = assembleCredentialData(
+      selectedPlatform as CredentialPlatform,
+      formValues
+    );
+
+    // Create FormData with assembled values
+    const formData = new FormData();
+    formData.append("platform", selectedPlatform);
+    formData.append("type", type);
+    formData.append("value", value);
+    if (metadata) {
+      formData.append("metadata", JSON.stringify(metadata));
+    }
+
+    await action(formData);
+  };
 
   return (
-    <form
-      action={async (formData) => {
-        await action(formData);
-      }}
-      className="space-y-6"
-    >
-      {/* Platform */}
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Platform Selection */}
       <div>
         <label
           htmlFor="platform"
@@ -38,94 +86,113 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
           id="platform"
           name="platform"
           required
-          defaultValue={credential?.platform || ""}
-          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+          value={selectedPlatform}
+          onChange={(e) => {
+            setSelectedPlatform(e.target.value as CredentialPlatform);
+            setFormValues({}); // Reset form values when platform changes
+            setShowInstructions(false);
+          }}
+          disabled={!!credential} // Disable platform change when editing
+          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
         >
           <option value="" disabled>
             {t(locale, "selectPlatform")}
           </option>
           <option value="STEAM">{t(locale, "steam")}</option>
-          <option value="HOYOVERSE">{t(locale, "hoyoverse")}</option>
+          <option value="GITHUB">GitHub</option>
           <option value="BILIBILI">{t(locale, "bilibili")}</option>
           <option value="DOUBAN">{t(locale, "douban")}</option>
+          <option value="HOYOVERSE">{t(locale, "hoyoverse")}</option>
           <option value="JELLYFIN">{t(locale, "jellyfin")}</option>
-          <option value="GITHUB">GitHub</option>
         </select>
       </div>
 
-      {/* Type */}
-      <div>
-        <label
-          htmlFor="type"
-          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-        >
-          {t(locale, "credentialType")}
-        </label>
-        <select
-          id="type"
-          name="type"
-          required
-          defaultValue={credential?.type || ""}
-          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
-        >
-          <option value="" disabled>
-            {t(locale, "selectCredentialType")}
-          </option>
-          <option value="API_KEY">{t(locale, "apiKey")}</option>
-          <option value="COOKIE">{t(locale, "cookie")}</option>
-          <option value="OAUTH_TOKEN">{t(locale, "oauthToken")}</option>
-          <option value="PERSONAL_ACCESS_TOKEN">Personal Access Token</option>
-        </select>
-      </div>
+      {/* Instructions Panel - Show after platform selection */}
+      {selectedPlatform && platformConfig && (
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
+          <button
+            type="button"
+            onClick={() => setShowInstructions(!showInstructions)}
+            className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          >
+            <div className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                {locale === "zh" ? "如何获取凭据？" : "How to get credentials?"}
+              </span>
+            </div>
+            {showInstructions ? (
+              <ChevronUp className="h-5 w-5 text-zinc-500" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-zinc-500" />
+            )}
+          </button>
 
-      {/* Value */}
-      <div>
-        <label
-          htmlFor="value"
-          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-        >
-          {t(locale, "credentialValue")}
-        </label>
-        <textarea
-          id="value"
-          name="value"
-          required
-          rows={6}
-          defaultValue={credential?.value || ""}
-          placeholder={t(locale, "credentialValuePlaceholder")}
-          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
-        />
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          {t(locale, "enterCredentialValue")}
-        </p>
-      </div>
+          {showInstructions && (
+            <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+              <ol className="list-decimal space-y-2 pl-5 text-sm text-zinc-700 dark:text-zinc-300">
+                {platformConfig.instructions[locale].map((instruction, index) => (
+                  <li key={index} className="pl-2">
+                    {instruction}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </div>
+      )}
 
-      {/* Metadata (Optional JSON) */}
-      <div>
-        <label
-          htmlFor="metadata"
-          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-        >
-          {t(locale, "credentialMetadata")}
-        </label>
-        <textarea
-          id="metadata"
-          name="metadata"
-          rows={4}
-          defaultValue={credential?.metadata ? JSON.stringify(credential.metadata, null, 2) : ""}
-          placeholder={t(locale, "optionalMetadata")}
-          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
-        />
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          {t(locale, "optionalMetadata")}
-        </p>
-      </div>
+      {/* Dynamic Platform-Specific Fields */}
+      {selectedPlatform && platformConfig && (
+        <div className="space-y-4">
+          {platformConfig.fields.map((field) => (
+            <div key={field.name}>
+              <label
+                htmlFor={field.name}
+                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              >
+                {field.label[locale]}
+                {field.required && <span className="ml-1 text-red-500">*</span>}
+              </label>
+              {field.type === "textarea" ? (
+                <textarea
+                  id={field.name}
+                  name={field.name}
+                  required={field.required}
+                  rows={4}
+                  value={formValues[field.name] || ""}
+                  onChange={(e) => setFormValues({ ...formValues, [field.name]: e.target.value })}
+                  placeholder={field.placeholder?.[locale]}
+                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+                />
+              ) : (
+                <input
+                  id={field.name}
+                  name={field.name}
+                  type={field.type}
+                  required={field.required}
+                  value={formValues[field.name] || ""}
+                  onChange={(e) => setFormValues({ ...formValues, [field.name]: e.target.value })}
+                  placeholder={field.placeholder?.[locale]}
+                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+                />
+              )}
+              {field.helperText && (
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                  {field.helperText[locale]}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
-      {/* Actions */}
-      <div className="flex gap-3">
+      {/* Form Actions */}
+      <div className="flex gap-3 pt-4">
         <button
           type="submit"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          disabled={!selectedPlatform}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
           {t(locale, "saveChanges")}
         </button>
