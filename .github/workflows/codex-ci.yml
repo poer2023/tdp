@@ -22,7 +22,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: app
+          POSTGRES_DB: tdp_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
@@ -34,7 +34,7 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
       NODE_ENV: test
 
     steps:
@@ -59,16 +59,24 @@ jobs:
       - name: Download artifacts from failed run
         uses: actions/download-artifact@v4
         with:
-          pattern: ci-*
+          pattern: "*-coverage-report|*-test-results|playwright-*|ci-*"
           merge-multiple: true
           run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Merge logs for Codex
         run: |
           mkdir -p ci
-          find . -type f -name "ci_*.log" -print0 | xargs -0 cat > ci/last-failure.log || echo "no logs" > ci/last-failure.log
-          head -n 60 ci/last-failure.log || true
+          # Try to find any log files from various artifact patterns
+          find . -type f \( -name "*.log" -o -name "*test*.xml" -o -name "*results*.json" \) 2>/dev/null | head -20 > ci/found-files.txt || true
+          if [ -s ci/found-files.txt ]; then
+            cat ci/found-files.txt | xargs cat > ci/last-failure.log 2>/dev/null || echo "Failed to merge logs" > ci/last-failure.log
+          else
+            echo "No test artifacts or logs found from failed workflow run" > ci/last-failure.log
+          fi
+          echo "=== Found Files ===" && cat ci/found-files.txt || true
+          echo "=== Merged Logs (first 100 lines) ===" && head -n 100 ci/last-failure.log || true
 
       - name: Setup Codex CLI
         run: |

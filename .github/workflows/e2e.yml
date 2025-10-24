@@ -26,7 +26,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: app
+          POSTGRES_DB: tdp_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
@@ -38,7 +38,7 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
       NODE_ENV: test
       NEXTAUTH_SECRET: test-secret-for-e2e-testing-only
       # Use database-backed paths in app and tests

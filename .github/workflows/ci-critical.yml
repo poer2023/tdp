@@ -58,9 +58,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: tdp
-          POSTGRES_PASSWORD: tdp_password
-          POSTGRES_DB: tdp
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tdp_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -85,12 +85,17 @@ jobs:
       - name: Run database migrations
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
 
       - name: Run unit tests
         run: npm run test:run
         env:
-          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
 
   integration-test:
     name: Integration Tests
@@ -100,9 +105,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: tdp
-          POSTGRES_PASSWORD: tdp_password
-          POSTGRES_DB: tdp
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tdp_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -127,17 +132,17 @@ jobs:
       - name: Run database migrations
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
 
       - name: Generate Prisma Client
         run: npx prisma generate
         env:
-          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
 
       - name: Run integration tests with coverage
         run: npm run test:integration:coverage
         env:
-          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
           NEXTAUTH_SECRET: "test-secret-key-for-ci"
 
       - name: Upload coverage report
@@ -165,9 +170,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: tdp
-          POSTGRES_PASSWORD: tdp_password
-          POSTGRES_DB: tdp
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tdp_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -192,7 +197,13 @@ jobs:
       - name: Run database migrations
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
+
+      - name: Seed database
+        run: |
+          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then npm run prisma:seed || true; fi
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -249,7 +260,7 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy?schema=public"
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public"
           NEXTAUTH_SECRET: "build-secret"
           GOOGLE_CLIENT_ID: "build-client-id"
           GOOGLE_CLIENT_SECRET: "build-client-secret"
