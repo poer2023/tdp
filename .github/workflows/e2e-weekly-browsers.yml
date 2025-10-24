@@ -37,7 +37,7 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
       NODE_ENV: test
       NEXTAUTH_SECRET: test-secret-for-e2e-testing-only
       E2E_SKIP_DB: "0"

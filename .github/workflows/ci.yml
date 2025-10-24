@@ -54,9 +54,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: tdp
-          POSTGRES_PASSWORD: tdp_password
-          POSTGRES_DB: tdp
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tdp_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -81,12 +81,12 @@ jobs:
       - name: Run database migrations
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
 
       - name: Run unit tests
         run: npm run test:run
         env:
-          DATABASE_URL: postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
 
   build:
     name: Build Application
@@ -108,7 +108,7 @@ jobs:
       - name: Build application
         run: npm run build
         env:
-          DATABASE_URL: "postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public"
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public"
           NEXTAUTH_SECRET: "test-secret"
           GOOGLE_CLIENT_ID: "test-client-id"
           GOOGLE_CLIENT_SECRET: "test-client-secret"
