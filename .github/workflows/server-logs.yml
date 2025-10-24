@@ -19,6 +19,9 @@ jobs:
   logs:
     name: Fetch docker compose logs
     runs-on: ubuntu-latest
+    # Skip gracefully when secrets are not configured, so this utility workflow
+    # never fails CI due to missing environment. It will show as "skipped".
+    if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_KEY != '' && secrets.PROJECT_DIR != '' }}
     env:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -35,6 +38,7 @@ jobs:
           [[ -n "${PROJECT_DIR:-}" ]] || missing+=(PROJECT_DIR)
           if (( ${#missing[@]} > 0 )); then
             echo "Missing required secrets: ${missing[*]}" >&2
+            # Job-level `if:` guards against this, but keep this message for clarity.
             exit 1
           fi
 

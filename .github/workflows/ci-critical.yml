@@ -199,6 +199,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
+
       - name: Seed database
         run: |
           if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then npm run prisma:seed || true; fi
