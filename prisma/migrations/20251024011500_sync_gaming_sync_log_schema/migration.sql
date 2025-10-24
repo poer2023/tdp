@@ -42,7 +42,7 @@ BEGIN
 
     -- Set default value
     ALTER TABLE "GamingSyncLog"
-      ALTER COLUMN "status" SET DEFAULT 'PENDING'::"SyncJobStatus";
+      ALTER COLUMN "status" SET DEFAULT 'PENDING'::SyncJobStatus;
   END IF;
 END $$;
 
