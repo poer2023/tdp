@@ -35,12 +35,16 @@ BEGIN
     UPDATE "GamingSyncLog" SET "status" = 'FAILED' WHERE "status" = 'failed';
     UPDATE "GamingSyncLog" SET "status" = 'RUNNING' WHERE "status" = 'running';
 
+    -- Drop existing default value before type conversion
+    ALTER TABLE "GamingSyncLog"
+      ALTER COLUMN "status" DROP DEFAULT;
+
     -- Convert column to use SyncJobStatus enum
     ALTER TABLE "GamingSyncLog"
       ALTER COLUMN "status" TYPE "SyncJobStatus"
       USING "status"::"SyncJobStatus";
 
-    -- Set default value
+    -- Set new enum default value
     ALTER TABLE "GamingSyncLog"
       ALTER COLUMN "status" SET DEFAULT 'PENDING'::SyncJobStatus;
   END IF;
