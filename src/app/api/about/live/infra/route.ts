@@ -126,7 +126,7 @@ export async function GET() {
       servers,
       services,
       events,
-      networkTraffic: generateMockTrafficData(), // Keep mock data for network traffic as Uptime Kuma doesn't provide this
+      networkTraffic: [], // Uptime Kuma doesn't provide network traffic data
     };
 
     return NextResponse.json(data, {
@@ -157,17 +157,4 @@ export async function GET() {
       },
     });
   }
-}
-
-function generateMockTrafficData() {
-  const traffic = [];
-  const now = Date.now();
-  for (let i = 23; i >= 0; i--) {
-    traffic.push({
-      timestamp: new Date(now - i * 60 * 60 * 1000),
-      inbound: Math.random() * 2 + 0.5,
-      outbound: Math.random() * 1.5 + 0.3,
-    });
-  }
-  return traffic;
 }

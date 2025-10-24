@@ -163,104 +163,40 @@ const getCachedGitHubData =
       });
 
 /**
- * Generate mock GitHub heatmap (fallback)
- */
-function generateMockGitHubHeatmap() {
-  const heatmap: Array<{ date: Date; value: number }> = [];
-  const now = new Date();
-  for (let i = 0; i < 365; i++) {
-    const date = new Date(now);
-    date.setDate(date.getDate() - i);
-    heatmap.push({
-      date,
-      value: Math.random() < 0.8 ? Math.floor(Math.random() * 10) : 0,
-    });
-  }
-  return heatmap;
-}
-
-/**
  * GET /api/about/live/dev
- * Returns GitHub development activity data (real or mock)
+ * Returns GitHub development activity data from database
+ * Returns null if no data available (no mock fallback)
  */
 export async function GET() {
   try {
-    // Try to fetch real data from cache
-    const realData = await getCachedGitHubData();
+    // Fetch real data from cache
+    const data = await getCachedGitHubData();
 
-    if (realData) {
-      return NextResponse.json(realData, {
+    if (data) {
+      return NextResponse.json(data, {
         headers: {
           "Cache-Control": "public, s-maxage=900, stale-while-revalidate=1800",
         },
       });
     }
 
-    // Fallback to mock data if no credentials available
-    console.log("[GitHub API] Using mock data (no valid credentials)");
-    const mockData: DevData = {
-      stats: {
-        thisWeek: { commits: 47, repos: 3 },
-        thisMonth: { commits: 189, pullRequests: 8 },
-        thisYear: { stars: 2345, repos: 34 },
-        currentStreak: 47,
-      },
-      contributionHeatmap: generateMockGitHubHeatmap(),
-      activeRepos: [
-        {
-          name: "tdp",
-          fullName: "wanghao/tdp",
-          language: "TypeScript",
-          commitsThisMonth: 47,
-          lastCommit: {
-            date: new Date(Date.now() - 2 * 60 * 60 * 1000),
-            message: "feat: add about page dynamic content",
-          },
-        },
-        {
-          name: "blog",
-          fullName: "wanghao/blog",
-          language: "MDX",
-          commitsThisMonth: 12,
-          lastCommit: {
-            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            message: "post: Next.js 15 new features",
-          },
-        },
-      ],
-      languages: [
-        { name: "TypeScript", percentage: 67, hours: 23.4 },
-        { name: "Python", percentage: 21, hours: 7.3 },
-        { name: "Markdown", percentage: 8, hours: 2.8 },
-        { name: "Other", percentage: 4, hours: 1.4 },
-      ],
-    };
-
-    return NextResponse.json(mockData, {
+    // No data available - return null instead of mock data
+    console.log("[GitHub API] No data available in database");
+    return NextResponse.json(null, {
       headers: {
-        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200",
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
       },
+      status: 404,
     });
   } catch (error) {
     console.error("[GitHub API] Error in route handler:", error);
 
-    // Return mock data on error
-    const mockData: DevData = {
-      stats: {
-        thisWeek: { commits: 0, repos: 0 },
-        thisMonth: { commits: 0, pullRequests: 0 },
-        thisYear: { stars: 0, repos: 0 },
-        currentStreak: 0,
-      },
-      contributionHeatmap: generateMockGitHubHeatmap(),
-      activeRepos: [],
-      languages: [],
-    };
-
-    return NextResponse.json(mockData, {
+    // Return null on error instead of mock data
+    return NextResponse.json(null, {
       headers: {
         "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
       },
+      status: 500,
     });
   }
 }
