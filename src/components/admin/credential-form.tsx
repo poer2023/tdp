@@ -15,7 +15,7 @@ import {
   assembleCredentialData,
   extractCredentialFormValues,
 } from "@/lib/credential-configs";
-import { ChevronDown, ChevronUp, Info } from "lucide-react";
+import { ChevronDown, ChevronUp, Info, Eye, EyeOff } from "lucide-react";
 
 type CredentialFormProps = {
   action: (formData: FormData) => Promise<void>;
@@ -30,8 +30,9 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
   );
   const [showInstructions, setShowInstructions] = useState(false);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
-  const [autoSyncEnabled, setAutoSyncEnabled] = useState(credential?.autoSync || false);
+  const [autoSyncEnabled, setAutoSyncEnabled] = useState(credential?.autoSync ?? true);
   const [syncFrequency, setSyncFrequency] = useState<string>(credential?.syncFrequency || "daily");
+  const [passwordVisibility, setPasswordVisibility] = useState<Record<string, boolean>>({});
 
   // Initialize form values when editing existing credential
   useEffect(() => {
@@ -49,6 +50,13 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
   const platformConfig = selectedPlatform
     ? PLATFORM_CONFIGS[selectedPlatform as CredentialPlatform]
     : null;
+
+  const togglePasswordVisibility = (fieldName: string) => {
+    setPasswordVisibility((prev) => ({
+      ...prev,
+      [fieldName]: !prev[fieldName],
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -174,6 +182,30 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
                   placeholder={field.placeholder?.[locale]}
                   className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
                 />
+              ) : field.type === "password" ? (
+                <div className="relative">
+                  <input
+                    id={field.name}
+                    name={field.name}
+                    type={passwordVisibility[field.name] ? "text" : "password"}
+                    required={field.required}
+                    value={formValues[field.name] || ""}
+                    onChange={(e) => setFormValues({ ...formValues, [field.name]: e.target.value })}
+                    placeholder={field.placeholder?.[locale]}
+                    className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 pr-10 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility(field.name)}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+                  >
+                    {passwordVisibility[field.name] ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               ) : (
                 <input
                   id={field.name}
