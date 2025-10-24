@@ -37,6 +37,8 @@ jobs:
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_USER: ${{ secrets.SSH_USER }}
       PROJECT_DIR: ${{ secrets.PROJECT_DIR }}
+      LOG_SINCE: ${{ github.event.inputs.since || '10m' }}
+      LOG_TAIL: ${{ github.event.inputs.tail || '400' }}
     steps:
       - name: Check required secrets
         id: check
@@ -68,7 +70,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
-          envs: PROJECT_DIR
+          envs: PROJECT_DIR,LOG_SINCE,LOG_TAIL
           script: |
             set -eo pipefail
             cd "${PROJECT_DIR}"
@@ -76,7 +78,7 @@ jobs:
             docker compose ps || true
             echo
             echo "==> app logs (tail)"
-            docker compose logs --since='${{ github.event.inputs.since || ''10m'' }}' --tail='${{ github.event.inputs.tail || ''400'' }}' app || true
+            docker compose logs --since="${LOG_SINCE}" --tail="${LOG_TAIL}" app || true
             echo
             echo "==> postgres logs (tail)"
-            docker compose logs --since='${{ github.event.inputs.since || ''10m'' }}' --tail='${{ github.event.inputs.tail || ''200'' }}' postgres || true
+            docker compose logs --since="${LOG_SINCE}" --tail="200" postgres || true
