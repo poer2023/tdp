@@ -433,11 +433,64 @@ model SyncJobLog {
   // Relations
   credential   ExternalCredential?   @relation("CredentialSyncJobs", fields: [credentialId], references: [id], onDelete: SetNull)
   syncLogs     MediaWatchSyncLog[]   @relation("SyncJobLogs") // Many-to-many relationship with MediaWatch
+  githubStats  GitHubStats[]         @relation("SyncJobGitHubStats")
 
   @@index([platform, startedAt])
   @@index([status, startedAt])
   @@index([triggeredBy, createdAt])
   @@index([credentialId])
+}
+
+// GitHub Data Models
+model GitHubStats {
+  id              String      @id @default(cuid())
+  commitsWeek     Int         @default(0)
+  reposWeek       Int         @default(0)
+  commitsMonth    Int         @default(0)
+  prsMonth        Int         @default(0)
+  starsYear       Int         @default(0)
+  reposYear       Int         @default(0)
+  currentStreak   Int         @default(0)
+  syncJobLogId    String?
+  syncedAt        DateTime    @default(now())
+  syncJobLog      SyncJobLog? @relation("SyncJobGitHubStats", fields: [syncJobLogId], references: [id], onDelete: SetNull)
+
+  @@index([syncedAt])
+  @@index([syncJobLogId])
+}
+
+model GitHubContribution {
+  id    String   @id @default(cuid())
+  date  DateTime @unique @db.Date
+  value Int      @default(0)
+
+  @@index([date])
+}
+
+model GitHubRepo {
+  id               String   @id @default(cuid())
+  name             String
+  fullName         String   @unique
+  language         String?
+  commitsThisMonth Int      @default(0)
+  lastCommitDate   DateTime
+  lastCommitMsg    String
+  isActive         Boolean  @default(true)
+  syncedAt         DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([fullName])
+  @@index([isActive, syncedAt])
+}
+
+model GitHubLanguage {
+  id         String   @id @default(cuid())
+  name       String
+  percentage Int      @default(0)
+  hours      Float    @default(0)
+  syncedAt   DateTime @default(now())
+
+  @@index([syncedAt])
 }
 
 model SyncStatistics {

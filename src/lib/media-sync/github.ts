@@ -3,6 +3,7 @@
  * Fetches GitHub development activity data using Personal Access Token
  */
 
+import { revalidateTag } from "next/cache";
 import prismaDefault, { prisma as prismaNamed } from "@/lib/prisma";
 import type { PrismaClient } from "@prisma/client";
 import { GitHubClient } from "@/lib/github-client";
@@ -306,6 +307,15 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
     console.log(
       `[${platform}] Sync completed: ${successCount} successful, ${failedCount} failed in ${duration}ms`
     );
+
+    // Revalidate Next.js cache to ensure fresh data is served
+    try {
+      revalidateTag("github-dev-data");
+      console.log(`[${platform}] Cache revalidated successfully`);
+    } catch (error) {
+      console.error(`[${platform}] Failed to revalidate cache:`, error);
+      // Non-critical error, continue anyway
+    }
 
     return {
       platform: platform.toLowerCase(),

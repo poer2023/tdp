@@ -23,6 +23,8 @@ const ALLOWED_DOMAINS = [
   "img2.doubanio.com",
   "img3.doubanio.com",
   "img9.doubanio.com",
+  // Google profile photos (avatars)
+  "lh3.googleusercontent.com",
 ];
 
 /**

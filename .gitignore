@@ -63,3 +63,15 @@ notion_public_data.json
 
 # Database backups
 /backups/
+
+# Diagnostic reports and scripts
+CREDENTIAL_FIX_REPORT.md
+GITHUB_SYNC_FIX_REPORT.md
+scripts/check-github-sync-data.ts
+scripts/fix-credentials.ts
+scripts/list-database-tables.ts
+scripts/query-github-tables-direct.ts
+scripts/test-api-data-fetch.ts
+scripts/trigger-github-sync.ts
+scripts/validate-all-credentials.ts
+scripts/validate-credentials-direct.ts

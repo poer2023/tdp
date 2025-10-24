@@ -5,7 +5,7 @@
 
 import { redirect, notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { encryptCredential, isEncrypted } from "@/lib/encryption";
+import { encryptCredential, isEncrypted, decryptCredential } from "@/lib/encryption";
 import { CredentialForm } from "@/components/admin/credential-form";
 import { CredentialActions } from "@/components/admin/credential-actions";
 import { DeleteCredentialButton } from "@/components/admin/delete-credential-button";
@@ -16,6 +16,22 @@ import { CredentialPlatform, CredentialType } from "@prisma/client";
 
 export const runtime = "nodejs";
 
+/**
+ * Calculate next check time based on sync frequency
+ */
+function calculateNextCheckTime(frequency: string): Date {
+  const now = new Date();
+  const hours: Record<string, number> = {
+    daily: 24,
+    twice_daily: 12,
+    three_times_daily: 8,
+    four_times_daily: 6,
+    six_times_daily: 4,
+  };
+  const hoursToAdd = hours[frequency] || 24;
+  return new Date(now.getTime() + hoursToAdd * 60 * 60 * 1000);
+}
+
 async function updateCredential(id: string, formData: FormData) {
   "use server";
 
@@ -23,6 +39,11 @@ async function updateCredential(id: string, formData: FormData) {
   const type = formData.get("type") as CredentialType;
   const value = formData.get("value") as string;
   const metadataStr = formData.get("metadata") as string;
+  const autoSyncStr = formData.get("autoSync") as string;
+  const syncFrequency = formData.get("syncFrequency") as string;
+
+  // Parse auto-sync settings
+  const autoSync = autoSyncStr === "true";
 
   // Parse metadata
   let metadata = null;
@@ -36,6 +57,9 @@ async function updateCredential(id: string, formData: FormData) {
 
   const storedValue = isEncrypted(value) ? value : encryptCredential(value);
 
+  // Calculate next check time if auto-sync is enabled
+  const nextCheckAt = autoSync && syncFrequency ? calculateNextCheckTime(syncFrequency) : null;
+
   await prisma.externalCredential.update({
     where: { id },
     data: {
@@ -43,6 +67,9 @@ async function updateCredential(id: string, formData: FormData) {
       type,
       value: storedValue,
       metadata,
+      autoSync,
+      syncFrequency: autoSync ? syncFrequency : null,
+      nextCheckAt,
       updatedAt: new Date(),
     },
   });
@@ -71,6 +98,12 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
   if (!credential) {
     notFound();
   }
+
+  // Decrypt credential value for form display
+  const decryptedCredential = {
+    ...credential,
+    value: isEncrypted(credential.value) ? decryptCredential(credential.value) : credential.value,
+  };
 
   const updateAction = updateCredential.bind(null, id);
   const deleteAction = deleteCredential.bind(null, id);
@@ -154,7 +187,7 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
           )}
         </div>
 
-        <CredentialForm action={updateAction} locale={locale} credential={credential} />
+        <CredentialForm action={updateAction} locale={locale} credential={decryptedCredential} />
       </div>
 
       {/* Actions Section */}

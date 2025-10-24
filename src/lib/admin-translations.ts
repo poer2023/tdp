@@ -182,6 +182,7 @@ export const adminTranslations = {
 
     // Platforms
     steam: "Steam",
+    github: "GitHub",
     hoyoverse: "HoYoverse",
     bilibili: "Bilibili",
     douban: "Douban",
@@ -204,6 +205,26 @@ export const adminTranslations = {
     credentialSaved: "Credential saved successfully",
     credentialDeleted: "Credential deleted successfully",
     credentialValidated: "Credential validated",
+
+    // Auto Sync Settings
+    autoSync: "Auto Sync",
+    enableAutoSync: "Enable Auto Sync",
+    syncFrequency: "Sync Frequency",
+    syncFrequencyDaily: "Once per day",
+    syncFrequencyTwiceDaily: "Twice per day",
+    syncFrequencyThreeTimesDaily: "3 times per day",
+    syncFrequencyFourTimesDaily: "4 times per day",
+    syncFrequencySixTimesDaily: "6 times per day",
+    syncFrequencyDisabled: "Disabled",
+    nextSyncAt: "Next Sync",
+    lastSyncAt: "Last Sync",
+    syncStatus: "Sync Status",
+    syncSuccess: "Success",
+    syncFailed: "Failed",
+    syncPending: "Pending",
+    syncRunning: "Running",
+    autoSyncSettings: "Auto Sync Settings",
+    autoSyncDescription: "Automatically sync data from this platform at regular intervals",
 
     // Sync Jobs
     syncJobs: "Sync Jobs",
@@ -409,6 +430,7 @@ export const adminTranslations = {
 
     // Platforms
     steam: "Steam",
+    github: "GitHub",
     hoyoverse: "米哈游",
     bilibili: "哔哩哔哩",
     douban: "豆瓣",
@@ -430,6 +452,26 @@ export const adminTranslations = {
     credentialSaved: "凭据保存成功",
     credentialDeleted: "凭据删除成功",
     credentialValidated: "凭据已验证",
+
+    // Auto Sync Settings
+    autoSync: "自动同步",
+    enableAutoSync: "启用自动同步",
+    syncFrequency: "同步频率",
+    syncFrequencyDaily: "每天 1 次",
+    syncFrequencyTwiceDaily: "每天 2 次",
+    syncFrequencyThreeTimesDaily: "每天 3 次",
+    syncFrequencyFourTimesDaily: "每天 4 次",
+    syncFrequencySixTimesDaily: "每天 6 次",
+    syncFrequencyDisabled: "已禁用",
+    nextSyncAt: "下次同步",
+    lastSyncAt: "上次同步",
+    syncStatus: "同步状态",
+    syncSuccess: "成功",
+    syncFailed: "失败",
+    syncPending: "等待中",
+    syncRunning: "同步中",
+    autoSyncSettings: "自动同步设置",
+    autoSyncDescription: "定期自动从此平台同步数据",
 
     // Sync Jobs
     syncJobs: "同步任务",

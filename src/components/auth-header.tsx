@@ -11,16 +11,45 @@ export function AuthHeader() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   type SessionUser = Session["user"];
   const lastKnownUserRef = useRef<SessionUser | null>(session?.user ?? null);
+
+  // Derived session state
+  const isLoading = status === "loading";
+  const user = session?.user ?? lastKnownUserRef.current ?? null;
+  const isSignedIn = Boolean(user);
+  const showAvatarImage = Boolean(user?.image) && !avatarError;
+  const imageSrc = typeof user?.image === "string" ? user.image : "";
+  const altText = user?.name || "User";
+
+  const getProxiedAvatarSrc = (src: string) => {
+    try {
+      const url = new URL(src);
+      const host = url.hostname;
+      // Proxy selected hosts to avoid hotlinking/429 and enable server caching
+      const PROXY_HOSTS = new Set(["lh3.googleusercontent.com"]);
+      if (PROXY_HOSTS.has(host)) {
+        return `/api/image-proxy?url=${encodeURIComponent(src)}`;
+      }
+      return src;
+    } catch {
+      return src;
+    }
+  };
 
   useEffect(() => {
     if (session?.user) {
       lastKnownUserRef.current = session.user;
     }
   }, [session]);
+
+  // Reset avatar error if the image URL changes
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.image]);
 
   // Close menu on Esc key
   useEffect(() => {
@@ -75,9 +104,6 @@ export function AuthHeader() {
   };
 
   // Loading state - SSR compatible
-  const isLoading = status === "loading";
-  const user = session?.user ?? lastKnownUserRef.current ?? null;
-  const isSignedIn = Boolean(user);
 
   // Signed in state
   if (isSignedIn) {
@@ -92,16 +118,18 @@ export function AuthHeader() {
           data-state={isMenuOpen ? "open" : "closed"}
           className="flex items-center gap-1.5 rounded-full border border-zinc-200 p-0.5 pr-2 transition-colors hover:border-zinc-300 focus:ring-2 focus:ring-zinc-400 focus:outline-none dark:border-zinc-800 dark:hover:border-zinc-700"
         >
-          {user?.image ? (
+          {showAvatarImage ? (
             <Image
-              src={user.image}
-              alt={user.name || "User"}
+              src={getProxiedAvatarSrc(imageSrc)}
+              alt={altText}
               width={28}
               height={28}
               sizes="28px"
               style={{ width: "28px", height: "28px" }}
               className="rounded-full object-cover"
               data-testid="user-avatar"
+              onError={() => setAvatarError(true)}
+              referrerPolicy="no-referrer"
             />
           ) : (
             <div
