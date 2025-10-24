@@ -42,11 +42,11 @@ BEGIN
     -- Convert column to use SyncJobStatus enum
     ALTER TABLE "GamingSyncLog"
       ALTER COLUMN "status" TYPE "SyncJobStatus"
-      USING "status"::"SyncJobStatus";
+      USING "status"::text::"SyncJobStatus";
 
     -- Set new enum default value
     ALTER TABLE "GamingSyncLog"
-      ALTER COLUMN "status" SET DEFAULT 'PENDING'::SyncJobStatus;
+      ALTER COLUMN "status" SET DEFAULT 'PENDING'::"SyncJobStatus";
   END IF;
 END $$;
 
