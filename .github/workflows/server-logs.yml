@@ -19,9 +19,6 @@ jobs:
   logs:
     name: Fetch docker compose logs
     runs-on: ubuntu-latest
-    # Skip gracefully when secrets are not configured, so this utility workflow
-    # never fails CI due to missing environment. It will show as "skipped".
-    if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_KEY != '' && secrets.PROJECT_DIR != '' }}
     env:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -29,6 +26,7 @@ jobs:
       PROJECT_DIR: ${{ secrets.PROJECT_DIR }}
     steps:
       - name: Check required secrets
+        id: check
         run: |
           set -euo pipefail
           missing=()
@@ -38,11 +36,18 @@ jobs:
           [[ -n "${PROJECT_DIR:-}" ]] || missing+=(PROJECT_DIR)
           if (( ${#missing[@]} > 0 )); then
             echo "Missing required secrets: ${missing[*]}" >&2
-            # Job-level `if:` guards against this, but keep this message for clarity.
-            exit 1
+            echo "has_secrets=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_secrets=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Skip notice when secrets missing
+        if: ${{ steps.check.outputs.has_secrets != 'true' }}
+        run: |
+          echo "Skipping server logs: required secrets not configured."
+
       - name: Show service status and last logs
+        if: ${{ steps.check.outputs.has_secrets == 'true' }}
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}

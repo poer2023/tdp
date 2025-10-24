@@ -151,6 +151,7 @@ jobs:
         with:
           name: integration-coverage-report
           path: coverage/
+          if-no-files-found: ignore
           retention-days: 14
 
       - name: Upload test results
