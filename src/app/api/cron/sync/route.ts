@@ -19,6 +19,10 @@
  *
  * Sync Frequency Logic:
  * - hourly: Sync if last sync was >1 hour ago
+ * - six_times_daily: Sync if last sync was >4 hours ago
+ * - four_times_daily: Sync if last sync was >6 hours ago
+ * - three_times_daily: Sync if last sync was >8 hours ago
+ * - twice_daily: Sync if last sync was >12 hours ago
  * - daily: Sync if last sync was >24 hours ago
  * - weekly: Sync if last sync was >7 days ago
  * - disabled: Skip sync
@@ -29,7 +33,15 @@ import prisma from "@/lib/prisma";
 import { syncAllPlatforms as syncMedia } from "@/lib/media-sync";
 import { GamingSyncService } from "@/lib/gaming/sync-service";
 
-type SyncFrequency = "hourly" | "daily" | "weekly" | "disabled";
+type SyncFrequency =
+  | "hourly"
+  | "daily"
+  | "twice_daily"
+  | "three_times_daily"
+  | "four_times_daily"
+  | "six_times_daily"
+  | "weekly"
+  | "disabled";
 
 interface SyncSchedule {
   credentialId: string;
@@ -65,6 +77,30 @@ function shouldSyncCredential(
         return { shouldSync: true, reason: `Last sync ${hoursSinceLastSync.toFixed(1)}h ago` };
       }
       return { shouldSync: false, reason: `Synced ${hoursSinceLastSync.toFixed(1)}h ago (< 1h)` };
+
+    case "six_times_daily": // Every 4 hours
+      if (hoursSinceLastSync >= 4) {
+        return { shouldSync: true, reason: `Last sync ${hoursSinceLastSync.toFixed(1)}h ago` };
+      }
+      return { shouldSync: false, reason: `Synced ${hoursSinceLastSync.toFixed(1)}h ago (< 4h)` };
+
+    case "four_times_daily": // Every 6 hours
+      if (hoursSinceLastSync >= 6) {
+        return { shouldSync: true, reason: `Last sync ${hoursSinceLastSync.toFixed(1)}h ago` };
+      }
+      return { shouldSync: false, reason: `Synced ${hoursSinceLastSync.toFixed(1)}h ago (< 6h)` };
+
+    case "three_times_daily": // Every 8 hours
+      if (hoursSinceLastSync >= 8) {
+        return { shouldSync: true, reason: `Last sync ${hoursSinceLastSync.toFixed(1)}h ago` };
+      }
+      return { shouldSync: false, reason: `Synced ${hoursSinceLastSync.toFixed(1)}h ago (< 8h)` };
+
+    case "twice_daily": // Every 12 hours
+      if (hoursSinceLastSync >= 12) {
+        return { shouldSync: true, reason: `Last sync ${hoursSinceLastSync.toFixed(1)}h ago` };
+      }
+      return { shouldSync: false, reason: `Synced ${hoursSinceLastSync.toFixed(1)}h ago (< 12h)` };
 
     case "daily":
       if (hoursSinceLastSync >= 24) {
