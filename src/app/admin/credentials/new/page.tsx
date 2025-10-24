@@ -14,6 +14,22 @@ import { CredentialPlatform, CredentialType } from "@prisma/client";
 
 export const runtime = "nodejs";
 
+/**
+ * Calculate next check time based on sync frequency
+ */
+function calculateNextCheckTime(frequency: string): Date {
+  const now = new Date();
+  const hours: Record<string, number> = {
+    daily: 24,
+    twice_daily: 12,
+    three_times_daily: 8,
+    four_times_daily: 6,
+    six_times_daily: 4,
+  };
+  const hoursToAdd = hours[frequency] || 24;
+  return new Date(now.getTime() + hoursToAdd * 60 * 60 * 1000);
+}
+
 async function createCredential(formData: FormData) {
   "use server";
 
@@ -21,6 +37,11 @@ async function createCredential(formData: FormData) {
   const type = formData.get("type") as string;
   const value = formData.get("value") as string;
   const metadataStr = formData.get("metadata") as string;
+  const autoSyncStr = formData.get("autoSync") as string;
+  const syncFrequency = formData.get("syncFrequency") as string;
+
+  // Parse auto-sync settings
+  const autoSync = autoSyncStr === "true";
 
   // Generate ID
   const id = `cred_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -37,6 +58,9 @@ async function createCredential(formData: FormData) {
 
   const storedValue = isEncrypted(value) ? value : encryptCredential(value);
 
+  // Calculate next check time if auto-sync is enabled
+  const nextCheckAt = autoSync && syncFrequency ? calculateNextCheckTime(syncFrequency) : null;
+
   await prisma.externalCredential.create({
     data: {
       id,
@@ -45,6 +69,9 @@ async function createCredential(formData: FormData) {
       value: storedValue,
       metadata,
       isValid: true,
+      autoSync,
+      syncFrequency: autoSync ? syncFrequency : null,
+      nextCheckAt,
       updatedAt: new Date(),
     },
   });

@@ -30,6 +30,8 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
   );
   const [showInstructions, setShowInstructions] = useState(false);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [autoSyncEnabled, setAutoSyncEnabled] = useState(credential?.autoSync || false);
+  const [syncFrequency, setSyncFrequency] = useState<string>(credential?.syncFrequency || "daily");
 
   // Initialize form values when editing existing credential
   useEffect(() => {
@@ -39,6 +41,8 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
         credential
       );
       setFormValues(extracted);
+      setAutoSyncEnabled(credential.autoSync || false);
+      setSyncFrequency(credential.syncFrequency || "daily");
     }
   }, [credential, selectedPlatform]);
 
@@ -67,6 +71,11 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
     formData.append("value", value);
     if (metadata) {
       formData.append("metadata", JSON.stringify(metadata));
+    }
+    // Add auto-sync settings
+    formData.append("autoSync", String(autoSyncEnabled));
+    if (autoSyncEnabled) {
+      formData.append("syncFrequency", syncFrequency);
     }
 
     await action(formData);
@@ -184,6 +193,58 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Auto Sync Settings */}
+      {selectedPlatform && platformConfig && (
+        <div className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
+          <h3 className="mb-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            {t(locale, "autoSyncSettings")}
+          </h3>
+          <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">
+            {t(locale, "autoSyncDescription")}
+          </p>
+
+          {/* Enable Auto Sync Checkbox */}
+          <div className="mb-4 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="autoSyncEnabled"
+              checked={autoSyncEnabled}
+              onChange={(e) => setAutoSyncEnabled(e.target.checked)}
+              className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:ring-zinc-50"
+            />
+            <label htmlFor="autoSyncEnabled" className="text-sm text-zinc-700 dark:text-zinc-300">
+              {t(locale, "enableAutoSync")}
+            </label>
+          </div>
+
+          {/* Sync Frequency Selector - Only show when enabled */}
+          {autoSyncEnabled && (
+            <div>
+              <label
+                htmlFor="syncFrequency"
+                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              >
+                {t(locale, "syncFrequency")}
+              </label>
+              <select
+                id="syncFrequency"
+                value={syncFrequency}
+                onChange={(e) => setSyncFrequency(e.target.value)}
+                className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+              >
+                <option value="daily">{t(locale, "syncFrequencyDaily")}</option>
+                <option value="twice_daily">{t(locale, "syncFrequencyTwiceDaily")}</option>
+                <option value="three_times_daily">
+                  {t(locale, "syncFrequencyThreeTimesDaily")}
+                </option>
+                <option value="four_times_daily">{t(locale, "syncFrequencyFourTimesDaily")}</option>
+                <option value="six_times_daily">{t(locale, "syncFrequencySixTimesDaily")}</option>
+              </select>
+            </div>
+          )}
         </div>
       )}
 

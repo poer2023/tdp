@@ -53,7 +53,16 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
           <div className="flex items-start justify-between">
             <div>
               <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                {t(locale, credential.platform.toLowerCase() as "steam" | "bilibili" | "douban")}
+                {t(
+                  locale,
+                  credential.platform.toLowerCase() as
+                    | "steam"
+                    | "github"
+                    | "bilibili"
+                    | "douban"
+                    | "hoyoverse"
+                    | "jellyfin"
+                )}
               </span>
             </div>
             <span
