@@ -5,6 +5,53 @@
 
 import { CredentialPlatform, CredentialType } from "@prisma/client";
 
+/**
+ * Helper function to parse cookie string into individual fields
+ * Example: "SESSDATA=xxx; bili_jct=yyy" → { SESSDATA: "xxx", bili_jct: "yyy" }
+ */
+export function parseCookieString(
+  cookieString: string,
+  fieldNames: string[]
+): Record<string, string> {
+  const result: Record<string, string> = {};
+
+  // Handle empty cookie string
+  if (!cookieString) {
+    return result;
+  }
+
+  // Split by semicolon and parse each key=value pair
+  const pairs = cookieString.split(";").map((s) => s.trim());
+
+  for (const pair of pairs) {
+    const [key, ...valueParts] = pair.split("=");
+    const value = valueParts.join("="); // Handle values with '=' in them
+
+    if (key && value && fieldNames.includes(key)) {
+      result[key] = value;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Helper function to assemble cookie fields into cookie string
+ * Example: { SESSDATA: "xxx", bili_jct: "yyy" } → "SESSDATA=xxx; bili_jct=yyy"
+ */
+export function assembleCookieString(fields: Record<string, string>): string {
+  const parts: string[] = [];
+
+  for (const [key, value] of Object.entries(fields)) {
+    if (value && value.trim()) {
+      // Only include non-empty values
+      parts.push(`${key}=${value}`);
+    }
+  }
+
+  return parts.join("; ");
+}
+
 export interface CredentialField {
   name: string;
   label: {
@@ -147,21 +194,55 @@ export const PLATFORM_CONFIGS: Record<CredentialPlatform, PlatformConfig> = {
     type: CredentialType.COOKIE,
     fields: [
       {
-        name: "cookie",
+        name: "SESSDATA",
         label: {
-          en: "Cookie String",
-          zh: "Cookie 字符串",
+          en: "SESSDATA",
+          zh: "SESSDATA",
         },
-        type: "textarea",
+        type: "password",
         placeholder: {
-          en: "SESSDATA=xxx; bili_jct=xxx; DedeUserID=xxx; ...",
-          zh: "SESSDATA=xxx; bili_jct=xxx; DedeUserID=xxx; ...",
+          en: "Enter SESSDATA cookie value",
+          zh: "输入 SESSDATA cookie 值",
         },
         required: true,
-        validate: (value) => value.includes("SESSDATA="),
+        validate: (value) => value.length > 0,
         helperText: {
-          en: "Must contain 'SESSDATA' field",
-          zh: "必须包含 'SESSDATA' 字段",
+          en: "Required cookie field for Bilibili authentication",
+          zh: "B站认证必需的 cookie 字段",
+        },
+      },
+      {
+        name: "bili_jct",
+        label: {
+          en: "bili_jct",
+          zh: "bili_jct",
+        },
+        type: "password",
+        placeholder: {
+          en: "Enter bili_jct cookie value (optional)",
+          zh: "输入 bili_jct cookie 值（可选）",
+        },
+        required: false,
+        helperText: {
+          en: "Optional but recommended for full functionality",
+          zh: "可选但推荐填写以获得完整功能",
+        },
+      },
+      {
+        name: "DedeUserID",
+        label: {
+          en: "DedeUserID",
+          zh: "DedeUserID",
+        },
+        type: "text",
+        placeholder: {
+          en: "Enter DedeUserID cookie value (optional)",
+          zh: "输入 DedeUserID cookie 值（可选）",
+        },
+        required: false,
+        helperText: {
+          en: "Optional user identifier cookie",
+          zh: "可选的用户标识 cookie",
         },
       },
     ],
@@ -171,24 +252,22 @@ export const PLATFORM_CONFIGS: Record<CredentialPlatform, PlatformConfig> = {
         "Open browser Developer Tools (F12 or Right-click → Inspect)",
         "Go to the 'Application' tab (Chrome) or 'Storage' tab (Firefox)",
         "In the left sidebar, expand 'Cookies' and select 'https://www.bilibili.com'",
-        "Find and copy the following cookie values:",
-        "  - SESSDATA (required)",
-        "  - bili_jct (optional but recommended)",
-        "  - DedeUserID (optional)",
-        "Format as: SESSDATA=xxx; bili_jct=xxx; DedeUserID=xxx",
-        "Or copy all cookies from the 'Network' tab request headers",
+        "Find and copy the cookie values individually:",
+        "  - SESSDATA (required): Copy the 'Value' column",
+        "  - bili_jct (optional but recommended): Copy the 'Value' column",
+        "  - DedeUserID (optional): Copy the 'Value' column",
+        "Paste each value into the corresponding field below",
       ],
       zh: [
         "在浏览器中打开 https://www.bilibili.com 并登录",
         "打开浏览器开发者工具（F12 或右键→检查）",
         "转到【应用程序】（Application）标签（Chrome）或【存储】（Storage）标签（Firefox）",
         "在左侧边栏中展开【Cookies】并选择【https://www.bilibili.com】",
-        "查找并复制以下 cookie 值：",
-        "  - SESSDATA（必需）",
-        "  - bili_jct（可选但推荐）",
-        "  - DedeUserID（可选）",
-        "格式为：SESSDATA=xxx; bili_jct=xxx; DedeUserID=xxx",
-        "或从【网络】（Network）标签的请求头中复制所有 cookies",
+        "分别查找并复制以下 cookie 值：",
+        "  - SESSDATA（必需）：复制【值】列的内容",
+        "  - bili_jct（可选但推荐）：复制【值】列的内容",
+        "  - DedeUserID（可选）：复制【值】列的内容",
+        "将每个值粘贴到下方对应的字段中",
       ],
     },
   },
@@ -197,21 +276,56 @@ export const PLATFORM_CONFIGS: Record<CredentialPlatform, PlatformConfig> = {
     type: CredentialType.COOKIE,
     fields: [
       {
-        name: "cookie",
+        name: "bid",
         label: {
-          en: "Cookie String",
-          zh: "Cookie 字符串",
+          en: "bid",
+          zh: "bid",
         },
-        type: "textarea",
+        type: "password",
         placeholder: {
-          en: "bid=xxx; dbcl2=xxx; ck=xxx; ...",
-          zh: "bid=xxx; dbcl2=xxx; ck=xxx; ...",
+          en: "Enter bid cookie value",
+          zh: "输入 bid cookie 值",
         },
         required: true,
-        validate: (value) => value.includes("bid=") || value.includes("dbcl2="),
+        validate: (value) => value.length > 0,
         helperText: {
-          en: "Must contain 'bid' or 'dbcl2' field",
-          zh: "必须包含 'bid' 或 'dbcl2' 字段",
+          en: "Browser identifier cookie (required)",
+          zh: "浏览器标识符 cookie（必需）",
+        },
+      },
+      {
+        name: "dbcl2",
+        label: {
+          en: "dbcl2",
+          zh: "dbcl2",
+        },
+        type: "password",
+        placeholder: {
+          en: "Enter dbcl2 cookie value",
+          zh: "输入 dbcl2 cookie 值",
+        },
+        required: true,
+        validate: (value) => value.length > 0,
+        helperText: {
+          en: "Login token cookie (required)",
+          zh: "登录令牌 cookie（必需）",
+        },
+      },
+      {
+        name: "ck",
+        label: {
+          en: "ck",
+          zh: "ck",
+        },
+        type: "password",
+        placeholder: {
+          en: "Enter ck cookie value (optional)",
+          zh: "输入 ck cookie 值（可选）",
+        },
+        required: false,
+        helperText: {
+          en: "Optional cookie for additional functionality",
+          zh: "可选的附加功能 cookie",
         },
       },
     ],
@@ -221,24 +335,22 @@ export const PLATFORM_CONFIGS: Record<CredentialPlatform, PlatformConfig> = {
         "Open browser Developer Tools (F12 or Right-click → Inspect)",
         "Go to the 'Application' tab (Chrome) or 'Storage' tab (Firefox)",
         "In the left sidebar, expand 'Cookies' and select 'https://www.douban.com'",
-        "Find and copy the following cookie values:",
-        "  - bid (browser identifier)",
-        "  - dbcl2 (login token, required)",
-        "  - ck (optional)",
-        "Format as: bid=xxx; dbcl2=xxx; ck=xxx",
-        "Or copy all cookies from the 'Network' tab request headers",
+        "Find and copy the cookie values individually:",
+        "  - bid (required): Copy the 'Value' column",
+        "  - dbcl2 (required): Copy the 'Value' column",
+        "  - ck (optional): Copy the 'Value' column",
+        "Paste each value into the corresponding field below",
       ],
       zh: [
         "在浏览器中打开 https://www.douban.com 并登录",
         "打开浏览器开发者工具（F12 或右键→检查）",
         "转到【应用程序】（Application）标签（Chrome）或【存储】（Storage）标签（Firefox）",
         "在左侧边栏中展开【Cookies】并选择【https://www.douban.com】",
-        "查找并复制以下 cookie 值：",
-        "  - bid（浏览器标识符）",
-        "  - dbcl2（登录令牌，必需）",
-        "  - ck（可选）",
-        "格式为：bid=xxx; dbcl2=xxx; ck=xxx",
-        "或从【网络】（Network）标签的请求头中复制所有 cookies",
+        "分别查找并复制以下 cookie 值：",
+        "  - bid（必需）：复制【值】列的内容",
+        "  - dbcl2（必需）：复制【值】列的内容",
+        "  - ck（可选）：复制【值】列的内容",
+        "将每个值粘贴到下方对应的字段中",
       ],
     },
   },
@@ -247,21 +359,39 @@ export const PLATFORM_CONFIGS: Record<CredentialPlatform, PlatformConfig> = {
     type: CredentialType.COOKIE,
     fields: [
       {
-        name: "cookie",
+        name: "ltoken",
         label: {
-          en: "Cookie String",
-          zh: "Cookie 字符串",
+          en: "ltoken",
+          zh: "ltoken",
         },
-        type: "textarea",
+        type: "password",
         placeholder: {
-          en: "ltoken=xxx; ltuid=xxx; ...",
-          zh: "ltoken=xxx; ltuid=xxx; ...",
+          en: "Enter ltoken cookie value",
+          zh: "输入 ltoken cookie 值",
         },
         required: true,
-        validate: (value) => value.includes("ltoken=") && value.includes("ltuid="),
+        validate: (value) => value.length > 0,
         helperText: {
-          en: "Must contain both 'ltoken' and 'ltuid' fields",
-          zh: "必须同时包含 'ltoken' 和 'ltuid' 字段",
+          en: "Login token (required)",
+          zh: "登录令牌（必需）",
+        },
+      },
+      {
+        name: "ltuid",
+        label: {
+          en: "ltuid",
+          zh: "ltuid",
+        },
+        type: "text",
+        placeholder: {
+          en: "Enter ltuid cookie value",
+          zh: "输入 ltuid cookie 值",
+        },
+        required: true,
+        validate: (value) => value.length > 0,
+        helperText: {
+          en: "Login user ID (required)",
+          zh: "登录用户 ID（必需）",
         },
       },
     ],
@@ -271,10 +401,10 @@ export const PLATFORM_CONFIGS: Record<CredentialPlatform, PlatformConfig> = {
         "Open browser Developer Tools (F12 or Right-click → Inspect)",
         "Go to the 'Application' tab (Chrome) or 'Storage' tab (Firefox)",
         "In the left sidebar, expand 'Cookies' and select 'https://www.miyoushe.com'",
-        "Find and copy the following cookie values (both required):",
-        "  - ltoken (login token)",
-        "  - ltuid (login user ID)",
-        "Format as: ltoken=xxx; ltuid=xxx",
+        "Find and copy both required cookie values:",
+        "  - ltoken (required): Copy the 'Value' column",
+        "  - ltuid (required): Copy the 'Value' column",
+        "Paste each value into the corresponding field below",
         "Note: These cookies are used for Genshin Impact, Honkai, and other HoYoverse games",
       ],
       zh: [
@@ -282,10 +412,10 @@ export const PLATFORM_CONFIGS: Record<CredentialPlatform, PlatformConfig> = {
         "打开浏览器开发者工具（F12 或右键→检查）",
         "转到【应用程序】（Application）标签（Chrome）或【存储】（Storage）标签（Firefox）",
         "在左侧边栏中展开【Cookies】并选择【https://www.miyoushe.com】",
-        "查找并复制以下 cookie 值（两个都必需）：",
-        "  - ltoken（登录令牌）",
-        "  - ltuid（登录用户 ID）",
-        "格式为：ltoken=xxx; ltuid=xxx",
+        "查找并复制以下两个必需的 cookie 值：",
+        "  - ltoken（必需）：复制【值】列的内容",
+        "  - ltuid（必需）：复制【值】列的内容",
+        "将每个值粘贴到下方对应的字段中",
         "注意：这些 cookies 用于原神、崩坏等米哈游游戏",
       ],
     },
@@ -388,11 +518,35 @@ export function assembleCredentialData(
       };
 
     case CredentialPlatform.BILIBILI:
-    case CredentialPlatform.DOUBAN:
-    case CredentialPlatform.HOYOVERSE:
+      // Assemble multiple cookie fields into cookie string
       return {
         type: config.type,
-        value: formValues.cookie || "",
+        value: assembleCookieString({
+          SESSDATA: formValues.SESSDATA || "",
+          bili_jct: formValues.bili_jct || "",
+          DedeUserID: formValues.DedeUserID || "",
+        }),
+      };
+
+    case CredentialPlatform.DOUBAN:
+      // Assemble multiple cookie fields into cookie string
+      return {
+        type: config.type,
+        value: assembleCookieString({
+          bid: formValues.bid || "",
+          dbcl2: formValues.dbcl2 || "",
+          ck: formValues.ck || "",
+        }),
+      };
+
+    case CredentialPlatform.HOYOVERSE:
+      // Assemble multiple cookie fields into cookie string
+      return {
+        type: config.type,
+        value: assembleCookieString({
+          ltoken: formValues.ltoken || "",
+          ltuid: formValues.ltuid || "",
+        }),
       };
 
     case CredentialPlatform.JELLYFIN:
@@ -416,7 +570,7 @@ export function extractCredentialFormValues(
   platform: CredentialPlatform,
   credential: {
     value: string;
-    metadata?: Record<string, unknown> | null | { [key: string]: unknown };
+    metadata?: unknown;
   }
 ): Record<string, string> {
   switch (platform) {
@@ -432,11 +586,13 @@ export function extractCredentialFormValues(
       };
 
     case CredentialPlatform.BILIBILI:
+      return parseCookieString(credential.value, ["SESSDATA", "bili_jct", "DedeUserID"]);
+
     case CredentialPlatform.DOUBAN:
+      return parseCookieString(credential.value, ["bid", "dbcl2", "ck"]);
+
     case CredentialPlatform.HOYOVERSE:
-      return {
-        cookie: credential.value,
-      };
+      return parseCookieString(credential.value, ["ltoken", "ltuid"]);
 
     case CredentialPlatform.JELLYFIN:
       return {
