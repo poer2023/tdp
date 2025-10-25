@@ -3,6 +3,7 @@
 ## Issue: GitHub Credentials Sync Showing 0 Items
 
 **Symptoms:**
+
 - Sync UI displays "同步成功: 0 项成功" (Sync Success: 0 items successful)
 - /about page not loading properly in production
 - Development environment works normally
@@ -33,6 +34,7 @@ docker compose logs app --follow
 ```
 
 **Look for:**
+
 - GitHub API authentication errors (401, 403)
 - Rate limiting errors (429)
 - Network connectivity issues
@@ -85,6 +87,7 @@ docker compose exec postgres psql -U postgres -d tdp -c "
 ```
 
 **Expected:**
+
 - At least one GITHUB credential should exist
 - `isActive` should be `true`
 - `encryptedData` should have non-zero length
@@ -129,6 +132,7 @@ docker compose exec app node -e "
 ```
 
 **Look for:**
+
 - Rate limiting (X-RateLimit-Remaining: 0)
 - Authentication errors
 - Network connectivity issues
@@ -178,6 +182,7 @@ docker compose exec postgres psql -U postgres -d tdp -c "
 ```
 
 **Check for:**
+
 - Recent sync jobs with status = 'FAILED'
 - Jobs with itemsProcessed = 0
 - Any error messages
@@ -222,6 +227,7 @@ curl http://localhost:3000/api/about/live/github -v
 **Symptom:** Credentials exist but sync returns 0 items
 
 **Solution:**
+
 ```bash
 # Check if encryption key is consistent
 # Development: check .env.local
@@ -236,6 +242,7 @@ curl http://localhost:3000/api/about/live/github -v
 **Symptom:** API returns 429 errors or X-RateLimit-Remaining: 0
 
 **Solution:**
+
 - Wait for rate limit to reset (check X-RateLimit-Reset header)
 - Use authenticated GitHub API requests (higher rate limits)
 - Implement rate limit handling in sync logic
@@ -245,6 +252,7 @@ curl http://localhost:3000/api/about/live/github -v
 **Symptom:** Cannot reach api.github.com
 
 **Solution:**
+
 ```bash
 # Test basic connectivity
 docker compose exec app ping api.github.com -c 3
@@ -258,6 +266,7 @@ docker compose exec app ping api.github.com -c 3
 **Symptom:** Table or column doesn't exist errors
 
 **Solution:**
+
 ```bash
 # Apply pending migrations
 docker compose exec app npx prisma migrate deploy
@@ -274,6 +283,7 @@ docker compose restart app
 **Symptom:** GitHub API returns 401 Unauthorized
 
 **Solution:**
+
 - Verify GitHub Personal Access Token is valid
 - Check token permissions (scopes)
 - Re-authenticate and save new token
@@ -299,11 +309,13 @@ docker compose logs app --follow
 If issues persist, collect the following information:
 
 1. Application logs (last 200 lines):
+
    ```bash
    docker compose logs app --tail=200 > app-logs.txt
    ```
 
 2. Database state:
+
    ```bash
    docker compose exec postgres psql -U postgres -d tdp -c "
      SELECT platform, COUNT(*)
@@ -313,6 +325,7 @@ If issues persist, collect the following information:
    ```
 
 3. Sync job history:
+
    ```bash
    docker compose exec postgres psql -U postgres -d tdp -c "
      SELECT * FROM \"SyncJobLog\"

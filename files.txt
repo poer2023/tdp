@@ -37,6 +37,7 @@ docs/MEDIA_SYNC_SETUP.md
 docs/MONITORING.md
 docs/PRIVACY_POLICY.md
 docs/PRODUCTION_DEPLOYMENT_GUIDE.md
+docs/PRODUCTION_TROUBLESHOOTING.md
 docs/TESTING.md
 docs/USER_GUIDE.md
 docs/admin-overview-ui-spec.md
