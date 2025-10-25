@@ -76,6 +76,8 @@ async function loadAdminOverview(): Promise<AdminOverviewData> {
   }
 
   try {
+    console.log("[Admin Overview] Starting data load...");
+
     const [
       totalPosts,
       publishedPosts,
@@ -103,6 +105,15 @@ async function loadAdminOverview(): Promise<AdminOverviewData> {
       }),
     ]);
 
+    console.log("[Admin Overview] Data loaded successfully:", {
+      totalPosts,
+      publishedPosts,
+      draftPosts,
+      totalGallery,
+      recentPostsCount: recentPosts.length,
+      recentUploadsCount: recentUploads.length,
+    });
+
     return {
       totalPosts,
       publishedPosts,
@@ -114,9 +125,13 @@ async function loadAdminOverview(): Promise<AdminOverviewData> {
       recentUploads,
     };
   } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
-      console.warn("Failed to load admin overview metrics, falling back to zero state.", error);
-    }
+    // Always log errors to help diagnose issues
+    console.error("[Admin Overview] Failed to load admin overview metrics:", error);
+    console.error("[Admin Overview] Error details:", {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return getFallbackOverview();
   }
 }

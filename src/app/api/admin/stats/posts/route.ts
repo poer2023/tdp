@@ -17,6 +17,8 @@ export async function GET() {
   }
 
   try {
+    console.log("[Admin Stats] Fetching top posts data...");
+
     // 获取浏览量 Top 10 文章
     const topPosts = await prisma.post.findMany({
       where: {
@@ -51,6 +53,12 @@ export async function GET() {
       },
     });
 
+    console.log("[Admin Stats] Data fetched successfully:", {
+      topPostsCount: topPosts.length,
+      totalPosts: totalStats._count.id,
+      totalViews: totalStats._sum.viewCount,
+    });
+
     return NextResponse.json({
       topPosts: topPosts.map((post) => ({
         id: post.id,
@@ -67,6 +75,11 @@ export async function GET() {
     });
   } catch (error) {
     console.error("[GET /api/admin/stats/posts] Error:", error);
+    console.error("[GET /api/admin/stats/posts] Error details:", {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json({ error: "服务器错误" }, { status: 500 });
   }
 }
