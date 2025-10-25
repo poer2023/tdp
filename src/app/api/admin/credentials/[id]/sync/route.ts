@@ -150,9 +150,19 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         const metadata = credential.metadata as { userId?: string; user_id?: string };
         const userId = metadata.userId || metadata.user_id;
 
+        console.log(`[Douban Sync] Credential ${credential.id}`);
+        console.log(`[Douban Sync] Metadata:`, JSON.stringify(metadata));
+        console.log(`[Douban Sync] Extracted userId: ${userId || "(missing)"}`);
+
         if (!userId) {
+          console.error(
+            `[Douban Sync] Missing userId in metadata for credential ${credential.id}`
+          );
           return NextResponse.json(
-            { error: "Douban user ID not found in credential metadata" },
+            {
+              error: "Douban user ID not found in credential metadata",
+              details: `Metadata: ${JSON.stringify(metadata)}. Please add 'user_id' or 'userId' field.`,
+            },
             { status: 400 }
           );
         }
@@ -161,6 +171,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         const cookieValue = isEncrypted(credential.value)
           ? decryptCredential(credential.value)
           : credential.value;
+
+        console.log(`[Douban Sync] Cookie length: ${cookieValue.length} chars`);
 
         syncResult = await syncDouban(
           {
