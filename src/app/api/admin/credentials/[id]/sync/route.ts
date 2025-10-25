@@ -6,7 +6,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getGamingSyncService } from "@/lib/gaming/sync-service";
-import { syncBilibili, syncDouban, syncSteam } from "@/lib/media-sync";
+import { syncBilibili, syncDouban, syncSteam, syncGitHub } from "@/lib/media-sync";
+import { decryptCredential, isEncrypted } from "@/lib/encryption";
+import { CredentialPlatform } from "@prisma/client";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
@@ -32,7 +34,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     let syncResult;
 
     switch (credential.platform) {
-      case "STEAM": {
+      case CredentialPlatform.STEAM: {
         // Extract Steam ID from metadata or environment
         const steamId =
           (credential.metadata as { steamId?: string })?.steamId || process.env.STEAM_USER_ID;
@@ -44,8 +46,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           );
         }
 
-        // Use API key from database credential
-        const apiKey = credential.value;
+        // Resolve API key (supports encrypted/plaintext)
+        const apiKey = isEncrypted(credential.value)
+          ? decryptCredential(credential.value)
+          : credential.value;
 
         // Run both gaming sync (for SteamProfile) and media sync (for MediaWatch) in parallel
         const [gamingSyncResult, mediaSyncResult] = await Promise.all([
@@ -75,7 +79,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         break;
       }
 
-      case "HOYOVERSE": {
+      case CredentialPlatform.HOYOVERSE: {
         // Extract HoYo UID from metadata or environment
         const hoyoUid = (credential.metadata as { uid?: string })?.uid || process.env.HOYO_UID;
 
@@ -103,10 +107,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         break;
       }
 
-      case "BILIBILI": {
+      case CredentialPlatform.BILIBILI: {
+        // Resolve cookie (supports encrypted/plaintext)
+        const cookieValue = isEncrypted(credential.value)
+          ? decryptCredential(credential.value)
+          : credential.value;
+
         // Parse Bilibili cookie
         const cookieParts: Record<string, string> = {};
-        credential.value.split(";").forEach((part) => {
+        cookieValue.split(";").forEach((part) => {
           const [key, value] = part.trim().split("=");
           if (key && value) {
             cookieParts[key] = value;
@@ -136,22 +145,39 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         break;
       }
 
-      case "DOUBAN": {
+      case CredentialPlatform.DOUBAN: {
         // Extract Douban user ID from metadata (support both user_id and userId formats)
         const metadata = credential.metadata as { userId?: string; user_id?: string };
         const userId = metadata.userId || metadata.user_id;
 
+        console.log(`[Douban Sync] Credential ${credential.id}`);
+        console.log(`[Douban Sync] Metadata:`, JSON.stringify(metadata));
+        console.log(`[Douban Sync] Extracted userId: ${userId || "(missing)"}`);
+
         if (!userId) {
+          console.error(
+            `[Douban Sync] Missing userId in metadata for credential ${credential.id}`
+          );
           return NextResponse.json(
-            { error: "Douban user ID not found in credential metadata" },
+            {
+              error: "Douban user ID not found in credential metadata",
+              details: `Metadata: ${JSON.stringify(metadata)}. Please add 'user_id' or 'userId' field.`,
+            },
             { status: 400 }
           );
         }
 
+        // Resolve cookie (supports encrypted/plaintext)
+        const cookieValue = isEncrypted(credential.value)
+          ? decryptCredential(credential.value)
+          : credential.value;
+
+        console.log(`[Douban Sync] Cookie length: ${cookieValue.length} chars`);
+
         syncResult = await syncDouban(
           {
             userId,
-            cookie: credential.value,
+            cookie: cookieValue,
           },
           credential.id
         );
@@ -170,7 +196,34 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         break;
       }
 
-      case "JELLYFIN": {
+      case CredentialPlatform.GITHUB: {
+        // Extract GitHub Personal Access Token from credential value
+        const token = isEncrypted(credential.value)
+          ? decryptCredential(credential.value)
+          : credential.value;
+
+        // Extract username from metadata if available
+        const metadata = credential.metadata as { username?: string } | null;
+        const username = metadata?.username;
+
+        // Run GitHub sync
+        syncResult = await syncGitHub({ token, username }, credential.id);
+
+        // Update credential usage
+        await prisma.externalCredential.update({
+          where: { id },
+          data: {
+            usageCount: { increment: 1 },
+            lastUsedAt: new Date(),
+            failureCount: syncResult.success ? 0 : { increment: 1 },
+            updatedAt: new Date(),
+          },
+        });
+
+        break;
+      }
+
+      case CredentialPlatform.JELLYFIN: {
         return NextResponse.json({ error: "Jellyfin sync not implemented yet" }, { status: 501 });
       }
 

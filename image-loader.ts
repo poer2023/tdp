@@ -32,6 +32,10 @@ export default function imageLoader({
   if (src.startsWith("/api/uploads/")) {
     return withDimensions(src);
   }
+  // Our image proxy route: reflect dimensions for cache key uniqueness
+  if (src.startsWith("/api/image-proxy")) {
+    return withDimensions(src);
+  }
 
   // /uploads/ paths: convert to /api/uploads/ (due to rewrite rule in next.config.ts)
   if (src.startsWith("/uploads/")) {
@@ -39,10 +43,12 @@ export default function imageLoader({
     return withDimensions(apiSrc);
   }
 
-  // External images: serve original URLs (custom loader disables Next.js optimizer routes)
+  // External images: preserve original URL but reflect width/quality
+  // Note: Next.js warns in dev if a custom loader does not utilize the `width` parameter.
+  // We append `w`/`q` as query params so each size maps to a unique URL while
+  // still letting the origin handle delivery (no Next optimizer in this mode).
   if (src.startsWith("http://") || src.startsWith("https://")) {
-    // Google profile photos already embed a size segment (e.g. =s96-c). Leave as-is for reliability.
-    return src;
+    return withDimensions(src);
   }
 
   // Data URLs or other local assets: return as-is

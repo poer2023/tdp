@@ -387,22 +387,22 @@ export async function validateCredential(
   value: string
 ): Promise<ValidationResult> {
   switch (platform) {
-    case "STEAM":
+    case CredentialPlatform.STEAM:
       return validateSteamCredential(value);
 
-    case "BILIBILI":
+    case CredentialPlatform.BILIBILI:
       return validateBilibiliCredential(value);
 
-    case "DOUBAN":
+    case CredentialPlatform.DOUBAN:
       return validateDoubanCredential(value);
 
-    case "HOYOVERSE":
+    case CredentialPlatform.HOYOVERSE:
       return validateHoyoverseCredential(value);
 
-    case "JELLYFIN":
+    case CredentialPlatform.JELLYFIN:
       return validateJellyfinCredential(value);
 
-    case "GITHUB":
+    case CredentialPlatform.GITHUB:
       return validateGitHubCredential(value);
 
     default:

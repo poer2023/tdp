@@ -1,159 +1,160 @@
 import { NextResponse } from "next/server";
-import type { InfraData } from "@/types/live-data";
+import type { InfraData, Server, SelfHostedService, InfraEvent } from "@/types/live-data";
+
+// Type definitions for API responses
+interface Monitor {
+  id: string;
+  name: string;
+  status: string;
+  url?: string;
+  responseTime?: number;
+  lastCheck?: string;
+}
+
+interface MonitorStat {
+  monitorId: string;
+  uptime24h?: number;
+  uptime30d?: number;
+  avgResponseTime?: number;
+}
+
+interface Incident {
+  monitorId: string;
+  monitorName: string;
+  startTime: string;
+  duration?: number;
+  isOngoing: boolean;
+}
+
+// Note: For self-hosted services, use the shared SelfHostedService type
 
 /**
  * GET /api/about/live/infra
- * Returns infrastructure monitoring data
+ * Returns infrastructure monitoring data from Uptime Kuma
  */
 export async function GET() {
-  // TODO: Replace with real monitoring API (Prometheus, custom endpoints, etc.)
-  const data: InfraData = {
-    servers: [
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+    // Fetch real monitoring data from our new APIs
+    const [monitorsRes, statsRes, incidentsRes] = await Promise.all([
+      fetch(`${baseUrl}/api/infra/monitors`, { cache: "no-store" }),
+      fetch(`${baseUrl}/api/infra/stats`, { cache: "no-store" }),
+      fetch(`${baseUrl}/api/infra/incidents?limit=10`, { cache: "no-store" }),
+    ]);
+
+    const [monitorsData, statsData, incidentsData] = await Promise.all([
+      monitorsRes.json(),
+      statsRes.json(),
+      incidentsRes.json(),
+    ]);
+
+    // Transform monitor data to match existing InfraData format
+    const services: SelfHostedService[] =
+      (monitorsData.monitors as Monitor[] | undefined)?.map((monitor) => {
+        const metadata: Record<string, string | number> = {};
+        if (typeof monitor.responseTime === "number") {
+          metadata.responseTime = monitor.responseTime;
+        }
+        if (typeof monitor.lastCheck === "string") {
+          metadata.lastCheck = monitor.lastCheck;
+        }
+        return {
+          id: monitor.id,
+          name: monitor.name.toLowerCase().replace(/\s+/g, "-"),
+          displayName: monitor.name,
+          status:
+            monitor.status === "UP"
+              ? "running"
+              : monitor.status === "DOWN"
+                ? "stopped"
+                : "maintenance",
+          url: monitor.url,
+          server: "monitoring", // Generic server label
+          uptime: 0, // Will be populated from stats if available
+          metadata,
+        } satisfies SelfHostedService;
+      }) ?? [];
+
+    // Add uptime data from stats
+    if (statsData.monitors) {
+      (statsData.monitors as MonitorStat[]).forEach((stat) => {
+        const service = services.find((s) => s.id === stat.monitorId);
+        if (service) {
+          service.uptime = stat.uptime30d || 0;
+          const meta: Record<string, string | number> = {
+            ...(service.metadata ?? {}),
+          } as Record<string, string | number>;
+          if (typeof stat.uptime24h === "number") meta.uptime24h = stat.uptime24h;
+          if (typeof stat.uptime30d === "number") meta.uptime30d = stat.uptime30d;
+          if (typeof stat.avgResponseTime === "number") meta.avgResponseTime = stat.avgResponseTime;
+          service.metadata = meta;
+        }
+      });
+    }
+
+    // Transform incidents to events
+    const events: InfraEvent[] =
+      (incidentsData.incidents as Incident[] | undefined)?.slice(0, 10).map((incident) => ({
+        timestamp: new Date(incident.startTime),
+        type: incident.isOngoing ? "error" : "warning",
+        message: incident.isOngoing
+          ? `${incident.monitorName} is currently down`
+          : `${incident.monitorName} was down for ${incident.duration || 0} minutes`,
+        serviceId: incident.monitorId,
+      })) ?? [];
+
+    // Create simplified server overview (since Uptime Kuma doesn't provide server metrics)
+    // We group monitors by type or create a generic overview
+    const servers: Server[] = [
       {
-        id: "cn-01",
-        name: "CN-Server-01",
-        location: "CN",
-        status: "healthy",
-        specs: {
-          cpu: { cores: 2, usage: 15 },
-          memory: { total: 4, used: 2.1 },
-          disk: { total: 50, used: 20 },
-        },
-        services: ["jellyfin", "umami"],
-        uptime: 45,
-      },
-      {
-        id: "us-01",
-        name: "US-Server-01",
+        id: "monitoring-01",
+        name: "Monitoring System",
         location: "US",
-        status: "healthy",
+        status: statsData.overall?.downMonitors > 0 ? "warning" : "healthy",
         specs: {
-          cpu: { cores: 4, usage: 34 },
-          memory: { total: 8, used: 4.9 },
-          disk: { total: 100, used: 45 },
+          cpu: { cores: 0, usage: 0 },
+          memory: { total: 0, used: 0 },
+          disk: { total: 0, used: 0 },
         },
-        services: ["miniflux", "vaultwarden"],
-        uptime: 67,
+        services: services.map((s) => s.name),
+        uptime: statsData.overall?.uptime30d || 0,
       },
-      {
-        id: "jp-01",
-        name: "JP-Server-01",
-        location: "JP",
-        status: "warning",
-        specs: {
-          cpu: { cores: 1, usage: 89 },
-          memory: { total: 2, used: 1.9 },
-          disk: { total: 25, used: 22 },
-        },
-        services: ["pocketbase"],
-        uptime: 120,
-      },
-    ],
-    services: [
-      {
-        id: "jellyfin",
-        name: "jellyfin",
-        displayName: "Jellyfin",
-        status: "running",
-        url: "https://jellyfin.example.com",
-        server: "cn-01",
-        uptime: 45,
-        metadata: {
-          users: 3,
-          libraries: 5,
-        },
-      },
-      {
-        id: "miniflux",
-        name: "miniflux",
-        displayName: "Miniflux",
-        status: "running",
-        url: "https://rss.example.com",
-        server: "us-01",
-        uptime: 67,
-        metadata: {
-          feeds: 47,
-          unread: 234,
-        },
-      },
-      {
-        id: "vaultwarden",
-        name: "vaultwarden",
-        displayName: "Vaultwarden",
-        status: "running",
-        url: "https://vault.example.com",
-        server: "us-01",
-        uptime: 120,
-        metadata: {
-          accounts: 2,
-        },
-      },
-      {
-        id: "umami",
-        name: "umami",
-        displayName: "Umami Analytics",
-        status: "running",
-        url: "https://analytics.example.com",
-        server: "cn-01",
-        uptime: 23,
-        metadata: {
-          sites: 3,
-        },
-      },
-      {
-        id: "pocketbase",
-        name: "pocketbase",
-        displayName: "PocketBase",
-        status: "maintenance",
-        url: "https://db.example.com",
-        server: "jp-01",
-        uptime: 0,
-      },
-    ],
-    events: [
-      {
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        type: "warning",
-        message: "PocketBase entered maintenance mode",
-        serviceId: "pocketbase",
-      },
-      {
-        timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000),
-        type: "error",
-        message: "CN-01 CPU spike to 95% (resolved)",
-        serverId: "cn-01",
-      },
-      {
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        type: "info",
-        message: "Miniflux updated to v2.0.50",
-        serviceId: "miniflux",
-      },
-      {
-        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        type: "info",
-        message: "SSL certificate renewed for *.example.com",
-      },
-    ],
-    networkTraffic: generateMockTrafficData(),
-  };
+    ];
 
-  return NextResponse.json(data, {
-    headers: {
-      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
-    },
-  });
-}
+    const data: InfraData = {
+      servers,
+      services,
+      events,
+      networkTraffic: [], // Uptime Kuma doesn't provide network traffic data
+    };
 
-function generateMockTrafficData() {
-  const traffic = [];
-  const now = Date.now();
-  for (let i = 23; i >= 0; i--) {
-    traffic.push({
-      timestamp: new Date(now - i * 60 * 60 * 1000),
-      inbound: Math.random() * 2 + 0.5,
-      outbound: Math.random() * 1.5 + 0.3,
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+      },
+    });
+  } catch (error) {
+    console.error("[API /about/live/infra] Error fetching monitoring data:", error);
+
+    // Fallback to minimal data on error
+    const data: InfraData = {
+      servers: [],
+      services: [],
+      events: [
+        {
+          timestamp: new Date(),
+          type: "error",
+          message: "Failed to fetch monitoring data from Uptime Kuma",
+        },
+      ],
+      networkTraffic: [],
+    };
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+      },
     });
   }
-  return traffic;
 }

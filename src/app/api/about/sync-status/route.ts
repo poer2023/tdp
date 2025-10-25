@@ -13,8 +13,8 @@ export async function GET() {
       { platforms },
       {
         headers: {
-          // Match server-side cache micro-ttl; allows fast 304 in CDN/envs
-          "Cache-Control": "public, s-maxage=15, stale-while-revalidate=120",
+          // Keep in sync with lib/sync-status revalidation window for consistency
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
         },
       }
     );

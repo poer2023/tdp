@@ -22,6 +22,9 @@ type Credential = {
   usageCount: number;
   failureCount: number;
   lastValidatedAt: Date | null;
+  autoSync: boolean;
+  syncFrequency: string | null;
+  nextCheckAt: Date | null;
 };
 
 type CredentialsContentProps = {
@@ -53,7 +56,16 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
           <div className="flex items-start justify-between">
             <div>
               <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                {t(locale, credential.platform.toLowerCase() as "steam" | "bilibili" | "douban")}
+                {t(
+                  locale,
+                  credential.platform.toLowerCase() as
+                    | "steam"
+                    | "github"
+                    | "bilibili"
+                    | "douban"
+                    | "hoyoverse"
+                    | "jellyfin"
+                )}
               </span>
             </div>
             <span
@@ -111,6 +123,45 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
                   month: "2-digit",
                   day: "2-digit",
                 }
+              )}
+            </div>
+          )}
+
+          {/* Auto Sync Status */}
+          {credential.autoSync && (
+            <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
+                  {t(locale, "autoSync")}
+                </span>
+                {credential.syncFrequency && (
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {t(
+                      locale,
+                      `syncFrequency${credential.syncFrequency
+                        .split("_")
+                        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                        .join(
+                          ""
+                        )}` as keyof typeof import("@/lib/admin-translations").adminTranslations.en
+                    )}
+                  </span>
+                )}
+              </div>
+              {credential.nextCheckAt && (
+                <div className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                  {t(locale, "nextSyncAt")}:{" "}
+                  {new Date(credential.nextCheckAt).toLocaleString(
+                    locale === "zh" ? "zh-CN" : "en-US",
+                    {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }
+                  )}
+                </div>
               )}
             </div>
           )}

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, Activity } from "lucide-react";
+import { ArrowLeft, Activity, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import type { InfraData } from "@/types/live-data";
 import { ServerStatusCard } from "./server-status-card";
 import { ServiceStatusCard } from "./service-status-card";
@@ -13,8 +14,12 @@ interface InfraDetailPageProps {
 }
 
 export function InfraDetailPage({ locale }: InfraDetailPageProps) {
+  const { data: session } = useSession();
   const [data, setData] = useState<InfraData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Check if user is admin
+  const isAdmin = session?.user?.email && (session.user as { role?: string }).role === "ADMIN";
 
   useEffect(() => {
     fetch("/api/about/live/infra")
@@ -79,20 +84,39 @@ export function InfraDetailPage({ locale }: InfraDetailPageProps) {
     error: "❌",
   };
 
+  const uptimeKumaUrl = process.env.NEXT_PUBLIC_UPTIME_KUMA_URL || "";
+
   return (
     <div className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:px-12 md:py-16">
       {/* Header */}
       <div className="mb-8">
-        <Link
-          href={`/${locale}/about/live`}
-          className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t.backToDashboard}
-        </Link>
-        <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
-          🖥️ {t.title}
-        </h1>
+        <div className="flex items-center justify-between">
+          <div>
+            <Link
+              href={`/${locale}/about/live`}
+              className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t.backToDashboard}
+            </Link>
+            <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+              🖥️ {t.title}
+            </h1>
+          </div>
+
+          {/* Admin Button */}
+          {isAdmin && uptimeKumaUrl && (
+            <a
+              href={uptimeKumaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              {locale === "zh" ? "管理监控" : "Manage Monitors"}
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          )}
+        </div>
       </div>
 
       {loading ? (

@@ -1,0 +1,97 @@
+name: E2E Cross-Browser (Weekly)
+
+on:
+  schedule:
+    # Every Monday at 04:00 UTC
+    - cron: "0 4 * * 1"
+  workflow_dispatch: {}
+
+concurrency:
+  group: e2e-weekly-browsers
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: ["chromium", "firefox", "webkit"]
+        shard: ["1/3", "2/3", "3/3"]
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: app
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
+      NODE_ENV: test
+      NEXTAUTH_SECRET: test-secret-for-e2e-testing-only
+      E2E_SKIP_DB: "0"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Prepare database
+        run: |
+          npx prisma migrate deploy
+          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then npm run prisma:seed || true; fi
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests (Shard ${{ matrix.shard }} | ${{ matrix.browser }})
+        run: |
+          set -o pipefail
+          SAFE="${{ matrix.browser }}_${{ matrix.shard }}/"
+          SAFE=${SAFE//\//_}
+          npx playwright test --project=${{ matrix.browser }} --reporter=line --shard=${{ matrix.shard }} 2>&1 | tee "ci_e2e_${SAFE}.log"
+
+      - name: Upload shard logs (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-e2e-weekly-logs-${{ matrix.browser }}-${{ strategy.job-index }}
+          path: |
+            ci_e2e_*.log
+            test-results/**
+          retention-days: 7
+
+      - name: Upload Playwright HTML report (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-e2e-weekly-report-${{ matrix.browser }}-${{ strategy.job-index }}
+          path: |
+            playwright-report/**
+          retention-days: 7

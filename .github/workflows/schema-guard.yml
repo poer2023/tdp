@@ -1,0 +1,182 @@
+name: Schema Guard
+
+# 当 Prisma Schema 文件变更时自动触发检查
+# 确保所有 Schema 变更都有对应的迁移文件
+on:
+  pull_request:
+    paths:
+      - "prisma/schema.prisma"
+    branches:
+      - main
+      - develop
+
+  # 支持手动触发
+  workflow_dispatch:
+
+jobs:
+  check-missing-migrations:
+    name: Detect Schema Changes Without Migrations
+    runs-on: ubuntu-latest
+
+    # 使用 PostgreSQL 服务作为 shadow database
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: shadow_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      # Shadow database 用于 Prisma 比较 Schema 差异
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/shadow_db?schema=public
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 获取完整历史以便对比
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Cache Prisma binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.prisma
+            ~/.cache/prisma
+          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma') }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma') }}-
+            ${{ runner.os }}-prisma-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for missing migrations (Official Prisma Method)
+        id: migration_check
+        run: |
+          echo "🔍 Checking for schema changes without corresponding migrations..."
+
+          # Prisma 官方推荐方法: 使用 migrate diff 检测 Schema 漂移
+          # 如果 schema.prisma 与现有迁移不一致,此命令返回非零退出码
+          if npx prisma migrate diff \
+            --exit-code \
+            --from-migrations ./prisma/migrations \
+            --to-schema-datamodel ./prisma/schema.prisma \
+            --shadow-database-url "$DATABASE_URL"; then
+
+            echo "✅ Schema 与迁移文件一致,无需额外迁移"
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ 检测到 Schema 变更但缺少迁移文件!"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Report schema drift (if detected)
+        if: failure()
+        run: |
+          echo "::error::Schema 变更检测到,但没有对应的迁移文件"
+          echo "::error::请运行以下命令创建迁移:"
+          echo "::error::  npx prisma migrate dev --name describe_your_change"
+          echo ""
+          echo "⚠️ 重要提示:"
+          echo "1. 不要使用 'prisma db push' - 它不会生成迁移文件"
+          echo "2. 使用 'prisma migrate dev' 生成迁移并自动应用到开发数据库"
+          echo "3. 提交迁移文件到 Git 仓库"
+          echo ""
+          echo "参考文档: https://www.prisma.io/docs/orm/prisma-migrate/workflows/development-and-production"
+          exit 1
+
+      - name: Validate Prisma schema syntax
+        run: npx prisma validate
+
+      - name: Check Prisma version consistency
+        run: |
+          PRISMA_CLI=$(npm list prisma --depth=0 | grep prisma@ | sed 's/.*@//' | tr -d ' ')
+          PRISMA_CLIENT=$(npm list @prisma/client --depth=0 | grep @prisma/client@ | sed 's/.*@//' | tr -d ' ')
+
+          echo "Prisma CLI version: $PRISMA_CLI"
+          echo "Prisma Client version: $PRISMA_CLIENT"
+
+          if [ "$PRISMA_CLI" != "$PRISMA_CLIENT" ]; then
+            echo "::error::Prisma 版本不一致!"
+            echo "::error::CLI: $PRISMA_CLI, Client: $PRISMA_CLIENT"
+            echo "::error::请确保 package.json 中两者版本一致"
+            exit 1
+          fi
+
+          echo "✅ Prisma 版本一致: $PRISMA_CLI"
+
+  analyze-migration-changes:
+    name: Analyze Migration Changes
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect new migration files
+        id: detect_migrations
+        run: |
+          # 检查是否有新的迁移文件
+          NEW_MIGRATIONS=$(git diff --name-only origin/main...HEAD | grep 'prisma/migrations/' || echo "")
+
+          if [ -n "$NEW_MIGRATIONS" ]; then
+            echo "✅ 检测到新的迁移文件:"
+            echo "$NEW_MIGRATIONS"
+            echo "has_migrations=true" >> $GITHUB_OUTPUT
+            echo "migration_files<<EOF" >> $GITHUB_OUTPUT
+            echo "$NEW_MIGRATIONS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "ℹ️ 本次 PR 没有新的迁移文件"
+            echo "has_migrations=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment PR with migration info
+        if: steps.detect_migrations.outputs.has_migrations == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const migrations = `${{ steps.detect_migrations.outputs.migration_files }}`;
+            const comment = `## 🔄 Database Migration Detected
+
+            This PR includes database schema changes:
+
+            \`\`\`
+            ${migrations}
+            \`\`\`
+
+            ### ⚠️ Deployment Checklist
+            - [ ] 迁移已在本地开发环境测试
+            - [ ] 迁移包含回滚计划（如果需要）
+            - [ ] 部署前已通知团队成员
+            - [ ] 确认生产数据库有完整备份
+
+            ### 📚 相关文档
+            - [Prisma Migration Guide](https://www.prisma.io/docs/orm/prisma-migrate)
+            - [Production Deployment](docs/PRODUCTION_DEPLOYMENT_GUIDE.md)
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

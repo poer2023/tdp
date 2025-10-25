@@ -1,4 +1,55 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npx lint-staged
+# ============================================================================
+# Pre-commit Hook: Prisma Schema 检查
+# ============================================================================
+# 当 schema.prisma 被修改时,自动检查是否有对应的迁移文件
+# 防止使用 'db push' 导致的迁移历史丢失
+# ============================================================================
+
+# 获取被修改的文件列表
+CHANGED_FILES=$(git diff --cached --name-only)
+
+# 检查是否修改了 schema.prisma
+if echo "$CHANGED_FILES" | grep -q "prisma/schema.prisma"; then
+  echo "🔍 检测到 Prisma Schema 变更..."
+
+  # 检查是否同时有新的迁移文件
+  NEW_MIGRATIONS=$(git diff --cached --name-only | grep "prisma/migrations/" || echo "")
+
+  if [ -z "$NEW_MIGRATIONS" ]; then
+    echo ""
+    echo "⚠️  警告: 检测到 schema.prisma 变更,但没有新的迁移文件!"
+    echo ""
+    echo "❌ 不要使用 'prisma db push' - 它不会生成迁移文件"
+    echo "✅ 请使用以下命令创建迁移:"
+    echo ""
+    echo "   npx prisma migrate dev --name describe_your_change"
+    echo ""
+    echo "💡 提示:"
+    echo "   1. 'prisma migrate dev' 会生成迁移文件并应用到开发数据库"
+    echo "   2. 迁移文件会被自动添加到 Git staging area"
+    echo "   3. 提交时会包含 schema.prisma 和对应的迁移文件"
+    echo ""
+    echo "📚 参考文档:"
+    echo "   https://www.prisma.io/docs/orm/prisma-migrate/workflows/development-and-production"
+    echo ""
+    echo "⏭️  如果你已经创建了迁移,请将其添加到 staging area:"
+    echo "   git add prisma/migrations/"
+    echo ""
+    echo "🚫 如果你确实需要跳过此检查 (不推荐),使用:"
+    echo "   git commit --no-verify"
+    echo ""
+
+    # 退出状态为 1,阻止提交
+    exit 1
+  else
+    echo "✅ 检测到新的迁移文件,允许提交:"
+    echo "$NEW_MIGRATIONS"
+    echo ""
+  fi
+fi
+
+# 所有检查通过,允许提交
+exit 0

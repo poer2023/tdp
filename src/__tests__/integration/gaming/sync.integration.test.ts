@@ -10,9 +10,9 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { PrismaClient } from "@prisma/client";
-import { GamingSyncService } from "../sync-service";
-import type { SteamAPIClient } from "../steam-client";
-import type { HoYoAPIClient } from "../hoyo-client";
+import { GamingSyncService } from "@/lib/gaming/sync-service";
+import type { SteamAPIClient } from "@/lib/gaming/steam-client";
+import type { HoYoAPIClient } from "@/lib/gaming/hoyo-client";
 
 // Skip integration tests if no test database is configured
 const testDbUrl = process.env.DATABASE_URL;

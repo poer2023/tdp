@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { isEncrypted, decryptCredential } from "@/lib/encryption";
 import { validateCredential } from "@/lib/credential-validation";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -21,10 +22,14 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
 
     // Validate credential
+    const resolvedValue = isEncrypted(credential.value)
+      ? decryptCredential(credential.value)
+      : credential.value;
+
     const validationResult = await validateCredential(
       credential.platform,
       credential.type,
-      credential.value
+      resolvedValue
     );
 
     // Update credential in database

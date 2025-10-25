@@ -6,6 +6,7 @@ import { GamePlatform } from "@prisma/client";
 /**
  * GET /api/about/live/gaming
  * Returns gaming activity data from Steam and HoYoverse
+ * Returns null if no data available (no mock fallback)
  */
 export async function GET() {
   try {
@@ -19,11 +20,12 @@ export async function GET() {
   } catch (error) {
     console.error("Failed to fetch gaming data:", error);
 
-    // Fallback to mock data on error
-    return NextResponse.json(getMockData(), {
+    // Return null on error instead of mock data
+    return NextResponse.json(null, {
       headers: {
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
       },
+      status: 500,
     });
   }
 }
@@ -266,22 +268,4 @@ async function generateHeatmapData(days: number) {
   }
 
   return heatmap.reverse();
-}
-
-function getMockData(): GamingData {
-  const now = new Date();
-  return {
-    stats: {
-      platforms: [{ id: "steam", name: "Steam", activeGames: 0 }],
-      thisMonth: { totalHours: 0, gamesPlayed: 0 },
-      thisYear: { totalHours: 0, gamesPlayed: 0 },
-      totalGames: 0,
-    },
-    currentlyPlaying: [],
-    recentSessions: [],
-    playtimeHeatmap: Array.from({ length: 365 }, (_, i) => ({
-      date: new Date(now.getTime() - i * 24 * 60 * 60 * 1000),
-      value: 0,
-    })),
-  };
 }

@@ -2,13 +2,21 @@ name: E2E Full Suite (Non-blocking)
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    # Run daily at 03:00 UTC for broad coverage with DB
+    - cron: "0 3 * * *"
   workflow_dispatch: {}
+
+# Avoid overlapping scheduled runs
+concurrency:
+  group: e2e-full-schedule
+  cancel-in-progress: true
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    # Non-blocking by design: surface failures but don't fail the check suite
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -18,7 +26,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: app
+          POSTGRES_DB: tdp_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
@@ -30,9 +38,11 @@ jobs:
           --health-retries=5
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tdp_test?schema=public
       NODE_ENV: test
       NEXTAUTH_SECRET: test-secret-for-e2e-testing-only
+      # Use database-backed paths in app and tests
+      E2E_SKIP_DB: "0"
 
     steps:
       - name: Checkout repository
@@ -42,9 +52,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
 
       - name: Prepare database
         run: |
@@ -59,15 +77,24 @@ jobs:
           set -o pipefail
           SAFE="${{ matrix.shard }}/"
           SAFE=${SAFE//\//_}
-          npx playwright test --reporter=line --shard=${{ matrix.shard }} 2>&1 | tee "ci_e2e_${SAFE}.log"
+          # Chromium-only for daily coverage; cross-browser covered weekly
+          npx playwright test --project=chromium --reporter=line --shard=${{ matrix.shard }} 2>&1 | tee "ci_e2e_${SAFE}.log"
 
-      - name: Upload shard logs & reports
+      - name: Upload shard logs (always)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ci-e2e-logs-${{ strategy.job-index }}
           path: |
             ci_e2e_*.log
-            playwright-report/**
             test-results/**
+          retention-days: 5
+
+      - name: Upload Playwright HTML report (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-e2e-report-${{ strategy.job-index }}
+          path: |
+            playwright-report/**
           retention-days: 5

@@ -222,7 +222,7 @@ export function DevDetailPage({ locale }: DevDetailPageProps) {
                 const color = colors[idx % colors.length];
 
                 return (
-                  <div key={lang.name}>
+                  <div key={`${lang.name}-${idx}`}>
                     <div className="mb-2 flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <div className={`h-3 w-3 rounded-full ${color}`} />
