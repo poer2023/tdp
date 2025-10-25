@@ -79,6 +79,17 @@ jobs:
           node-version: "22"
           cache: "npm"
 
+      - name: Cache Prisma binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.prisma
+            ~/.cache/prisma
+          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma') }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma') }}-
+            ${{ runner.os }}-prisma-
+
       - name: Install dependencies
         run: npm ci
 
