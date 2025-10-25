@@ -5,7 +5,7 @@ name: Schema Guard
 on:
   pull_request:
     paths:
-      - 'prisma/schema.prisma'
+      - "prisma/schema.prisma"
     branches:
       - main
       - develop
@@ -42,13 +42,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 获取完整历史以便对比
+          fetch-depth: 0 # 获取完整历史以便对比
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Cache Prisma binaries
         uses: actions/cache@v4

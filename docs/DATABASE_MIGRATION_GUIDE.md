@@ -15,6 +15,7 @@ npx prisma migrate dev --name describe_your_change
 ```
 
 **为什么 (Why):**
+
 - ✅ 生成迁移文件 (Generates migration files)
 - ✅ 版本控制迁移历史 (Version-controlled migration history)
 - ✅ 生产环境可重放 (Reproducible in production)
@@ -29,6 +30,7 @@ npx prisma db push
 ```
 
 **为什么 (Why):**
+
 - ❌ 不生成迁移文件 (No migration files)
 - ❌ 无法在生产环境重现 (Cannot reproduce in production)
 - ❌ 导致架构漂移 (Causes schema drift)
@@ -57,6 +59,7 @@ npx prisma migrate dev --name add_user_name_field
 ```
 
 **这个命令会 (This command will):**
+
 1. 生成迁移 SQL 文件到 `prisma/migrations/` (Generate migration SQL)
 2. 应用到本地开发数据库 (Apply to local dev database)
 3. 更新 Prisma Client 类型 (Update Prisma Client types)
@@ -70,6 +73,7 @@ git commit -m "feat: add name field to User model"
 ```
 
 **Git Pre-commit Hook 自动检查 (Automatic Pre-commit Check):**
+
 - ✅ 检测到 `schema.prisma` 变更 (Detects schema.prisma changes)
 - ✅ 验证存在对应的迁移文件 (Verifies migration files exist)
 - ❌ 如果缺少迁移文件，阻止提交 (Blocks commit if missing migrations)
@@ -83,6 +87,7 @@ git push origin feature/add-user-name
 **GitHub Actions 自动运行 (Automatic GitHub Actions):**
 
 #### Schema Guard Workflow (`schema-guard.yml`)
+
 - **触发条件 (Trigger):** PR 修改了 `prisma/schema.prisma`
 - **检查内容 (Checks):**
   ```bash
@@ -96,6 +101,7 @@ git push origin feature/add-user-name
   - ❌ 失败: 检测到架构漂移 (Schema drift detected)
 
 #### CI Critical Path (`ci-critical.yml`)
+
 - 运行所有测试 (Run all tests)
 - 使用 Prisma 缓存加速 (Prisma cache optimization)
 - 验证构建成功 (Verify build success)
@@ -126,6 +132,7 @@ Deploy to Server:
 ## 三层防护机制 (Three-Layer Protection)
 
 ### 第一层: Git Hooks (本地提交前检查)
+
 **文件:** `.husky/pre-commit`
 
 ```bash
@@ -141,13 +148,14 @@ if schema.prisma modified:
 **作用 (Purpose):** 防止开发者忘记创建迁移 (Prevent forgetting migrations)
 
 ### 第二层: GitHub Actions CI (PR 检查)
+
 **文件:** `.github/workflows/schema-guard.yml`
 
 ```yaml
 # Prisma 官方推荐方法 (Official Prisma Method)
 prisma migrate diff --exit-code \
-  --from-migrations ./prisma/migrations \
-  --to-schema-datamodel ./prisma/schema.prisma
+--from-migrations ./prisma/migrations \
+--to-schema-datamodel ./prisma/schema.prisma
 ```
 
 **何时触发 (When):** PR 修改 `schema.prisma`
@@ -155,6 +163,7 @@ prisma migrate diff --exit-code \
 **结果 (Result):** PR 无法合并直到修复 (PR cannot merge until fixed)
 
 ### 第三层: 部署前验证 (Deployment Verification)
+
 **文件:** `.github/workflows/deploy.yml`
 
 ```bash
@@ -225,6 +234,7 @@ git commit -m "feat: update user schema with migration"
 ### 场景 4: Schema Guard CI 失败 (Schema Guard Fails)
 
 **PR Check 结果 (PR Check Result):**
+
 ```
 ❌ 检测到 Schema 变更但缺少迁移文件!
 
@@ -236,6 +246,7 @@ git commit -m "feat: update user schema with migration"
 ```
 
 **修复步骤 (Fix Steps):**
+
 ```bash
 # 1. 在本地创建迁移
 npx prisma migrate dev --name fix_missing_migration
@@ -255,6 +266,7 @@ git push
 **原因 (Cause):** Schema 与迁移文件不一致
 
 **解决方案 (Solution):**
+
 ```bash
 # 检查差异
 npx prisma migrate diff \
@@ -270,6 +282,7 @@ npx prisma migrate dev --name fix_schema_drift
 **原因 (Cause):** 迁移 SQL 与生产数据不兼容
 
 **解决方案 (Solution):**
+
 ```bash
 # 1. 检查迁移状态
 docker compose exec migrate npx prisma migrate status
@@ -288,6 +301,7 @@ docker compose down
 **原因 (Cause):** Prisma CLI 和 Client 版本不一致
 
 **解决方案 (Solution):**
+
 ```bash
 # 检查版本
 npm list prisma @prisma/client
@@ -358,6 +372,7 @@ npx prisma generate
 ```
 
 **效果 (Effect):**
+
 - ⚡ CI 运行时间减少 30-50%
 - 💾 缓存 Prisma 引擎和生成的代码
 - 🔄 Schema 变更时自动重新生成
@@ -365,11 +380,13 @@ npx prisma generate
 ## 参考文档 (References)
 
 ### 官方文档 (Official Documentation)
+
 - [Prisma Migrate](https://www.prisma.io/docs/orm/prisma-migrate)
 - [Development and Production Workflows](https://www.prisma.io/docs/orm/prisma-migrate/workflows/development-and-production)
 - [Migrate Diff Command](https://www.prisma.io/docs/orm/reference/prisma-cli-reference#migrate-diff)
 
 ### 内部文档 (Internal Documentation)
+
 - `.husky/pre-commit` - Git hook 实现
 - `.github/workflows/schema-guard.yml` - CI 检查实现
 - `scripts/verify-migration.sh` - 迁移验证脚本
@@ -380,22 +397,26 @@ npx prisma generate
 ### 2025-10-25: 生产环境架构漂移事故 (Schema Drift Incident)
 
 **问题 (Problem):**
+
 - 开发阶段使用 `prisma db push` 导致迁移历史丢失
 - 生产环境 Schema 与代码定义不一致
 - 凭据同步功能 500 错误
 
 **根本原因 (Root Cause):**
+
 1. `SyncJobLog.platform`: 数据库为 `CredentialPlatform` 枚举，代码期望 `String`
 2. `CredentialPlatform`: 缺少 `HOYOVERSE`, `DOUBAN`, `JELLYFIN` 枚举值
 3. `GitHubStats`: 表结构完全不同 (字段不匹配)
 
 **解决方案 (Solution):**
+
 - 创建修复迁移: `20251025060000_fix_schema_inconsistencies`
 - 实施三层防护机制: Git Hooks + CI + 部署验证
 - 统一 Prisma 版本: 6.18.0
 - 添加 CI 缓存优化
 
 **预防措施 (Prevention):**
+
 - ✅ Pre-commit hook 阻止无迁移的 Schema 变更
 - ✅ Schema Guard workflow 自动检测架构漂移
 - ✅ 部署流程增强备份和验证
@@ -404,6 +425,7 @@ npx prisma generate
 ---
 
 **文档维护 (Document Maintenance):**
+
 - 最后更新: 2025-10-25
 - 维护者: Development Team
 - 版本: 1.0.0

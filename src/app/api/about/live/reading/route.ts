@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type { ReadingData } from "@/types/live-data";
 
 /**
  * GET /api/about/live/reading
