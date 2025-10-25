@@ -45,6 +45,46 @@ jobs:
       BRANCH: main
 
     steps:
+      - name: Verify CI and Docker Build Status
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Get the commit SHA that triggered this workflow
+          COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
+          echo "Checking workflow status for commit: $COMMIT_SHA"
+
+          # Check CI Critical Path status
+          CI_STATUS=$(gh run list \
+            --workflow="ci-critical.yml" \
+            --commit="$COMMIT_SHA" \
+            --json conclusion \
+            --jq '.[0].conclusion')
+
+          if [[ "$CI_STATUS" != "success" ]]; then
+            echo "❌ CI Critical Path did not succeed: $CI_STATUS"
+            echo "Cannot deploy when CI checks fail"
+            exit 1
+          fi
+          echo "✅ CI Critical Path: $CI_STATUS"
+
+          # Check Docker Build job status (not just workflow)
+          DOCKER_BUILD_STATUS=$(gh run view \
+            ${{ github.event.workflow_run.id }} \
+            --json jobs \
+            --jq '.jobs[] | select(.name == "build") | .conclusion')
+
+          if [[ "$DOCKER_BUILD_STATUS" != "success" ]]; then
+            echo "❌ Docker Build job status: ${DOCKER_BUILD_STATUS:-skipped}"
+            echo "Cannot deploy without successful Docker image build"
+            exit 1
+          fi
+          echo "✅ Docker Build job: $DOCKER_BUILD_STATUS"
+
+          echo "All pre-deployment checks passed"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Check required deploy secrets
         shell: bash
         run: |
