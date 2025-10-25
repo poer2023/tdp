@@ -10,6 +10,7 @@
 .github/workflows/e2e-weekly-browsers.yml
 .github/workflows/e2e.yml
 .github/workflows/prettier-format.yml
+.github/workflows/schema-guard.yml
 .github/workflows/server-logs.yml
 README.md
 docker-compose.yml
@@ -19,6 +20,7 @@ docs/BRANCH_PROTECTION_SETUP.md
 docs/CONFIGURATION.md
 docs/CONTENT_FORMAT.md
 docs/CREDENTIAL_FIX_SUMMARY.md
+docs/DATABASE_MIGRATION_GUIDE.md
 docs/DEPLOYMENT.md
 docs/E2E_AUTH_SETUP.md
 docs/E2E_SCALING_GUIDE.md
