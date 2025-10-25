@@ -23,6 +23,7 @@ docs/E2E_AUTH_SETUP.md
 docs/E2E_SCALING_GUIDE.md
 docs/E2E_TESTING.md
 docs/E2E_TESTING_GUIDE.md
+docs/EMERGENCY_ROLLBACK_PLAN.md
 docs/GAMING_DATA_SETUP.md
 docs/GAMING_TESTS.md
 docs/GET_BILIBILI_COOKIE.md
@@ -32,6 +33,7 @@ docs/MANUAL_TESTING.md
 docs/MEDIA_SYNC_SETUP.md
 docs/MONITORING.md
 docs/PRIVACY_POLICY.md
+docs/PRODUCTION_DEPLOYMENT_GUIDE.md
 docs/TESTING.md
 docs/USER_GUIDE.md
 docs/admin-overview-ui-spec.md
