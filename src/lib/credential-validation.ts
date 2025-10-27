@@ -120,7 +120,28 @@ async function validateBilibiliCredential(value: string): Promise<ValidationResu
 }
 
 /**
- * Validate Douban Cookie
+ * Extract Douban User ID from HTML response
+ */
+function extractDoubanUserId(html: string): string | null {
+  // Method 1: Extract from URL in HTML (e.g., href="/people/123456789/")
+  const userIdPatterns = [
+    /\/people\/(\d+)\//,  // Standard user ID in URLs
+    /data-uid="(\d+)"/,   // data-uid attribute
+    /user_id[=:]"?(\d+)"?/i,  // user_id in various formats
+  ];
+
+  for (const pattern of userIdPatterns) {
+    const match = html.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Validate Douban Cookie and extract user ID
  */
 async function validateDoubanCredential(value: string): Promise<ValidationResult> {
   try {
@@ -132,73 +153,119 @@ async function validateDoubanCredential(value: string): Promise<ValidationResult
       };
     }
 
-    // Try to access a protected page that requires login
-    // Using the account page which always returns 302 redirect if not logged in
-    const response = await fetch("https://www.douban.com/accounts/", {
-      headers: {
-        Cookie: value,
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        Referer: "https://www.douban.com/",
-      },
+    const headers = {
+      Cookie: value,
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      Referer: "https://www.douban.com/",
+    };
+
+    // Try to access personal homepage which will redirect to user's profile
+    const mineResponse = await fetch("https://www.douban.com/mine/", {
+      headers,
       signal: AbortSignal.timeout(10000),
-      redirect: "manual", // Don't follow redirects
+      redirect: "follow", // Follow redirects to get to user page
     });
 
-    // If we get 200, cookie is valid and we can access the account page
-    if (response.status === 200) {
+    let userId: string | null = null;
+
+    // If we get a successful response, try to extract user ID from HTML
+    if (mineResponse.ok) {
+      const html = await mineResponse.text();
+      userId = extractDoubanUserId(html);
+
+      // Also try to extract from final URL after redirects
+      if (!userId) {
+        const finalUrl = mineResponse.url;
+        const urlMatch = finalUrl.match(/\/people\/(\d+)/);
+        if (urlMatch && urlMatch[1]) {
+          userId = urlMatch[1];
+        }
+      }
+
+      if (userId) {
+        return {
+          isValid: true,
+          message: "Douban Cookie is valid, user ID extracted successfully",
+          metadata: {
+            userId,
+            extractionMethod: "profile_redirect",
+          },
+        };
+      }
+
+      // Cookie is valid but couldn't extract user ID
       return {
         isValid: true,
-        message: "Douban Cookie is valid",
+        message: "Douban Cookie is valid but could not auto-extract user ID",
+        metadata: {
+          warning: "Please manually add userId to metadata",
+        },
       };
     }
 
-    // If we get 302, check the redirect location
-    if (response.status === 302 || response.status === 301) {
-      const location = response.headers.get("location") || "";
+    // Try alternative validation method: access user's movie collection
+    const collectionUrl = "https://movie.douban.com/mine";
+    const collectionResponse = await fetch(collectionUrl, {
+      headers,
+      signal: AbortSignal.timeout(10000),
+      redirect: "follow",
+    });
 
-      // If redirected to login, cookie is invalid
+    if (collectionResponse.ok) {
+      const html = await collectionResponse.text();
+      userId = extractDoubanUserId(html);
+
+      // Try to extract from final URL
+      if (!userId) {
+        const finalUrl = collectionResponse.url;
+        const urlMatch = finalUrl.match(/\/people\/(\d+)/);
+        if (urlMatch && urlMatch[1]) {
+          userId = urlMatch[1];
+        }
+      }
+
+      if (userId) {
+        return {
+          isValid: true,
+          message: "Douban Cookie is valid (verified via movie collection), user ID extracted",
+          metadata: {
+            userId,
+            extractionMethod: "collection_redirect",
+          },
+        };
+      }
+
+      return {
+        isValid: true,
+        message: "Douban Cookie is valid (verified via movie collection)",
+        metadata: {
+          warning: "Could not auto-extract user ID, please add manually",
+        },
+      };
+    }
+
+    // Check account page as fallback
+    const accountResponse = await fetch("https://www.douban.com/accounts/", {
+      headers,
+      signal: AbortSignal.timeout(10000),
+      redirect: "manual",
+    });
+
+    // If redirected to login, cookie is invalid
+    if (accountResponse.status === 302 || accountResponse.status === 301) {
+      const location = accountResponse.headers.get("location") || "";
       if (location.includes("passport.douban.com") || location.includes("login")) {
         return {
           isValid: false,
           error: "Douban cookie is invalid or expired (redirected to login page)",
         };
       }
-
-      // Some other redirect - might still be valid
-      return {
-        isValid: true,
-        message: "Douban Cookie appears valid (non-login redirect)",
-        metadata: {
-          redirectLocation: location,
-        },
-      };
-    }
-
-    // Try an alternative validation method: access user's movie collection
-    // This is more lenient and works even if the account page behavior changes
-    const collectionUrl = "https://movie.douban.com/mine";
-    const collectionResponse = await fetch(collectionUrl, {
-      headers: {
-        Cookie: value,
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        Referer: "https://www.douban.com/",
-      },
-      signal: AbortSignal.timeout(10000),
-      redirect: "manual",
-    });
-
-    if (collectionResponse.status === 200) {
-      return {
-        isValid: true,
-        message: "Douban Cookie is valid (verified via movie collection)",
-      };
     }
 
     return {
       isValid: false,
-      error: `Douban validation failed: status ${response.status} (account page), ${collectionResponse.status} (collection page)`,
+      error: `Douban validation failed: could not verify cookie validity`,
     };
   } catch (error) {
     return {

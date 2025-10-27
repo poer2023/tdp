@@ -647,8 +647,8 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
     ).filter((c) => c.platform === "DOUBAN");
     for (const credential of doubanCredentials) {
       // Support both user_id and userId formats in metadata
-      const metadata = credential.metadata as { userId?: string; user_id?: string };
-      const userId = metadata.userId || metadata.user_id || process.env.DOUBAN_USER_ID;
+      const metadata = credential.metadata as { userId?: string; user_id?: string } | null;
+      const userId = metadata?.userId || metadata?.user_id || process.env.DOUBAN_USER_ID;
 
       if (userId) {
         // Decrypt credential value if encrypted
@@ -688,8 +688,8 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
     ).filter((c) => c.platform === "STEAM");
     for (const credential of steamCredentials) {
       // Get Steam ID from metadata
-      const metadata = credential.metadata as { steamId?: string };
-      const steamId = metadata.steamId || process.env.STEAM_ID;
+      const metadata = credential.metadata as { steamId?: string } | null;
+      const steamId = metadata?.steamId || process.env.STEAM_ID;
 
       if (steamId) {
         // Decrypt credential value if encrypted (API Key)

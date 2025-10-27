@@ -36,8 +36,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     switch (credential.platform) {
       case CredentialPlatform.STEAM: {
         // Extract Steam ID from metadata or environment
-        const steamId =
-          (credential.metadata as { steamId?: string })?.steamId || process.env.STEAM_USER_ID;
+        const metadata = credential.metadata as { steamId?: string } | null;
+        const steamId = metadata?.steamId || process.env.STEAM_USER_ID;
 
         if (!steamId) {
           return NextResponse.json(
@@ -81,7 +81,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
       case CredentialPlatform.HOYOVERSE: {
         // Extract HoYo UID from metadata or environment
-        const hoyoUid = (credential.metadata as { uid?: string })?.uid || process.env.HOYO_UID;
+        const metadata = credential.metadata as { uid?: string } | null;
+        const hoyoUid = metadata?.uid || process.env.HOYO_UID;
 
         if (!hoyoUid) {
           return NextResponse.json(
@@ -147,11 +148,27 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
       case CredentialPlatform.DOUBAN: {
         // Extract Douban user ID from metadata (support both user_id and userId formats)
-        const metadata = credential.metadata as { userId?: string; user_id?: string };
-        const userId = metadata.userId || metadata.user_id;
+        const metadata = credential.metadata as { userId?: string; user_id?: string } | null;
 
         console.log(`[Douban Sync] Credential ${credential.id}`);
         console.log(`[Douban Sync] Metadata:`, JSON.stringify(metadata));
+
+        // Check if metadata exists first to prevent TypeError
+        if (!metadata) {
+          console.error(
+            `[Douban Sync] Missing metadata for credential ${credential.id}`
+          );
+          return NextResponse.json(
+            {
+              error: "Douban credential metadata is missing",
+              details: "Please validate the credential first to automatically populate user ID, or contact admin to update metadata with 'userId' field.",
+              action: "Click the 'Validate' button to automatically extract user ID from your cookie",
+            },
+            { status: 400 }
+          );
+        }
+
+        const userId = metadata.userId || metadata.user_id;
         console.log(`[Douban Sync] Extracted userId: ${userId || "(missing)"}`);
 
         if (!userId) {
@@ -161,7 +178,9 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           return NextResponse.json(
             {
               error: "Douban user ID not found in credential metadata",
-              details: `Metadata: ${JSON.stringify(metadata)}. Please add 'user_id' or 'userId' field.`,
+              details: `Metadata exists but userId is missing. Please validate the credential to automatically extract user ID.`,
+              action: "Click the 'Validate' button to automatically populate user ID",
+              currentMetadata: metadata,
             },
             { status: 400 }
           );
