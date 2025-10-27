@@ -94,7 +94,9 @@ export async function syncBilibili(
     const fetchResult = await fetchBilibiliIncremental(config, platform);
     const { items, syncMode, pagesRequested, earlyStopTriggered } = fetchResult;
 
-    console.log(`[${platform}] Fetched ${items.length} items from API (${syncMode} mode, ${pagesRequested} pages)`);
+    console.log(
+      `[${platform}] Fetched ${items.length} items from API (${syncMode} mode, ${pagesRequested} pages)`
+    );
 
     // Normalize first to derive external IDs consistently (tests may omit certain fields)
     const normalizedAll = items.map((it) => normalizeBilibiliItem(it));
@@ -156,7 +158,8 @@ export async function syncBilibili(
     const itemsExisting = items.length - newItems.length;
 
     // Calculate last synced timestamp and cursor
-    const lastSyncedAt = items.length > 0 && items[0] ? new Date(items[0].view_at * 1000) : undefined;
+    const lastSyncedAt =
+      items.length > 0 && items[0] ? new Date(items[0].view_at * 1000) : undefined;
     const lastCursor = items.length > 0 && items[0] ? items[0].view_at.toString() : undefined;
 
     // Update job log record with incremental sync fields
