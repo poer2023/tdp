@@ -89,7 +89,7 @@ export async function syncBilibili(
     console.log(`[${platform}] Starting sync...`);
 
     // Fetch history from Bilibili (fetch 50 pages = ~1000 items, which is the API limit)
-    const items = await fetchBilibiliHistory(config, 10);
+    const items = await fetchBilibiliHistory(config, 50);
     console.log(`[${platform}] Fetched ${items.length} items from API`);
 
     // Normalize first to derive external IDs consistently (tests may omit certain fields)

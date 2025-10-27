@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import type { MediaData, JellyfinItem, MediaApiParams } from "@/types/live-data";
 import type { Prisma } from "@prisma/client";
@@ -25,131 +24,124 @@ function getProxiedImageUrl(imageUrl: string | undefined): string | undefined {
 }
 
 /**
- * Cached statistics calculation function
- * Reduces database queries by caching stats for 15 minutes
+ * Calculate statistics from database
+ * Executes all stat queries in parallel for performance
  */
-const getCachedStats = unstable_cache(
-  async () => {
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+async function getStats() {
+  const now = new Date();
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
-    // Parallel execution of all stat queries
-    const [
-      // This Week stats
-      thisWeekMovies,
-      thisWeekSeries,
-      thisWeekGames,
-      thisWeekBilibili,
-      thisWeekDouban,
-      thisWeekSteam,
-      // This Month stats
-      thisMonthMovies,
-      thisMonthSeries,
-      thisMonthGames,
-      thisMonthBilibili,
-      thisMonthDouban,
-      thisMonthSteam,
-      // This Year stats
-      thisYearItems,
-      // Platform stats
-      bilibiliMovies,
-      bilibiliSeries,
-      bilibiliTotal,
-      doubanMovies,
-      doubanSeries,
-      doubanTotal,
-      steamGames,
-      steamTotal,
-    ] = await Promise.all([
-      // This Week
-      prisma.mediaWatch.count({ where: { type: "movie", watchedAt: { gte: oneWeekAgo } } }),
-      prisma.mediaWatch.count({ where: { type: "series", watchedAt: { gte: oneWeekAgo } } }),
-      prisma.mediaWatch.count({ where: { type: "game", watchedAt: { gte: oneWeekAgo } } }),
-      prisma.mediaWatch.count({ where: { platform: "BILIBILI", watchedAt: { gte: oneWeekAgo } } }),
-      prisma.mediaWatch.count({ where: { platform: "DOUBAN", watchedAt: { gte: oneWeekAgo } } }),
-      prisma.mediaWatch.count({ where: { platform: "STEAM", watchedAt: { gte: oneWeekAgo } } }),
-      // This Month
-      prisma.mediaWatch.count({ where: { type: "movie", watchedAt: { gte: oneMonthAgo } } }),
-      prisma.mediaWatch.count({ where: { type: "series", watchedAt: { gte: oneMonthAgo } } }),
-      prisma.mediaWatch.count({ where: { type: "game", watchedAt: { gte: oneMonthAgo } } }),
-      prisma.mediaWatch.count({ where: { platform: "BILIBILI", watchedAt: { gte: oneMonthAgo } } }),
-      prisma.mediaWatch.count({ where: { platform: "DOUBAN", watchedAt: { gte: oneMonthAgo } } }),
-      prisma.mediaWatch.count({ where: { platform: "STEAM", watchedAt: { gte: oneMonthAgo } } }),
-      // This Year
-      prisma.mediaWatch.findMany({
-        where: { watchedAt: { gte: oneYearAgo } },
-        select: { duration: true, platform: true },
-      }),
-      // Platform stats
-      prisma.mediaWatch.count({ where: { platform: "BILIBILI", type: "movie" } }),
-      prisma.mediaWatch.count({ where: { platform: "BILIBILI", type: "series" } }),
-      prisma.mediaWatch.count({ where: { platform: "BILIBILI" } }),
-      prisma.mediaWatch.count({ where: { platform: "DOUBAN", type: "movie" } }),
-      prisma.mediaWatch.count({ where: { platform: "DOUBAN", type: "series" } }),
-      prisma.mediaWatch.count({ where: { platform: "DOUBAN" } }),
-      prisma.mediaWatch.count({ where: { platform: "STEAM", type: "game" } }),
-      prisma.mediaWatch.count({ where: { platform: "STEAM" } }),
-    ]);
+  // Parallel execution of all stat queries
+  const [
+    // This Week stats
+    thisWeekMovies,
+    thisWeekSeries,
+    thisWeekGames,
+    thisWeekBilibili,
+    thisWeekDouban,
+    thisWeekSteam,
+    // This Month stats
+    thisMonthMovies,
+    thisMonthSeries,
+    thisMonthGames,
+    thisMonthBilibili,
+    thisMonthDouban,
+    thisMonthSteam,
+    // This Year stats
+    thisYearItems,
+    // Platform stats
+    bilibiliMovies,
+    bilibiliSeries,
+    bilibiliTotal,
+    doubanMovies,
+    doubanSeries,
+    doubanTotal,
+    steamGames,
+    steamTotal,
+  ] = await Promise.all([
+    // This Week
+    prisma.mediaWatch.count({ where: { type: "movie", watchedAt: { gte: oneWeekAgo } } }),
+    prisma.mediaWatch.count({ where: { type: "series", watchedAt: { gte: oneWeekAgo } } }),
+    prisma.mediaWatch.count({ where: { type: "game", watchedAt: { gte: oneWeekAgo } } }),
+    prisma.mediaWatch.count({ where: { platform: "BILIBILI", watchedAt: { gte: oneWeekAgo } } }),
+    prisma.mediaWatch.count({ where: { platform: "DOUBAN", watchedAt: { gte: oneWeekAgo } } }),
+    prisma.mediaWatch.count({ where: { platform: "STEAM", watchedAt: { gte: oneWeekAgo } } }),
+    // This Month
+    prisma.mediaWatch.count({ where: { type: "movie", watchedAt: { gte: oneMonthAgo } } }),
+    prisma.mediaWatch.count({ where: { type: "series", watchedAt: { gte: oneMonthAgo } } }),
+    prisma.mediaWatch.count({ where: { type: "game", watchedAt: { gte: oneMonthAgo } } }),
+    prisma.mediaWatch.count({ where: { platform: "BILIBILI", watchedAt: { gte: oneMonthAgo } } }),
+    prisma.mediaWatch.count({ where: { platform: "DOUBAN", watchedAt: { gte: oneMonthAgo } } }),
+    prisma.mediaWatch.count({ where: { platform: "STEAM", watchedAt: { gte: oneMonthAgo } } }),
+    // This Year
+    prisma.mediaWatch.findMany({
+      where: { watchedAt: { gte: oneYearAgo } },
+      select: { duration: true, platform: true },
+    }),
+    // Platform stats
+    prisma.mediaWatch.count({ where: { platform: "BILIBILI", type: "movie" } }),
+    prisma.mediaWatch.count({ where: { platform: "BILIBILI", type: "series" } }),
+    prisma.mediaWatch.count({ where: { platform: "BILIBILI" } }),
+    prisma.mediaWatch.count({ where: { platform: "DOUBAN", type: "movie" } }),
+    prisma.mediaWatch.count({ where: { platform: "DOUBAN", type: "series" } }),
+    prisma.mediaWatch.count({ where: { platform: "DOUBAN" } }),
+    prisma.mediaWatch.count({ where: { platform: "STEAM", type: "game" } }),
+    prisma.mediaWatch.count({ where: { platform: "STEAM" } }),
+  ]);
 
-    const thisYearTotalHours = Math.round(
-      thisYearItems.reduce((sum, r) => sum + (r.duration || 0), 0) / 60
-    );
-    const thisYearBilibili = thisYearItems.filter((r) => r.platform === "BILIBILI").length;
-    const thisYearDouban = thisYearItems.filter((r) => r.platform === "DOUBAN").length;
-    const thisYearSteam = thisYearItems.filter((r) => r.platform === "STEAM").length;
+  const thisYearTotalHours = Math.round(
+    thisYearItems.reduce((sum, r) => sum + (r.duration || 0), 0) / 60
+  );
+  const thisYearBilibili = thisYearItems.filter((r) => r.platform === "BILIBILI").length;
+  const thisYearDouban = thisYearItems.filter((r) => r.platform === "DOUBAN").length;
+  const thisYearSteam = thisYearItems.filter((r) => r.platform === "STEAM").length;
 
-    return {
-      stats: {
-        thisWeek: {
-          movies: thisWeekMovies,
-          series: thisWeekSeries,
-          games: thisWeekGames,
-          bilibili: thisWeekBilibili,
-          douban: thisWeekDouban,
-          steam: thisWeekSteam,
-        },
-        thisMonth: {
-          movies: thisMonthMovies,
-          series: thisMonthSeries,
-          games: thisMonthGames,
-          bilibili: thisMonthBilibili,
-          douban: thisMonthDouban,
-          steam: thisMonthSteam,
-        },
-        thisYear: {
-          totalHours: thisYearTotalHours,
-          totalItems: thisYearItems.length,
-          bilibili: thisYearBilibili,
-          douban: thisYearDouban,
-          steam: thisYearSteam,
-        },
+  return {
+    stats: {
+      thisWeek: {
+        movies: thisWeekMovies,
+        series: thisWeekSeries,
+        games: thisWeekGames,
+        bilibili: thisWeekBilibili,
+        douban: thisWeekDouban,
+        steam: thisWeekSteam,
       },
-      platformStats: {
-        bilibili: {
-          total: bilibiliTotal,
-          movies: bilibiliMovies,
-          series: bilibiliSeries,
-        },
-        douban: {
-          total: doubanTotal,
-          movies: doubanMovies,
-          series: doubanSeries,
-        },
-        steam: {
-          total: steamTotal,
-          games: steamGames,
-        },
+      thisMonth: {
+        movies: thisMonthMovies,
+        series: thisMonthSeries,
+        games: thisMonthGames,
+        bilibili: thisMonthBilibili,
+        douban: thisMonthDouban,
+        steam: thisMonthSteam,
       },
-    };
-  },
-  ["media-stats"],
-  {
-    revalidate: 900, // Cache for 15 minutes
-    tags: ["media-stats"],
-  }
-);
+      thisYear: {
+        totalHours: thisYearTotalHours,
+        totalItems: thisYearItems.length,
+        bilibili: thisYearBilibili,
+        douban: thisYearDouban,
+        steam: thisYearSteam,
+      },
+    },
+    platformStats: {
+      bilibili: {
+        total: bilibiliTotal,
+        movies: bilibiliMovies,
+        series: bilibiliSeries,
+      },
+      douban: {
+        total: doubanTotal,
+        movies: doubanMovies,
+        series: doubanSeries,
+      },
+      steam: {
+        total: steamTotal,
+        games: steamGames,
+      },
+    },
+  };
+}
 
 /**
  * GET /api/about/live/media
@@ -253,8 +245,8 @@ export async function GET(request: Request) {
       platform: record.platform as "bilibili" | "douban",
     }));
 
-    // Get cached statistics (reduces 13+ queries to 1 cached result)
-    const { stats, platformStats } = await getCachedStats();
+    // Get real-time statistics from database
+    const { stats, platformStats } = await getStats();
 
     // Currently watching: series with progress > 0 and < 100
     const currentlyWatchingRecords = await prisma.mediaWatch.findMany({

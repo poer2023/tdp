@@ -42,11 +42,11 @@ interface BilibiliApiResponse {
 /**
  * Fetch Bilibili watch history
  * @param config User's Bilibili authentication cookies
- * @param maxPages Maximum number of pages to fetch (default: 5, each page has ~20 items)
+ * @param maxPages Maximum number of pages to fetch (default: 50, each page has ~20 items = ~1000 total items)
  */
 export async function fetchBilibiliHistory(
   config: BilibiliConfig,
-  maxPages: number = 5
+  maxPages: number = 50
 ): Promise<BilibiliHistoryItem[]> {
   const allItems: BilibiliHistoryItem[] = [];
   let viewAt = 0; // Pagination cursor
