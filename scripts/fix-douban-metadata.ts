@@ -117,7 +117,9 @@ async function fixDoubanMetadata() {
     console.log(`Extraction failed: ${extraction_failed}`);
 
     if (validation_failed > 0 || extraction_failed > 0) {
-      console.log(`\n⚠️  ${validation_failed + extraction_failed} credential(s) need manual intervention`);
+      console.log(
+        `\n⚠️  ${validation_failed + extraction_failed} credential(s) need manual intervention`
+      );
       console.log(`Please check the credential cookies and re-validate them`);
     } else if (fixed > 0) {
       console.log(`\n✅ Successfully auto-fixed ${fixed} credential(s)`);
