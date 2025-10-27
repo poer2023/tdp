@@ -3,7 +3,7 @@
  * Add userId to metadata if missing by validating the credential
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { validateCredential } from "../src/lib/credential-validation";
 import { isEncrypted, decryptCredential } from "../src/lib/encryption";
 
@@ -46,8 +46,8 @@ async function fixDoubanMetadata() {
           // Validate credential (this will also extract userId)
           console.log(`  🔍 Validating credential to extract userId...`);
           const validationResult = await validateCredential(
-            cred.platform as any,
-            cred.type as any,
+            cred.platform,
+            cred.type,
             credentialValue
           );
 
@@ -59,14 +59,14 @@ async function fixDoubanMetadata() {
             const updatedMetadata = {
               ...(metadata || {}),
               userId: extractedUserId,
-              extractionMethod: validationResult.metadata.extractionMethod,
+              extractionMethod: validationResult.metadata.extractionMethod as string,
               extractedAt: new Date().toISOString(),
             };
 
             await prisma.externalCredential.update({
               where: { id: cred.id },
               data: {
-                metadata: updatedMetadata,
+                metadata: updatedMetadata as Prisma.InputJsonValue,
                 isValid: true,
                 lastValidatedAt: new Date(),
               },
