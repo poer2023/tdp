@@ -155,14 +155,14 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
         // Check if metadata exists first to prevent TypeError
         if (!metadata) {
-          console.error(
-            `[Douban Sync] Missing metadata for credential ${credential.id}`
-          );
+          console.error(`[Douban Sync] Missing metadata for credential ${credential.id}`);
           return NextResponse.json(
             {
               error: "Douban credential metadata is missing",
-              details: "Please validate the credential first to automatically populate user ID, or contact admin to update metadata with 'userId' field.",
-              action: "Click the 'Validate' button to automatically extract user ID from your cookie",
+              details:
+                "Please validate the credential first to automatically populate user ID, or contact admin to update metadata with 'userId' field.",
+              action:
+                "Click the 'Validate' button to automatically extract user ID from your cookie",
             },
             { status: 400 }
           );
@@ -172,9 +172,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         console.log(`[Douban Sync] Extracted userId: ${userId || "(missing)"}`);
 
         if (!userId) {
-          console.error(
-            `[Douban Sync] Missing userId in metadata for credential ${credential.id}`
-          );
+          console.error(`[Douban Sync] Missing userId in metadata for credential ${credential.id}`);
           return NextResponse.json(
             {
               error: "Douban user ID not found in credential metadata",

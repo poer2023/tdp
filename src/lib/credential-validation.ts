@@ -125,9 +125,9 @@ async function validateBilibiliCredential(value: string): Promise<ValidationResu
 function extractDoubanUserId(html: string): string | null {
   // Method 1: Extract from URL in HTML (e.g., href="/people/123456789/")
   const userIdPatterns = [
-    /\/people\/(\d+)\//,  // Standard user ID in URLs
-    /data-uid="(\d+)"/,   // data-uid attribute
-    /user_id[=:]"?(\d+)"?/i,  // user_id in various formats
+    /\/people\/(\d+)\//, // Standard user ID in URLs
+    /data-uid="(\d+)"/, // data-uid attribute
+    /user_id[=:]"?(\d+)"?/i, // user_id in various formats
   ];
 
   for (const pattern of userIdPatterns) {
