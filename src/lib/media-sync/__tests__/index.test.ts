@@ -126,7 +126,7 @@ describe("Media Sync Integration Tests", () => {
           biliJct: "abc456",
           buvid3: "xyz789",
         },
-        10
+        50
       );
 
       expect(results).toHaveLength(1);
@@ -220,7 +220,7 @@ describe("Media Sync Integration Tests", () => {
           biliJct: "plain456",
           buvid3: "plain789",
         },
-        10
+        50
       );
 
       expect(results).toHaveLength(1);
@@ -270,7 +270,7 @@ describe("Media Sync Integration Tests", () => {
           biliJct: "enc456",
           buvid3: "enc789",
         },
-        10
+        50
       );
 
       // Verify plain credential used directly
@@ -350,7 +350,7 @@ describe("Media Sync Integration Tests", () => {
           biliJct: "env-jct",
           buvid3: "env-buvid",
         },
-        10
+        50
       );
 
       expect(mockFetchDoubanWatched).toHaveBeenCalledWith(
