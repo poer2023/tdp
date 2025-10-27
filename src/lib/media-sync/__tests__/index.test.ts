@@ -10,15 +10,17 @@ const {
   mockPrismaCreate,
   mockPrismaUpdate,
   mockPrismaUpsert,
-  mockFetchBilibiliHistory,
+  mockFetchBilibiliIncremental,
   mockFetchDoubanWatched,
+  mockGetExistingExternalIds,
 } = vi.hoisted(() => ({
   mockPrismaFindMany: vi.fn(),
   mockPrismaCreate: vi.fn(),
   mockPrismaUpdate: vi.fn(),
   mockPrismaUpsert: vi.fn(),
-  mockFetchBilibiliHistory: vi.fn(),
+  mockFetchBilibiliIncremental: vi.fn(),
   mockFetchDoubanWatched: vi.fn(),
+  mockGetExistingExternalIds: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => {
@@ -42,8 +44,11 @@ vi.mock("@/lib/prisma", () => {
   };
 });
 
+vi.mock("../bilibili-incremental", () => ({
+  fetchBilibiliIncremental: mockFetchBilibiliIncremental,
+}));
+
 vi.mock("../bilibili", () => ({
-  fetchBilibiliHistory: mockFetchBilibiliHistory,
   normalizeBilibiliItem: (item: BilibiliHistoryItem) => ({
     platform: "bilibili",
     externalId: item.history.bvid,
@@ -55,6 +60,11 @@ vi.mock("../bilibili", () => ({
     duration: item.duration,
     metadata: {},
   }),
+}));
+
+vi.mock("../sync-state", () => ({
+  getExistingExternalIds: mockGetExistingExternalIds,
+  getLastSuccessfulSync: vi.fn().mockResolvedValue(null),
 }));
 
 vi.mock("../douban", () => ({
@@ -105,28 +115,34 @@ describe("Media Sync Integration Tests", () => {
 
       mockPrismaCreate.mockResolvedValue({ id: "job-1", status: "RUNNING" });
       mockPrismaUpdate.mockResolvedValue({});
-      mockFetchBilibiliHistory.mockResolvedValue([
-        {
-          title: "Test Video",
-          cover: "https://example.com/cover.jpg",
-          history: { bvid: "BV1xx411c7mD" },
-          view_at: 1705305600,
-          progress: 100,
-          duration: 600,
-        },
-      ]);
+      mockFetchBilibiliIncremental.mockResolvedValue({
+        items: [
+          {
+            title: "Test Video",
+            cover: "https://example.com/cover.jpg",
+            history: { bvid: "BV1xx411c7mD" },
+            view_at: 1705305600,
+            progress: 100,
+            duration: 600,
+          },
+        ],
+        syncMode: "full",
+        pagesRequested: 1,
+        earlyStopTriggered: false,
+      });
+      mockGetExistingExternalIds.mockResolvedValue(new Set());
       mockPrismaUpsert.mockResolvedValue({});
 
       const results = await syncAllPlatforms();
 
       // Verify decryption and parsing
-      expect(mockFetchBilibiliHistory).toHaveBeenCalledWith(
+      expect(mockFetchBilibiliIncremental).toHaveBeenCalledWith(
         {
           sessdata: "test123",
           biliJct: "abc456",
           buvid3: "xyz789",
         },
-        50
+        "BILIBILI"
       );
 
       expect(results).toHaveLength(1);
@@ -199,28 +215,34 @@ describe("Media Sync Integration Tests", () => {
 
       mockPrismaCreate.mockResolvedValue({ id: "job-3", status: "RUNNING" });
       mockPrismaUpdate.mockResolvedValue({});
-      mockFetchBilibiliHistory.mockResolvedValue([
-        {
-          title: "Legacy Video",
-          cover: "https://example.com/legacy.jpg",
-          history: { bvid: "BV2xx411c7mE" },
-          view_at: 1705305600,
-          progress: 50,
-          duration: 300,
-        },
-      ]);
+      mockFetchBilibiliIncremental.mockResolvedValue({
+        items: [
+          {
+            title: "Legacy Video",
+            cover: "https://example.com/legacy.jpg",
+            history: { bvid: "BV2xx411c7mE" },
+            view_at: 1705305600,
+            progress: 50,
+            duration: 300,
+          },
+        ],
+        syncMode: "full",
+        pagesRequested: 1,
+        earlyStopTriggered: false,
+      });
+      mockGetExistingExternalIds.mockResolvedValue(new Set());
       mockPrismaUpsert.mockResolvedValue({});
 
       const results = await syncAllPlatforms();
 
       // Verify plain credential used directly (no decryption)
-      expect(mockFetchBilibiliHistory).toHaveBeenCalledWith(
+      expect(mockFetchBilibiliIncremental).toHaveBeenCalledWith(
         {
           sessdata: "plain123",
           biliJct: "plain456",
           buvid3: "plain789",
         },
-        50
+        "BILIBILI"
       );
 
       expect(results).toHaveLength(1);
@@ -252,8 +274,14 @@ describe("Media Sync Integration Tests", () => {
 
       mockPrismaCreate.mockResolvedValue({ id: "job-x", status: "RUNNING" });
       mockPrismaUpdate.mockResolvedValue({});
-      mockFetchBilibiliHistory.mockResolvedValue([]);
+      mockFetchBilibiliIncremental.mockResolvedValue({
+        items: [],
+        syncMode: "full",
+        pagesRequested: 1,
+        earlyStopTriggered: false,
+      });
       mockFetchDoubanWatched.mockResolvedValue([]);
+      mockGetExistingExternalIds.mockResolvedValue(new Set());
       mockPrismaUpsert.mockResolvedValue({});
 
       const results = await syncAllPlatforms();
@@ -264,13 +292,13 @@ describe("Media Sync Integration Tests", () => {
       expect(results.some((r) => r.platform === "douban")).toBe(true);
 
       // Verify encrypted credential was decrypted
-      expect(mockFetchBilibiliHistory).toHaveBeenCalledWith(
+      expect(mockFetchBilibiliIncremental).toHaveBeenCalledWith(
         {
           sessdata: "enc123",
           biliJct: "enc456",
           buvid3: "enc789",
         },
-        50
+        "BILIBILI"
       );
 
       // Verify plain credential used directly
@@ -300,7 +328,7 @@ describe("Media Sync Integration Tests", () => {
       const results = await syncAllPlatforms();
 
       // Should not attempt to sync
-      expect(mockFetchBilibiliHistory).not.toHaveBeenCalled();
+      expect(mockFetchBilibiliIncremental).not.toHaveBeenCalled();
       expect(results).toHaveLength(0);
     });
 
@@ -337,20 +365,26 @@ describe("Media Sync Integration Tests", () => {
 
       mockPrismaCreate.mockResolvedValue({ id: "job-env", status: "RUNNING" });
       mockPrismaUpdate.mockResolvedValue({});
-      mockFetchBilibiliHistory.mockResolvedValue([]);
+      mockFetchBilibiliIncremental.mockResolvedValue({
+        items: [],
+        syncMode: "full",
+        pagesRequested: 1,
+        earlyStopTriggered: false,
+      });
       mockFetchDoubanWatched.mockResolvedValue([]);
+      mockGetExistingExternalIds.mockResolvedValue(new Set());
       mockPrismaUpsert.mockResolvedValue({});
 
       const results = await syncAllPlatforms();
 
       // Verify environment variables used
-      expect(mockFetchBilibiliHistory).toHaveBeenCalledWith(
+      expect(mockFetchBilibiliIncremental).toHaveBeenCalledWith(
         {
           sessdata: "env-sessdata",
           biliJct: "env-jct",
           buvid3: "env-buvid",
         },
-        50
+        "BILIBILI"
       );
 
       expect(mockFetchDoubanWatched).toHaveBeenCalledWith(
