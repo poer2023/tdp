@@ -430,6 +430,13 @@ model SyncJobLog {
   metrics      Json?
   createdAt    DateTime             @default(now())
 
+  // Incremental sync fields
+  syncMode     String?              // "full" | "incremental"
+  lastCursor   String?              // Last cursor position (e.g., Bilibili view_at)
+  lastSyncedAt DateTime?            // Timestamp of last synced item
+  itemsNew     Int                  @default(0) // New items added in this sync
+  itemsExisting Int                 @default(0) // Items skipped (already exist)
+
   // Relations
   credential   ExternalCredential?   @relation("CredentialSyncJobs", fields: [credentialId], references: [id], onDelete: SetNull)
   syncLogs     MediaWatchSyncLog[]   @relation("SyncJobLogs") // Many-to-many relationship with MediaWatch
@@ -439,6 +446,7 @@ model SyncJobLog {
   @@index([status, startedAt])
   @@index([triggeredBy, createdAt])
   @@index([credentialId])
+  @@index([platform, syncMode, completedAt])
 }
 
 // GitHub Data Models

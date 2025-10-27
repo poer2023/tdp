@@ -6,11 +6,13 @@
 import prismaDefault, { prisma as prismaNamed } from "@/lib/prisma";
 import type { PrismaClient } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
-import { fetchBilibiliHistory, normalizeBilibiliItem, type BilibiliConfig } from "./bilibili";
+import { normalizeBilibiliItem, type BilibiliConfig } from "./bilibili";
 import { fetchDoubanWatched, normalizeDoubanItem, type DoubanConfig } from "./douban";
 import { fetchSteamRecentlyPlayed, normalizeSteamGame, type SteamConfig } from "./steam";
 import { syncGitHub, type GitHubConfig } from "./github";
 import { decryptCredential, isEncrypted } from "../encryption";
+import { fetchBilibiliIncremental } from "./bilibili-incremental";
+import { getExistingExternalIds } from "./sync-state";
 
 // Re-export GitHub types and functions for external use
 export type { GitHubConfig };
@@ -88,31 +90,18 @@ export async function syncBilibili(
   try {
     console.log(`[${platform}] Starting sync...`);
 
-    // Fetch history from Bilibili (fetch 50 pages = ~1000 items, which is the API limit)
-    const items = await fetchBilibiliHistory(config, 50);
-    console.log(`[${platform}] Fetched ${items.length} items from API`);
+    // Fetch history with intelligent incremental sync
+    const fetchResult = await fetchBilibiliIncremental(config, platform);
+    const { items, syncMode, pagesRequested, earlyStopTriggered } = fetchResult;
+
+    console.log(`[${platform}] Fetched ${items.length} items from API (${syncMode} mode, ${pagesRequested} pages)`);
 
     // Normalize first to derive external IDs consistently (tests may omit certain fields)
     const normalizedAll = items.map((it) => normalizeBilibiliItem(it));
     const externalIds = normalizedAll.map((n) => n.externalId);
 
     // Batch query existing items from database
-    let existingRecords: Array<{ externalId: string }> = [];
-    {
-      const mw = (prisma as unknown as { mediaWatch: Partial<PrismaClient["mediaWatch"]> })
-        .mediaWatch;
-      if (mw.findMany) {
-        existingRecords = (await mw.findMany({
-          where: {
-            platform: "BILIBILI",
-            externalId: { in: externalIds },
-          },
-          select: { externalId: true },
-        })) as Array<{ externalId: string }>;
-      }
-    }
-
-    const existingSet = new Set(existingRecords.map((r: { externalId: string }) => r.externalId));
+    const existingSet = await getExistingExternalIds(platform, externalIds);
     console.log(`[${platform}] Found ${existingSet.size} existing items in database`);
 
     // Filter out items that already exist
@@ -166,7 +155,11 @@ export async function syncBilibili(
     const duration = Date.now() - startTime;
     const itemsExisting = items.length - newItems.length;
 
-    // Update job log record
+    // Calculate last synced timestamp and cursor
+    const lastSyncedAt = items.length > 0 && items[0] ? new Date(items[0].view_at * 1000) : undefined;
+    const lastCursor = items.length > 0 && items[0] ? items[0].view_at.toString() : undefined;
+
+    // Update job log record with incremental sync fields
     await updateJobLog(
       { id: job.id },
       {
@@ -176,7 +169,12 @@ export async function syncBilibili(
         itemsTotal: items.length,
         itemsSuccess: successCount,
         itemsFailed: failedCount,
-        message: `Synced ${successCount} new items (${itemsExisting} existing, ${failedCount} failed)`,
+        itemsNew: successCount,
+        itemsExisting,
+        syncMode,
+        lastSyncedAt,
+        lastCursor,
+        message: `${syncMode.toUpperCase()} sync: ${successCount} new items (${itemsExisting} existing, ${failedCount} failed, ${pagesRequested} pages${earlyStopTriggered ? ", early stop" : ""})`,
       }
     );
 
