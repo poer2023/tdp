@@ -18,6 +18,7 @@ DROP INDEX IF EXISTS "SyncJobLog_platform_startedAt_idx";
 DROP INDEX IF EXISTS "SyncJobLog_platform_syncMode_completedAt_idx";
 ALTER TABLE "SyncJobLog" ADD COLUMN IF NOT EXISTS "platform_text" TEXT;
 UPDATE "SyncJobLog" SET "platform_text" = "platform"::text WHERE "platform_text" IS NULL;
+ALTER TABLE "SyncJobLog" ALTER COLUMN "platform_text" SET NOT NULL;
 ALTER TABLE "SyncJobLog" DROP COLUMN "platform";
 ALTER TABLE "SyncJobLog" RENAME COLUMN "platform_text" TO "platform";
 
@@ -57,9 +58,8 @@ ALTER TABLE "MediaWatchSyncLog" DROP COLUMN IF EXISTS "itemsProcessed";
 ALTER TABLE "MediaWatchSyncLog" DROP COLUMN IF EXISTS "itemsAdded";
 ALTER TABLE "MediaWatchSyncLog" DROP COLUMN IF EXISTS "itemsUpdated";
 
--- Ensure Friend updatedAt matches @updatedAt behavior
+-- Ensure Friend updatedAt matches @updatedAt behavior (no default needed for @updatedAt)
 UPDATE "Friend" SET "updatedAt" = CURRENT_TIMESTAMP WHERE "updatedAt" IS NULL;
-ALTER TABLE "Friend" ALTER COLUMN "updatedAt" SET DEFAULT CURRENT_TIMESTAMP;
 
 -- Guard against NULL friendVisibility
 UPDATE "Moment" SET "friendVisibility" = 'PUBLIC' WHERE "friendVisibility" IS NULL;
@@ -70,7 +70,7 @@ UPDATE "GitHubRepo" SET "lastCommitMsg" = COALESCE("lastCommitMsg", '');
 UPDATE "GitHubRepo" SET "updatedAt" = COALESCE("updatedAt", CURRENT_TIMESTAMP);
 ALTER TABLE "GitHubRepo" ALTER COLUMN "lastCommitDate" SET NOT NULL;
 ALTER TABLE "GitHubRepo" ALTER COLUMN "lastCommitMsg" SET NOT NULL;
-ALTER TABLE "GitHubRepo" ALTER COLUMN "updatedAt" SET DEFAULT CURRENT_TIMESTAMP;
+-- Note: updatedAt uses @updatedAt in schema, no default needed
 
 -- Convert SyncJobLog.status to SyncJobStatus enum
 ALTER TABLE "SyncJobLog" ADD COLUMN IF NOT EXISTS "status_tmp" "SyncJobStatus" NOT NULL DEFAULT 'PENDING';
