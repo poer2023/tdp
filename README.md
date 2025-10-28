@@ -49,6 +49,7 @@ DATABASE_URL="postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public"
 # NextAuth 基础配置
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="请填入长度>=32的随机字符串"
+FRIEND_JWT_SECRET="请填入长度>=32的随机字符串"
 
 # Google OAuth 凭据（用于 OAuth 登录，可选但推荐）
 GOOGLE_CLIENT_ID="你的 Google Client ID"

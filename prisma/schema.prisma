@@ -150,28 +150,56 @@ model GalleryImage {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Moment {
-  id          String           @id @default(cuid())
-  authorId    String
-  content     String
-  images      Json?
-  visibility  MomentVisibility @default(PUBLIC)
-  slug        String?          @unique
-  tags        String[]
-  location    Json?
-  lang        String           @default("en-US")
-  status      MomentStatus     @default(PUBLISHED)
-  scheduledAt DateTime?
-  replyToId   String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  deletedAt   DateTime?
-  author      User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  replyTo     Moment?          @relation("MomentThread", fields: [replyToId], references: [id])
-  replies     Moment[]         @relation("MomentThread")
+  id               String           @id @default(cuid())
+  authorId         String
+  content          String
+  images           Json?
+  visibility       MomentVisibility @default(PUBLIC)
+  slug             String?          @unique
+  tags             String[]
+  location         Json?
+  lang             String           @default("en-US")
+  status           MomentStatus     @default(PUBLISHED)
+  scheduledAt      DateTime?
+  replyToId        String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  deletedAt        DateTime?
+  friendVisibility FriendVisibility @default(PUBLIC)
+  friendId         String?
+  happenedAt       DateTime?
+  author           User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replyTo          Moment?          @relation("MomentThread", fields: [replyToId], references: [id])
+  replies          Moment[]         @relation("MomentThread")
+  friend           Friend?          @relation("FriendPrivateMoments", fields: [friendId], references: [id])
 
   @@index([createdAt, visibility, lang])
   @@index([status])
   @@index([content(ops: raw("gin_trgm_ops"))], map: "idx_moment_content_trgm", type: Gin)
+  @@index([friendVisibility, friendId])
+  @@index([happenedAt])
+}
+
+model Friend {
+  id          String   @id @default(cuid())
+  name        String
+  accessToken String   @unique
+  slug        String   @unique
+  avatar      String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  privateMoments Moment[] @relation("FriendPrivateMoments")
+
+  @@index([slug])
+  @@index([accessToken])
+}
+
+enum FriendVisibility {
+  PUBLIC
+  FRIEND_ONLY
+  PRIVATE
 }
 
 model RateLimitHit {
@@ -235,7 +263,7 @@ model Subscription {
 }
 
 model MediaWatch {
-  id         String      @id @default(cuid())
+  id         String   @id @default(cuid())
   platform   String
   externalId String
   type       String
@@ -249,11 +277,11 @@ model MediaWatch {
   rating     Int?
   duration   Int?
   metadata   Json?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relations
-  syncLogs   MediaWatchSyncLog[] // Many-to-many relationship with SyncJobLog
+  syncLogs MediaWatchSyncLog[] // Many-to-many relationship with SyncJobLog
 
   @@unique([platform, externalId])
   @@index([platform, watchedAt])
@@ -262,13 +290,13 @@ model MediaWatch {
 
 // Junction table for many-to-many relationship between MediaWatch and SyncJobLog
 model MediaWatchSyncLog {
-  id            String      @id @default(cuid())
-  mediaWatchId  String
-  syncJobLogId  String
-  syncedAt      DateTime    @default(now())
+  id           String   @id @default(cuid())
+  mediaWatchId String
+  syncJobLogId String
+  syncedAt     DateTime @default(now())
 
-  mediaWatch    MediaWatch  @relation(fields: [mediaWatchId], references: [id], onDelete: Cascade)
-  syncJobLog    SyncJobLog  @relation("SyncJobLogs", fields: [syncJobLogId], references: [id], onDelete: Cascade)
+  mediaWatch MediaWatch @relation(fields: [mediaWatchId], references: [id], onDelete: Cascade)
+  syncJobLog SyncJobLog @relation("SyncJobLogs", fields: [syncJobLogId], references: [id], onDelete: Cascade)
 
   @@unique([mediaWatchId, syncJobLogId])
   @@index([syncJobLogId])
@@ -399,12 +427,12 @@ model ExternalCredential {
   updatedAt       DateTime
 
   // New fields for sync automation
-  autoSync        Boolean            @default(false)
-  syncFrequency   String?            // daily, weekly, manual
-  nextCheckAt     DateTime?
+  autoSync      Boolean   @default(false)
+  syncFrequency String? // daily, weekly, manual
+  nextCheckAt   DateTime?
 
   // Relations
-  syncJobs        SyncJobLog[]       @relation("CredentialSyncJobs")
+  syncJobs SyncJobLog[] @relation("CredentialSyncJobs")
 
   @@index([lastValidatedAt])
   @@index([platform, isValid])
@@ -412,35 +440,35 @@ model ExternalCredential {
 }
 
 model SyncJobLog {
-  id           String               @id
+  id           String        @id
   platform     String
   jobType      String?
-  triggeredBy  String               @default("system")
-  status       SyncJobStatus        @default(PENDING)
+  triggeredBy  String        @default("system")
+  status       SyncJobStatus @default(PENDING)
   startedAt    DateTime?
   completedAt  DateTime?
   duration     Int?
-  itemsTotal   Int                  @default(0)
-  itemsSuccess Int                  @default(0)
-  itemsFailed  Int                  @default(0)
+  itemsTotal   Int           @default(0)
+  itemsSuccess Int           @default(0)
+  itemsFailed  Int           @default(0)
   message      String?
   errorStack   String?
   errorDetails Json?
   credentialId String?
   metrics      Json?
-  createdAt    DateTime             @default(now())
+  createdAt    DateTime      @default(now())
 
   // Incremental sync fields
-  syncMode     String?              // "full" | "incremental"
-  lastCursor   String?              // Last cursor position (e.g., Bilibili view_at)
-  lastSyncedAt DateTime?            // Timestamp of last synced item
-  itemsNew     Int                  @default(0) // New items added in this sync
-  itemsExisting Int                 @default(0) // Items skipped (already exist)
+  syncMode      String? // "full" | "incremental"
+  lastCursor    String? // Last cursor position (e.g., Bilibili view_at)
+  lastSyncedAt  DateTime? // Timestamp of last synced item
+  itemsNew      Int       @default(0) // New items added in this sync
+  itemsExisting Int       @default(0) // Items skipped (already exist)
 
   // Relations
-  credential   ExternalCredential?   @relation("CredentialSyncJobs", fields: [credentialId], references: [id], onDelete: SetNull)
-  syncLogs     MediaWatchSyncLog[]   @relation("SyncJobLogs") // Many-to-many relationship with MediaWatch
-  githubStats  GitHubStats[]         @relation("SyncJobGitHubStats")
+  credential  ExternalCredential? @relation("CredentialSyncJobs", fields: [credentialId], references: [id], onDelete: SetNull)
+  syncLogs    MediaWatchSyncLog[] @relation("SyncJobLogs") // Many-to-many relationship with MediaWatch
+  githubStats GitHubStats[]       @relation("SyncJobGitHubStats")
 
   @@index([platform, startedAt])
   @@index([status, startedAt])
@@ -451,17 +479,17 @@ model SyncJobLog {
 
 // GitHub Data Models
 model GitHubStats {
-  id              String      @id @default(cuid())
-  commitsWeek     Int         @default(0)
-  reposWeek       Int         @default(0)
-  commitsMonth    Int         @default(0)
-  prsMonth        Int         @default(0)
-  starsYear       Int         @default(0)
-  reposYear       Int         @default(0)
-  currentStreak   Int         @default(0)
-  syncJobLogId    String?
-  syncedAt        DateTime    @default(now())
-  syncJobLog      SyncJobLog? @relation("SyncJobGitHubStats", fields: [syncJobLogId], references: [id], onDelete: SetNull)
+  id            String      @id @default(cuid())
+  commitsWeek   Int         @default(0)
+  reposWeek     Int         @default(0)
+  commitsMonth  Int         @default(0)
+  prsMonth      Int         @default(0)
+  starsYear     Int         @default(0)
+  reposYear     Int         @default(0)
+  currentStreak Int         @default(0)
+  syncJobLogId  String?
+  syncedAt      DateTime    @default(now())
+  syncJobLog    SyncJobLog? @relation("SyncJobGitHubStats", fields: [syncJobLogId], references: [id], onDelete: SetNull)
 
   @@index([syncedAt])
   @@index([syncJobLogId])
@@ -597,17 +625,17 @@ enum CredentialType {
 
 // Infrastructure Monitoring Models
 model Monitor {
-  id            String            @id @default(cuid())
-  name          String
-  type          MonitorType       @default(HTTP)
-  url           String
-  uptimeKumaId  Int               @unique
-  interval      Int               @default(60) // in seconds
-  description   String?
-  isActive      Boolean           @default(true)
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  heartbeats    MonitorHeartbeat[]
+  id           String             @id @default(cuid())
+  name         String
+  type         MonitorType        @default(HTTP)
+  url          String
+  uptimeKumaId Int                @unique
+  interval     Int                @default(60) // in seconds
+  description  String?
+  isActive     Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  heartbeats   MonitorHeartbeat[]
 
   @@index([uptimeKumaId])
   @@index([isActive])
@@ -617,7 +645,7 @@ model MonitorHeartbeat {
   id           String        @id @default(cuid())
   monitorId    String
   status       MonitorStatus
-  responseTime Int?          // in milliseconds
+  responseTime Int? // in milliseconds
   statusCode   Int?
   message      String?
   timestamp    DateTime      @default(now())

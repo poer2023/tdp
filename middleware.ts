@@ -61,6 +61,18 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  const friendStoryMatch = pathname.match(/^\/(en|zh)\/m\/friends\/([^/]+)$/);
+  if (friendStoryMatch && friendStoryMatch[1] && friendStoryMatch[2]) {
+    const [, targetLocale, slug] = friendStoryMatch;
+    const token = request.cookies.get("friendAuth")?.value;
+
+    if (!token) {
+      const redirectUrl = new URL(`/${targetLocale}/m/friends`, request.nextUrl.origin);
+      redirectUrl.searchParams.set("redirect", slug);
+      return NextResponse.redirect(redirectUrl, { status: 302 });
+    }
+  }
+
   // Protect admin routes
   if (pathname.startsWith("/admin")) {
     const sessionToken =
