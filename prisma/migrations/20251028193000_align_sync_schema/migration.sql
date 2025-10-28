@@ -70,7 +70,8 @@ UPDATE "GitHubRepo" SET "lastCommitMsg" = COALESCE("lastCommitMsg", '');
 UPDATE "GitHubRepo" SET "updatedAt" = COALESCE("updatedAt", CURRENT_TIMESTAMP);
 ALTER TABLE "GitHubRepo" ALTER COLUMN "lastCommitDate" SET NOT NULL;
 ALTER TABLE "GitHubRepo" ALTER COLUMN "lastCommitMsg" SET NOT NULL;
--- Note: updatedAt uses @updatedAt in schema, no default needed
+-- Remove default for updatedAt (@updatedAt in schema handles updates automatically)
+ALTER TABLE "GitHubRepo" ALTER COLUMN "updatedAt" DROP DEFAULT;
 
 -- Convert SyncJobLog.status to SyncJobStatus enum
 ALTER TABLE "SyncJobLog" ADD COLUMN IF NOT EXISTS "status_tmp" "SyncJobStatus" NOT NULL DEFAULT 'PENDING';
