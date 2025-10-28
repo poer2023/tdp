@@ -1,13 +1,13 @@
 import type { Friend } from "@prisma/client";
 import jwt, { type Secret } from "jsonwebtoken";
 
-const rawSecret = process.env.FRIEND_JWT_SECRET;
-
-if (!rawSecret) {
-  throw new Error("缺少环境变量: FRIEND_JWT_SECRET");
+function getJWTSecret(): Secret {
+  const rawSecret = process.env.FRIEND_JWT_SECRET;
+  if (!rawSecret) {
+    throw new Error("缺少环境变量: FRIEND_JWT_SECRET");
+  }
+  return rawSecret;
 }
-
-const JWT_SECRET: Secret = rawSecret;
 
 export interface FriendJWTPayload {
   friendId: string;
@@ -31,7 +31,7 @@ export function generateFriendToken(friend: Friend): string {
       friendId: friend.id,
       slug: friend.slug,
     },
-    JWT_SECRET,
+    getJWTSecret(),
     {
       algorithm: "HS256",
       expiresIn: "30d",
@@ -41,7 +41,7 @@ export function generateFriendToken(friend: Friend): string {
 
 export function verifyFriendToken(token: string): FriendJWTPayload | null {
   try {
-    const payload = jwt.verify(token, JWT_SECRET, {
+    const payload = jwt.verify(token, getJWTSecret(), {
       algorithms: ["HS256"],
     });
 
