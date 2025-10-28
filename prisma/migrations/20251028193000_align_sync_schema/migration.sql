@@ -75,14 +75,14 @@ ALTER TABLE "GitHubRepo" ALTER COLUMN "updatedAt" SET DEFAULT CURRENT_TIMESTAMP;
 -- Convert SyncJobLog.status to SyncJobStatus enum
 ALTER TABLE "SyncJobLog" ADD COLUMN IF NOT EXISTS "status_tmp" "SyncJobStatus" NOT NULL DEFAULT 'PENDING';
 UPDATE "SyncJobLog"
-SET "status_tmp" = CASE LOWER(COALESCE("status", 'pending'))
+SET "status_tmp" = (CASE LOWER(COALESCE("status", 'pending'))
     WHEN 'running' THEN 'RUNNING'
     WHEN 'success' THEN 'SUCCESS'
     WHEN 'failed' THEN 'FAILED'
     WHEN 'partial' THEN 'PARTIAL'
     WHEN 'pending' THEN 'PENDING'
     ELSE 'PENDING'
-END;
+END)::"SyncJobStatus";
 ALTER TABLE "SyncJobLog" DROP COLUMN "status";
 ALTER TABLE "SyncJobLog" RENAME COLUMN "status_tmp" TO "status";
 ALTER TABLE "SyncJobLog" ALTER COLUMN "status" SET DEFAULT 'PENDING';
