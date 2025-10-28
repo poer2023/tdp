@@ -11,7 +11,6 @@ describe("friend-auth", () => {
     const token = generateFriendToken({
       id: "friend",
       name: "Friend",
-      slug: "friend",
       accessToken: "hashed",
       avatar: null,
       description: null,
@@ -27,7 +26,6 @@ describe("friend-auth", () => {
     const token = generateFriendToken({
       id: "friend",
       name: "Friend",
-      slug: "friend",
       accessToken: "hashed",
       avatar: null,
       description: null,
@@ -36,7 +34,6 @@ describe("friend-auth", () => {
     });
     const payload = verifyFriendToken(token);
     expect(payload?.friendId).toBe("friend");
-    expect(payload?.slug).toBe("friend");
   });
 
   it("returns null for invalid token", async () => {

@@ -41,7 +41,7 @@ function getLocationName(location: unknown): string | null {
 }
 
 export function FriendMomentTimeline({
-  friend,
+  friend: _friend,
   locale,
   initialMoments,
   nextCursor,

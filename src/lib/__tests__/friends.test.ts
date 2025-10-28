@@ -42,14 +42,12 @@ describe("friends library", () => {
     Object.values(bcryptMock).forEach((fn) => fn.mockReset());
   });
 
-  it("creates a friend with hashed password", async () => {
+  it("creates a friend with hashed passphrase", async () => {
     const { createFriend } = await loadModule();
-    friendMock.findUnique.mockResolvedValueOnce(null);
     bcryptMock.hash.mockResolvedValueOnce("hashed");
     const expected = {
       id: "friend",
       name: "Test",
-      slug: "test",
       accessToken: "hashed",
       avatar: null,
       description: null,
@@ -60,53 +58,48 @@ describe("friends library", () => {
 
     const result = await createFriend({
       name: "Test",
-      slug: "test",
-      password: "secret",
+      passphrase: "secret",
       avatar: null,
       description: null,
     });
 
-    expect(friendMock.findUnique).toHaveBeenCalledWith({ where: { slug: "test" } });
     expect(bcryptMock.hash).toHaveBeenCalledWith("secret", 12);
     expect(friendMock.create).toHaveBeenCalled();
     expect(result).toEqual(expected);
   });
 
-  it("throws when slug already exists", async () => {
-    const { createFriend } = await loadModule();
-    friendMock.findUnique.mockResolvedValueOnce({ id: "existing" });
-
-    await expect(createFriend({ name: "Test", slug: "test", password: "secret" })).rejects.toThrow(
-      'Slug "test" 已被使用'
-    );
-  });
-
-  it("verifies password successfully", async () => {
-    const { verifyFriendPassword } = await loadModule();
-    friendMock.findUnique.mockResolvedValueOnce({
-      id: "friend",
-      slug: "slug",
-      name: "Friend",
-      accessToken: "hashed",
-    });
+  it("verifies passphrase successfully", async () => {
+    const { verifyPassphrase } = await loadModule();
+    friendMock.findMany.mockResolvedValueOnce([
+      {
+        id: "friend",
+        name: "Friend",
+        accessToken: "hashed",
+        avatar: null,
+        description: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
     bcryptMock.compare.mockResolvedValueOnce(true);
 
-    const result = await verifyFriendPassword("slug", "secret");
+    const result = await verifyPassphrase("secret");
     expect(result.success).toBe(true);
     expect(result.friend?.id).toBe("friend");
   });
 
-  it("rejects invalid password", async () => {
-    const { verifyFriendPassword } = await loadModule();
-    friendMock.findUnique.mockResolvedValueOnce({
-      id: "friend",
-      slug: "slug",
-      name: "Friend",
-      accessToken: "hashed",
-    });
+  it("rejects invalid passphrase", async () => {
+    const { verifyPassphrase } = await loadModule();
+    friendMock.findMany.mockResolvedValueOnce([
+      {
+        id: "friend",
+        name: "Friend",
+        accessToken: "hashed",
+      },
+    ]);
     bcryptMock.compare.mockResolvedValueOnce(false);
 
-    const result = await verifyFriendPassword("slug", "secret");
+    const result = await verifyPassphrase("wrong");
     expect(result.success).toBe(false);
   });
 
@@ -145,10 +138,10 @@ describe("friends library", () => {
     expect(result.nextCursor).toBe("1");
   });
 
-  it("generates random password of desired length", async () => {
-    const { generateRandomPassword } = await loadModule();
-    const password = generateRandomPassword(16);
-    expect(password).toHaveLength(16);
-    expect(/^[A-Za-z0-9]+$/.test(password)).toBe(true);
+  it("generates random passphrase of desired length", async () => {
+    const { generateRandomPassphrase } = await loadModule();
+    const passphrase = generateRandomPassphrase(16);
+    expect(passphrase).toHaveLength(16);
+    expect(/^[A-Za-z0-9]+$/.test(passphrase)).toBe(true);
   });
 });

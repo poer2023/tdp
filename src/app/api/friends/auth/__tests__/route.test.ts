@@ -2,7 +2,19 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { NextResponse } from "next/server";
 
 vi.mock("@/lib/friends", () => ({
-  verifyFriendPassword: vi.fn(),
+  verifyPassphrase: vi.fn(),
+}));
+
+vi.mock("@/lib/fake-friend-data", () => ({
+  generateFakeFriend: vi.fn(() => ({
+    id: "fake_123",
+    name: "神秘访客",
+    accessToken: "",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=mystery",
+    description: "这是一个神秘的朋友空间",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  })),
 }));
 
 vi.mock("@/lib/friend-auth", () => ({
@@ -36,45 +48,50 @@ describe("POST /api/friends/auth", () => {
     headers: new Headers(),
   });
 
-  it("returns token when password is valid", async () => {
-    const { verifyFriendPassword } = await import("@/lib/friends");
+  it("returns token with real friend when passphrase is valid", async () => {
+    const { verifyPassphrase } = await import("@/lib/friends");
     const { POST } = await import("../route");
-    vi.mocked(verifyFriendPassword).mockResolvedValueOnce({
+    vi.mocked(verifyPassphrase).mockResolvedValueOnce({
       success: true,
       friend: {
         id: "friend-id",
         name: "Alice",
-        slug: "alice",
+        accessToken: "hashed",
         avatar: "https://example.com/avatar.jpg",
         description: "Test friend",
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     });
 
     const response = (await POST(
-      createRequest({ slug: "alice", password: "secret" }) as unknown as Request
+      createRequest({ passphrase: "secret" }) as unknown as Request
     )) as NextResponse;
     const payload = await response.json();
 
     expect(response.status).toBe(200);
     expect(payload.success).toBe(true);
-    expect(payload.friend.slug).toBe("alice");
+    expect(payload.friend.name).toBe("Alice");
     expect(response.cookies.get("friendAuth")?.value).toBe("mock-token");
   });
 
-  it("returns 401 when password invalid", async () => {
-    const { verifyFriendPassword } = await import("@/lib/friends");
+  it("returns token with fake friend when passphrase is invalid", async () => {
+    const { verifyPassphrase } = await import("@/lib/friends");
     const { POST } = await import("../route");
-    vi.mocked(verifyFriendPassword).mockResolvedValueOnce({
+    vi.mocked(verifyPassphrase).mockResolvedValueOnce({
       success: false,
     });
 
     const response = (await POST(
-      createRequest({ slug: "alice", password: "wrong" }) as unknown as Request
+      createRequest({ passphrase: "wrong" }) as unknown as Request
     )) as NextResponse;
     const payload = await response.json();
 
-    expect(response.status).toBe(401);
-    expect(payload.success).toBe(false);
+    // Always returns 200 with fake data
+    expect(response.status).toBe(200);
+    expect(payload.success).toBe(true);
+    expect(payload.friend.name).toBe("神秘访客");
+    expect(response.cookies.get("friendAuth")?.value).toBe("mock-token");
   });
 
   it("returns 429 when rate limited", async () => {
@@ -87,11 +104,18 @@ describe("POST /api/friends/auth", () => {
 
     const { POST } = await import("../route");
     const response = (await POST(
-      createRequest({ slug: "alice", password: "secret" }) as unknown as Request
+      createRequest({ passphrase: "secret" }) as unknown as Request
     )) as NextResponse;
     const payload = await response.json();
 
     expect(response.status).toBe(429);
     expect(payload.success).toBe(false);
+  });
+
+  it("returns 400 when passphrase is missing", async () => {
+    const { POST } = await import("../route");
+    const response = (await POST(createRequest({}) as unknown as Request)) as NextResponse;
+
+    expect(response.status).toBe(400);
   });
 });
