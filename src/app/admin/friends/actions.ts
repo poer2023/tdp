@@ -87,7 +87,8 @@ export async function updateFriendPassphraseAction(friendId: string, newPassphra
   const session = await auth();
   assertAdmin(session);
 
-  const passphrase = newPassphrase && newPassphrase.length >= 8 ? newPassphrase : generateRandomPassphrase();
+  const passphrase =
+    newPassphrase && newPassphrase.length >= 8 ? newPassphrase : generateRandomPassphrase();
   await updateFriendPassphrase(friendId, passphrase);
   revalidatePath("/admin/friends");
   revalidatePath(`/admin/friends/${friendId}`);

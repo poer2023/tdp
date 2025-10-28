@@ -50,7 +50,10 @@ export function FriendCreateForm() {
       </div>
 
       <div>
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="passphrase">
+        <label
+          className="text-sm font-medium text-zinc-700 dark:text-zinc-200"
+          htmlFor="passphrase"
+        >
           访问口令（可选）
         </label>
         <input

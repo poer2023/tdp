@@ -81,7 +81,6 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
           />
         </div>
 
-
         <div>
           <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="avatar">
             头像 URL

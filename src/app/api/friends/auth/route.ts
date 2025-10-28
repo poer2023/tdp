@@ -44,7 +44,8 @@ export async function POST(request: NextRequest) {
 
     // 无论验证成功或失败，都返回成功响应
     // 失败时返回假数据，用户无法区分真假
-    const friendData = result.success && result.friend ? result.friend : generateFakeFriend(passphrase);
+    const friendData =
+      result.success && result.friend ? result.friend : generateFakeFriend(passphrase);
 
     if (result.success) {
       resetRateLimit(rateLimitKey);
