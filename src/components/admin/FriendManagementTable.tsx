@@ -101,16 +101,16 @@ export function FriendManagementTable({ friends: initialFriends }: FriendManagem
       <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
         <thead className="bg-zinc-50 dark:bg-zinc-900/80">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
               朋友
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
               Slug
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
               创建时间
             </th>
-            <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <th className="px-6 py-3 text-right text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
               操作
             </th>
           </tr>

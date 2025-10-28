@@ -78,7 +78,7 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
             name="name"
             defaultValue={friend.name}
             required
-            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
           />
         </div>
 
@@ -92,7 +92,9 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
             disabled
             className="mt-2 w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-2 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-400"
           />
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Slug 用于访问链接，暂不支持修改。</p>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            Slug 用于访问链接，暂不支持修改。
+          </p>
         </div>
 
         <div>
@@ -104,12 +106,15 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
             name="avatar"
             defaultValue={friend.avatar ?? ""}
             placeholder="https://example.com/avatar.jpg"
-            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="description">
+          <label
+            className="text-sm font-medium text-zinc-700 dark:text-zinc-200"
+            htmlFor="description"
+          >
             关系描述
           </label>
           <textarea
@@ -118,7 +123,7 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
             rows={3}
             defaultValue={friend.description ?? ""}
             placeholder="我们之间的回忆..."
-            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
           />
         </div>
 

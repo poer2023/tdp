@@ -3,10 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import Link from "next/link";
-import {
-  createFriendFormAction,
-  type CreateFriendFormState,
-} from "@/app/admin/friends/actions";
+import { createFriendFormAction, type CreateFriendFormState } from "@/app/admin/friends/actions";
 
 const initialState: CreateFriendFormState = { success: false };
 
@@ -34,7 +31,11 @@ export function FriendCreateForm() {
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80">
+    <form
+      ref={formRef}
+      action={formAction}
+      className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80"
+    >
       <div>
         <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="name">
           朋友昵称
@@ -43,7 +44,7 @@ export function FriendCreateForm() {
           id="name"
           name="name"
           required
-          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
           placeholder="Alice"
         />
       </div>
@@ -58,7 +59,7 @@ export function FriendCreateForm() {
           required
           pattern="[a-z0-9-]+"
           title="仅允许小写字母、数字和连字符"
-          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
           placeholder="alice"
         />
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -75,9 +76,11 @@ export function FriendCreateForm() {
           name="password"
           minLength={8}
           placeholder="留空自动生成"
-          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         />
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">建议使用至少 8 位数字与字母组合。</p>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          建议使用至少 8 位数字与字母组合。
+        </p>
       </div>
 
       <div>
@@ -89,12 +92,15 @@ export function FriendCreateForm() {
           name="avatar"
           type="url"
           placeholder="https://example.com/avatar.jpg"
-          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="description">
+        <label
+          className="text-sm font-medium text-zinc-700 dark:text-zinc-200"
+          htmlFor="description"
+        >
           关系描述（可选）
         </label>
         <textarea
@@ -102,7 +108,7 @@ export function FriendCreateForm() {
           name="description"
           rows={3}
           placeholder="我们一起做过的事情..."
-          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         />
       </div>
 
@@ -119,7 +125,9 @@ export function FriendCreateForm() {
             初始密码：
             <span className="font-mono text-base">{state.password}</span>
           </p>
-          <p className="mt-1 text-xs text-amber-700">请及时复制密码并分享给朋友，该信息只显示一次。</p>
+          <p className="mt-1 text-xs text-amber-700">
+            请及时复制密码并分享给朋友，该信息只显示一次。
+          </p>
           <Link
             href="/admin/friends"
             className="mt-2 inline-block text-xs font-medium text-blue-600 hover:underline"

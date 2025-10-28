@@ -45,7 +45,7 @@ export function FriendHeader({ friend, locale }: FriendHeaderProps) {
   };
 
   return (
-    <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-zinc-800/60 dark:bg-zinc-900/80 sm:flex-row sm:items-center">
+    <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm backdrop-blur sm:flex-row sm:items-center dark:border-zinc-800/60 dark:bg-zinc-900/80">
       <div className="flex items-center gap-4">
         {friend.avatar ? (
           <Image

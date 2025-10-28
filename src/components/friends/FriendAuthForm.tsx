@@ -99,7 +99,10 @@ export function FriendAuthForm({ locale }: FriendAuthFormProps) {
       )}
 
       <div className="space-y-2">
-        <label htmlFor="friend-slug" className="block text-sm font-medium text-zinc-700 dark:text-zinc-200">
+        <label
+          htmlFor="friend-slug"
+          className="block text-sm font-medium text-zinc-700 dark:text-zinc-200"
+        >
           {copy.slugLabel}
         </label>
         <input
@@ -111,13 +114,16 @@ export function FriendAuthForm({ locale }: FriendAuthFormProps) {
           placeholder="alice"
           required
           disabled={loading}
-          className="w-full rounded-2xl border border-zinc-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="w-full rounded-2xl border border-zinc-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         />
         <p className="text-xs text-zinc-500 dark:text-zinc-400">{copy.slugHint}</p>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="friend-password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-200">
+        <label
+          htmlFor="friend-password"
+          className="block text-sm font-medium text-zinc-700 dark:text-zinc-200"
+        >
           {copy.passwordLabel}
         </label>
         <input
@@ -129,7 +135,7 @@ export function FriendAuthForm({ locale }: FriendAuthFormProps) {
           placeholder="••••••••"
           required
           disabled={loading}
-          className="w-full rounded-2xl border border-zinc-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="w-full rounded-2xl border border-zinc-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         />
       </div>
 

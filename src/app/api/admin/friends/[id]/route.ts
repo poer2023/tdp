@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { deleteFriend, getFriendById } from "@/lib/friends";
 
-export async function DELETE(
-  _request: Request,
-  context: { params: { id: string } }
-) {
+export async function DELETE(_request: Request, context: { params: { id: string } }) {
   const session = await auth();
 
   if (!session || session.user?.role !== "ADMIN") {

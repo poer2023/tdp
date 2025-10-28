@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFriendBySlug } from "@/lib/friends";
 
-export async function GET(
-  _request: NextRequest,
-  context: { params: { slug: string } }
-) {
+export async function GET(_request: NextRequest, context: { params: { slug: string } }) {
   try {
     const slug = context.params.slug;
     const friend = await getFriendBySlug(slug);

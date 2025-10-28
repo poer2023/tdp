@@ -99,7 +99,7 @@ export function FriendMomentTimeline({
         const locationName = getLocationName(moment.location);
         return (
           <div key={moment.id} className="relative" data-testid="friend-moment-card">
-            <div className="absolute right-4 top-4 z-10">
+            <div className="absolute top-4 right-4 z-10">
               <VisibilityBadge visibility={moment.friendVisibility} locale={locale} />
             </div>
             <MomentCard

@@ -76,9 +76,9 @@ describe("friends library", () => {
     const { createFriend } = await loadModule();
     friendMock.findUnique.mockResolvedValueOnce({ id: "existing" });
 
-    await expect(
-      createFriend({ name: "Test", slug: "test", password: "secret" })
-    ).rejects.toThrow('Slug "test" 已被使用');
+    await expect(createFriend({ name: "Test", slug: "test", password: "secret" })).rejects.toThrow(
+      'Slug "test" 已被使用'
+    );
   });
 
   it("verifies password successfully", async () => {

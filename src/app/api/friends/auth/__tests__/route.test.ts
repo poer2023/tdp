@@ -18,7 +18,11 @@ vi.mock("@/lib/friend-auth", () => ({
 }));
 
 vi.mock("@/lib/rate-limiter", () => ({
-  checkRateLimit: vi.fn(() => ({ allowed: true, remaining: 9, resetAt: new Date(Date.now() + 3600000) })),
+  checkRateLimit: vi.fn(() => ({
+    allowed: true,
+    remaining: 9,
+    resetAt: new Date(Date.now() + 3600000),
+  })),
   resetRateLimit: vi.fn(),
 }));
 

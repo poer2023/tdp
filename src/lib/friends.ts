@@ -136,10 +136,7 @@ export async function getFriendMoments(
   const where: Prisma.MomentWhereInput = {
     deletedAt: null,
     status: "PUBLISHED",
-    OR: [
-      { friendVisibility: "PUBLIC" },
-      { friendVisibility: "FRIEND_ONLY", friendId },
-    ],
+    OR: [{ friendVisibility: "PUBLIC" }, { friendVisibility: "FRIEND_ONLY", friendId }],
   };
   if (options.lang) {
     where.lang = options.lang;
@@ -148,10 +145,7 @@ export async function getFriendMoments(
   const result = await prisma.moment.findMany({
     where,
     take: limit + 1,
-    orderBy: [
-      { happenedAt: "desc" },
-      { createdAt: "desc" },
-    ],
+    orderBy: [{ happenedAt: "desc" }, { createdAt: "desc" }],
     ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
     select: {
       id: true,
@@ -173,7 +167,7 @@ export async function getFriendMoments(
 
   const hasMore = result.length > limit;
   const moments = hasMore ? result.slice(0, limit) : result;
-  const nextCursor = hasMore ? moments[moments.length - 1]?.id ?? null : null;
+  const nextCursor = hasMore ? (moments[moments.length - 1]?.id ?? null) : null;
 
   return { moments: moments as FriendMomentSelect[], nextCursor, hasMore };
 }

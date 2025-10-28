@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 
-process.env.FRIEND_JWT_SECRET = process.env.FRIEND_JWT_SECRET ?? "test-friend-secret-key-1234567890";
+process.env.FRIEND_JWT_SECRET =
+  process.env.FRIEND_JWT_SECRET ?? "test-friend-secret-key-1234567890";
 
 const loadModule = async () => import("../friend-auth");
 
 describe("friend-auth", () => {
-
   it("generates a signed JWT", async () => {
     const { generateFriendToken } = await loadModule();
     const token = generateFriendToken({

@@ -21,7 +21,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: locale === "zh" ? `${friend.name}的故事墙` : `${friend.name}'s story wall`,
     description:
       friend.description ??
-      (locale === "zh" ? "记录我们共同的回忆。" : "A private corner to revisit our shared memories."),
+      (locale === "zh"
+        ? "记录我们共同的回忆。"
+        : "A private corner to revisit our shared memories."),
   };
 }
 
