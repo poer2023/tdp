@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 type FriendRow = {
   id: string;
@@ -120,9 +121,11 @@ export function FriendManagementTable({ friends: initialFriends }: FriendManagem
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
                   {friend.avatar ? (
-                    <img
+                    <Image
                       src={friend.avatar}
                       alt={friend.name}
+                      width={40}
+                      height={40}
                       className="h-10 w-10 rounded-full object-cover"
                     />
                   ) : (
