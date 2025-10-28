@@ -23,7 +23,6 @@ export default async function FriendsManagementPage() {
   const safeFriends = friends.map((friend) => ({
     id: friend.id,
     name: friend.name,
-    slug: friend.slug,
     avatar: friend.avatar ?? null,
     description: friend.description ?? null,
     createdAt: friend.createdAt.toISOString(),

@@ -11,7 +11,6 @@ function getJWTSecret(): Secret {
 
 export interface FriendJWTPayload {
   friendId: string;
-  slug: string;
   iat: number;
   exp: number;
 }
@@ -29,7 +28,6 @@ export function generateFriendToken(friend: Friend): string {
   return jwt.sign(
     {
       friendId: friend.id,
-      slug: friend.slug,
     },
     getJWTSecret(),
     {
@@ -50,10 +48,6 @@ export function verifyFriendToken(token: string): FriendJWTPayload | null {
     }
 
     if (typeof (payload as Record<string, unknown>).friendId !== "string") {
-      return null;
-    }
-
-    if (typeof (payload as Record<string, unknown>).slug !== "string") {
       return null;
     }
 

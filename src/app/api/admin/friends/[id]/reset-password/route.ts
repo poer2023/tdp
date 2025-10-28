@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { generateRandomPassword, updateFriendPassword, getFriendById } from "@/lib/friends";
+import { generateRandomPassphrase, updateFriendPassphrase, getFriendById } from "@/lib/friends";
 
 export async function POST(_request: Request, context: { params: { id: string } }) {
   const session = await auth();
@@ -14,8 +14,8 @@ export async function POST(_request: Request, context: { params: { id: string } 
     return NextResponse.json({ error: "朋友不存在" }, { status: 404 });
   }
 
-  const newPassword = generateRandomPassword();
-  await updateFriendPassword(friend.id, newPassword);
+  const newPassphrase = generateRandomPassphrase();
+  await updateFriendPassphrase(friend.id, newPassphrase);
 
-  return NextResponse.json({ success: true, newPassword });
+  return NextResponse.json({ success: true, newPassphrase });
 }

@@ -28,7 +28,6 @@ export default async function FriendEditPage({ params }: PageProps) {
   const safeFriend = {
     id: friend.id,
     name: friend.name,
-    slug: friend.slug,
     avatar: friend.avatar ?? null,
     description: friend.description ?? null,
   };

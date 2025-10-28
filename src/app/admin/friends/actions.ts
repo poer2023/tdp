@@ -5,12 +5,12 @@ import { auth } from "@/auth";
 import {
   createFriend,
   updateFriend,
-  generateRandomPassword,
-  updateFriendPassword,
+  generateRandomPassphrase,
+  updateFriendPassphrase,
 } from "@/lib/friends";
 
 type CreateFriendResult =
-  | { success: true; friendId: string; password: string }
+  | { success: true; friendId: string; passphrase: string }
   | { success: false; error: string };
 
 function assertAdmin(session: Awaited<ReturnType<typeof auth>>) {
@@ -24,30 +24,28 @@ export async function createFriendAction(formData: FormData): Promise<CreateFrie
   assertAdmin(session);
 
   const name = String(formData.get("name") ?? "").trim();
-  const slug = String(formData.get("slug") ?? "").trim();
   const avatar = formData.get("avatar") ? String(formData.get("avatar")) : null;
   const description = formData.get("description") ? String(formData.get("description")) : null;
-  let password = formData.get("password") ? String(formData.get("password")) : "";
+  let passphrase = formData.get("passphrase") ? String(formData.get("passphrase")) : "";
 
-  if (!name || !slug) {
-    return { success: false, error: "名称和 slug 均为必填项" };
+  if (!name) {
+    return { success: false, error: "名称为必填项" };
   }
 
-  if (!password) {
-    password = generateRandomPassword();
+  if (!passphrase) {
+    passphrase = generateRandomPassphrase();
   }
 
   try {
     const friend = await createFriend({
       name,
-      slug,
-      password,
+      passphrase,
       avatar: avatar ?? undefined,
       description: description ?? undefined,
     });
 
     revalidatePath("/admin/friends");
-    return { success: true, friendId: friend.id, password };
+    return { success: true, friendId: friend.id, passphrase };
   } catch (error) {
     return {
       success: false,
@@ -85,21 +83,21 @@ export async function updateFriendProfileAction(friendId: string, formData: Form
   }
 }
 
-export async function updateFriendPasswordAction(friendId: string, newPassword?: string) {
+export async function updateFriendPassphraseAction(friendId: string, newPassphrase?: string) {
   const session = await auth();
   assertAdmin(session);
 
-  const password = newPassword && newPassword.length >= 8 ? newPassword : generateRandomPassword();
-  await updateFriendPassword(friendId, password);
+  const passphrase = newPassphrase && newPassphrase.length >= 8 ? newPassphrase : generateRandomPassphrase();
+  await updateFriendPassphrase(friendId, passphrase);
   revalidatePath("/admin/friends");
   revalidatePath(`/admin/friends/${friendId}`);
-  return { success: true, password } as const;
+  return { success: true, passphrase } as const;
 }
 
 export type CreateFriendFormState = {
   success: boolean;
   friendId?: string;
-  password?: string;
+  passphrase?: string;
   error?: string;
 };
 
@@ -112,7 +110,7 @@ export async function createFriendFormAction(
     return {
       success: true,
       friendId: result.friendId,
-      password: result.password,
+      passphrase: result.passphrase,
     };
   }
 

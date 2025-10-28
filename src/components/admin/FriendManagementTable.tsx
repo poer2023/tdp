@@ -8,7 +8,6 @@ import Image from "next/image";
 type FriendRow = {
   id: string;
   name: string;
-  slug: string;
   avatar: string | null;
   description: string | null;
   createdAt: string;
@@ -25,17 +24,8 @@ export function FriendManagementTable({ friends: initialFriends }: FriendManagem
   const [resettingId, setResettingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const handleCopyLink = (slug: string) => {
-    const origin = window.location.origin;
-    const url = `${origin}/zh/m/friends/${slug}`;
-    navigator.clipboard
-      .writeText(url)
-      .then(() => alert("访问链接已复制到剪贴板"))
-      .catch(() => alert("复制失败，请手动复制链接"));
-  };
-
-  const handleResetPassword = async (friendId: string) => {
-    if (!confirm("确定要重置该朋友的访问密码吗？")) return;
+  const handleResetPassphrase = async (friendId: string) => {
+    if (!confirm("确定要重置该朋友的访问口令吗？")) return;
 
     setResettingId(friendId);
     try {
@@ -47,11 +37,11 @@ export function FriendManagementTable({ friends: initialFriends }: FriendManagem
         throw new Error(`Reset failed with status ${res.status}`);
       }
 
-      const data = (await res.json()) as { newPassword: string };
-      alert(`新密码：${data.newPassword}\n\n请及时通知朋友，密码只显示一次。`);
+      const data = (await res.json()) as { newPassphrase: string };
+      alert(`新口令：${data.newPassphrase}\n\n请及时通知朋友，口令只显示一次。`);
       router.refresh();
     } catch (error) {
-      console.error("重置朋友密码失败", error);
+      console.error("重置朋友口令失败", error);
       alert("重置失败，请稍后再试。");
     } finally {
       setResettingId(null);
@@ -146,22 +136,10 @@ export function FriendManagementTable({ friends: initialFriends }: FriendManagem
                 </div>
               </td>
               <td className="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">
-                <code className="rounded bg-zinc-100 px-2 py-1 text-xs dark:bg-zinc-900/70">
-                  {friend.slug}
-                </code>
-              </td>
-              <td className="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">
                 {new Date(friend.createdAt).toLocaleDateString("zh-CN")}
               </td>
               <td className="px-6 py-4 text-right text-sm">
                 <div className="flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleCopyLink(friend.slug)}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/40"
-                  >
-                    复制链接
-                  </button>
                   <Link
                     href={`/admin/friends/${friend.id}`}
                     className="rounded-lg px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
@@ -170,11 +148,11 @@ export function FriendManagementTable({ friends: initialFriends }: FriendManagem
                   </Link>
                   <button
                     type="button"
-                    onClick={() => handleResetPassword(friend.id)}
+                    onClick={() => handleResetPassphrase(friend.id)}
                     disabled={resettingId === friend.id}
                     className="rounded-lg px-3 py-1.5 text-xs font-medium text-amber-600 transition hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-amber-400 dark:hover:bg-amber-950/40"
                   >
-                    {resettingId === friend.id ? "重置中..." : "重置密码"}
+                    {resettingId === friend.id ? "重置中..." : "重置口令"}
                   </button>
                   <button
                     type="button"

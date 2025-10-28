@@ -18,11 +18,3 @@ export async function getFriendFromCookie(): Promise<Friend | null> {
   const friend = await getFriendById(payload.friendId);
   return friend ?? null;
 }
-
-export async function verifyFriendAccess(slug: string): Promise<boolean> {
-  const friend = await getFriendFromCookie();
-  if (!friend) {
-    return false;
-  }
-  return friend.slug === slug;
-}

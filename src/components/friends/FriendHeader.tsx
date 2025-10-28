@@ -8,7 +8,6 @@ interface FriendHeaderProps {
   friend: {
     id: string;
     name: string;
-    slug: string;
     avatar: string | null;
     description: string | null;
   };

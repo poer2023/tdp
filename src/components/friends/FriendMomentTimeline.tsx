@@ -22,8 +22,8 @@ export interface FriendMoment {
 }
 
 interface FriendMomentTimelineProps {
-  friend: Pick<Friend, "id" | "name" | "slug">;
-  locale: "en" | "zh";
+  friend: Pick<Friend, "id" | "name">;
+  locale: string;
   initialMoments: FriendMoment[];
   nextCursor: string | null;
   hasMore: boolean;
@@ -53,6 +53,9 @@ export function FriendMomentTimeline({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Convert locale string to badge locale type
+  const badgeLocale: "en" | "zh" = locale.startsWith("zh") ? "zh" : "en";
+
   const loadMore = async () => {
     if (!more || loading || !cursor) return;
     setLoading(true);
@@ -64,7 +67,7 @@ export function FriendMomentTimeline({
       params.set("limit", "10");
       params.set("locale", locale);
 
-      const res = await fetch(`/api/friends/${friend.slug}/moments?${params.toString()}`);
+      const res = await fetch(`/api/friends/moments?${params.toString()}`);
       if (!res.ok) {
         throw new Error(`Failed to load moments: ${res.status}`);
       }
@@ -100,7 +103,7 @@ export function FriendMomentTimeline({
         return (
           <div key={moment.id} className="relative" data-testid="friend-moment-card">
             <div className="absolute top-4 right-4 z-10">
-              <VisibilityBadge visibility={moment.friendVisibility} locale={locale} />
+              <VisibilityBadge visibility={moment.friendVisibility} locale={badgeLocale} />
             </div>
             <MomentCard
               id={moment.id}
@@ -111,7 +114,7 @@ export function FriendMomentTimeline({
               visibility="PUBLIC"
               tags={moment.tags}
               locationName={locationName}
-              locale={locale}
+              locale={badgeLocale}
             />
           </div>
         );

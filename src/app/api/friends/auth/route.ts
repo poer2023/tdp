@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyFriendPassword } from "@/lib/friends";
+import { verifyPassphrase } from "@/lib/friends";
 import { FRIEND_COOKIE_CONFIG, generateFriendToken } from "@/lib/friend-auth";
 import { checkRateLimit, resetRateLimit } from "@/lib/rate-limiter";
+import { generateFakeFriend } from "@/lib/fake-friend-data";
 
 function getClientIdentifier(request: NextRequest): string {
   const header = request.headers.get("x-forwarded-for");
@@ -18,15 +19,14 @@ function getClientIdentifier(request: NextRequest): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const slug = typeof body.slug === "string" ? body.slug.trim() : "";
-    const password = typeof body.password === "string" ? body.password : "";
+    const passphrase = typeof body.passphrase === "string" ? body.passphrase.trim() : "";
 
-    if (!slug || !password) {
-      return NextResponse.json({ error: "缺少必需参数" }, { status: 400 });
+    if (!passphrase) {
+      return NextResponse.json({ error: "缺少口令" }, { status: 400 });
     }
 
     const clientId = getClientIdentifier(request);
-    const rateLimitKey = `friend-auth:${clientId}:${slug}`;
+    const rateLimitKey = `friend-auth:${clientId}`;
     const rateLimit = checkRateLimit(rateLimitKey, 10);
 
     if (!rateLimit.allowed) {
@@ -40,30 +40,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await verifyFriendPassword(slug, password);
+    const result = await verifyPassphrase(passphrase);
 
-    if (!result.success || !result.friend) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "密码错误",
-          attemptsRemaining: rateLimit.remaining,
-        },
-        { status: 401 }
-      );
+    // 无论验证成功或失败，都返回成功响应
+    // 失败时返回假数据，用户无法区分真假
+    const friendData = result.success && result.friend ? result.friend : generateFakeFriend(passphrase);
+
+    if (result.success) {
+      resetRateLimit(rateLimitKey);
     }
 
-    resetRateLimit(rateLimitKey);
-
-    const token = generateFriendToken(result.friend);
+    const token = generateFriendToken(friendData);
     const response = NextResponse.json({
       success: true,
       friend: {
-        id: result.friend.id,
-        name: result.friend.name,
-        slug: result.friend.slug,
-        avatar: result.friend.avatar,
-        description: result.friend.description,
+        id: friendData.id,
+        name: friendData.name,
+        avatar: friendData.avatar,
+        description: friendData.description,
       },
     });
 

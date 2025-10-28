@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getFriendBySlug, getFriendMoments } from "@/lib/friends";
+import { getFriendMoments } from "@/lib/friends";
 import { getFriendFromCookie } from "@/lib/server/get-friend-from-cookie";
+import { isFakeFriendId, generateFakeMoments } from "@/lib/fake-friend-data";
 
-export async function GET(request: NextRequest, context: { params: { slug: string } }) {
+export async function GET(request: NextRequest) {
   try {
-    const { slug } = context.params;
-    const friend = await getFriendBySlug(slug);
-
-    if (!friend) {
-      return NextResponse.json({ error: "朋友不存在" }, { status: 404 });
+    const sessionFriend = await getFriendFromCookie();
+    if (!sessionFriend) {
+      return NextResponse.json({ error: "未授权" }, { status: 401 });
     }
 
-    const sessionFriend = await getFriendFromCookie();
-    if (!sessionFriend || sessionFriend.id !== friend.id) {
-      return NextResponse.json({ error: "未授权" }, { status: 401 });
+    // 如果是假 Friend ID，返回假数据
+    if (isFakeFriendId(sessionFriend.id)) {
+      const fakeMoments = generateFakeMoments();
+      return NextResponse.json({
+        moments: fakeMoments,
+        nextCursor: null,
+        hasMore: false,
+      });
     }
 
     const { searchParams } = request.nextUrl;
@@ -22,7 +26,7 @@ export async function GET(request: NextRequest, context: { params: { slug: strin
     const limitParam = Number.parseInt(searchParams.get("limit") ?? "10", 10);
     const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 30) : 10;
 
-    const { moments, nextCursor, hasMore } = await getFriendMoments(friend.id, {
+    const { moments, nextCursor, hasMore } = await getFriendMoments(sessionFriend.id, {
       cursor: cursor ?? undefined,
       limit,
       lang: locale ?? undefined,

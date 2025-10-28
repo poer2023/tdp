@@ -4,8 +4,7 @@ import type { Friend, Prisma } from "@prisma/client";
 
 export interface CreateFriendInput {
   name: string;
-  slug: string;
-  password: string;
+  passphrase: string;
   avatar?: string | null;
   description?: string | null;
 }
@@ -38,32 +37,19 @@ type FriendMomentSelect = {
 };
 
 /**
- * 创建朋友并存储密码哈希
+ * 创建朋友并存储口令哈希
  */
 export async function createFriend(input: CreateFriendInput): Promise<Friend> {
-  const existing = await prisma.friend.findUnique({ where: { slug: input.slug } });
-  if (existing) {
-    throw new Error(`Slug "${input.slug}" 已被使用`);
-  }
-
-  const hashedPassword = await bcrypt.hash(input.password, 12);
+  const hashedPassphrase = await bcrypt.hash(input.passphrase, 12);
 
   return prisma.friend.create({
     data: {
       name: input.name,
-      slug: input.slug,
-      accessToken: hashedPassword,
+      accessToken: hashedPassphrase,
       avatar: input.avatar,
       description: input.description,
     },
   });
-}
-
-/**
- * 根据 slug 获取朋友信息
- */
-export function getFriendBySlug(slug: string): Promise<Friend | null> {
-  return prisma.friend.findUnique({ where: { slug } });
 }
 
 /**
@@ -88,11 +74,11 @@ export function updateFriend(id: string, input: UpdateFriendInput): Promise<Frie
 }
 
 /**
- * 更新朋友密码
+ * 更新朋友口令
  */
-export async function updateFriendPassword(id: string, newPassword: string): Promise<void> {
-  const hashedPassword = await bcrypt.hash(newPassword, 12);
-  await prisma.friend.update({ where: { id }, data: { accessToken: hashedPassword } });
+export async function updateFriendPassphrase(id: string, newPassphrase: string): Promise<void> {
+  const hashedPassphrase = await bcrypt.hash(newPassphrase, 12);
+  await prisma.friend.update({ where: { id }, data: { accessToken: hashedPassphrase } });
 }
 
 /**
@@ -107,21 +93,21 @@ export async function deleteFriend(id: string): Promise<void> {
 }
 
 /**
- * 验证朋友密码
+ * 验证口令并返回对应的朋友
  */
-export async function verifyFriendPassword(
-  slug: string,
-  password: string
+export async function verifyPassphrase(
+  passphrase: string
 ): Promise<{ success: boolean; friend?: Friend }> {
-  const friend = await prisma.friend.findUnique({ where: { slug } });
-  if (!friend) {
-    return { success: false };
+  const allFriends = await prisma.friend.findMany();
+
+  for (const friend of allFriends) {
+    const isValid = await bcrypt.compare(passphrase, friend.accessToken);
+    if (isValid) {
+      return { success: true, friend };
+    }
   }
-  const isValid = await bcrypt.compare(password, friend.accessToken);
-  if (!isValid) {
-    return { success: false };
-  }
-  return { success: true, friend };
+
+  return { success: false };
 }
 
 /**
@@ -173,13 +159,13 @@ export async function getFriendMoments(
 }
 
 /**
- * 生成随机密码
+ * 生成随机口令
  */
-export function generateRandomPassword(length = 12): string {
+export function generateRandomPassphrase(length = 12): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  let password = "";
+  let passphrase = "";
   for (let i = 0; i < length; i += 1) {
-    password += chars[Math.floor(Math.random() * chars.length)];
+    passphrase += chars[Math.floor(Math.random() * chars.length)];
   }
-  return password;
+  return passphrase;
 }

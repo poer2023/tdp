@@ -184,7 +184,6 @@ model Friend {
   id          String   @id @default(cuid())
   name        String
   accessToken String   @unique
-  slug        String   @unique
   avatar      String?
   description String?
   createdAt   DateTime @default(now())
@@ -192,7 +191,6 @@ model Friend {
 
   privateMoments Moment[] @relation("FriendPrivateMoments")
 
-  @@index([slug])
   @@index([accessToken])
 }
 

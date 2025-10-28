@@ -50,30 +50,12 @@ export function FriendCreateForm() {
       </div>
 
       <div>
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="slug">
-          朋友标识 (slug)
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="passphrase">
+          访问口令（可选）
         </label>
         <input
-          id="slug"
-          name="slug"
-          required
-          pattern="[a-z0-9-]+"
-          title="仅允许小写字母、数字和连字符"
-          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-          placeholder="alice"
-        />
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          与访问链接对应，例如访问地址为 /zh/m/friends/alice。
-        </p>
-      </div>
-
-      <div>
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="password">
-          初始密码（可选）
-        </label>
-        <input
-          id="password"
-          name="password"
+          id="passphrase"
+          name="passphrase"
           minLength={8}
           placeholder="留空自动生成"
           className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
@@ -118,15 +100,15 @@ export function FriendCreateForm() {
         </div>
       )}
 
-      {state.success && state.password && (
+      {state.success && state.passphrase && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           <p className="font-medium">创建成功！</p>
           <p className="mt-1">
-            初始密码：
-            <span className="font-mono text-base">{state.password}</span>
+            访问口令：
+            <span className="font-mono text-base">{state.passphrase}</span>
           </p>
           <p className="mt-1 text-xs text-amber-700">
-            请及时复制密码并分享给朋友，该信息只显示一次。
+            请及时复制口令并分享给朋友，该信息只显示一次。
           </p>
           <Link
             href="/admin/friends"
