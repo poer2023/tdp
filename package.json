@@ -6,6 +6,9 @@
     "node": ">=22.0.0",
     "npm": ">=10.0.0"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "overrides": {
     "cross-spawn": "^7.0.5",
     "brace-expansion": "^2.0.1",
@@ -24,6 +27,9 @@
     "db:migrate": "prisma migrate deploy",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
+    "db:seed": "prisma db seed",
+    "setup:local": "bash scripts/setup-local.sh",
+    "health-check": "bash scripts/health-check.sh",
     "test:cleanup": "pkill -9 -f 'node.*vitest' || true",
     "pretest": "npm run test:cleanup",
     "test": "vitest",

@@ -8,6 +8,57 @@
 
 一个基于 Next.js 15 的全栈博客/相册项目，内置文章管理、图片上传、Google / 邮箱验证码登录与后台管理，支持 Docker 一键部署与 PostgreSQL 持久化存储。
 
+## 🚀 快速开始
+
+### 一键自动化设置 (推荐)
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/poer2023/tdp.git
+cd tdp
+
+# 2. 运行自动化设置脚本
+npm run setup:local
+```
+
+脚本会自动完成:
+- ✅ 检查 Node.js 版本 (需要 v22+)
+- ✅ 创建并引导填写 `.env.local`
+- ✅ 安装所有依赖 (`npm ci`)
+- ✅ 生成 Prisma Client
+- ✅ 测试数据库连接
+- ✅ 同步数据库 Schema
+- ✅ 安装 Playwright 浏览器
+- ✅ 运行健康检查验证配置
+
+### 首次配置后
+
+```bash
+# 启动开发服务器
+npm run dev
+
+# 访问应用
+open http://localhost:3000
+```
+
+### 常用命令
+
+```bash
+npm run dev              # 启动开发服务器 (Turbopack)
+npm run build            # 构建生产版本
+npm run db:studio        # 打开数据库可视化工具
+npm run health-check     # 检查环境配置
+npm run test             # 运行单元测试
+npm run test:e2e         # 运行 E2E 测试
+```
+
+### 跨机器开发
+
+如果你在多台机器上开发,参考以下文档确保环境一致:
+
+- [环境变量设置指南](./docs/ENVIRONMENT_SETUP.md) - 详细的环境变量配置说明
+- [跨机器开发指南](./docs/CROSS_MACHINE_SETUP.md) - 多机器环境同步流程
+
 ## 特性
 
 ### 核心功能
