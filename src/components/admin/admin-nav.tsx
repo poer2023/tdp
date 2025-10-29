@@ -36,6 +36,11 @@ const navSections: NavSection[] = [
         descriptionKey: "subscriptionDescription",
       },
       {
+        labelKey: "friends",
+        href: "/admin/friends",
+        descriptionKey: "friendManagementDescription",
+      },
+      {
         labelKey: "credentials",
         href: "/admin/credentials",
         descriptionKey: "credentialDescription",

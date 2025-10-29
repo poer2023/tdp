@@ -26,6 +26,7 @@ const eslintConfig = [
       "e2e/**",
       "playwright-report/**",
       "test-results/**",
+      "coverage/**",
     ],
   },
   // Global tweaks
