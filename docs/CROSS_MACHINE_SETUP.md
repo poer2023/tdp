@@ -118,6 +118,7 @@ fnm use      # 自动安装并切换
 ```
 
 验证版本:
+
 ```bash
 node -v   # 应显示 v22.x.x
 npm -v    # 应显示 v10.x.x
@@ -131,6 +132,7 @@ npm run setup:local
 ```
 
 脚本会自动执行:
+
 1. ✅ 检查 Node/npm 版本
 2. ✅ 创建 `.env.local` 模板 (如果不存在)
 3. ✅ 安装项目依赖 (`npm ci`)
@@ -183,6 +185,7 @@ npm run dev
 ### 步骤 7: 备份环境变量
 
 **方式 1: 复制到安全位置**
+
 ```bash
 # 复制到 iCloud/Dropbox (便于同步)
 cp .env.local ~/Dropbox/tdp-env/.env.local
@@ -192,6 +195,7 @@ tar czf - .env.local | openssl enc -aes-256-cbc -out env.tar.gz.enc
 ```
 
 **方式 2: 使用密钥管理器 (推荐)**
+
 ```bash
 # 1Password CLI
 op document create .env.local --title "TDP Env Local" --vault "Development"
@@ -219,6 +223,7 @@ git checkout feature/your-branch
 选择以下任一方式:
 
 **方式 1: 从机器 A 直接复制**
+
 ```bash
 # 在机器 A 执行
 scp .env.local user@machine-b:/path/to/tdp/.env.local
@@ -228,6 +233,7 @@ rsync -av .env.local user@machine-b:/path/to/tdp/
 ```
 
 **方式 2: 从云存储同步**
+
 ```bash
 # 从 iCloud/Dropbox 复制
 cp ~/Dropbox/tdp-env/.env.local .env.local
@@ -237,6 +243,7 @@ openssl enc -aes-256-cbc -d -in env.tar.gz.enc | tar xz
 ```
 
 **方式 3: 从密钥管理器获取**
+
 ```bash
 # 1Password
 op document get "TDP Env Local" --vault "Development" > .env.local
@@ -344,6 +351,7 @@ echo "✅ 同步完成!可以开始工作了"
 ```
 
 使用方法:
+
 ```bash
 chmod +x scripts/sync-machine.sh
 ./scripts/sync-machine.sh
@@ -367,6 +375,7 @@ node -v && npm -v
 ```
 
 如果版本不一致:
+
 ```bash
 nvm install $(cat .nvmrc)
 nvm use $(cat .nvmrc)
@@ -492,6 +501,7 @@ fi
 **原因:** 依赖没有同步
 
 **解决:**
+
 ```bash
 npm ci
 npm run db:generate
@@ -504,6 +514,7 @@ npm run db:generate
 **错误:** `Prisma schema is out of sync`
 
 **解决:**
+
 ```bash
 # 应用所有迁移
 npm run db:migrate
@@ -519,6 +530,7 @@ npm run db:generate
 **现象:** 数据库连接失败或 NextAuth 错误
 
 **检查:**
+
 ```bash
 # 检查 direnv 是否生效
 direnv status
@@ -532,6 +544,7 @@ direnv allow
 ### Q4: 两台机器的代码不一致
 
 **检查:**
+
 ```bash
 # 查看本地更改
 git status
@@ -553,6 +566,7 @@ git stash pop
 **错误:** `Browser executable not found`
 
 **解决:**
+
 ```bash
 npx playwright install --with-deps chromium
 ```

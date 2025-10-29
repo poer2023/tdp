@@ -53,11 +53,13 @@ npm run health-check
 PostgreSQL 数据库连接字符串。
 
 **格式:**
+
 ```
 postgresql://[用户名]:[密码]@[主机]:[端口]/[数据库名]?schema=public
 ```
 
 **示例:**
+
 ```bash
 # 本地开发
 DATABASE_URL=postgresql://tdp:tdp_password@localhost:5432/tdp_dev?schema=public
@@ -70,6 +72,7 @@ DATABASE_URL=postgresql://user:pass@ep-cool-darkness-123456.us-east-2.aws.neon.t
 ```
 
 **注意事项:**
+
 - ✅ 确保数据库支持 PostgreSQL 扩展 `pg_trgm` (全文搜索需要)
 - ✅ 生产环境必须使用 SSL 连接 (`?sslmode=require`)
 - ⚠️ 不要在代码中硬编码数据库密码
@@ -83,6 +86,7 @@ DATABASE_URL=postgresql://user:pass@ep-cool-darkness-123456.us-east-2.aws.neon.t
 用于加密会话令牌的密钥,**长度必须 ≥ 32 字符**。
 
 **生成方法:**
+
 ```bash
 # 方法1: 使用 openssl (推荐)
 openssl rand -base64 32
@@ -95,6 +99,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```
 
 **示例:**
+
 ```bash
 NEXTAUTH_SECRET=abc123XYZ456ThisIsMyVeryLongSecretKey789==
 ```
@@ -104,6 +109,7 @@ NEXTAUTH_SECRET=abc123XYZ456ThisIsMyVeryLongSecretKey789==
 应用的完整 URL,用于 OAuth 回调。
 
 **配置:**
+
 ```bash
 # 本地开发
 NEXTAUTH_URL=http://localhost:3000
@@ -132,6 +138,7 @@ Google OAuth 2.0 客户端凭据,用于社交登录。
    - 名称: `TDP - Local Development`
 
 3. **配置授权重定向 URI**
+
    ```
    本地开发:
    http://localhost:3000/api/auth/callback/google
@@ -145,6 +152,7 @@ Google OAuth 2.0 客户端凭据,用于社交登录。
    - 客户端密钥 → `GOOGLE_CLIENT_SECRET`
 
 **配置示例:**
+
 ```bash
 GOOGLE_CLIENT_ID=123456789012-abc123xyz456.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-ABCdef123456XYZ789
@@ -161,6 +169,7 @@ GOOGLE_CLIENT_SECRET=GOCSPX-ABCdef123456XYZ789
 **格式:** 逗号分隔的邮箱列表
 
 **示例:**
+
 ```bash
 # 单个管理员
 ADMIN_EMAILS=admin@example.com
@@ -182,6 +191,7 @@ BILIBILI_BUVID3=your_buvid3_here
 ```
 
 **获取方法:**
+
 1. 登录 https://www.bilibili.com
 2. 打开开发者工具 (F12)
 3. Application/存储 → Cookies → https://bilibili.com
@@ -199,6 +209,7 @@ DOUBAN_COOKIE=dbcl2="your_dbcl2_value_here"
 ```
 
 **获取方法:**
+
 1. **用户 ID**: 访问你的豆瓣主页,地址栏中的数字即为用户 ID
    - 例如: `https://www.douban.com/people/123456789/` → ID 是 `123456789`
 
@@ -219,6 +230,7 @@ STEAM_USER_ID=76561198012345678
 ```
 
 **获取方法:**
+
 1. **API Key**: https://steamcommunity.com/dev/apikey
    - 填写域名 (可以随意填,如 `localhost`)
 
@@ -239,6 +251,7 @@ HOYO_REGION=cn_gf01
 ```
 
 **获取方法:**
+
 1. **Cookie**:
    - 登录 https://www.hoyolab.com
    - 打开开发者工具 (F12) → Application → Cookies
@@ -265,6 +278,7 @@ NEXT_PUBLIC_UPTIME_KUMA_URL=https://status.example.com
 ```
 
 **配置步骤:**
+
 1. 部署 Uptime Kuma 服务
 2. 在 Settings → API Keys 中创建 API 密钥
 3. 配置监控项并启用 API
@@ -280,6 +294,7 @@ ADMIN_API_KEY=your_random_admin_api_key_here
 ```
 
 **生成方法:**
+
 ```bash
 openssl rand -hex 32
 ```
@@ -295,6 +310,7 @@ ENCRYPTION_KEY=your_32_byte_base64_encoded_key
 ```
 
 **生成方法:**
+
 ```bash
 npm run generate-key
 ```
@@ -341,11 +357,11 @@ npm run generate-key     # 生成凭证加密密钥 (ENCRYPTION_KEY)
 
 ### 密钥长度要求
 
-| 变量名 | 最小长度 | 推荐长度 | 格式 |
-|--------|---------|---------|------|
-| `NEXTAUTH_SECRET` | 32 字符 | 44 字符 | Base64 |
-| `ADMIN_API_KEY` | 32 字符 | 64 字符 | Hex |
-| `ENCRYPTION_KEY` | 32 字节 | 32 字节 | Base64 |
+| 变量名            | 最小长度 | 推荐长度 | 格式   |
+| ----------------- | -------- | -------- | ------ |
+| `NEXTAUTH_SECRET` | 32 字符  | 44 字符  | Base64 |
+| `ADMIN_API_KEY`   | 32 字符  | 64 字符  | Hex    |
+| `ENCRYPTION_KEY`  | 32 字节  | 32 字节  | Base64 |
 
 ## 跨机器同步
 
@@ -408,11 +424,13 @@ direnv allow
 ### Q1: 数据库连接失败
 
 **错误信息:**
+
 ```
 Error: P1001: Can't reach database server at `host:port`
 ```
 
 **解决方案:**
+
 1. 检查 `DATABASE_URL` 格式是否正确
 2. 确认数据库服务器正在运行
 3. 检查网络连接和防火墙设置
@@ -428,11 +446,13 @@ npx prisma db execute --stdin <<< "SELECT 1;"
 ### Q2: NEXTAUTH_SECRET 长度不足
 
 **错误信息:**
+
 ```
 Error: NEXTAUTH_SECRET must be at least 32 characters
 ```
 
 **解决方案:**
+
 ```bash
 # 重新生成密钥
 openssl rand -base64 32
@@ -446,11 +466,13 @@ NEXTAUTH_SECRET=<新生成的密钥>
 ### Q3: Google OAuth 回调错误
 
 **错误信息:**
+
 ```
 Error: redirect_uri_mismatch
 ```
 
 **解决方案:**
+
 1. 检查 `NEXTAUTH_URL` 是否正确
 2. 在 Google Cloud Console 中添加回调 URI:
    ```
@@ -465,6 +487,7 @@ Error: redirect_uri_mismatch
 **现象:** 修改 `.env.local` 后没有效果
 
 **解决方案:**
+
 ```bash
 # 方法1: 重启开发服务器
 # Ctrl+C 停止,然后重新运行:
@@ -499,6 +522,7 @@ npx dotenv-cli -p .env.local -- env | grep -E "DATABASE|NEXTAUTH"
 **问题:** 机器 A 和机器 B 使用了不同的 `NEXTAUTH_SECRET`,导致会话失效
 
 **解决方案:**
+
 1. **选择一个主密钥源** (通常是机器 A)
 2. **同步到所有机器**:
    ```bash
@@ -546,6 +570,7 @@ npx dotenv-cli -p .env.local -- env | grep -E "DATABASE|NEXTAUTH"
 **需要帮助?**
 
 如果遇到问题,请检查:
+
 1. [常见问题](#常见问题)章节
 2. 运行 `npm run health-check` 诊断配置
 3. 查看项目 README.md

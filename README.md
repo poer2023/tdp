@@ -22,6 +22,7 @@ npm run setup:local
 ```
 
 脚本会自动完成:
+
 - ✅ 检查 Node.js 版本 (需要 v22+)
 - ✅ 创建并引导填写 `.env.local`
 - ✅ 安装所有依赖 (`npm ci`)
