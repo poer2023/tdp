@@ -10,6 +10,7 @@ import { SubscriptionPieChart } from "@/components/subscriptions/subscription-pi
 import { SubscriptionExpandableCard } from "@/components/subscriptions/subscription-expandable-card";
 import { StatsCard } from "@/components/ui/stats-card";
 import type { ChartDataItem } from "@/components/ui/stats-card";
+import { useConfirm } from "@/hooks/use-confirm";
 
 type BillingCycle = "MONTHLY" | "ANNUAL" | "ONE_TIME";
 
@@ -124,6 +125,7 @@ export default function SubscriptionDashboard({
   initialSubscriptions,
 }: SubscriptionDashboardProps) {
   const router = useRouter();
+  const { confirm } = useConfirm();
   const [items, setItems] = useState<SubscriptionRecord[]>(initialSubscriptions);
   const [viewMode, setViewMode] = useState<ViewMode>("MONTHLY");
   const [cycleFilter, setCycleFilter] = useState<BillingCycle | "ALL">("ALL");
@@ -215,9 +217,13 @@ export default function SubscriptionDashboard({
   const translation = (key: keyof typeof adminTranslations.en) => translate(locale, key);
 
   const handleDelete = async (record: SubscriptionRecord) => {
-    const confirmed = window.confirm(
-      `${translation("confirmDelete")}\n${translation("confirmDeleteDescription")}`
-    );
+    const confirmed = await confirm({
+      title: "删除订阅",
+      description: "确定要删除此订阅吗？该操作不可恢复。",
+      confirmText: "删除",
+      cancelText: "取消",
+      variant: "danger",
+    });
     if (!confirmed) return;
 
     startTransition(async () => {

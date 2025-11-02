@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import type { ImportResult } from "@/lib/content-import";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export function ImportClient() {
+  const { confirm } = useConfirm();
   const [file, setFile] = useState<File | null>(null);
   const [dryRunResult, setDryRunResult] = useState<ImportResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -52,13 +54,14 @@ export function ImportClient() {
   const handleApply = async () => {
     if (!file) return;
 
-    if (
-      !confirm(
-        `Apply import? This will ${dryRunResult?.summary.created || 0} new posts and update ${dryRunResult?.summary.updated || 0} existing posts.`
-      )
-    ) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "确认导入内容",
+      description: `此操作将创建 ${dryRunResult?.summary.created || 0} 篇新文章，更新 ${dryRunResult?.summary.updated || 0} 篇现有文章。`,
+      confirmText: "确认导入",
+      cancelText: "取消",
+      variant: "default",
+    });
+    if (!confirmed) return;
 
     setIsProcessing(true);
     setApplyResult(null);

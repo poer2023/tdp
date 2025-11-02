@@ -2,11 +2,21 @@
 
 import { useRef } from "react";
 import { softDeleteMomentAction } from "@/app/[locale]/m/manage-actions";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export function DeleteIcon({ id }: { id: string }) {
   const formRef = useRef<HTMLFormElement>(null);
-  function onClick() {
-    if (confirm("确认删除这条瞬间？")) {
+  const { confirm } = useConfirm();
+
+  async function onClick() {
+    const confirmed = await confirm({
+      title: "删除瞬间",
+      description: "确认删除这条瞬间？",
+      confirmText: "删除",
+      cancelText: "取消",
+      variant: "danger",
+    });
+    if (confirmed) {
       formRef.current?.requestSubmit();
     }
   }

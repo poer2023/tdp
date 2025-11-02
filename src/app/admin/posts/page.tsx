@@ -7,6 +7,7 @@ import { listAllPosts } from "@/lib/posts";
 import { deletePostAction, publishPostAction, unpublishPostAction } from "./actions";
 import { CreatePostForm } from "./create-post-form";
 import { AdminErrorBoundary } from "@/components/error-boundaries/admin-error-boundary";
+import { DeletePostButton } from "./delete-post-button";
 
 export const revalidate = 0;
 
@@ -122,15 +123,11 @@ async function PostsListContent() {
                           </form>
                         )}
 
-                        <form action={deletePostAction}>
-                          <input type="hidden" name="id" value={post.id} />
-                          <button
-                            type="submit"
-                            className="rounded-full border border-red-500 px-3 py-1 text-red-600 transition hover:bg-red-50 dark:border-red-400/60 dark:text-red-300 dark:hover:bg-red-500/10"
-                          >
-                            删除
-                          </button>
-                        </form>
+                        <DeletePostButton
+                          postId={post.id}
+                          postTitle={post.title}
+                          deleteAction={deletePostAction}
+                        />
                       </div>
                     </td>
                   </tr>

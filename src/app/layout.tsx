@@ -14,6 +14,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
 import { HtmlLangSync } from "@/components/html-lang-sync";
 import { auth } from "@/auth";
+import { ConfirmProvider } from "@/hooks/use-confirm";
 
 const geistSans = localFont({
   src: [
@@ -185,7 +186,8 @@ export default async function RootLayout({
         {/* Keep <html lang> consistent on client navigations */}
         <HtmlLangSync />
         <SessionProvider session={session}>
-          <GlobalSearchProvider>
+          <ConfirmProvider>
+            <GlobalSearchProvider>
             {/* Skip to content link for accessibility */}
             <a
               href="#main-content"
@@ -226,7 +228,8 @@ export default async function RootLayout({
             {!isAdminRoute && <MomentComposerBottomSheet />}
 
             {!isAdminRoute && <Footer />}
-          </GlobalSearchProvider>
+            </GlobalSearchProvider>
+          </ConfirmProvider>
         </SessionProvider>
       </body>
     </html>

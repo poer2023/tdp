@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useConfirm } from "@/hooks/use-confirm";
 
 type FriendRow = {
   id: string;
@@ -20,12 +21,20 @@ interface FriendManagementTableProps {
 
 export function FriendManagementTable({ friends: initialFriends }: FriendManagementTableProps) {
   const router = useRouter();
+  const { confirm } = useConfirm();
   const [friends, setFriends] = useState<FriendRow[]>(initialFriends);
   const [resettingId, setResettingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleResetPassphrase = async (friendId: string) => {
-    if (!confirm("确定要重置该朋友的访问口令吗？")) return;
+    const confirmed = await confirm({
+      title: "重置访问口令",
+      description: "确定要重置该朋友的访问口令吗？",
+      confirmText: "重置",
+      cancelText: "取消",
+      variant: "default",
+    });
+    if (!confirmed) return;
 
     setResettingId(friendId);
     try {
@@ -49,9 +58,14 @@ export function FriendManagementTable({ friends: initialFriends }: FriendManagem
   };
 
   const handleDelete = async (friendId: string, friendName: string) => {
-    if (!confirm(`确定要删除朋友 “${friendName}” 吗？该操作不可恢复。`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: "删除朋友",
+      description: `确定要删除朋友 "${friendName}" 吗？该操作不可恢复。`,
+      confirmText: "删除",
+      cancelText: "取消",
+      variant: "danger",
+    });
+    if (!confirmed) return;
 
     setDeletingId(friendId);
     try {

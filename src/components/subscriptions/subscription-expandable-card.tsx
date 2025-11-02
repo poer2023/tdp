@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatCNY, formatOriginalCurrency } from "@/lib/subscription-shared";
 import { adminTranslations } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
+import { useConfirm } from "@/hooks/use-confirm";
 
 type BillingCycle = "MONTHLY" | "ANNUAL" | "ONE_TIME";
 
@@ -101,6 +102,7 @@ export function SubscriptionExpandableCard({
   onDelete,
 }: SubscriptionExpandableCardProps) {
   const { isExpanded, toggleExpand, animatedHeight } = useExpandable(false);
+  const { confirm } = useConfirm();
   const contentRef = useRef<HTMLDivElement>(null);
 
   const progress = calculateProgress(subscription);
@@ -221,19 +223,18 @@ export function SubscriptionExpandableCard({
                 </Link>
                 <button
                   type="button"
-                  onClick={(event) => {
+                  onClick={async (event) => {
                     event.stopPropagation();
-                    if (typeof window !== "undefined") {
-                      const confirmMessage = `${translate(
-                        locale,
-                        "confirmDelete"
-                      )}\n\n${translate(locale, "confirmDeleteDescription")}`;
-                      const confirmed = window.confirm(confirmMessage);
-                      if (!confirmed) {
-                        return;
-                      }
+                    const confirmed = await confirm({
+                      title: "删除订阅",
+                      description: "确定要删除此订阅吗？该操作不可恢复。",
+                      confirmText: "删除",
+                      cancelText: "取消",
+                      variant: "danger",
+                    });
+                    if (confirmed) {
+                      onDelete(subscription);
                     }
-                    onDelete(subscription);
                   }}
                   className="inline-flex items-center justify-center rounded-lg border border-rose-500 px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 dark:border-rose-400 dark:text-rose-300 dark:hover:bg-rose-950/40"
                 >
