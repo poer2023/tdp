@@ -23,11 +23,11 @@ type SyncJobDelegate = {
 };
 
 function getJobDelegate(): SyncJobDelegate | undefined {
-    const candidate = prisma as unknown as {
-      syncJobLog?: SyncJobDelegate;
-      syncJob?: SyncJobDelegate;
-    };
-    return candidate.syncJobLog ?? candidate.syncJob;
+  const candidate = prisma as unknown as {
+    syncJobLog?: SyncJobDelegate;
+    syncJob?: SyncJobDelegate;
+  };
+  return candidate.syncJobLog ?? candidate.syncJob;
 }
 
 async function createJobLog(data: Record<string, unknown>): Promise<{ id: string }> {

@@ -33,10 +33,7 @@ const shuffle = <T,>(array: T[]): T[] => {
     const randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
-    [result[currentIndex]!, result[randomIndex]!] = [
-      result[randomIndex]!,
-      result[currentIndex]!,
-    ];
+    [result[currentIndex]!, result[randomIndex]!] = [result[randomIndex]!, result[currentIndex]!];
   }
 
   return result;
@@ -52,9 +49,10 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
       image: a.image,
       title: a.title,
       type: a.type,
-      href: a.type === "post" && a.slug
-        ? localePath(locale, `/posts/${a.slug}`)
-        : localePath(locale, "/gallery"),
+      href:
+        a.type === "post" && a.slug
+          ? localePath(locale, `/posts/${a.slug}`)
+          : localePath(locale, "/gallery"),
     }));
 
     const photoItems: GridItem[] = galleryPhotos
@@ -80,7 +78,7 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
           layout
           transition={{ duration: 1.5, type: "spring" }}
           whileHover={{ scale: 1.05 }}
-          className="relative w-full h-full cursor-pointer overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800"
+          className="relative h-full w-full cursor-pointer overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800"
           onClick={() => (window.location.href = item.href)}
           style={{
             backgroundImage: `url(${item.image})`,
@@ -120,19 +118,19 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
   return (
     <section className="relative w-full py-12 sm:py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-12 lg:gap-16 md:items-center">
+        <div className="grid gap-8 md:grid-cols-2 md:items-center md:gap-12 lg:gap-16">
           {/* Left: Statistics */}
           <div className="flex items-center">
             <ShuffleGridStats statistics={statistics} locale={locale} />
           </div>
 
           {/* Right: Animated Grid */}
-          <div className="grid grid-cols-3 grid-rows-4 h-[450px] gap-1">
+          <div className="grid h-[450px] grid-cols-3 grid-rows-4 gap-1">
             {squares.length === 0
               ? Array.from({ length: 12 }).map((_, i) => (
                   <div
                     key={`skeleton-${i}`}
-                    className="w-full h-full rounded-md bg-zinc-100 dark:bg-zinc-800 animate-pulse"
+                    className="h-full w-full animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800"
                   />
                 ))
               : squares.map((sq) => sq)}

@@ -20,9 +20,7 @@ export function AuthHeader() {
   // Derived session state
   const isLoading = status === "loading";
   const derivedUser = session?.user ?? lastKnownUser;
-  const isSignedIn =
-    status === "authenticated" ||
-    (status === "loading" && Boolean(derivedUser));
+  const isSignedIn = status === "authenticated" || (status === "loading" && Boolean(derivedUser));
   const user = derivedUser;
   const showAvatarImage = Boolean(user?.image) && !avatarError;
   const imageSrc = typeof user?.image === "string" ? user.image : "";

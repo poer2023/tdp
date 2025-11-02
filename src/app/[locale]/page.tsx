@@ -43,7 +43,12 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <div className="mx-auto w-full max-w-6xl space-y-16 px-4 py-8 sm:space-y-20 sm:px-6 sm:py-12 md:space-y-28 md:px-12 md:py-16">
-        <ShuffleGrid activities={activities} galleryPhotos={gallery} statistics={statistics} locale={l} />
+        <ShuffleGrid
+          activities={activities}
+          galleryPhotos={gallery}
+          statistics={statistics}
+          locale={l}
+        />
         <section className="space-y-6 sm:space-y-8" id="posts">
           <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-1.5 sm:space-y-2">

@@ -228,13 +228,13 @@ async function main() {
     if (allImages.length < 50) {
       throw new Error(
         `需要至少 50 张图片，但只找到 ${allImages.length} 张。\n` +
-        `请确保 ${DOWNLOADS_DIR} 目录有足够的图片（JPG/PNG/WebP）。`
+          `请确保 ${DOWNLOADS_DIR} 目录有足够的图片（JPG/PNG/WebP）。`
       );
     }
 
-    const coverImages = allImages.slice(0, 12);      // 12张封面（6文章×2语言）
-    const galleryImages = allImages.slice(12, 42);   // 30张相册
-    const momentImages = allImages.slice(42, 50);    // 8张瞬间图片
+    const coverImages = allImages.slice(0, 12); // 12张封面（6文章×2语言）
+    const galleryImages = allImages.slice(12, 42); // 30张相册
+    const momentImages = allImages.slice(42, 50); // 8张瞬间图片
 
     console.log(`\n📦 准备资源:`);
     console.log(`  - 封面图: ${coverImages.length} 张`);
@@ -329,14 +329,16 @@ async function main() {
         const imageUrl = copyImageToUploads(momentImages[imageIndex]);
 
         // 转换为 MomentImage 格式
-        const images = [{
-          url: imageUrl,
-          alt: null,
-          previewUrl: null,
-        }];
+        const images = [
+          {
+            url: imageUrl,
+            alt: null,
+            previewUrl: null,
+          },
+        ];
 
         // 中文版
-        const zhContent = moment.content.zh + (round > 0 ? ' 💫' : '');
+        const zhContent = moment.content.zh + (round > 0 ? " 💫" : "");
         await prisma.moment.create({
           data: {
             content: zhContent,
@@ -353,7 +355,7 @@ async function main() {
         console.log(`✅ 发布瞬间 (中文): ${zhContent.substring(0, 40)}...`);
 
         // 英文版
-        const enContent = moment.content.en + (round > 0 ? ' 💫' : '');
+        const enContent = moment.content.en + (round > 0 ? " 💫" : "");
         await prisma.moment.create({
           data: {
             content: enContent,

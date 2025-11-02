@@ -15,9 +15,7 @@ interface ConfirmContextValue {
   confirm: (options: ConfirmOptions) => Promise<boolean>;
 }
 
-const ConfirmContext = React.createContext<ConfirmContextValue | undefined>(
-  undefined
-);
+const ConfirmContext = React.createContext<ConfirmContextValue | undefined>(undefined);
 
 export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = React.useState(false);
