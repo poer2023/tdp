@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import type { RecentActivity } from "@/lib/posts";
 import type { GalleryImage } from "@/lib/gallery";
 import type { SiteStatistics } from "@/lib/statistics";
@@ -70,9 +70,9 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
     return [...activityItems, ...photoItems];
   }, [activities, galleryPhotos, locale]);
 
-  // Generate squares using official pattern - memoized to avoid recreation on every render
-  const generateSquares = useMemo(() => {
-    return () => shuffle([...allItems])
+  // Generate squares using official pattern - useCallback for stable function reference
+  const generateSquares = useCallback(() => {
+    return shuffle([...allItems])
       .slice(0, 12)
       .map((item) => (
         <motion.div
@@ -92,16 +92,14 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
       ));
   }, [allItems]);
 
-  // Initialize with client-side only rendering to avoid hydration mismatch
+  // Lazy initialization - only runs once on initial render (React best practice)
+  // Initialize with empty array for SSR, will be populated in useEffect
   const [squares, setSquares] = useState<React.ReactElement[]>([]);
-  const [mounted, setMounted] = useState(false);
 
+  // useEffect for side effects (timers and initial square generation)
   useEffect(() => {
-    // Use queueMicrotask to defer state updates to avoid cascading renders
-    queueMicrotask(() => {
-      setMounted(true);
-      setSquares(generateSquares());
-    });
+    // Initialize squares on mount
+    setSquares(generateSquares());
 
     const shuffleSquares = () => {
       setSquares(generateSquares());
@@ -115,7 +113,9 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [generateSquares]);
+    // Run only when component mounts or when generateSquares changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <section className="relative w-full py-12 sm:py-16 md:py-20">
@@ -128,7 +128,7 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
 
           {/* Right: Animated Grid */}
           <div className="grid grid-cols-3 grid-rows-4 h-[450px] gap-1">
-            {!mounted
+            {squares.length === 0
               ? Array.from({ length: 12 }).map((_, i) => (
                   <div
                     key={`skeleton-${i}`}
