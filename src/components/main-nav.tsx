@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { startTransition, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
@@ -17,7 +17,7 @@ export function MainNav() {
 
   // Ensure component is mounted (for SSR compatibility)
   useEffect(() => {
-    setMounted(true);
+    startTransition(() => setMounted(true));
   }, []);
 
   const links = [
@@ -50,7 +50,7 @@ export function MainNav() {
 
   // Close mobile menu on route change
   useEffect(() => {
-    setMobileMenuOpen(false);
+    startTransition(() => setMobileMenuOpen(false));
   }, [pathname]);
 
   // Close mobile menu on Escape key

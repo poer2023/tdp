@@ -26,19 +26,15 @@ export function MomentCard({
 }) {
   const detailHref = localePath(locale, `/m/${slug || id}`);
   const date = new Date(createdAt);
-  const time = new Intl.RelativeTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
-    numeric: "auto",
+  const formattedDate = date.toLocaleString(locale === "zh" ? "zh-CN" : "en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
   });
-  const diffMinutes = Math.round((Date.now() - date.getTime()) / 60000);
-  const rel =
-    diffMinutes < 60
-      ? time.format(-diffMinutes, "minute")
-      : time.format(-Math.round(diffMinutes / 60), "hour");
 
   return (
     <article className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="mb-2 flex items-center gap-2 text-xs text-zinc-500">
-        <span>{rel}</span>
+        <span>{formattedDate}</span>
         {visibility !== "PUBLIC" && (
           <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] dark:bg-zinc-800">
             {visibility === "UNLISTED"

@@ -5,7 +5,7 @@
  * Platform-specific form for creating and editing credentials
  */
 
-import { useState, useEffect } from "react";
+import { startTransition, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { t } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
@@ -37,13 +37,15 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
   // Initialize form values when editing existing credential
   useEffect(() => {
     if (credential && selectedPlatform) {
-      const extracted = extractCredentialFormValues(
-        selectedPlatform as CredentialPlatform,
-        credential
-      );
-      setFormValues(extracted);
-      setAutoSyncEnabled(credential.autoSync || false);
-      setSyncFrequency(credential.syncFrequency || "daily");
+      startTransition(() => {
+        const extracted = extractCredentialFormValues(
+          selectedPlatform as CredentialPlatform,
+          credential
+        );
+        setFormValues(extracted);
+        setAutoSyncEnabled(credential.autoSync || false);
+        setSyncFrequency(credential.syncFrequency || "daily");
+      });
     }
   }, [credential, selectedPlatform]);
 

@@ -5,12 +5,14 @@ import {
   DELETE as deleteSubscription,
 } from "@/app/api/subscriptions/[id]/route";
 import { NextRequest } from "next/server";
-import { getServerSession } from "next-auth";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
+const mockAuth = vi.mocked(auth);
+
 // Mock dependencies
-vi.mock("next-auth", () => ({
-  getServerSession: vi.fn(),
+vi.mock("@/auth", () => ({
+  auth: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => {
@@ -52,7 +54,7 @@ describe("Subscriptions API Integration", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+    mockAuth.mockResolvedValue(mockSession);
   });
 
   afterEach(() => {
@@ -209,7 +211,7 @@ describe("Subscriptions API Integration", () => {
       };
 
       // User 1 creates subscription
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(user1Session);
+      mockAuth.mockResolvedValueOnce(user1Session);
       (prisma.subscription.create as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
         user1Subscription
       );
@@ -228,7 +230,7 @@ describe("Subscriptions API Integration", () => {
       await createSubscription(user1CreateRequest);
 
       // User 2 creates subscription
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(user2Session);
+      mockAuth.mockResolvedValueOnce(user2Session);
       (prisma.subscription.create as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
         user2Subscription
       );
@@ -247,7 +249,7 @@ describe("Subscriptions API Integration", () => {
       await createSubscription(user2CreateRequest);
 
       // User 1 lists their subscriptions - should only see their own
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(user1Session);
+      mockAuth.mockResolvedValueOnce(user1Session);
       (prisma.subscription.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
         user1Subscription,
       ]);
@@ -261,7 +263,7 @@ describe("Subscriptions API Integration", () => {
       expect(user1ListResult.subscriptions[0].userId).toBe("user-1");
 
       // User 2 lists their subscriptions - should not see User 1's subscription
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValueOnce(user2Session);
+      mockAuth.mockResolvedValueOnce(user2Session);
       (prisma.subscription.findMany as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
         user2Subscription,
       ]);

@@ -1,7 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import {
+  startTransition as startReactTransition,
+  useActionState,
+  useEffect,
+  useState,
+  useTransition,
+} from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import {
   updateFriendProfileFormAction,
@@ -35,7 +41,7 @@ function SaveButton() {
 
 export function FriendEditForm({ friend }: FriendEditFormProps) {
   const boundAction = updateFriendProfileFormAction.bind(null, friend.id);
-  const [state, formAction] = useFormState(boundAction, initialState);
+  const [state, formAction] = useActionState(boundAction, initialState);
   const [showSuccess, setShowSuccess] = useState(false);
   const [passphrase, setPassphrase] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -43,8 +49,10 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
 
   useEffect(() => {
     if (state.success) {
-      setShowSuccess(true);
-      const timer = window.setTimeout(() => setShowSuccess(false), 4000);
+      startReactTransition(() => setShowSuccess(true));
+      const timer = window.setTimeout(() => {
+        startReactTransition(() => setShowSuccess(false));
+      }, 4000);
       return () => window.clearTimeout(timer);
     }
     return undefined;

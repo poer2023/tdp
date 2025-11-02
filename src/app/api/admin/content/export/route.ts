@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
+import { auth } from "@/auth";
 import { UserRole, PostStatus, PostLocale } from "@prisma/client";
 import { exportContent } from "@/lib/content-export";
 
@@ -9,7 +8,7 @@ export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
   // Check authentication and admin role
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

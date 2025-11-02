@@ -9,6 +9,7 @@
 
 "use client";
 
+import { useMemo } from "react";
 type ModuleErrorFallbackProps = {
   title?: string;
   message?: string;
@@ -83,17 +84,26 @@ export function ModuleErrorFallback({
  * ```
  */
 export function ModuleLoadingSkeleton({ rows = 3 }: { rows?: number }) {
+  const placeholderWidths = useMemo(
+    () =>
+      Array.from({ length: rows }).map((_, index) => ({
+        primary: 60 + ((index * 37) % 40),
+        secondary: 40 + ((index * 53) % 20),
+      })),
+    [rows]
+  );
+
   return (
     <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      {Array.from({ length: rows }).map((_, i) => (
+      {placeholderWidths.map((widths, i) => (
         <div key={i} className="animate-pulse">
           <div
             className="h-4 rounded bg-zinc-200 dark:bg-zinc-800"
-            style={{ width: `${Math.random() * 40 + 60}%` }}
+            style={{ width: `${widths.primary}%` }}
           />
           <div
             className="mt-2 h-3 rounded bg-zinc-100 dark:bg-zinc-900"
-            style={{ width: `${Math.random() * 20 + 40}%` }}
+            style={{ width: `${widths.secondary}%` }}
           />
         </div>
       ))}

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import type { Session } from "next-auth";
 import {
   createFriend,
   updateFriend,
@@ -13,14 +14,14 @@ type CreateFriendResult =
   | { success: true; friendId: string; passphrase: string }
   | { success: false; error: string };
 
-function assertAdmin(session: Awaited<ReturnType<typeof auth>>) {
+function assertAdmin(session: Session | null) {
   if (!session || session.user?.role !== "ADMIN") {
     throw new Error("Unauthorized");
   }
 }
 
 export async function createFriendAction(formData: FormData): Promise<CreateFriendResult> {
-  const session = await auth();
+  const session = (await auth()) as Session | null;
   assertAdmin(session);
 
   const name = String(formData.get("name") ?? "").trim();
@@ -55,7 +56,7 @@ export async function createFriendAction(formData: FormData): Promise<CreateFrie
 }
 
 export async function updateFriendProfileAction(friendId: string, formData: FormData) {
-  const session = await auth();
+  const session = (await auth()) as Session | null;
   assertAdmin(session);
 
   const name = String(formData.get("name") ?? "").trim();
@@ -84,7 +85,7 @@ export async function updateFriendProfileAction(friendId: string, formData: Form
 }
 
 export async function updateFriendPassphraseAction(friendId: string, newPassphrase?: string) {
-  const session = await auth();
+  const session = (await auth()) as Session | null;
   assertAdmin(session);
 
   const passphrase =

@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     // Revalidate the github-dev-data cache
-    revalidateTag("github-dev-data");
+    await revalidateTag("github-dev-data", "max");
 
     return NextResponse.json({
       success: true,

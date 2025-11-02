@@ -1,45 +1,47 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import nextConfig from "eslint-config-next";
+import tseslint from "@typescript-eslint/eslint-plugin";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const [baseConfig, tsConfig, ignoreConfig] = nextConfig;
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+const customIgnores = [
+  "node_modules/**",
+  ".next/**",
+  "out/**",
+  "build/**",
+  "next-env.d.ts",
+  "*.config.js",
+  "*.config.mjs",
+  "*.config.ts",
+  "prisma/migrations/**",
+  "public/uploads/**",
+  "e2e/**",
+  "playwright-report/**",
+  "test-results/**",
+  "coverage/**",
+];
 
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+export default [
   {
-    ignores: [
-      "node_modules/**",
-      ".next/**",
-      "out/**",
-      "build/**",
-      "next-env.d.ts",
-      "*.config.js",
-      "*.config.mjs",
-      "*.config.ts",
-      "prisma/migrations/**",
-      "public/uploads/**",
-      "e2e/**",
-      "playwright-report/**",
-      "test-results/**",
-      "coverage/**",
-    ],
+    ...baseConfig,
+    plugins: {
+      ...(baseConfig.plugins ?? {}),
+      "@typescript-eslint": tseslint,
+    },
   },
-  // Global tweaks
   {
-    files: ["**/*.{ts,tsx,js,mjs}"],
+    ...tsConfig,
     rules: {
+      ...tsConfig.rules,
       "@typescript-eslint/no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
       ],
     },
   },
-  // Relax rules in tests and scripts
+  {
+    ...ignoreConfig,
+    ignores: Array.from(new Set([...(ignoreConfig.ignores ?? []), ...customIgnores])),
+  },
   {
     files: ["src/**/__tests__/**", "e2e/**", "scripts/**"],
     rules: {
@@ -48,5 +50,3 @@ const eslintConfig = [
     },
   },
 ];
-
-export default eslintConfig;

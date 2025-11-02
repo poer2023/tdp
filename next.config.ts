@@ -5,11 +5,6 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
-  eslint: {
-    // Disable ESLint during builds to allow E2E tests to run
-    // We'll fix linting errors separately
-    ignoreDuringBuilds: true,
-  },
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
@@ -20,6 +15,16 @@ const nextConfig: NextConfig = {
     unoptimized: false,
     loader: "custom",
     loaderFile: "./image-loader.ts",
+    localPatterns: [
+      {
+        pathname: "/api/image-proxy",
+        search: "",
+      },
+      {
+        pathname: "/api/uploads/**",
+        search: "",
+      },
+    ],
     remotePatterns: [
       {
         protocol: "https",

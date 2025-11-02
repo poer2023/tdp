@@ -3,7 +3,6 @@
  * This script bypasses Prisma client and uses raw SQL
  */
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 const { Client } = require("pg");
 
 async function main() {

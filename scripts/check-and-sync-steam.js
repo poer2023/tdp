@@ -2,7 +2,6 @@
  * Check Steam credential and trigger sync
  */
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 const { PrismaClient } = require("@prisma/client");
 const { getGamingSyncService } = require("../src/lib/gaming/sync-service");
 
