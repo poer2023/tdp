@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { SearchCommand } from "../search-command";
 
 // Mock next/navigation
@@ -59,13 +60,12 @@ describe("SearchCommand", () => {
 
   describe("搜索输入和防抖", () => {
     it("应该接受用户输入", async () => {
+      const user = userEvent.setup({ delay: null });
       render(<SearchCommand open={true} onOpenChange={vi.fn()} />);
 
       const input = screen.getByPlaceholderText(/search posts, images, moments/i);
 
-      await act(async () => {
-        fireEvent.change(input, { target: { value: "test query" } });
-      });
+      await user.type(input, "test query");
 
       expect(input).toHaveValue("test query");
     });
@@ -593,13 +593,12 @@ describe("SearchCommand", () => {
     });
 
     it("关闭时应该重置状态", async () => {
+      const user = userEvent.setup({ delay: null });
       const { rerender } = render(<SearchCommand open={true} onOpenChange={vi.fn()} />);
 
       const input = screen.getByPlaceholderText(/search posts, images, moments/i);
 
-      await act(async () => {
-        fireEvent.change(input, { target: { value: "test" } });
-      });
+      await user.type(input, "test");
 
       expect(input).toHaveValue("test");
 
@@ -616,13 +615,12 @@ describe("SearchCommand", () => {
 
   describe("加载状态", () => {
     it("搜索时应该显示加载指示器", async () => {
+      const user = userEvent.setup({ delay: null });
       render(<SearchCommand open={true} onOpenChange={vi.fn()} />);
 
       const input = screen.getByPlaceholderText(/search posts, images, moments/i);
 
-      await act(async () => {
-        fireEvent.change(input, { target: { value: "test" } });
-      });
+      await user.type(input, "test");
 
       // Loading indicator should appear
       expect(screen.getByRole("status")).toBeInTheDocument();
