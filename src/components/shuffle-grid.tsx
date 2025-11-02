@@ -2,8 +2,6 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState, useMemo } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import type { RecentActivity } from "@/lib/posts";
 import type { GalleryImage } from "@/lib/gallery";
 import type { SiteStatistics } from "@/lib/statistics";
@@ -26,6 +24,24 @@ type GridItem = {
   href: string;
 };
 
+// Official shuffle algorithm
+const shuffle = (array: GridItem[]) => {
+  let currentIndex = array.length,
+    randomIndex;
+
+  while (currentIndex != 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+
+  return array;
+};
+
 function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleGridProps) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -42,7 +58,7 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
     }));
 
     const photoItems: GridItem[] = galleryPhotos
-      .filter((p) => !activities.some((a) => a.id === p.id)) // Avoid duplicates
+      .filter((p) => !activities.some((a) => a.id === p.id))
       .map((p) => ({
         id: p.id,
         image: p.smallThumbPath || p.microThumbPath || p.filePath,
@@ -54,35 +70,33 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
     return [...activityItems, ...photoItems];
   }, [activities, galleryPhotos, locale]);
 
-  // Shuffle and take 12 items
-  const shuffle = (array: GridItem[]): GridItem[] => {
-    const shuffled = [...array];
-    let currentIndex = shuffled.length;
-
-    while (currentIndex !== 0) {
-      const randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
-
-      // Safe array swap with proper null checks
-      const temp = shuffled[currentIndex];
-      const randomItem = shuffled[randomIndex];
-      if (temp && randomItem) {
-        shuffled[currentIndex] = randomItem;
-        shuffled[randomIndex] = temp;
-      }
-    }
-
-    return shuffled;
-  };
-
+  // Generate squares using official pattern
   const generateSquares = () => {
-    return shuffle(allItems).slice(0, 12);
+    return shuffle([...allItems])
+      .slice(0, 12)
+      .map((item) => (
+        <motion.div
+          key={item.id}
+          layout
+          transition={{ duration: 1.5, type: "spring" }}
+          whileHover={{ scale: 1.05 }}
+          className="relative w-full h-full cursor-pointer overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800"
+          onClick={() => (window.location.href = item.href)}
+          style={{
+            backgroundImage: `url(${item.image})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+          aria-label={item.title}
+        />
+      ));
   };
 
-  const [squares, setSquares] = useState<GridItem[]>([]);
+  const [squares, setSquares] = useState<JSX.Element[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Initialize on client side only
+    setMounted(true);
     setSquares(generateSquares());
 
     const shuffleSquares = () => {
@@ -90,7 +104,7 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
       timeoutRef.current = setTimeout(shuffleSquares, 3000);
     };
 
-    shuffleSquares();
+    timeoutRef.current = setTimeout(shuffleSquares, 3000);
 
     return () => {
       if (timeoutRef.current) {
@@ -102,41 +116,22 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
   return (
     <section className="relative w-full py-12 sm:py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-12 lg:gap-16">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-12 lg:gap-16 md:items-center">
           {/* Left: Statistics */}
           <div className="flex items-center">
             <ShuffleGridStats statistics={statistics} locale={locale} />
           </div>
 
           {/* Right: Animated Grid */}
-          <div className="grid grid-cols-3 grid-rows-4 gap-2 sm:gap-3 md:h-[450px]">
-            {squares.map((item, index) => (
-              <motion.div
-                key={`${item.id}-${index}`}
-                layout
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{
-                  duration: 0.5,
-                  delay: index * 0.05,
-                  type: "spring",
-                  stiffness: 100,
-                }}
-                whileHover={{ scale: 1.05 }}
-                className="relative overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800"
-              >
-                <Link href={item.href} className="block h-full w-full">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 15vw"
-                    className="object-cover"
-                    loading="lazy"
+          <div className="grid grid-cols-3 grid-rows-4 h-[450px] gap-1">
+            {!mounted
+              ? Array.from({ length: 12 }).map((_, i) => (
+                  <div
+                    key={`skeleton-${i}`}
+                    className="w-full h-full rounded-md bg-zinc-100 dark:bg-zinc-800 animate-pulse"
                   />
-                </Link>
-              </motion.div>
-            ))}
+                ))
+              : squares.map((sq) => sq)}
           </div>
         </div>
       </div>
