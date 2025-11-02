@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRecentActivities } from "@/lib/posts";
 import { listGalleryImages } from "@/lib/gallery";
+import { getSiteStatistics } from "@/lib/statistics";
 import { GalleryGrid } from "@/components/gallery-grid";
-import { ScrollSyncHero } from "@/components/scroll-sync-hero";
+import { ShuffleGrid } from "@/components/shuffle-grid";
 import { MomentStrip } from "@/components/moments/moment-strip";
 import { localePath } from "@/lib/locale-path";
 
@@ -27,7 +28,11 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   const l = locale === "zh" ? "zh" : "en";
 
   // Fetch data for homepage
-  const [gallery, activities] = await Promise.all([listGalleryImages(6), getRecentActivities(10)]);
+  const [gallery, activities, statistics] = await Promise.all([
+    listGalleryImages(12),
+    getRecentActivities(10),
+    getSiteStatistics(),
+  ]);
   const recentPosts = activities
     .filter(
       (activity): activity is (typeof activities)[number] & { slug: string } =>
@@ -38,7 +43,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <div className="mx-auto w-full max-w-6xl space-y-16 px-4 py-8 sm:space-y-20 sm:px-6 sm:py-12 md:space-y-28 md:px-12 md:py-16">
-        <ScrollSyncHero activities={activities} locale={l} />
+        <ShuffleGrid activities={activities} galleryPhotos={gallery} statistics={statistics} locale={l} />
         <section className="space-y-6 sm:space-y-8" id="posts">
           <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-1.5 sm:space-y-2">
