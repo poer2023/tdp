@@ -60,6 +60,7 @@ describe("SearchCommand", () => {
 
   describe("搜索输入和防抖", () => {
     it("应该接受用户输入", async () => {
+      vi.useRealTimers();
       const user = userEvent.setup({ delay: null });
       render(<SearchCommand open={true} onOpenChange={vi.fn()} />);
 
@@ -68,6 +69,7 @@ describe("SearchCommand", () => {
       await user.type(input, "test query");
 
       expect(input).toHaveValue("test query");
+      vi.useFakeTimers();
     });
 
     it("应该在 150ms 后触发快速搜索", async () => {
@@ -593,6 +595,7 @@ describe("SearchCommand", () => {
     });
 
     it("关闭时应该重置状态", async () => {
+      vi.useRealTimers();
       const user = userEvent.setup({ delay: null });
       const { rerender } = render(<SearchCommand open={true} onOpenChange={vi.fn()} />);
 
@@ -610,11 +613,13 @@ describe("SearchCommand", () => {
 
       const newInput = screen.getByPlaceholderText(/search posts, images, moments/i);
       expect(newInput).toHaveValue("");
+      vi.useFakeTimers();
     });
   });
 
   describe("加载状态", () => {
     it("搜索时应该显示加载指示器", async () => {
+      vi.useRealTimers();
       const user = userEvent.setup({ delay: null });
       render(<SearchCommand open={true} onOpenChange={vi.fn()} />);
 
@@ -624,6 +629,7 @@ describe("SearchCommand", () => {
 
       // Loading indicator should appear
       expect(screen.getByRole("status")).toBeInTheDocument();
+      vi.useFakeTimers();
     });
 
     it("搜索完成后应该隐藏加载指示器", async () => {

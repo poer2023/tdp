@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useRouter } from "next/navigation";
 import SubscriptionDashboard from "../subscription-dashboard";
 
@@ -10,6 +11,11 @@ vi.mock("next/navigation", () => ({
 
 // Mock fetch API
 global.fetch = vi.fn();
+const confirmMock = vi.fn<[], Promise<boolean>>();
+
+vi.mock("@/hooks/use-confirm", () => ({
+  useConfirm: () => ({ confirm: confirmMock }),
+}));
 
 describe("SubscriptionDashboard", () => {
   const mockPush = vi.fn();
@@ -65,6 +71,7 @@ describe("SubscriptionDashboard", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    confirmMock.mockResolvedValue(true);
     (useRouter as ReturnType<typeof vi.fn>).mockReturnValue({
       push: mockPush,
       refresh: mockRefresh,
@@ -235,8 +242,6 @@ describe("SubscriptionDashboard", () => {
 
   describe("Delete Subscription", () => {
     it("should show delete confirmation dialog", async () => {
-      window.confirm = vi.fn(() => true);
-
       render(<SubscriptionDashboard locale="en" initialSubscriptions={mockSubscriptions} />);
 
       // Expand first card - find the card by its content
@@ -246,16 +251,21 @@ describe("SubscriptionDashboard", () => {
         fireEvent.click(netflixCard);
       }
 
-      await waitFor(() => {
-        const deleteButton = screen.getByRole("button", { name: /delete subscription/i });
-        fireEvent.click(deleteButton);
-      });
+      const user = userEvent.setup();
+      const deleteButton = await screen.findByRole("button", { name: /delete subscription/i });
+      await user.click(deleteButton);
 
-      expect(window.confirm).toHaveBeenCalled();
+      expect(confirmMock).toHaveBeenCalledWith({
+        title: "删除订阅",
+        description: "确定要删除此订阅吗？该操作不可恢复。",
+        confirmText: "删除",
+        cancelText: "取消",
+        variant: "danger",
+      });
     });
 
     it("should delete subscription when confirmed", async () => {
-      window.confirm = vi.fn(() => true);
+      confirmMock.mockResolvedValueOnce(true);
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ message: "Deleted" }),
@@ -270,10 +280,9 @@ describe("SubscriptionDashboard", () => {
         fireEvent.click(netflixCard);
       }
 
-      await waitFor(() => {
-        const deleteButton = screen.getByRole("button", { name: /delete subscription/i });
-        fireEvent.click(deleteButton);
-      });
+      const user = userEvent.setup();
+      const deleteButton = await screen.findByRole("button", { name: /delete subscription/i });
+      await user.click(deleteButton);
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith("/api/subscriptions/sub-1", {
@@ -283,8 +292,7 @@ describe("SubscriptionDashboard", () => {
     });
 
     it("should not delete subscription when cancelled", async () => {
-      window.confirm = vi.fn(() => false);
-
+      confirmMock.mockResolvedValueOnce(false);
       render(<SubscriptionDashboard locale="en" initialSubscriptions={mockSubscriptions} />);
 
       // Expand first card - find the card by its content
@@ -294,16 +302,17 @@ describe("SubscriptionDashboard", () => {
         fireEvent.click(netflixCard);
       }
 
-      await waitFor(() => {
-        const deleteButton = screen.getByRole("button", { name: /delete subscription/i });
-        fireEvent.click(deleteButton);
-      });
+      const user = userEvent.setup();
+      const deleteButton = await screen.findByRole("button", { name: /delete subscription/i });
+      await user.click(deleteButton);
 
-      expect(global.fetch).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(global.fetch).not.toHaveBeenCalled();
+      });
     });
 
     it("should remove subscription from list after successful deletion", async () => {
-      window.confirm = vi.fn(() => true);
+      confirmMock.mockResolvedValueOnce(true);
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => ({ message: "Deleted" }),
@@ -318,9 +327,12 @@ describe("SubscriptionDashboard", () => {
         fireEvent.click(netflixCard);
       }
 
+      const user = userEvent.setup();
+      const deleteButton = await screen.findByRole("button", { name: /delete subscription/i });
+      await user.click(deleteButton);
+
       await waitFor(() => {
-        const deleteButton = screen.getByRole("button", { name: /delete subscription/i });
-        fireEvent.click(deleteButton);
+        expect(global.fetch).toHaveBeenCalled();
       });
 
       await waitFor(() => {

@@ -33,7 +33,15 @@ const shuffle = <T,>(array: T[]): T[] => {
     const randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
-    [result[currentIndex]!, result[randomIndex]!] = [result[randomIndex]!, result[currentIndex]!];
+    const currentItem = result[currentIndex];
+    const randomItem = result[randomIndex];
+
+    if (currentItem === undefined || randomItem === undefined) {
+      continue;
+    }
+
+    result[currentIndex] = randomItem;
+    result[randomIndex] = currentItem;
   }
 
   return result;
