@@ -25,21 +25,21 @@ type GridItem = {
 };
 
 // Official shuffle algorithm
-const shuffle = (array: GridItem[]) => {
-  let currentIndex = array.length,
-    randomIndex;
+const shuffle = <T,>(array: T[]): T[] => {
+  const result = [...array];
+  let currentIndex = result.length;
 
-  while (currentIndex != 0) {
-    randomIndex = Math.floor(Math.random() * currentIndex);
+  while (currentIndex !== 0) {
+    const randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex],
-      array[currentIndex],
+    [result[currentIndex]!, result[randomIndex]!] = [
+      result[randomIndex]!,
+      result[currentIndex]!,
     ];
   }
 
-  return array;
+  return result;
 };
 
 function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleGridProps) {
@@ -70,9 +70,9 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
     return [...activityItems, ...photoItems];
   }, [activities, galleryPhotos, locale]);
 
-  // Generate squares using official pattern
-  const generateSquares = () => {
-    return shuffle([...allItems])
+  // Generate squares using official pattern - memoized to avoid recreation on every render
+  const generateSquares = useMemo(() => {
+    return () => shuffle([...allItems])
       .slice(0, 12)
       .map((item) => (
         <motion.div
@@ -90,14 +90,18 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
           aria-label={item.title}
         />
       ));
-  };
+  }, [allItems]);
 
-  const [squares, setSquares] = useState<JSX.Element[]>([]);
+  // Initialize with client-side only rendering to avoid hydration mismatch
+  const [squares, setSquares] = useState<React.ReactElement[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    setSquares(generateSquares());
+    // Use queueMicrotask to defer state updates to avoid cascading renders
+    queueMicrotask(() => {
+      setMounted(true);
+      setSquares(generateSquares());
+    });
 
     const shuffleSquares = () => {
       setSquares(generateSquares());
@@ -111,7 +115,7 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [allItems]);
+  }, [generateSquares]);
 
   return (
     <section className="relative w-full py-12 sm:py-16 md:py-20">
