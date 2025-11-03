@@ -20,6 +20,7 @@ docs/BRANCH_PROTECTION_SETUP.md
 docs/CONFIGURATION.md
 docs/CONTENT_FORMAT.md
 docs/CREDENTIAL_FIX_SUMMARY.md
+docs/CROSS_MACHINE_SETUP.md
 docs/DATABASE_MIGRATION_GUIDE.md
 docs/DEPLOYMENT.md
 docs/E2E_AUTH_SETUP.md
@@ -27,6 +28,7 @@ docs/E2E_SCALING_GUIDE.md
 docs/E2E_TESTING.md
 docs/E2E_TESTING_GUIDE.md
 docs/EMERGENCY_ROLLBACK_PLAN.md
+docs/ENVIRONMENT_SETUP.md
 docs/GAMING_DATA_SETUP.md
 docs/GAMING_TESTS.md
 docs/GET_BILIBILI_COOKIE.md
@@ -78,6 +80,11 @@ docs/docker-build.md
 docs/docker-deployment.md
 docs/external-api-degradation-guide.md
 docs/feature-flag-operations.md
+docs/features/friend-stories/README.md
+docs/features/friend-stories/code-examples.md
+docs/features/friend-stories/implementation-guide.md
+docs/features/friend-stories/security-testing.md
+docs/features/friend-stories/user-flows.md
 docs/modular-development-playbook.md
 docs/modular-development-todolist.md
 docs/moments.md
