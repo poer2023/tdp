@@ -25,26 +25,37 @@ export function MainNav() {
       href: localePath(locale, "/posts"),
       label: locale === "zh" ? "博客" : "Blog",
       match: "/posts",
+      exact: false,
     },
     {
       href: localePath(locale, "/m"),
       label: locale === "zh" ? "瞬间" : "Moments",
       match: "/m",
+      exact: true, // 精确匹配，不包含子路径
+    },
+    {
+      href: localePath(locale, "/m/friends"),
+      label: locale === "zh" ? "朋友故事" : "Friends",
+      match: "/m/friends",
+      exact: false,
     },
     {
       href: localePath(locale, "/gallery"),
       label: locale === "zh" ? "相册" : "Gallery",
       match: "/gallery",
+      exact: false,
     },
     {
       href: localePath(locale, "/about"),
       label: locale === "zh" ? "关于" : "About",
       match: "/about",
+      exact: false,
     },
     {
       href: localePath(locale, "/about/changelog"),
       label: locale === "zh" ? "开发日志" : "Changelog",
       match: "/about/changelog",
+      exact: false,
     },
   ];
 
@@ -83,7 +94,9 @@ export function MainNav() {
         {/* Desktop Navigation - hidden on mobile */}
         <div className="hidden items-center gap-6 md:flex">
           {links.map((link) => {
-            const isActive = pathname.includes(link.match);
+            const isActive = link.exact
+              ? pathname === link.href || pathname === localePath(locale, link.match)
+              : pathname.includes(link.match);
             return (
               <Link
                 key={link.href}
@@ -145,7 +158,9 @@ export function MainNav() {
               {/* Mobile navigation links */}
               <nav className="flex flex-col gap-2 pb-2">
                 {links.map((link) => {
-                  const isActive = pathname.includes(link.match);
+                  const isActive = link.exact
+                    ? pathname === link.href || pathname === localePath(locale, link.match)
+                    : pathname.includes(link.match);
                   return (
                     <Link
                       key={link.href}

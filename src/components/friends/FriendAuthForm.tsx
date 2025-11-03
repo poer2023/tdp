@@ -60,8 +60,8 @@ export function FriendAuthForm({ locale }: FriendAuthFormProps) {
         return;
       }
 
-      // 认证成功，刷新页面显示内容
-      router.refresh();
+      // 认证成功，强制刷新页面显示内容
+      window.location.reload();
     } catch (err) {
       console.error("朋友认证请求失败", err);
       setError(copy.networkError);

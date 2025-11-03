@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useEffect, useRef, useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { createFriendFormAction, type CreateFriendFormState } from "@/app/admin/friends/actions";
 
@@ -22,7 +22,7 @@ function SubmitButton() {
 
 export function FriendCreateForm() {
   const formRef = useRef<HTMLFormElement | null>(null);
-  const [state, formAction] = useFormState(createFriendFormAction, initialState);
+  const [state, formAction] = useActionState(createFriendFormAction, initialState);
 
   useEffect(() => {
     if (state.success) {
