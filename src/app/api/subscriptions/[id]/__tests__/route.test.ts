@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, PUT, DELETE } from "../route";
 import { NextRequest } from "next/server";
-import { getServerSession } from "next-auth";
+import { auth } from "@/auth";
 
 // Mock dependencies
-vi.mock("next-auth", () => ({
-  getServerSession: vi.fn(),
+vi.mock("@/auth", () => ({
+  auth: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -21,6 +21,7 @@ vi.mock("@/lib/prisma", () => ({
 import prisma from "@/lib/prisma";
 
 const mockPrisma = vi.mocked(prisma);
+const mockAuth = vi.mocked(auth);
 
 const mockSubscription = {
   id: "test-subscription-id",
@@ -45,7 +46,7 @@ describe("GET /api/subscriptions/[id]", () => {
 
   describe("Authentication", () => {
     it("should return 401 when user is not authenticated", async () => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions/test-id");
       const response = await GET(request, { params: { id: "test-id" } });
@@ -62,7 +63,7 @@ describe("GET /api/subscriptions/[id]", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
     });
 
     it("should return subscription when it exists and belongs to user", async () => {
@@ -99,7 +100,7 @@ describe("GET /api/subscriptions/[id]", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
     });
 
     it("should return 404 when subscription does not exist", async () => {
@@ -132,7 +133,7 @@ describe("GET /api/subscriptions/[id]", () => {
 
   describe("Error Handling", () => {
     it("should return 500 when database query fails", async () => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockAuth.mockResolvedValue({
         user: { id: "test-user-id" },
       });
       mockPrisma.subscription.findUnique.mockRejectedValue(new Error("Database error"));
@@ -156,7 +157,7 @@ describe("PUT /api/subscriptions/[id]", () => {
 
   describe("Authentication", () => {
     it("should return 401 when user is not authenticated", async () => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions/test-id", {
         method: "PUT",
@@ -174,7 +175,7 @@ describe("PUT /api/subscriptions/[id]", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
       mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
     });
 
@@ -219,7 +220,7 @@ describe("PUT /api/subscriptions/[id]", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
       mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
     });
 
@@ -326,7 +327,7 @@ describe("PUT /api/subscriptions/[id]", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
     });
 
     it("should return 404 when subscription does not exist", async () => {
@@ -380,7 +381,7 @@ describe("PUT /api/subscriptions/[id]", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
       mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
     });
 
@@ -417,7 +418,7 @@ describe("DELETE /api/subscriptions/[id]", () => {
 
   describe("Authentication", () => {
     it("should return 401 when user is not authenticated", async () => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions/test-id", {
         method: "DELETE",
@@ -434,7 +435,7 @@ describe("DELETE /api/subscriptions/[id]", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
       mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
     });
 
@@ -479,7 +480,7 @@ describe("DELETE /api/subscriptions/[id]", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
     });
 
     it("should return 404 when subscription does not exist", async () => {
@@ -521,7 +522,7 @@ describe("DELETE /api/subscriptions/[id]", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
       mockPrisma.subscription.findUnique.mockResolvedValue(mockSubscription);
     });
 

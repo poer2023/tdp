@@ -1,15 +1,18 @@
-import { getServerSession, type NextAuthOptions } from "next-auth";
+import NextAuth, { type NextAuthConfig } from "next-auth";
+import type { Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { UserRole } from "@prisma/client";
 import { sendVerificationEmail } from "@/lib/email/send";
 import { assertRateLimit } from "@/lib/rate-limit";
 import { generateVerificationCode } from "@/lib/auth/email-code";
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+const prismaAdapter = PrismaAdapter(prisma) as Adapter;
+
+export const authConfig: NextAuthConfig = {
+  adapter: prismaAdapter,
   session: { strategy: "jwt" },
   providers: [
     GoogleProvider({
@@ -58,7 +61,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, trigger }) {
       // On sign in, add user info to token
-      if (user) {
+      if (user?.id) {
         token.id = user.id;
         // Fetch user role from database
         const dbUser = await prisma.user.findUnique({
@@ -124,8 +127,8 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-export async function auth() {
-  return getServerSession(authOptions);
-}
+export const { auth, signIn, signOut, handlers } = NextAuth(authConfig);
+export const { GET, POST } = handlers;
+export const authOptions = authConfig;
 
-export type { NextAuthOptions };
+export type { NextAuthConfig };

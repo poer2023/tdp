@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Particles } from "@/components/ui/particles";
 import { useTheme } from "@/hooks/use-theme";
 import { LiveHighlightsSection } from "@/components/about/live-highlights-section";
@@ -53,16 +53,13 @@ export function ParticlesAboutContent({
   initialHighlights,
 }: ParticlesAboutContentProps) {
   const { theme } = useTheme();
-  const [color, setColor] = useState("#000000");
+
+  const particleColor = useMemo(() => (theme === "dark" ? "#ffffff" : "#000000"), [theme]);
 
   // Define localePath internally to avoid RSC serialization issues
   const localePath = (l: string, path: string) => {
     return l === "en" ? path : `/${l}${path}`;
   };
-
-  useEffect(() => {
-    setColor(theme === "dark" ? "#ffffff" : "#000000");
-  }, [theme]);
 
   return (
     <div className="relative min-h-screen">
@@ -71,7 +68,7 @@ export function ParticlesAboutContent({
         className="absolute inset-0 -z-10"
         quantity={150}
         ease={80}
-        color={color}
+        color={particleColor}
         staticity={50}
         size={0.4}
       />

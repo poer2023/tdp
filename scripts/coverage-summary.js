@@ -5,7 +5,6 @@
  * Generates a human-readable coverage summary from vitest coverage reports
  */
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require("fs");
 const path = require("path");
 

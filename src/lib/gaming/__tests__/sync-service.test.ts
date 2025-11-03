@@ -4,32 +4,15 @@ import type { SteamAPIClient } from "../steam-client";
 import type { HoYoAPIClient } from "../hoyo-client";
 import type { PrismaClient } from "@prisma/client";
 
-// Mock Prisma client
-vi.mock("@/lib/prisma", () => ({
-  default: {
-    steamProfile: {
-      upsert: vi.fn(),
-    },
-    hoyoProfile: {
-      upsert: vi.fn(),
-    },
-    game: {
-      upsert: vi.fn(),
-      findUnique: vi.fn(),
-    },
-    gameSession: {
-      create: vi.fn(),
-      findFirst: vi.fn(),
-    },
-    gameAchievement: {
-      upsert: vi.fn(),
-    },
-    gamingSyncLog: {
-      create: vi.fn(),
-      update: vi.fn(),
-    },
-  },
-}));
+// Mock Prisma client with comprehensive type-safe mock
+// Inline mockDeep to avoid hoisting issues with vi.mock
+vi.mock("@/lib/prisma", async () => {
+  const { mockDeep } = await import("vitest-mock-extended");
+  const { PrismaClient } = await import("@prisma/client");
+  return {
+    default: mockDeep<PrismaClient>(),
+  };
+});
 
 // Mock API clients
 vi.mock("../steam-client");
@@ -50,6 +33,11 @@ describe("GamingSyncService", () => {
     // Setup mock Prisma
     const prismaModule = await import("@/lib/prisma");
     mockPrisma = prismaModule.default;
+
+    // Configure externalCredential mock (critical for syncAllPlatforms)
+    // Cast to DeepMockProxy to access mock methods
+    const { DeepMockProxy } = await import("vitest-mock-extended");
+    (mockPrisma as any).externalCredential.findMany.mockResolvedValue([]);
 
     // Setup mock Steam client
     mockSteamClient = {

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { getMomentByIdOrSlug, type MomentImage } from "@/lib/moments";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export default async function Image({ params }: { params: { id: string } }) {
   const m = await getMomentByIdOrSlug(params.id);

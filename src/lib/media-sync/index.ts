@@ -34,26 +34,30 @@ export interface SyncResult {
 // Resolve Prisma client (supports both default and named exports in tests)
 const prisma = (prismaNamed ?? prismaDefault) as unknown as PrismaClient;
 
-function getJobDelegate(): PrismaClient["syncJobLog"] | PrismaClient["syncJob"] | undefined {
+type SyncJobDelegate = {
+  create?: (args: Record<string, unknown>) => Promise<unknown>;
+  update?: (args: Record<string, unknown>) => Promise<unknown>;
+};
+
+function getJobDelegate(): SyncJobDelegate | undefined {
   const p = prisma as unknown as {
-    syncJobLog?: PrismaClient["syncJobLog"];
-    syncJob?: PrismaClient["syncJob"];
+    syncJobLog?: SyncJobDelegate;
+    syncJob?: SyncJobDelegate;
   };
   return p.syncJobLog ?? p.syncJob;
 }
 
-async function createJobLog(data: Record<string, unknown>) {
+async function createJobLog(data: Record<string, unknown>): Promise<{ id: string }> {
   const job = getJobDelegate();
   if (!job?.create) throw new Error("Job delegate not available");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (job.create as any)({ data });
+  const result = await job.create({ data });
+  return result as { id: string };
 }
 
 async function updateJobLog(where: Record<string, unknown>, data: Record<string, unknown>) {
   const job = getJobDelegate();
   if (!job?.update) return; // In tests, we don't need update to exist
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (job.update as any)({ where, data });
+  return job.update({ where, data });
 }
 
 async function linkMediaWatchToJob(mediaWatchId: string, syncJobLogId: string) {

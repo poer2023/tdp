@@ -61,19 +61,34 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  const friendStoryMatch = pathname.match(/^\/(en|zh)\/m\/friends\/([^/]+)$/);
+  if (friendStoryMatch && friendStoryMatch[1] && friendStoryMatch[2]) {
+    const [, targetLocale, slug] = friendStoryMatch;
+    const token = request.cookies.get("friendAuth")?.value;
+
+    if (!token) {
+      const redirectUrl = new URL(`/${targetLocale}/m/friends`, request.nextUrl.origin);
+      redirectUrl.searchParams.set("redirect", slug);
+      return NextResponse.redirect(redirectUrl, { status: 302 });
+    }
+  }
+
   // Protect admin routes
   if (pathname.startsWith("/admin")) {
-    const sessionToken =
-      request.cookies.get("next-auth.session-token")?.value ??
-      request.cookies.get("__Secure-next-auth.session-token")?.value ??
+    const sessionCookie =
+      request.cookies.get("next-auth.session-token") ??
+      request.cookies.get("__Secure-next-auth.session-token") ??
       null;
+    const sessionToken = sessionCookie?.value ?? null;
+    const sessionSalt = sessionCookie?.name ?? "next-auth.session-token";
     let role: string | null = null;
 
     if (sessionToken) {
       try {
         const decoded = await decode({
           token: sessionToken,
-          secret: process.env.NEXTAUTH_SECRET || "",
+          secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "",
+          salt: sessionSalt,
         });
         role = (decoded?.role as string | undefined) ?? null;
       } catch {

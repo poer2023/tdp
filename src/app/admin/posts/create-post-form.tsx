@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -23,10 +23,17 @@ export function CreatePostForm() {
       return;
     }
 
-    if (state.status === "success") {
-      formRef.current?.reset();
-      setContent("");
+    if (state.status !== "success") return;
+
+    if (state.redirectTo) {
+      router.push(state.redirectTo);
+      return;
     }
+
+    formRef.current?.reset();
+    startTransition(() => {
+      setContent("");
+    });
   }, [state, router]);
 
   return (

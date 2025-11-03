@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirm } from "@/hooks/use-confirm";
+
 /**
  * Delete Credential Button Component
  * Client-side confirmation dialog for credential deletion
@@ -16,9 +18,20 @@ export function DeleteCredentialButton({
   buttonText,
   formAction,
 }: DeleteCredentialButtonProps) {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    if (!confirm(confirmMessage)) {
-      e.preventDefault();
+  const { confirm } = useConfirm();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const confirmed = await confirm({
+      title: "删除凭证",
+      description: confirmMessage,
+      confirmText: "删除",
+      cancelText: "取消",
+      variant: "danger",
+    });
+    if (confirmed) {
+      const formData = new FormData(e.currentTarget);
+      await formAction(formData);
     }
   };
 

@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import type { Session } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { startTransition, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export function AuthHeader() {
@@ -15,12 +15,13 @@ export function AuthHeader() {
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   type SessionUser = Session["user"];
-  const lastKnownUserRef = useRef<SessionUser | null>(session?.user ?? null);
+  const [lastKnownUser, setLastKnownUser] = useState<SessionUser | null>(session?.user ?? null);
 
   // Derived session state
   const isLoading = status === "loading";
-  const user = session?.user ?? lastKnownUserRef.current ?? null;
-  const isSignedIn = Boolean(user);
+  const derivedUser = session?.user ?? lastKnownUser;
+  const isSignedIn = status === "authenticated" || (status === "loading" && Boolean(derivedUser));
+  const user = derivedUser;
   const showAvatarImage = Boolean(user?.image) && !avatarError;
   const imageSrc = typeof user?.image === "string" ? user.image : "";
   const altText = user?.name || "User";
@@ -41,14 +42,15 @@ export function AuthHeader() {
   };
 
   useEffect(() => {
-    if (session?.user) {
-      lastKnownUserRef.current = session.user;
-    }
-  }, [session]);
+    if (!session?.user) return;
+    startTransition(() => {
+      setLastKnownUser(session.user);
+    });
+  }, [session?.user]);
 
   // Reset avatar error if the image URL changes
   useEffect(() => {
-    setAvatarError(false);
+    startTransition(() => setAvatarError(false));
   }, [user?.image]);
 
   // Close menu on Esc key

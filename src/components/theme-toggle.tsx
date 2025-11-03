@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
 
@@ -8,29 +8,29 @@ export function ThemeToggle({ size = "md" }: { size?: "sm" | "md" } = {}) {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<Theme>("light");
 
+  const applyTheme = (next: Theme) => {
+    const root = document.documentElement;
+    if (next === "dark") root.classList.add("dark");
+    else root.classList.remove("dark");
+  };
+
   useEffect(() => {
-    setMounted(true);
+    startTransition(() => setMounted(true));
     try {
       const saved = (localStorage.getItem("theme") as Theme | null) ?? null;
       const prefersDark =
         window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
       const next: Theme = saved ?? (prefersDark ? "dark" : "light");
       applyTheme(next);
-      setTheme(next);
+      startTransition(() => setTheme(next));
     } catch {
       // no-op
     }
   }, []);
 
-  function applyTheme(next: Theme) {
-    const root = document.documentElement;
-    if (next === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-  }
-
   function toggle() {
     const next: Theme = theme === "dark" ? "light" : "dark";
-    setTheme(next);
+    startTransition(() => setTheme(next));
     try {
       localStorage.setItem("theme", next);
     } catch {}

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET, POST } from "../route";
 import { NextRequest } from "next/server";
-import { getServerSession } from "next-auth";
+import { auth } from "@/auth";
 
 // Mock dependencies
-vi.mock("next-auth", () => ({
-  getServerSession: vi.fn(),
+vi.mock("@/auth", () => ({
+  auth: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -20,6 +20,7 @@ vi.mock("@/lib/prisma", () => ({
 import prisma from "@/lib/prisma";
 
 const mockPrisma = vi.mocked(prisma);
+const mockAuth = vi.mocked(auth);
 
 describe("GET /api/subscriptions", () => {
   beforeEach(() => {
@@ -28,7 +29,7 @@ describe("GET /api/subscriptions", () => {
 
   describe("Authentication", () => {
     it("should return 401 when user is not authenticated", async () => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions");
       const response = await GET(request);
@@ -39,7 +40,7 @@ describe("GET /api/subscriptions", () => {
     });
 
     it("should return 401 when session has no user", async () => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({ user: null });
+      mockAuth.mockResolvedValue({ user: null });
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions");
       const response = await GET(request);
@@ -87,7 +88,7 @@ describe("GET /api/subscriptions", () => {
     ];
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
     });
 
     it("should return all subscriptions for authenticated user", async () => {
@@ -126,7 +127,7 @@ describe("GET /api/subscriptions", () => {
 
   describe("Error Handling", () => {
     it("should return 500 when database query fails", async () => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue({
+      mockAuth.mockResolvedValue({
         user: { id: "test-user-id" },
       });
       mockPrisma.subscription.findMany.mockRejectedValue(new Error("Database connection failed"));
@@ -148,7 +149,7 @@ describe("POST /api/subscriptions", () => {
 
   describe("Authentication", () => {
     it("should return 401 when user is not authenticated", async () => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+      mockAuth.mockResolvedValue(null);
 
       const request = new NextRequest("http://localhost:3000/api/subscriptions", {
         method: "POST",
@@ -166,7 +167,7 @@ describe("POST /api/subscriptions", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
     });
 
     it("should return 400 when required fields are missing", async () => {
@@ -265,7 +266,7 @@ describe("POST /api/subscriptions", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
     });
 
     it("should create subscription with all fields", async () => {
@@ -392,7 +393,7 @@ describe("POST /api/subscriptions", () => {
     };
 
     beforeEach(() => {
-      (getServerSession as ReturnType<typeof vi.fn>).mockResolvedValue(mockSession);
+      mockAuth.mockResolvedValue(mockSession);
     });
 
     it("should return 500 when database creation fails", async () => {

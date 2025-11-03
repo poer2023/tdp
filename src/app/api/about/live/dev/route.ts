@@ -15,7 +15,6 @@ async function fetchGitHubDataFromDB(): Promise<DevData | null> {
     console.log("[GitHub DB] Fetching synced GitHub data from database");
 
     // Access optional delegates dynamically to avoid type errors when models are absent
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const p: any = prisma as unknown as any;
 
     // Fetch latest stats snapshot

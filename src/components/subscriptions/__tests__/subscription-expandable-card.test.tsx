@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render as rtlRender, screen, fireEvent, waitFor } from "@testing-library/react";
 import { SubscriptionExpandableCard } from "../subscription-expandable-card";
+import { ConfirmProvider } from "@/hooks/use-confirm";
 
 // Mock framer-motion to avoid animation issues in tests
 vi.mock("framer-motion", () => ({
@@ -12,6 +13,8 @@ vi.mock("framer-motion", () => ({
   AnimatePresence: ({ children }: React.PropsWithChildren) => <>{children}</>,
   useSpring: () => ({ set: vi.fn() }),
 }));
+
+const render = (ui: JSX.Element) => rtlRender(<ConfirmProvider>{ui}</ConfirmProvider>);
 
 describe("SubscriptionExpandableCard", () => {
   const mockSubscription = {
@@ -34,7 +37,6 @@ describe("SubscriptionExpandableCard", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    window.confirm = vi.fn(() => true);
   });
 
   describe("Rendering", () => {
@@ -316,8 +318,6 @@ describe("SubscriptionExpandableCard", () => {
     });
 
     it("should call onDelete with subscription when delete is confirmed", async () => {
-      window.confirm = vi.fn(() => true);
-
       render(
         <SubscriptionExpandableCard
           subscription={mockSubscription}
@@ -331,17 +331,18 @@ describe("SubscriptionExpandableCard", () => {
         netflixText.parentElement) as HTMLElement;
       fireEvent.click(card);
 
-      await waitFor(() => {
-        const deleteButton = screen.getByText(/delete subscription/i);
-        fireEvent.click(deleteButton);
-      });
+      const deleteButton = await screen.findByRole("button", { name: /delete subscription/i });
+      fireEvent.click(deleteButton);
 
-      expect(mockOnDelete).toHaveBeenCalledWith(mockSubscription);
+      const confirmButton = await screen.findByRole("button", { name: "删除" });
+      fireEvent.click(confirmButton);
+
+      await waitFor(() => {
+        expect(mockOnDelete).toHaveBeenCalledWith(mockSubscription);
+      });
     });
 
     it("should not call onDelete when delete is cancelled", async () => {
-      window.confirm = vi.fn(() => false);
-
       render(
         <SubscriptionExpandableCard
           subscription={mockSubscription}
@@ -357,12 +358,15 @@ describe("SubscriptionExpandableCard", () => {
         fireEvent.click(card);
       }
 
-      await waitFor(() => {
-        const deleteButton = screen.getByText(/delete subscription/i);
-        fireEvent.click(deleteButton);
-      });
+      const deleteButton = await screen.findByRole("button", { name: /delete subscription/i });
+      fireEvent.click(deleteButton);
 
-      expect(mockOnDelete).not.toHaveBeenCalled();
+      const cancelButton = await screen.findByRole("button", { name: "取消" });
+      fireEvent.click(cancelButton);
+
+      await waitFor(() => {
+        expect(mockOnDelete).not.toHaveBeenCalled();
+      });
     });
 
     it("should not trigger card collapse when delete button is clicked", async () => {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { headers, cookies } from "next/headers";
 import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
@@ -14,15 +14,108 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
 import { HtmlLangSync } from "@/components/html-lang-sync";
 import { auth } from "@/auth";
+import { ConfirmProvider } from "@/hooks/use-confirm";
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: [
+    {
+      path: "../../public/fonts/geist-sans/Geist-Thin.woff2",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-sans/Geist-UltraLight.woff2",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-sans/Geist-Light.woff2",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-sans/Geist-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-sans/Geist-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-sans/Geist-SemiBold.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-sans/Geist-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-sans/Geist-Black.woff2",
+      weight: "800",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-sans/Geist-UltraBlack.woff2",
+      weight: "900",
+      style: "normal",
+    },
+  ],
   variable: "--font-geist-sans",
-  subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: [
+    {
+      path: "../../public/fonts/geist-mono/GeistMono-Thin.woff2",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-mono/GeistMono-UltraLight.woff2",
+      weight: "200",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-mono/GeistMono-Light.woff2",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-mono/GeistMono-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-mono/GeistMono-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-mono/GeistMono-SemiBold.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-mono/GeistMono-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-mono/GeistMono-Black.woff2",
+      weight: "800",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/geist-mono/GeistMono-UltraBlack.woff2",
+      weight: "900",
+      style: "normal",
+    },
+  ],
   variable: "--font-geist-mono",
-  subsets: ["latin"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -93,48 +186,50 @@ export default async function RootLayout({
         {/* Keep <html lang> consistent on client navigations */}
         <HtmlLangSync />
         <SessionProvider session={session}>
-          <GlobalSearchProvider>
-            {/* Skip to content link for accessibility */}
-            <a
-              href="#main-content"
-              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              Skip to content
-            </a>
+          <ConfirmProvider>
+            <GlobalSearchProvider>
+              {/* Skip to content link for accessibility */}
+              <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              >
+                Skip to content
+              </a>
 
-            <header className="relative z-50">
-              <div className="sticky top-0 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-3.5">
-                  {/* Left cluster: brand + links + search */}
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <MainNav />
-                    <div className="hidden sm:block">
-                      <CommandPaletteTrigger size="sm" />
+              <header className="relative z-50">
+                <div className="sticky top-0 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
+                  <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-3.5">
+                    {/* Left cluster: brand + links + search */}
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <MainNav />
+                      <div className="hidden sm:block">
+                        <CommandPaletteTrigger size="sm" />
+                      </div>
                     </div>
-                  </div>
-                  {/* Right cluster: compact controls */}
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <ThemeToggle size="sm" />
-                    <GlobalLanguageSwitcher />
-                    {/* Mobile search fallback */}
-                    <div className="sm:hidden">
-                      <CommandPaletteTrigger size="sm" />
+                    {/* Right cluster: compact controls */}
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <ThemeToggle size="sm" />
+                      <GlobalLanguageSwitcher />
+                      {/* Mobile search fallback */}
+                      <div className="sm:hidden">
+                        <CommandPaletteTrigger size="sm" />
+                      </div>
+                      <AuthHeader />
                     </div>
-                    <AuthHeader />
                   </div>
                 </div>
-              </div>
-            </header>
+              </header>
 
-            <main id="main-content" className="flex-1">
-              {children}
-            </main>
+              <main id="main-content" className="flex-1">
+                {children}
+              </main>
 
-            {/* Global mobile composer FAB (hidden on admin) */}
-            {!isAdminRoute && <MomentComposerBottomSheet />}
+              {/* Global mobile composer FAB (hidden on admin) */}
+              {!isAdminRoute && <MomentComposerBottomSheet />}
 
-            {!isAdminRoute && <Footer />}
-          </GlobalSearchProvider>
+              {!isAdminRoute && <Footer />}
+            </GlobalSearchProvider>
+          </ConfirmProvider>
         </SessionProvider>
       </body>
     </html>

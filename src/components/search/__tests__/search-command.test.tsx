@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { SearchCommand } from "../search-command";
 
 // Mock next/navigation
@@ -60,15 +60,16 @@ describe("SearchCommand", () => {
 
   describe("搜索输入和防抖", () => {
     it("应该接受用户输入", async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup({ delay: null });
       render(<SearchCommand open={true} onOpenChange={vi.fn()} />);
 
       const input = screen.getByPlaceholderText(/search posts, images, moments/i);
 
-      await act(async () => {
-        fireEvent.change(input, { target: { value: "test query" } });
-      });
+      await user.type(input, "test query");
 
       expect(input).toHaveValue("test query");
+      vi.useFakeTimers();
     });
 
     it("应该在 150ms 后触发快速搜索", async () => {
@@ -594,13 +595,13 @@ describe("SearchCommand", () => {
     });
 
     it("关闭时应该重置状态", async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup({ delay: null });
       const { rerender } = render(<SearchCommand open={true} onOpenChange={vi.fn()} />);
 
       const input = screen.getByPlaceholderText(/search posts, images, moments/i);
 
-      await act(async () => {
-        fireEvent.change(input, { target: { value: "test" } });
-      });
+      await user.type(input, "test");
 
       expect(input).toHaveValue("test");
 
@@ -612,21 +613,23 @@ describe("SearchCommand", () => {
 
       const newInput = screen.getByPlaceholderText(/search posts, images, moments/i);
       expect(newInput).toHaveValue("");
+      vi.useFakeTimers();
     });
   });
 
   describe("加载状态", () => {
     it("搜索时应该显示加载指示器", async () => {
+      vi.useRealTimers();
+      const user = userEvent.setup({ delay: null });
       render(<SearchCommand open={true} onOpenChange={vi.fn()} />);
 
       const input = screen.getByPlaceholderText(/search posts, images, moments/i);
 
-      await act(async () => {
-        fireEvent.change(input, { target: { value: "test" } });
-      });
+      await user.type(input, "test");
 
       // Loading indicator should appear
       expect(screen.getByRole("status")).toBeInTheDocument();
+      vi.useFakeTimers();
     });
 
     it("搜索完成后应该隐藏加载指示器", async () => {

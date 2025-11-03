@@ -9,9 +9,11 @@ import {
   bulkDeleteGalleryAction,
   type BulkUpdateState,
 } from "./bulk-actions";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
   const router = useRouter();
+  const { confirm } = useConfirm();
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [open, setOpen] = useState(false);
@@ -88,9 +90,19 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
             >
               <button
                 type="submit"
-                onClick={(e) => {
-                  if (!confirm(`确认删除所选 ${selectedIds.length} 项？此操作无法恢复。`)) {
-                    e.preventDefault();
+                onClick={async (e) => {
+                  e.preventDefault();
+                  const confirmed = await confirm({
+                    title: "批量删除图片",
+                    description: `确认删除所选 ${selectedIds.length} 项？此操作无法恢复。`,
+                    confirmText: "删除",
+                    cancelText: "取消",
+                    variant: "danger",
+                  });
+                  if (confirmed) {
+                    const fd = new FormData(e.currentTarget.form!);
+                    selectedIds.forEach((id) => fd.append("ids", id));
+                    delAction(fd);
                   }
                 }}
                 disabled={selectedIds.length === 0 || delPending}

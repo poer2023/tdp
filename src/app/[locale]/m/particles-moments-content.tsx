@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Particles } from "@/components/ui/particles";
 import { useTheme } from "@/hooks/use-theme";
 import { MomentCard } from "@/components/moments/moment-card";
@@ -20,11 +20,7 @@ export function ParticlesMomentsContent({
   isAdmin,
 }: ParticlesMomentsContentProps) {
   const { theme } = useTheme();
-  const [color, setColor] = useState("#000000");
-
-  useEffect(() => {
-    setColor(theme === "dark" ? "#ffffff" : "#000000");
-  }, [theme]);
+  const particleColor = useMemo(() => (theme === "dark" ? "#ffffff" : "#000000"), [theme]);
 
   return (
     <div className="relative min-h-screen">
@@ -33,7 +29,7 @@ export function ParticlesMomentsContent({
         className="absolute inset-0 -z-10"
         quantity={150}
         ease={80}
-        color={color}
+        color={particleColor}
         staticity={50}
         size={0.4}
       />

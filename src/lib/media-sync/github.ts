@@ -17,16 +17,24 @@ export interface GitHubConfig {
 // Resolve Prisma client (supports both default and named exports in tests)
 const prisma = (prismaNamed ?? prismaDefault) as unknown as PrismaClient;
 
-function getJobDelegate() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const p: any = prisma as unknown as any;
-  return p.syncJobLog ?? p.syncJob;
+type SyncJobDelegate = {
+  create?: (args: Record<string, unknown>) => Promise<unknown>;
+  update?: (args: Record<string, unknown>) => Promise<unknown>;
+};
+
+function getJobDelegate(): SyncJobDelegate | undefined {
+  const candidate = prisma as unknown as {
+    syncJobLog?: SyncJobDelegate;
+    syncJob?: SyncJobDelegate;
+  };
+  return candidate.syncJobLog ?? candidate.syncJob;
 }
 
-async function createJobLog(data: Record<string, unknown>) {
+async function createJobLog(data: Record<string, unknown>): Promise<{ id: string }> {
   const job = getJobDelegate();
   if (!job?.create) throw new Error("Job delegate not available");
-  return job.create({ data });
+  const result = await job.create({ data });
+  return result as { id: string };
 }
 
 async function updateJobLog(where: Record<string, unknown>, data: Record<string, unknown>) {
@@ -145,7 +153,6 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
 
     // 1. Save GitHub Stats snapshot
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const p: any = prisma as unknown as any;
       if (p.gitHubStats?.create) {
         await p.gitHubStats.create({
@@ -171,7 +178,6 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
 
     // 2. Upsert GitHub Contribution data (365 days)
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const p: any = prisma as unknown as any;
       if (p.gitHubContribution?.upsert) {
         for (const day of contributionGraph) {
@@ -198,7 +204,6 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
 
     // 3. Update GitHub Repos (mark old repos as inactive, add new ones)
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const p: any = prisma as unknown as any;
       if (p.gitHubRepo) {
         // Mark all existing repos as inactive first
@@ -265,7 +270,6 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
 
     // 4. Save GitHub Languages snapshot (replace previous snapshot)
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const p: any = prisma as unknown as any;
       if (p.gitHubLanguage?.deleteMany && p.gitHubLanguage?.createMany) {
         // Replace previous data to avoid duplicate rows across syncs
@@ -310,7 +314,7 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
 
     // Revalidate Next.js cache to ensure fresh data is served
     try {
-      revalidateTag("github-dev-data");
+      await revalidateTag("github-dev-data", "max");
       console.log(`[${platform}] Cache revalidated successfully`);
     } catch (error) {
       console.error(`[${platform}] Failed to revalidate cache:`, error);

@@ -6,30 +6,36 @@ export function HighlightText({ text, query }: { text: string; query: string }) 
     return <>{text}</>;
   }
 
-  try {
-    // Escape special regex characters
-    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const regex = new RegExp(`(${escapedQuery})`, "gi");
-    const parts = text.split(regex);
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  let regex: RegExp | null = null;
+  let parts: string[] = [];
+  let failed = false;
 
-    return (
-      <>
-        {parts.map((part, i) =>
-          regex.test(part) ? (
-            <mark
-              key={i}
-              className="bg-yellow-200/70 text-zinc-900 dark:bg-yellow-800/50 dark:text-zinc-100"
-            >
-              {part}
-            </mark>
-          ) : (
-            part
-          )
-        )}
-      </>
-    );
+  try {
+    regex = new RegExp(`(${escapedQuery})`, "gi");
+    parts = text.split(regex);
   } catch {
-    // Fallback if regex fails
+    failed = true;
+  }
+
+  if (failed || !regex) {
     return <>{text}</>;
   }
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <mark
+            key={i}
+            className="bg-yellow-200/70 text-zinc-900 dark:bg-yellow-800/50 dark:text-zinc-100"
+          >
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
 }

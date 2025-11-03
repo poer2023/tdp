@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import type { MomentImage } from "@/lib/moments";
 
 export function MomentLightbox({
@@ -14,8 +14,10 @@ export function MomentLightbox({
   const [idx, setIdx] = useState(initialIndex);
   useEffect(() => {
     if (images.length > 1 && initialIndex >= 0) {
-      setOpen(true);
-      setIdx(Math.min(initialIndex, images.length - 1));
+      startTransition(() => {
+        setOpen(true);
+        setIdx(Math.min(initialIndex, images.length - 1));
+      });
     }
   }, [initialIndex, images.length]);
 

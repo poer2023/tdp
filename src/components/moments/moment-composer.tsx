@@ -32,7 +32,7 @@ function MomentComposerCore() {
   // URL 驱动：?compose=1 时自动打开；关闭时清理该参数
   useEffect(() => {
     if (sp.get("compose") === "1") {
-      setOpen(true);
+      startTransition(() => setOpen(true));
     }
   }, [sp]);
 
@@ -55,7 +55,7 @@ function MomentComposerCore() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
-        setOpen(true);
+        startTransition(() => setOpen(true));
       }
     };
     const onDrop = (e: DragEvent) => {
@@ -63,12 +63,14 @@ function MomentComposerCore() {
       const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith("image/"));
       if (!files.length) return;
       e.preventDefault();
-      setOpen(true);
-      setImages((prev) =>
-        prev.concat(
-          files.slice(0, 9 - prev.length).map((f) => ({ file: f, url: URL.createObjectURL(f) }))
-        )
-      );
+      startTransition(() => {
+        setOpen(true);
+        setImages((prev) =>
+          prev.concat(
+            files.slice(0, 9 - prev.length).map((f) => ({ file: f, url: URL.createObjectURL(f) }))
+          )
+        );
+      });
     };
     const onDragOver = (e: DragEvent) => {
       if (Array.from(e.dataTransfer?.items || []).some((i) => i.type.startsWith("image/"))) {
@@ -87,9 +89,11 @@ function MomentComposerCore() {
 
   useEffect(() => {
     if (state.status === "success") {
-      setText("");
-      setImages([]);
-      setOpen(false);
+      startTransition(() => {
+        setText("");
+        setImages([]);
+        setOpen(false);
+      });
       formRef.current?.reset();
     }
   }, [state]);
