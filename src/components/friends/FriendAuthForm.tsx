@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 interface FriendAuthFormProps {
   locale: "en" | "zh";
@@ -29,8 +28,6 @@ const messages = {
 };
 
 export function FriendAuthForm({ locale }: FriendAuthFormProps) {
-  const router = useRouter();
-
   const [passphrase, setPassphrase] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
