@@ -12,6 +12,7 @@ import { generateVerificationCode } from "@/lib/auth/email-code";
 const prismaAdapter = PrismaAdapter(prisma) as Adapter;
 
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
   adapter: prismaAdapter,
   session: { strategy: "jwt" },
   providers: [

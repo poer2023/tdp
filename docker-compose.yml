@@ -93,7 +93,7 @@ services:
       - .env
     environment:
       NODE_ENV: production
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://dybzy.com}
     ports:
       - "3000:3000"
     volumes:
