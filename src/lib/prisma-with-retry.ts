@@ -56,10 +56,7 @@ function isTransientError(error: any): boolean {
  * );
  * ```
  */
-export async function withRetry<T>(
-  operation: () => Promise<T>,
-  retries = MAX_RETRIES
-): Promise<T> {
+export async function withRetry<T>(operation: () => Promise<T>, retries = MAX_RETRIES): Promise<T> {
   try {
     return await operation();
   } catch (error: any) {
@@ -71,9 +68,7 @@ export async function withRetry<T>(
 
     // Check if this is a transient error worth retrying
     if (!isTransientError(error)) {
-      console.error(
-        `[Prisma Retry] Non-transient error (${error?.code}), not retrying`
-      );
+      console.error(`[Prisma Retry] Non-transient error (${error?.code}), not retrying`);
       throw error;
     }
 
@@ -106,11 +101,9 @@ export async function withRetry<T>(
  * ]);
  * ```
  */
-export async function withRetryAll<T extends readonly unknown[]>(
-  operations: { [K in keyof T]: () => Promise<T[K]> }
-): Promise<{ [K in keyof T]: T[K] }> {
-  const results = await Promise.all(
-    operations.map((operation) => withRetry(operation))
-  );
+export async function withRetryAll<T extends readonly unknown[]>(operations: {
+  [K in keyof T]: () => Promise<T[K]>;
+}): Promise<{ [K in keyof T]: T[K] }> {
+  const results = await Promise.all(operations.map((operation) => withRetry(operation)));
   return results as { [K in keyof T]: T[K] };
 }

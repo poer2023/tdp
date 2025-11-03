@@ -78,22 +78,16 @@ export async function getSiteStatistics(): Promise<SiteStatistics> {
     // Enhanced error logging with Prisma error codes
     const errorCode = error?.code || "UNKNOWN";
     const errorMessage = error?.message || String(error);
-    console.error(
-      `[Statistics] Database error (${errorCode}): ${errorMessage}`
-    );
+    console.error(`[Statistics] Database error (${errorCode}): ${errorMessage}`);
 
     // Graceful degradation: return cached data if available
     if (cachedStats) {
-      console.warn(
-        "[Statistics] Using stale cached data due to database error"
-      );
+      console.warn("[Statistics] Using stale cached data due to database error");
       return cachedStats;
     }
 
     // Only return zeros if no cached data available
-    console.warn(
-      "[Statistics] No cached data available, returning zeros"
-    );
+    console.warn("[Statistics] No cached data available, returning zeros");
     return {
       postCount: 0,
       photoCount: 0,
