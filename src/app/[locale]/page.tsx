@@ -9,8 +9,9 @@ import { MomentStrip } from "@/components/moments/moment-strip";
 import { localePath } from "@/lib/locale-path";
 
 // Incremental Static Regeneration for localized homepage
-// Next.js 15 段配置需为编译期常量
-export const revalidate = 60;
+// Next.js 16 段配置需为编译期常量
+export const runtime = "nodejs"; // Ensure Prisma runs in Node.js runtime
+export const revalidate = 300; // Increased from 60s to 300s (5 minutes) to reduce database load
 export const dynamicParams = false; // Only allow 'en' and 'zh'
 
 type PageProps = {
