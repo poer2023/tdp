@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getFriendFromCookie } from "@/lib/server/get-friend-from-cookie";
 import { getFriendMoments } from "@/lib/friends";
 import { FriendsPageContent } from "./friends-page-content";
+import type { FriendMoment } from "@/components/friends/FriendMomentTimeline";
 
 export const dynamic = "force-dynamic";
 
@@ -72,10 +73,16 @@ export default async function FriendsPage({ params }: PageProps) {
     lang: fullLang,
   });
 
-  const serialisedMoments = moments.map((moment) => ({
-    ...moment,
-    createdAt: moment.createdAt.toISOString(),
+  const serialisedMoments: FriendMoment[] = moments.map((moment) => ({
+    id: moment.id,
+    content: moment.content,
+    images: moment.images,
+    friendVisibility: moment.friendVisibility,
     happenedAt: moment.happenedAt ? moment.happenedAt.toISOString() : null,
+    createdAt: moment.createdAt.toISOString(),
+    location: moment.location,
+    tags: moment.tags,
+    author: moment.author,
   }));
 
   const safeFriend = {

@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { FriendAuthForm } from "@/components/friends/FriendAuthForm";
 import { FriendHeader } from "@/components/friends/FriendHeader";
-import { FriendMomentTimeline } from "@/components/friends/FriendMomentTimeline";
+import { FriendMomentTimeline, type FriendMoment } from "@/components/friends/FriendMomentTimeline";
 import { MomentTabs } from "@/components/moments/moment-tabs";
 
 interface FriendsPageContentProps {
@@ -15,14 +15,7 @@ interface FriendsPageContentProps {
     avatar: string | null;
     description: string | null;
   } | null;
-  initialMoments?: Array<{
-    id: string;
-    content: string | null;
-    images: string[];
-    visibility: string;
-    createdAt: string;
-    happenedAt: string | null;
-  }>;
+  initialMoments?: FriendMoment[];
   nextCursor: string | null;
   hasMore: boolean;
 }
@@ -63,9 +56,7 @@ export function FriendsPageContent({
             <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
               {copy[locale].heading}
             </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              {copy[locale].description}
-            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">{copy[locale].description}</p>
           </div>
           <FriendAuthForm locale={locale} />
         </div>
