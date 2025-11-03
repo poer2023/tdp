@@ -31,13 +31,7 @@ export function MainNav() {
       href: localePath(locale, "/m"),
       label: locale === "zh" ? "瞬间" : "Moments",
       match: "/m",
-      exact: true, // 精确匹配，不包含子路径
-    },
-    {
-      href: localePath(locale, "/m/friends"),
-      label: locale === "zh" ? "朋友故事" : "Friends",
-      match: "/m/friends",
-      exact: false,
+      exact: false, // 包含子路径（如 /m/friends）以支持标签页导航
     },
     {
       href: localePath(locale, "/gallery"),

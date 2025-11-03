@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
+import { usePathname } from "next/navigation";
 import { Particles } from "@/components/ui/particles";
 import { useTheme } from "@/hooks/use-theme";
 import { MomentCard } from "@/components/moments/moment-card";
 import { OpenComposerButton } from "@/components/moments/open-composer-button";
 import { DeleteIcon } from "@/components/moments/delete-icon";
+import { MomentTabs } from "@/components/moments/moment-tabs";
 import type { MomentListItem } from "@/lib/moments";
 
 interface ParticlesMomentsContentProps {
@@ -20,6 +22,7 @@ export function ParticlesMomentsContent({
   isAdmin,
 }: ParticlesMomentsContentProps) {
   const { theme } = useTheme();
+  const pathname = usePathname();
   const particleColor = useMemo(() => (theme === "dark" ? "#ffffff" : "#000000"), [theme]);
 
   return (
@@ -42,6 +45,11 @@ export function ParticlesMomentsContent({
           </h1>
           <OpenComposerButton label={locale === "zh" ? "+ 新建" : "+ New"} />
         </header>
+
+        {/* 标签页导航 */}
+        <div className="mb-6">
+          <MomentTabs locale={locale} currentPath={pathname} />
+        </div>
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
           {moments.map((m) => (
             <div key={m.id} className="relative space-y-2">
