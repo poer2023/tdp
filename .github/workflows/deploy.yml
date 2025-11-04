@@ -79,10 +79,23 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Get repository and commit info
+          EVENT_NAME="${{ github.event_name }}"
           REPO="${{ github.repository }}"
-          COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
-          echo "Checking workflow status for commit: $COMMIT_SHA in $REPO"
+
+          NEED_DOCKER_CHECK="true"
+          if [[ "$EVENT_NAME" == "workflow_run" ]]; then
+            COMMIT_SHA="${{ github.event.workflow_run.head_sha }}"
+            RUN_ID="${{ github.event.workflow_run.id }}"
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            COMMIT_SHA="${{ github.sha }}"
+            NEED_DOCKER_CHECK="false"
+          elif [[ "$EVENT_NAME" == "push" ]]; then
+            COMMIT_SHA="${{ github.sha }}"
+          else
+            COMMIT_SHA="${{ github.sha }}"
+          fi
+
+          echo "Checking workflow status for commit: $COMMIT_SHA in $REPO (event: $EVENT_NAME)"
 
           # Check CI Critical Path status
           CI_STATUS=$(gh run list \
@@ -92,6 +105,11 @@ jobs:
             --json conclusion \
             --jq '.[0].conclusion')
 
+          if [[ -z "${CI_STATUS:-}" || "${CI_STATUS}" == "null" ]]; then
+            echo "Unable to determine CI Critical Path status for commit $COMMIT_SHA" >&2
+            exit 1
+          fi
+
           if [[ "$CI_STATUS" != "success" ]]; then
             echo "❌ CI Critical Path did not succeed: $CI_STATUS"
             echo "Cannot deploy when CI checks fail"
@@ -99,12 +117,81 @@ jobs:
           fi
           echo "✅ CI Critical Path: $CI_STATUS"
 
-          # Check Docker Build job status (not just workflow)
+          if [[ "$NEED_DOCKER_CHECK" != "true" ]]; then
+            echo "Docker build status check skipped for manual dispatch."
+            exit 0
+          fi
+
+          DOCKER_WORKFLOW="Docker Build and Push"
+          MAX_ATTEMPTS=10
+          SLEEP_SECONDS=30
+
+          if [[ "$EVENT_NAME" == "push" ]]; then
+            echo "Waiting for Docker Build workflow run for commit $COMMIT_SHA"
+            RUN_ID=""
+            RUN_STATUS=""
+            RUN_CONCLUSION=""
+
+            for attempt in $(seq 1 $MAX_ATTEMPTS); do
+              echo "Attempt ${attempt}/${MAX_ATTEMPTS}..."
+              RUN_INFO=$(gh run list \
+                --repo="$REPO" \
+                --workflow="$DOCKER_WORKFLOW" \
+                --commit="$COMMIT_SHA" \
+                --json databaseId,status,conclusion \
+                --jq '.[0] // empty')
+
+              if [[ -z "$RUN_INFO" ]]; then
+                echo "No Docker Build run found yet; sleeping ${SLEEP_SECONDS}s"
+                sleep "$SLEEP_SECONDS"
+                continue
+              fi
+
+              RUN_ID=$(jq -r '.databaseId' <<< "$RUN_INFO")
+              RUN_STATUS=$(jq -r '.status' <<< "$RUN_INFO")
+              RUN_CONCLUSION=$(jq -r '.conclusion' <<< "$RUN_INFO")
+
+              if [[ "$RUN_STATUS" != "completed" ]]; then
+                echo "Docker Build run status: $RUN_STATUS; sleeping ${SLEEP_SECONDS}s"
+                sleep "$SLEEP_SECONDS"
+                continue
+              fi
+
+              if [[ "$RUN_CONCLUSION" != "success" ]]; then
+                echo "❌ Docker Build workflow conclusion: ${RUN_CONCLUSION:-unknown}"
+                exit 1
+              fi
+
+              echo "Docker Build workflow completed successfully."
+              break
+            done
+
+            if [[ -z "$RUN_ID" || "$RUN_STATUS" != "completed" || "$RUN_CONCLUSION" != "success" ]]; then
+              echo "❌ Timed out waiting for successful Docker Build workflow for commit $COMMIT_SHA" >&2
+              exit 1
+            fi
+          fi
+
+          if [[ "$EVENT_NAME" != "workflow_run" ]]; then
+            # For push events we already resolved RUN_ID above; capture it here
+            RUN_ID="${RUN_ID:-}"
+          fi
+
+          if [[ -z "${RUN_ID:-}" ]]; then
+            echo "❌ Unable to determine Docker Build workflow run ID for commit $COMMIT_SHA" >&2
+            exit 1
+          fi
+
           DOCKER_BUILD_STATUS=$(gh run view \
             --repo="$REPO" \
-            ${{ github.event.workflow_run.id }} \
+            "$RUN_ID" \
             --json jobs \
             --jq '.jobs[] | select(.name == "build") | .conclusion')
+
+          if [[ -z "${DOCKER_BUILD_STATUS:-}" ]]; then
+            echo "❌ Unable to determine Docker Build job status for run $RUN_ID" >&2
+            exit 1
+          fi
 
           if [[ "$DOCKER_BUILD_STATUS" != "success" ]]; then
             echo "❌ Docker Build job status: ${DOCKER_BUILD_STATUS:-skipped}"
