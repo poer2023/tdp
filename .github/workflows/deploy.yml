@@ -30,8 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     # Allow manual dispatch anytime; for auto runs, only proceed if the build succeeded
     # and the commit message does not contain [skip deploy]
+    # TEMPORARY: Also allow push events for workflow re-registration
     if: >-
       ${{ github.event_name == 'workflow_dispatch' ||
+          github.event_name == 'push' ||
           (github.event.workflow_run.conclusion == 'success' &&
            !contains(github.event.workflow_run.head_commit.message, '[skip deploy]')) }}
     concurrency: deploy-${{ github.ref }}
