@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { GalleryImage } from "@/lib/gallery";
 import {
@@ -25,6 +25,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
     bulkDeleteGalleryAction,
     { status: "idle" }
   );
+  const [deleteTransitionPending, startDeleteTransition] = useTransition();
 
   const selectedIds = useMemo(() => Object.keys(selected).filter((id) => selected[id]), [selected]);
 
@@ -93,15 +94,17 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                 });
                 if (confirmed) {
                   const fd = new FormData();
-                  selectedIds.forEach((id) => fd.append("ids", id));
-                  delAction(fd);
+                  fd.set("ids", JSON.stringify(selectedIds));
+                  startDeleteTransition(() => {
+                    void delAction(fd);
+                  });
                 }
               }}
               className="inline-flex"
             >
               <button
                 type="submit"
-                disabled={selectedIds.length === 0 || delPending}
+                disabled={selectedIds.length === 0 || delPending || deleteTransitionPending}
                 className="rounded-lg border border-red-500 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-400/60 dark:text-red-300 dark:hover:bg-red-500/10"
               >
                 删除所选
