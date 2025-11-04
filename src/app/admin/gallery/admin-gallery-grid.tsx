@@ -82,29 +82,25 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
               批量编辑（{selectedIds.length}）
             </button>
             <form
-              action={(fd) => {
-                fd.set("ids", JSON.stringify(selectedIds));
-                return delAction(fd);
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const confirmed = await confirm({
+                  title: "批量删除图片",
+                  description: `确认删除所选 ${selectedIds.length} 项？此操作无法恢复。`,
+                  confirmText: "删除",
+                  cancelText: "取消",
+                  variant: "danger",
+                });
+                if (confirmed) {
+                  const fd = new FormData();
+                  selectedIds.forEach((id) => fd.append("ids", id));
+                  delAction(fd);
+                }
               }}
               className="inline-flex"
             >
               <button
                 type="submit"
-                onClick={async (e) => {
-                  e.preventDefault();
-                  const confirmed = await confirm({
-                    title: "批量删除图片",
-                    description: `确认删除所选 ${selectedIds.length} 项？此操作无法恢复。`,
-                    confirmText: "删除",
-                    cancelText: "取消",
-                    variant: "danger",
-                  });
-                  if (confirmed) {
-                    const fd = new FormData(e.currentTarget.form!);
-                    selectedIds.forEach((id) => fd.append("ids", id));
-                    delAction(fd);
-                  }
-                }}
                 disabled={selectedIds.length === 0 || delPending}
                 className="rounded-lg border border-red-500 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-400/60 dark:text-red-300 dark:hover:bg-red-500/10"
               >
