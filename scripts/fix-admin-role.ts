@@ -65,9 +65,7 @@ async function fixAdminRole() {
       console.log(`✅ 已更新：${email}`);
       console.log(`   - ID: ${result.id}`);
       console.log(`   - 角色：${existingUser.role} → ${result.role}`);
-      console.log(
-        `   - 邮箱验证：${existingUser.emailVerified ? "已验证" : "未验证"} → 已验证`
-      );
+      console.log(`   - 邮箱验证：${existingUser.emailVerified ? "已验证" : "未验证"} → 已验证`);
       console.log("");
 
       updatedCount++;
@@ -85,7 +83,9 @@ async function fixAdminRole() {
     console.log(`✅ 已清除 ${deletedSessions.count} 个 Session`);
     console.log("");
   } catch (error) {
-    console.error(`❌ 清除 Session 失败：${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      `❌ 清除 Session 失败：${error instanceof Error ? error.message : String(error)}`
+    );
     console.log("");
   }
 
