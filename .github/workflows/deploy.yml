@@ -39,10 +39,36 @@ jobs:
       SSH_PORT: ${{ secrets.SSH_PORT }}
       SSH_USER: ${{ secrets.SSH_USER }}
       PROJECT_DIR: ${{ secrets.PROJECT_DIR }}
-      # Optional: provide encryption key via GitHub Secrets to ensure runtime can decrypt DB credentials
-      ENV_CREDENTIAL_ENCRYPTION_KEY: ${{ secrets.ENV_CREDENTIAL_ENCRYPTION_KEY }}
       GIT_URL: ${{ github.server_url }}/${{ github.repository }}.git
       BRANCH: main
+
+      # Environment variables for .env generation
+      ENV_CREDENTIAL_ENCRYPTION_KEY: ${{ secrets.ENV_CREDENTIAL_ENCRYPTION_KEY }}
+      ENV_DATABASE_URL: ${{ secrets.ENV_DATABASE_URL }}
+      ENV_NEXTAUTH_SECRET: ${{ secrets.ENV_NEXTAUTH_SECRET }}
+      ENV_NEXTAUTH_URL: ${{ secrets.ENV_NEXTAUTH_URL }}
+      ENV_GOOGLE_CLIENT_ID: ${{ secrets.ENV_GOOGLE_CLIENT_ID }}
+      ENV_GOOGLE_CLIENT_SECRET: ${{ secrets.ENV_GOOGLE_CLIENT_SECRET }}
+      ENV_ADMIN_EMAILS: ${{ secrets.ENV_ADMIN_EMAILS }}
+      ENV_MAX_UPLOAD_SIZE_MB: ${{ secrets.ENV_MAX_UPLOAD_SIZE_MB }}
+      ENV_BILIBILI_SESSDATA: ${{ secrets.ENV_BILIBILI_SESSDATA }}
+      ENV_BILIBILI_BILI_JCT: ${{ secrets.ENV_BILIBILI_BILI_JCT }}
+      ENV_BILIBILI_BUVID3: ${{ secrets.ENV_BILIBILI_BUVID3 }}
+      ENV_DOUBAN_USER_ID: ${{ secrets.ENV_DOUBAN_USER_ID }}
+      ENV_DOUBAN_COOKIE: ${{ secrets.ENV_DOUBAN_COOKIE }}
+      ENV_SYNC_CRON_SCHEDULE: ${{ secrets.ENV_SYNC_CRON_SCHEDULE }}
+      ENV_STEAM_API_KEY: ${{ secrets.ENV_STEAM_API_KEY }}
+      ENV_STEAM_USER_ID: ${{ secrets.ENV_STEAM_USER_ID }}
+      ENV_ADMIN_API_KEY: ${{ secrets.ENV_ADMIN_API_KEY }}
+      ENV_CRON_SECRET: ${{ secrets.ENV_CRON_SECRET }}
+      ENV_FRIEND_JWT_SECRET: ${{ secrets.ENV_FRIEND_JWT_SECRET }}
+      ENV_FEATURE_ADMIN_CREDENTIALS: ${{ secrets.ENV_FEATURE_ADMIN_CREDENTIALS }}
+      ENV_FEATURE_ADMIN_ANALYTICS: ${{ secrets.ENV_FEATURE_ADMIN_ANALYTICS }}
+      ENV_FEATURE_ADMIN_GALLERY: ${{ secrets.ENV_FEATURE_ADMIN_GALLERY }}
+      ENV_FEATURE_ADMIN_POSTS: ${{ secrets.ENV_FEATURE_ADMIN_POSTS }}
+      ENV_FEATURE_ADMIN_SYNC: ${{ secrets.ENV_FEATURE_ADMIN_SYNC }}
+      ENV_FEATURE_ADMIN_EXPORT: ${{ secrets.ENV_FEATURE_ADMIN_EXPORT }}
+      ENV_FEATURE_ADMIN_DASHBOARD: ${{ secrets.ENV_FEATURE_ADMIN_DASHBOARD }}
 
     steps:
       - name: Verify CI and Docker Build Status
@@ -111,7 +137,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
-          envs: GHCR_USERNAME,GHCR_TOKEN,GIT_URL,BRANCH,PROJECT_DIR,ENV_CREDENTIAL_ENCRYPTION_KEY
+          envs: GHCR_USERNAME,GHCR_TOKEN,GIT_URL,BRANCH,PROJECT_DIR,ENV_CREDENTIAL_ENCRYPTION_KEY,ENV_DATABASE_URL,ENV_NEXTAUTH_SECRET,ENV_NEXTAUTH_URL,ENV_GOOGLE_CLIENT_ID,ENV_GOOGLE_CLIENT_SECRET,ENV_ADMIN_EMAILS,ENV_MAX_UPLOAD_SIZE_MB,ENV_BILIBILI_SESSDATA,ENV_BILIBILI_BILI_JCT,ENV_BILIBILI_BUVID3,ENV_DOUBAN_USER_ID,ENV_DOUBAN_COOKIE,ENV_SYNC_CRON_SCHEDULE,ENV_STEAM_API_KEY,ENV_STEAM_USER_ID,ENV_ADMIN_API_KEY,ENV_CRON_SECRET,ENV_FRIEND_JWT_SECRET,ENV_FEATURE_ADMIN_CREDENTIALS,ENV_FEATURE_ADMIN_ANALYTICS,ENV_FEATURE_ADMIN_GALLERY,ENV_FEATURE_ADMIN_POSTS,ENV_FEATURE_ADMIN_SYNC,ENV_FEATURE_ADMIN_EXPORT,ENV_FEATURE_ADMIN_DASHBOARD
           script: |
             # Be strict on errors but do not fail on unset vars to simplify secret handling
             set -eo pipefail
@@ -147,22 +173,137 @@ jobs:
               git reset --hard "origin/${BRANCH}" || true
             fi
 
-            # Ensure .env exists and contains encryption key if provided via secrets
-            if [ -n "${ENV_CREDENTIAL_ENCRYPTION_KEY:-}" ]; then
-              touch .env
-              # Safely replace existing key (avoid sed -i portability issues)
-              tmpfile=".env.tmp.$$"
-              grep -v '^CREDENTIAL_ENCRYPTION_KEY=' .env > "$tmpfile" 2>/dev/null || true
-              mv "$tmpfile" .env
-              printf '\nCREDENTIAL_ENCRYPTION_KEY=%s\n' "${ENV_CREDENTIAL_ENCRYPTION_KEY}" >> .env
-              # Minimal sanity check (length only, do not print the value)
-              if [ "${#ENV_CREDENTIAL_ENCRYPTION_KEY}" -ne 64 ]; then
-                echo "❌ ENV_CREDENTIAL_ENCRYPTION_KEY must be 64 hex chars" >&2
-                exit 1
-              fi
-            else
-              echo "ℹ️ ENV_CREDENTIAL_ENCRYPTION_KEY not provided via secrets; relying on server .env"
+            # Generate .env file from GitHub Secrets
+            echo "==> Generating .env file from GitHub Secrets"
+
+            # Validate critical variables
+            if [ -z "${ENV_CREDENTIAL_ENCRYPTION_KEY:-}" ]; then
+              echo "❌ ENV_CREDENTIAL_ENCRYPTION_KEY not set in GitHub Secrets" >&2
+              exit 1
             fi
+            if [ "${#ENV_CREDENTIAL_ENCRYPTION_KEY}" -ne 64 ]; then
+              echo "❌ ENV_CREDENTIAL_ENCRYPTION_KEY must be 64 hex chars" >&2
+              exit 1
+            fi
+
+            # Generate complete .env file
+            cat > .env << 'EOF'
+# PostgreSQL 数据库连接
+DATABASE_URL=${ENV_DATABASE_URL}
+
+# NextAuth 配置
+NEXTAUTH_URL=${ENV_NEXTAUTH_URL}
+NEXTAUTH_SECRET=${ENV_NEXTAUTH_SECRET}
+
+# Google OAuth 凭据
+GOOGLE_CLIENT_ID=${ENV_GOOGLE_CLIENT_ID}
+GOOGLE_CLIENT_SECRET=${ENV_GOOGLE_CLIENT_SECRET}
+
+# 上传限制配置
+MAX_UPLOAD_SIZE_MB=${ENV_MAX_UPLOAD_SIZE_MB:-10}
+
+# 管理员邮箱白名单
+ADMIN_EMAILS=${ENV_ADMIN_EMAILS}
+
+# ============================================================================
+# Media Sync Configuration (Bilibili & Douban)
+# ============================================================================
+
+# B站认证 Cookie
+BILIBILI_SESSDATA=${ENV_BILIBILI_SESSDATA}
+BILIBILI_BILI_JCT=${ENV_BILIBILI_BILI_JCT}
+BILIBILI_BUVID3=${ENV_BILIBILI_BUVID3}
+
+# 豆瓣配置
+DOUBAN_USER_ID=${ENV_DOUBAN_USER_ID}
+DOUBAN_COOKIE=${ENV_DOUBAN_COOKIE}
+
+# 同步任务调度 (Cron 表达式)
+SYNC_CRON_SCHEDULE=${ENV_SYNC_CRON_SCHEDULE:-0 */3 * * *}
+
+# ============================================================================
+# Gaming Data Configuration (Steam & HoYoverse)
+# ============================================================================
+
+# Steam API 配置
+STEAM_API_KEY=${ENV_STEAM_API_KEY}
+STEAM_USER_ID=${ENV_STEAM_USER_ID}
+
+# Admin API 密钥（用于手动触发同步）
+ADMIN_API_KEY=${ENV_ADMIN_API_KEY}
+
+# ============================================================================
+# Credential Encryption & Auto-Sync Configuration
+# ============================================================================
+
+# 凭据加密密钥 (AES-256-GCM)
+CREDENTIAL_ENCRYPTION_KEY=${ENV_CREDENTIAL_ENCRYPTION_KEY}
+
+# Vercel Cron 任务认证密钥
+CRON_SECRET=${ENV_CRON_SECRET}
+
+# ============================================================================
+# Feature Flags Configuration
+# ============================================================================
+
+# 启用管理员凭据管理功能
+FEATURE_ADMIN_CREDENTIALS=${ENV_FEATURE_ADMIN_CREDENTIALS:-on}
+
+# 启用访问分析功能
+FEATURE_ADMIN_ANALYTICS=${ENV_FEATURE_ADMIN_ANALYTICS:-on}
+
+# 启用相册管理功能
+FEATURE_ADMIN_GALLERY=${ENV_FEATURE_ADMIN_GALLERY:-on}
+
+# 启用文章管理功能
+FEATURE_ADMIN_POSTS=${ENV_FEATURE_ADMIN_POSTS:-on}
+
+# 启用同步仪表板
+FEATURE_ADMIN_SYNC=${ENV_FEATURE_ADMIN_SYNC:-on}
+
+# 启用内容导出工具
+FEATURE_ADMIN_EXPORT=${ENV_FEATURE_ADMIN_EXPORT:-on}
+
+# 启用管理仪表板统计功能
+FEATURE_ADMIN_DASHBOARD=${ENV_FEATURE_ADMIN_DASHBOARD:-on}
+
+# ============================================================================
+# Friend Stories Authentication
+# ============================================================================
+
+# 朋友认证 JWT 密钥
+FRIEND_JWT_SECRET=${ENV_FRIEND_JWT_SECRET}
+EOF
+
+            # Substitute environment variables
+            sed -i "s|\${ENV_DATABASE_URL}|${ENV_DATABASE_URL}|g" .env
+            sed -i "s|\${ENV_NEXTAUTH_URL}|${ENV_NEXTAUTH_URL}|g" .env
+            sed -i "s|\${ENV_NEXTAUTH_SECRET}|${ENV_NEXTAUTH_SECRET}|g" .env
+            sed -i "s|\${ENV_GOOGLE_CLIENT_ID}|${ENV_GOOGLE_CLIENT_ID}|g" .env
+            sed -i "s|\${ENV_GOOGLE_CLIENT_SECRET}|${ENV_GOOGLE_CLIENT_SECRET}|g" .env
+            sed -i "s|\${ENV_MAX_UPLOAD_SIZE_MB:-10}|${ENV_MAX_UPLOAD_SIZE_MB:-10}|g" .env
+            sed -i "s|\${ENV_ADMIN_EMAILS}|${ENV_ADMIN_EMAILS}|g" .env
+            sed -i "s|\${ENV_BILIBILI_SESSDATA}|${ENV_BILIBILI_SESSDATA}|g" .env
+            sed -i "s|\${ENV_BILIBILI_BILI_JCT}|${ENV_BILIBILI_BILI_JCT}|g" .env
+            sed -i "s|\${ENV_BILIBILI_BUVID3}|${ENV_BILIBILI_BUVID3}|g" .env
+            sed -i "s|\${ENV_DOUBAN_USER_ID}|${ENV_DOUBAN_USER_ID}|g" .env
+            sed -i "s|\${ENV_DOUBAN_COOKIE}|${ENV_DOUBAN_COOKIE}|g" .env
+            sed -i "s|\${ENV_SYNC_CRON_SCHEDULE:-0 \*/3 \* \* \*}|${ENV_SYNC_CRON_SCHEDULE:-0 */3 * * *}|g" .env
+            sed -i "s|\${ENV_STEAM_API_KEY}|${ENV_STEAM_API_KEY}|g" .env
+            sed -i "s|\${ENV_STEAM_USER_ID}|${ENV_STEAM_USER_ID}|g" .env
+            sed -i "s|\${ENV_ADMIN_API_KEY}|${ENV_ADMIN_API_KEY}|g" .env
+            sed -i "s|\${ENV_CREDENTIAL_ENCRYPTION_KEY}|${ENV_CREDENTIAL_ENCRYPTION_KEY}|g" .env
+            sed -i "s|\${ENV_CRON_SECRET}|${ENV_CRON_SECRET}|g" .env
+            sed -i "s|\${ENV_FEATURE_ADMIN_CREDENTIALS:-on}|${ENV_FEATURE_ADMIN_CREDENTIALS:-on}|g" .env
+            sed -i "s|\${ENV_FEATURE_ADMIN_ANALYTICS:-on}|${ENV_FEATURE_ADMIN_ANALYTICS:-on}|g" .env
+            sed -i "s|\${ENV_FEATURE_ADMIN_GALLERY:-on}|${ENV_FEATURE_ADMIN_GALLERY:-on}|g" .env
+            sed -i "s|\${ENV_FEATURE_ADMIN_POSTS:-on}|${ENV_FEATURE_ADMIN_POSTS:-on}|g" .env
+            sed -i "s|\${ENV_FEATURE_ADMIN_SYNC:-on}|${ENV_FEATURE_ADMIN_SYNC:-on}|g" .env
+            sed -i "s|\${ENV_FEATURE_ADMIN_EXPORT:-on}|${ENV_FEATURE_ADMIN_EXPORT:-on}|g" .env
+            sed -i "s|\${ENV_FEATURE_ADMIN_DASHBOARD:-on}|${ENV_FEATURE_ADMIN_DASHBOARD:-on}|g" .env
+            sed -i "s|\${ENV_FRIEND_JWT_SECRET}|${ENV_FRIEND_JWT_SECRET}|g" .env
+
+            echo "✅ .env file generated successfully"
 
             # Login to GHCR if credentials are provided (for private images)
             if [ -n "${GHCR_USERNAME:-}" ] && [ -n "${GHCR_TOKEN:-}" ]; then
