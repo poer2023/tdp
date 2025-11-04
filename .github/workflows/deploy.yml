@@ -2,6 +2,11 @@
 name: Auto Deploy
 
 on:
+  # TEMPORARY: Added to re-register workflow with GitHub after file modification
+  # Will be removed after successful run
+  push:
+    branches:
+      - main
   workflow_run:
     workflows: ["Docker Build and Push"]
     types:
