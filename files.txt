@@ -12,6 +12,7 @@
 .github/workflows/prettier-format.yml
 .github/workflows/schema-guard.yml
 .github/workflows/server-logs.yml
+.github/workflows/yaml-lint.yml
 README.md
 docker-compose.yml
 docs/ADMIN_GUIDE.md
