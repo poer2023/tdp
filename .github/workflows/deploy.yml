@@ -1,3 +1,4 @@
+# Automated deployment workflow triggered after Docker Build completes
 name: Auto Deploy
 
 on:
