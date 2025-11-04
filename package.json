@@ -65,6 +65,7 @@
     "generate-key": "tsx scripts/generate-encryption-key.ts",
     "migrate-encrypt-credentials": "tsx scripts/migrate-encrypt-credentials.ts",
     "features:list": "tsx scripts/list-features.ts",
+    "fix:admin": "tsx scripts/fix-admin-role.ts",
     "prepare": "husky || true"
   },
   "dependencies": {
