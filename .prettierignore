@@ -22,6 +22,10 @@ next-env.d.ts
 .next/
 public/uploads/*
 
+# GitHub Actions workflows (use yamllint for validation instead)
+# Prettier's YAML parser has limitations with complex GitHub Actions syntax
+.github/workflows/deploy.yml
+
 # (no special ignores for e2e; keep them checked by Prettier)
 
 # Integration tests with JSX in .ts files (renamed to .tsx, keeping for reference)
