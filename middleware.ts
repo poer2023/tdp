@@ -78,9 +78,12 @@ export async function middleware(request: NextRequest) {
     const sessionCookie =
       request.cookies.get("next-auth.session-token") ??
       request.cookies.get("__Secure-next-auth.session-token") ??
+      request.cookies.get("authjs.session-token") ??
+      request.cookies.get("__Secure-authjs.session-token") ??
+      request.cookies.get("__Host-authjs.session-token") ??
       null;
     const sessionToken = sessionCookie?.value ?? null;
-    const sessionSalt = sessionCookie?.name ?? "next-auth.session-token";
+    const sessionSalt = sessionCookie?.name ?? "authjs.session-token";
     let role: string | null = null;
 
     if (sessionToken) {
