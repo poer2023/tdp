@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { listFriends } from "@/lib/friends";
-import { FriendManagementTable } from "@/components/admin/FriendManagementTable";
+import { FriendCardsGrid } from "@/components/admin/FriendCardsGrid";
 
 export const metadata: Metadata = {
   title: "朋友管理",
@@ -27,6 +27,7 @@ export default async function FriendsManagementPage() {
     description: friend.description ?? null,
     createdAt: friend.createdAt.toISOString(),
     updatedAt: friend.updatedAt.toISOString(),
+    momentCount: friend._count.privateMoments,
   }));
 
   return (
@@ -46,7 +47,7 @@ export default async function FriendsManagementPage() {
         </Link>
       </div>
 
-      <FriendManagementTable friends={safeFriends} />
+      <FriendCardsGrid friends={safeFriends} />
     </div>
   );
 }

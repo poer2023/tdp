@@ -60,10 +60,21 @@ export function getFriendById(id: string): Promise<Friend | null> {
 }
 
 /**
- * 列出所有朋友
+ * 列出所有朋友（包含私密时刻数量统计）
  */
-export function listFriends(): Promise<Friend[]> {
-  return prisma.friend.findMany({ orderBy: { createdAt: "desc" } });
+export async function listFriends() {
+  const friends = await prisma.friend.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      _count: {
+        select: {
+          privateMoments: true,
+        },
+      },
+    },
+  });
+
+  return friends;
 }
 
 /**
