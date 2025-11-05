@@ -3,17 +3,14 @@ import { GET } from "../route";
 import { NextRequest } from "next/server";
 
 // Mock external dependencies
-const {
-  mockPrismaFindMany,
-  mockSyncMedia,
-  mockGamingSyncService,
-  mockSyncGitHub,
-} = vi.hoisted(() => ({
-  mockPrismaFindMany: vi.fn(),
-  mockSyncMedia: vi.fn(),
-  mockGamingSyncService: vi.fn(),
-  mockSyncGitHub: vi.fn(),
-}));
+const { mockPrismaFindMany, mockSyncMedia, mockGamingSyncService, mockSyncGitHub } = vi.hoisted(
+  () => ({
+    mockPrismaFindMany: vi.fn(),
+    mockSyncMedia: vi.fn(),
+    mockGamingSyncService: vi.fn(),
+    mockSyncGitHub: vi.fn(),
+  })
+);
 
 vi.mock("@/lib/prisma", () => {
   const prismaMock = {

@@ -280,10 +280,7 @@ export async function GET(request: NextRequest) {
                 message: result.error || `${result.itemsSuccess} metrics synced`,
               });
             } catch (error) {
-              console.error(
-                `[Cron Sync] Error syncing GitHub credential ${credential.id}:`,
-                error
-              );
+              console.error(`[Cron Sync] Error syncing GitHub credential ${credential.id}:`, error);
               syncResults.push({
                 platform: "GITHUB",
                 success: false,
