@@ -49,6 +49,7 @@ jobs:
           node scripts/ai-fix.mjs
 
       - name: Show diff
+        id: diff_outcome
         run: |
           git status --porcelain
           git diff --name-only | sed 's/^/  changed: /' || true

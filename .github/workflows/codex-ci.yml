@@ -3,8 +3,7 @@ name: codex-ci
 on:
   workflow_run:
     workflows:
-      - "E2E Full Suite (Non-blocking)"
-      - "build-and-test"
+      - "CI Critical Path"
     types:
       - completed
 

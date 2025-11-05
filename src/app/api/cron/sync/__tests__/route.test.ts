@@ -3,11 +3,14 @@ import { GET } from "../route";
 import { NextRequest } from "next/server";
 
 // Mock external dependencies
-const { mockPrismaFindMany, mockSyncMedia, mockGamingSyncService } = vi.hoisted(() => ({
-  mockPrismaFindMany: vi.fn(),
-  mockSyncMedia: vi.fn(),
-  mockGamingSyncService: vi.fn(),
-}));
+const { mockPrismaFindMany, mockSyncMedia, mockGamingSyncService, mockSyncGitHub } = vi.hoisted(
+  () => ({
+    mockPrismaFindMany: vi.fn(),
+    mockSyncMedia: vi.fn(),
+    mockGamingSyncService: vi.fn(),
+    mockSyncGitHub: vi.fn(),
+  })
+);
 
 vi.mock("@/lib/prisma", () => {
   const prismaMock = {
@@ -25,6 +28,7 @@ vi.mock("@/lib/prisma", () => {
 
 vi.mock("@/lib/media-sync", () => ({
   syncAllPlatforms: mockSyncMedia,
+  syncGitHub: mockSyncGitHub,
 }));
 
 vi.mock("@/lib/gaming/sync-service", () => ({
@@ -288,6 +292,51 @@ describe("GET /api/cron/sync", () => {
     const schedules = data.schedules as CronSchedule[];
     const schedule = schedules.find((s) => s.credentialId === "cred-1");
     expect(schedule?.reason).toContain("Never synced before");
+  });
+
+  it("should sync GitHub credentials when due", async () => {
+    const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
+    mockPrismaFindMany.mockResolvedValue([
+      {
+        id: "cred-1",
+        platform: "GITHUB",
+        value: "mock-token",
+        metadata: { username: "octocat" },
+        syncFrequency: "daily",
+        syncJobs: [{ startedAt: twoDaysAgo }],
+      },
+    ]);
+
+    mockSyncGitHub.mockResolvedValue({
+      platform: "github",
+      success: true,
+      itemsSuccess: 4,
+      itemsFailed: 0,
+      itemsTotal: 4,
+      itemsNew: 4,
+      itemsExisting: 0,
+      duration: 1234,
+    });
+
+    const request = new NextRequest("http://localhost:3000/api/cron/sync", {
+      headers: {
+        Authorization: `Bearer ${TEST_CRON_SECRET}`,
+      },
+    });
+
+    const response = (await GET(request)) as Response;
+    const data = (await response.json()) as {
+      summary: { synced: number; succeeded: number };
+      results: Array<{ platform: string; success: boolean }>;
+    };
+
+    expect(mockSyncGitHub).toHaveBeenCalledTimes(1);
+    expect(data.summary.synced).toBe(1);
+    expect(data.summary.succeeded).toBe(1);
+    expect(data.results).toEqual(
+      expect.arrayContaining([expect.objectContaining({ platform: "GITHUB", success: true })])
+    );
   });
 
   it("should handle sync failures gracefully", async () => {

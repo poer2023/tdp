@@ -3,12 +3,7 @@ name: build-and-test
 on:
   push:
     branches:
-      - develop
-      - feature/ui-optimization
-  pull_request:
-    branches:
       - main
-      - develop
 
 jobs:
   lint-and-format:

@@ -30,8 +30,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { syncAllPlatforms as syncMedia } from "@/lib/media-sync";
+import { syncAllPlatforms as syncMedia, syncGitHub } from "@/lib/media-sync";
 import { GamingSyncService } from "@/lib/gaming/sync-service";
+import { decryptCredential, isEncrypted } from "@/lib/encryption";
 
 type SyncFrequency =
   | "hourly"
@@ -258,6 +259,37 @@ export async function GET(request: NextRequest) {
               });
             }
           }
+        } else if (platform === "GITHUB") {
+          for (const schedule of schedules) {
+            const credential = credentials.find((c) => c.id === schedule.credentialId);
+            if (!credential) continue;
+
+            try {
+              const token = isEncrypted(credential.value)
+                ? decryptCredential(credential.value)
+                : credential.value;
+
+              const metadata = credential.metadata as { username?: string } | null;
+              const username = metadata?.username;
+
+              const result = await syncGitHub({ token, username }, credential.id);
+
+              syncResults.push({
+                platform: "GITHUB",
+                success: result.success,
+                message: result.error || `${result.itemsSuccess} metrics synced`,
+              });
+            } catch (error) {
+              console.error(`[Cron Sync] Error syncing GitHub credential ${credential.id}:`, error);
+              syncResults.push({
+                platform: "GITHUB",
+                success: false,
+                message: error instanceof Error ? error.message : "Unknown error",
+              });
+            }
+          }
+        } else {
+          console.warn(`[Cron Sync] Unsupported platform ${platform}, skipping`);
         }
       } catch (error) {
         console.error(`[Cron Sync] Error syncing ${platform}:`, error);
