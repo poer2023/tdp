@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFile, stat } from "fs/promises";
 import path from "path";
+import sharp from "sharp";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -31,7 +32,7 @@ function getMimeType(filePath: string): string {
 function buildHeaders(stats: { size: number; mtime: Date }) {
   const etag = `"${stats.size}-${Math.floor(stats.mtime.getTime())}"`;
   return {
-    etag,
+    baseEtag: etag,
     lastModified: stats.mtime.toUTCString(),
     cacheControl: "public, max-age=31536000, immutable",
   };
@@ -59,21 +60,145 @@ async function resolveFile(request: NextRequest, params: string[]) {
 
 export async function GET(request: NextRequest, { params }: Params) {
   const { path: pathSegments } = await params;
+  const response = await serveFile(request, pathSegments);
+  if (response instanceof NextResponse) {
+    return response;
+  }
+  return response.toResponse();
+}
+
+export async function HEAD(request: NextRequest, { params }: Params) {
+  const { path: pathSegments } = await params;
+  const response = await serveFile(request, pathSegments, { headOnly: true });
+  if (response instanceof NextResponse) {
+    return response;
+  }
+  return response.toResponse();
+}
+
+type TransformOptions = {
+  width?: number;
+  height?: number;
+  quality?: number;
+  format?: "webp" | "jpeg" | "png" | "avif";
+};
+
+type ServeFileResult =
+  | NextResponse
+  | {
+      toResponse: () => NextResponse;
+    };
+
+function parseTransformOptions(url: URL): TransformOptions {
+  const width = Number.parseInt(url.searchParams.get("w") ?? "", 10);
+  const height = Number.parseInt(url.searchParams.get("h") ?? "", 10);
+  const quality = Number.parseInt(url.searchParams.get("q") ?? "", 10);
+  const formatParam = url.searchParams.get("format") ?? url.searchParams.get("fm");
+  const format =
+    formatParam && ["webp", "jpeg", "png", "avif"].includes(formatParam.toLowerCase())
+      ? (formatParam.toLowerCase() as TransformOptions["format"])
+      : undefined;
+
+  const toPositive = (value: number) => (Number.isFinite(value) && value > 0 ? value : undefined);
+
+  return {
+    width: toPositive(width),
+    height: toPositive(height),
+    quality: toPositive(quality),
+    format,
+  };
+}
+
+function shouldTransform(mime: string, options: TransformOptions): boolean {
+  if (!mime.startsWith("image/")) return false;
+  if (mime === "image/svg+xml") return false;
+  if (mime === "image/gif") return false; // avoid breaking animation
+  return Boolean(options.width || options.height || options.quality || options.format);
+}
+
+async function applyTransform(
+  buffer: Buffer,
+  mime: string,
+  options: TransformOptions
+): Promise<{ buffer: Buffer; mime: string }> {
+  const qual = options.quality && options.quality <= 100 ? options.quality : undefined;
+  let pipeline = sharp(buffer, { failOnError: false });
+
+  if (options.width || options.height) {
+    pipeline = pipeline.resize(options.width, options.height, {
+      fit: "inside",
+      withoutEnlargement: true,
+    });
+  }
+
+  const targetFormat =
+    options.format ??
+    (mime !== "image/webp" && mime !== "image/avif" && (options.width || options.height || qual)
+      ? "webp"
+      : undefined);
+
+  if (targetFormat === "webp") {
+    pipeline = pipeline.webp({ quality: qual ?? 78 });
+    return { buffer: await pipeline.toBuffer(), mime: "image/webp" };
+  }
+
+  if (targetFormat === "jpeg") {
+    pipeline = pipeline.jpeg({ quality: qual ?? 82, mozjpeg: true });
+    return { buffer: await pipeline.toBuffer(), mime: "image/jpeg" };
+  }
+
+  if (targetFormat === "png") {
+    pipeline = pipeline.png({ quality: qual ?? 80 });
+    return { buffer: await pipeline.toBuffer(), mime: "image/png" };
+  }
+
+  if (targetFormat === "avif") {
+    pipeline = pipeline.avif({ quality: qual ?? 60 });
+    return { buffer: await pipeline.toBuffer(), mime: "image/avif" };
+  }
+
+  if (qual && !targetFormat) {
+    // Adjust quality without format change (e.g., jpeg input)
+    if (mime === "image/jpeg") {
+      pipeline = pipeline.jpeg({ quality: qual, mozjpeg: true });
+      return { buffer: await pipeline.toBuffer(), mime };
+    }
+    if (mime === "image/png") {
+      pipeline = pipeline.png({ quality: qual });
+      return { buffer: await pipeline.toBuffer(), mime };
+    }
+  }
+
+  return { buffer: await pipeline.toBuffer(), mime };
+}
+
+async function serveFile(
+  request: NextRequest,
+  pathSegments: string[],
+  opts: { headOnly?: boolean } = {}
+): Promise<ServeFileResult> {
   const resolved = await resolveFile(request, pathSegments);
   if (resolved.status !== 200) {
     return new NextResponse("Not Found", { status: resolved.status });
   }
 
   const { filePath, stats } = resolved;
-  const { etag, lastModified, cacheControl } = buildHeaders(stats);
+  const { baseEtag, lastModified, cacheControl } = buildHeaders(stats);
+  const url = new URL(request.url);
+  const transformOptions = parseTransformOptions(url);
+  const mime = getMimeType(filePath);
+  const shouldApplyTransform = shouldTransform(mime, transformOptions);
+  const etagSuffix = shouldApplyTransform
+    ? `-opt-${transformOptions.width ?? ""}-${transformOptions.height ?? ""}-${transformOptions.format ?? "auto"}-${transformOptions.quality ?? ""}`
+    : "";
+  const finalEtag = `${baseEtag.slice(0, -1)}${etagSuffix}"`;
 
-  // Conditional requests
   const inm = request.headers.get("if-none-match");
-  if (inm && inm === etag) {
+  if (inm && inm === finalEtag) {
     return new NextResponse(null, {
       status: 304,
       headers: {
-        ETag: etag,
+        ETag: finalEtag,
         "Last-Modified": lastModified,
         "Cache-Control": cacheControl,
       },
@@ -83,15 +208,15 @@ export async function GET(request: NextRequest, { params }: Params) {
   const ims = request.headers.get("if-modified-since");
   if (ims) {
     const since = Date.parse(ims);
-    // HTTP dates are second-precision, so compare at second level
     if (
       !Number.isNaN(since) &&
-      Math.floor(stats.mtime.getTime() / 1000) <= Math.floor(since / 1000)
+      Math.floor(stats.mtime.getTime() / 1000) <= Math.floor(since / 1000) &&
+      !shouldApplyTransform
     ) {
       return new NextResponse(null, {
         status: 304,
         headers: {
-          ETag: etag,
+          ETag: finalEtag,
           "Last-Modified": lastModified,
           "Cache-Control": cacheControl,
         },
@@ -99,39 +224,37 @@ export async function GET(request: NextRequest, { params }: Params) {
     }
   }
 
-  const data = await readFile(filePath);
-  const uint8 = new Uint8Array(data);
-  const mime = getMimeType(filePath);
+  const originalBuffer = await readFile(filePath);
 
-  return new NextResponse(uint8, {
-    headers: {
-      "Content-Type": mime,
-      "Content-Length": String(stats.size),
-      "Cache-Control": cacheControl,
-      ETag: etag,
-      "Last-Modified": lastModified,
-    },
-  });
-}
+  const { buffer, responseMime } = shouldApplyTransform
+    ? await applyTransform(originalBuffer, mime, transformOptions).then((result) => ({
+        buffer: result.buffer,
+        responseMime: result.mime,
+      }))
+    : { buffer: originalBuffer, responseMime: mime };
 
-export async function HEAD(request: NextRequest, { params }: Params) {
-  const { path: pathSegments } = await params;
-  const resolved = await resolveFile(request, pathSegments);
-  if (resolved.status !== 200) {
-    return new NextResponse("Not Found", { status: resolved.status });
+  const uint8 = new Uint8Array(buffer);
+  const baseHeaders = {
+    "Content-Type": responseMime,
+    "Content-Length": String(uint8.byteLength),
+    "Cache-Control": cacheControl,
+    ETag: finalEtag,
+    "Last-Modified": lastModified,
+  };
+
+  if (opts.headOnly) {
+    return {
+      toResponse: () =>
+        new NextResponse(null, {
+          headers: baseHeaders,
+        }),
+    };
   }
 
-  const { filePath, stats } = resolved;
-  const { etag, lastModified, cacheControl } = buildHeaders(stats);
-  const mime = getMimeType(filePath);
-
-  return new NextResponse(null, {
-    headers: {
-      "Content-Type": mime,
-      "Content-Length": String(stats.size),
-      "Cache-Control": cacheControl,
-      ETag: etag,
-      "Last-Modified": lastModified,
-    },
-  });
+  return {
+    toResponse: () =>
+      new NextResponse(uint8, {
+        headers: baseHeaders,
+      }),
+  };
 }

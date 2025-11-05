@@ -24,6 +24,28 @@ type GridItem = {
   href: string;
 };
 
+function buildOptimizedUrl(src: string, width: number): string {
+  if (!src || !src.startsWith("/")) {
+    return src;
+  }
+
+  // Skip if already a generated thumbnail (micro/small/medium) or query params exist
+  if (/\b_(micro|small|medium)\b/.test(src) || /\.webp($|\?)/.test(src)) {
+    return src;
+  }
+
+  try {
+    const url = new URL(src, "http://localhost");
+    url.searchParams.set("w", String(width));
+    url.searchParams.set("format", "webp");
+    url.searchParams.set("q", url.searchParams.get("q") ?? "75");
+    const query = url.searchParams.toString();
+    return `${url.pathname}${query ? `?${query}` : ""}`;
+  } catch {
+    return src;
+  }
+}
+
 // Official shuffle algorithm
 const shuffle = <T,>(array: T[]): T[] => {
   const result = [...array];
@@ -54,7 +76,7 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
   const allItems = useMemo(() => {
     const activityItems: GridItem[] = activities.map((a) => ({
       id: a.id,
-      image: a.image,
+      image: buildOptimizedUrl(a.image, 560),
       title: a.title,
       type: a.type,
       href:
@@ -67,7 +89,10 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
       .filter((p) => !activities.some((a) => a.id === p.id))
       .map((p) => ({
         id: p.id,
-        image: p.smallThumbPath || p.microThumbPath || p.filePath,
+        image: buildOptimizedUrl(
+          p.smallThumbPath || p.microThumbPath || p.filePath || "",
+          480
+        ),
         title: p.title || (locale === "zh" ? "相册照片" : "Gallery photo"),
         type: "gallery" as const,
         href: localePath(locale, "/gallery"),
