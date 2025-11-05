@@ -2,7 +2,6 @@
 .github/workflows/autofix.yml
 .github/workflows/build-and-test.yml
 .github/workflows/ci-critical.yml
-.github/workflows/ci.yml
 .github/workflows/codex-ci.yml
 .github/workflows/deploy-only.yml
 .github/workflows/deploy.yml
