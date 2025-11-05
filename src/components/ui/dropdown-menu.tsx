@@ -41,11 +41,11 @@ export function DropdownMenu({ children, trigger, align = "end" }: DropdownMenuP
 
   return (
     <DropdownMenuContext.Provider value={{ isOpen, setIsOpen }}>
-      <div className="relative inline-block" ref={dropdownRef}>
+      <div className="relative inline-block z-10" ref={dropdownRef}>
         {/* 触发按钮 */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="inline-flex items-center justify-center rounded-lg p-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+          className="relative inline-flex items-center justify-center rounded-lg p-2 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
           aria-expanded={isOpen}
           aria-haspopup="true"
         >
@@ -56,7 +56,7 @@ export function DropdownMenu({ children, trigger, align = "end" }: DropdownMenuP
         {isOpen && (
           <div
             className={cn(
-              "absolute top-full mt-2 z-50 min-w-[12rem] overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg dark:shadow-2xl dark:shadow-black/80 py-1",
+              "absolute top-full mt-2 z-[9999] min-w-[12rem] overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg dark:shadow-2xl dark:shadow-black/80 py-1",
               align === "end" ? "right-0" : "left-0"
             )}
           >

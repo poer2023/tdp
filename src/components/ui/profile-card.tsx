@@ -57,13 +57,13 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
         <div
           ref={ref}
           className={cn(
-            "bg-white dark:bg-zinc-900 rounded-3xl shadow-lg dark:shadow-2xl dark:shadow-black/80 overflow-hidden profile-card-hover",
+            "bg-white dark:bg-zinc-900 rounded-3xl shadow-lg dark:shadow-2xl dark:shadow-black/80 profile-card-hover",
             className
           )}
           {...props}
         >
           {/* 头部图片区域 */}
-          <div className="relative overflow-hidden profile-card-image-container">
+          <div className="relative overflow-hidden profile-card-image-container rounded-t-3xl">
             <img
               src={avatarUrl}
               alt={name}
