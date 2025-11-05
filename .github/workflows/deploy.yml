@@ -88,25 +88,47 @@ jobs:
 
           echo "Checking workflow status for commit: $COMMIT_SHA in $REPO (event: $EVENT_NAME)"
 
-          # Check CI Critical Path status
-          CI_STATUS=$(gh run list \
-            --repo="$REPO" \
-            --workflow="ci-critical.yml" \
-            --commit="$COMMIT_SHA" \
-            --json conclusion \
-            --jq '.[0].conclusion')
+          # Check CI Critical Path status with retries to allow CI to finish
+          MAX_CI_CHECKS=24 # ~4 minutes with 10s interval
+          CI_RUN_STATUS=""
+          CI_CONCLUSION=""
+          for attempt in $(seq 1 "$MAX_CI_CHECKS"); do
+            CI_JSON=$(gh run list \
+              --repo="$REPO" \
+              --workflow="ci-critical.yml" \
+              --commit="$COMMIT_SHA" \
+              --limit 1 \
+              --json status,conclusion)
 
-          if [[ -z "${CI_STATUS:-}" || "${CI_STATUS}" == "null" ]]; then
-            echo "Unable to determine CI Critical Path status for commit $COMMIT_SHA" >&2
+            CI_RUN_STATUS=$(echo "$CI_JSON" | jq -r '.[0].status // empty')
+            CI_CONCLUSION=$(echo "$CI_JSON" | jq -r '.[0].conclusion // empty')
+
+            if [[ -z "${CI_RUN_STATUS}" ]]; then
+              echo "Attempt ${attempt}/${MAX_CI_CHECKS}: CI Critical Path run not found yet. Waiting..."
+            elif [[ "$CI_RUN_STATUS" != "completed" ]]; then
+              echo "Attempt ${attempt}/${MAX_CI_CHECKS}: CI Critical Path status is ${CI_RUN_STATUS}. Waiting for completion..."
+            else
+              break
+            fi
+            sleep 10
+          done
+
+          if [[ -z "${CI_RUN_STATUS}" || "$CI_RUN_STATUS" != "completed" ]]; then
+            echo "Unable to determine CI Critical Path status for commit $COMMIT_SHA after ${MAX_CI_CHECKS} attempts" >&2
             exit 1
           fi
 
-          if [[ "$CI_STATUS" != "success" ]]; then
-            echo "❌ CI Critical Path did not succeed: $CI_STATUS"
+          if [[ -z "${CI_CONCLUSION}" || "${CI_CONCLUSION}" == "null" ]]; then
+            echo "CI Critical Path conclusion missing for commit $COMMIT_SHA" >&2
+            exit 1
+          fi
+
+          if [[ "$CI_CONCLUSION" != "success" ]]; then
+            echo "❌ CI Critical Path did not succeed: $CI_CONCLUSION"
             echo "Cannot deploy when CI checks fail"
             exit 1
           fi
-          echo "✅ CI Critical Path: $CI_STATUS"
+          echo "✅ CI Critical Path: $CI_CONCLUSION"
 
           if [[ "$NEED_DOCKER_CHECK" != "true" ]]; then
             echo "Docker build status check skipped for manual dispatch."
