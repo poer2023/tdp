@@ -11,6 +11,50 @@ import { generateVerificationCode } from "@/lib/auth/email-code";
 
 const prismaAdapter = PrismaAdapter(prisma) as Adapter;
 
+function getAdminEmailSet(): Set<string> {
+  return new Set(
+    (process.env.ADMIN_EMAILS || "")
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean)
+  );
+}
+
+async function syncUserRole(userId: string | undefined, email: string | null | undefined) {
+  if (!userId || !email) {
+    return UserRole.READER;
+  }
+
+  const adminEmails = getAdminEmailSet();
+  const normalizedEmail = email.toLowerCase();
+  const shouldBeAdmin = adminEmails.has(normalizedEmail);
+  const desiredRole = shouldBeAdmin ? UserRole.ADMIN : UserRole.READER;
+
+  const existingUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true, emailVerified: true },
+  });
+
+  if (!existingUser) {
+    return desiredRole;
+  }
+
+  const needsRoleUpdate = existingUser.role !== desiredRole;
+  const needsEmailVerification = shouldBeAdmin && !existingUser.emailVerified;
+
+  if (needsRoleUpdate || needsEmailVerification) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        role: desiredRole,
+        ...(needsEmailVerification ? { emailVerified: new Date() } : {}),
+      },
+    });
+  }
+
+  return desiredRole;
+}
+
 export const authConfig: NextAuthConfig = {
   trustHost: true,
   adapter: prismaAdapter,
@@ -61,29 +105,30 @@ export const authConfig: NextAuthConfig = {
   ],
   callbacks: {
     async jwt({ token, user, trigger }) {
-      // On sign in, add user info to token
+      const mutableToken = token as typeof token & { roleSynced?: boolean };
+
       if (user?.id) {
-        token.id = user.id;
-        // Fetch user role from database
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { role: true },
-        });
-        token.role = dbUser?.role ?? UserRole.READER;
+        mutableToken.id = user.id;
+        mutableToken.email = user.email ?? mutableToken.email;
+        mutableToken.roleSynced = false;
       }
 
-      // On session update, refresh role from database
       if (trigger === "update") {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { role: true },
-        });
-        if (dbUser) {
-          token.role = dbUser.role;
-        }
+        mutableToken.roleSynced = false;
       }
 
-      return token;
+      if (mutableToken.id && mutableToken.roleSynced !== true) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: mutableToken.id as string },
+          select: { role: true },
+        });
+        mutableToken.role = dbUser?.role ?? UserRole.READER;
+        mutableToken.roleSynced = true;
+      } else if (!mutableToken.role) {
+        mutableToken.role = UserRole.READER;
+      }
+
+      return mutableToken;
     },
     async session({ session, token }) {
       if (session.user && token) {
@@ -94,35 +139,26 @@ export const authConfig: NextAuthConfig = {
       return session;
     },
     async signIn({ user }) {
-      // Just verify user has email, actual role assignment happens in createUser event
-      return !!user?.email;
+      if (!user?.email || !user?.id) {
+        return false;
+      }
+
+      await syncUserRole(user.id, user.email);
+      return true;
     },
   },
   events: {
     async createUser({ user }) {
-      // 从环境变量读取管理员邮箱白名单
-      const adminEmails = (process.env.ADMIN_EMAILS || "")
-        .split(",")
-        .map((email) => email.trim())
-        .filter(Boolean)
-        .map((email) => email.toLowerCase());
-
-      // 检查新用户是否在白名单中
-      if (user.id && user.email) {
-        const normalizedEmail = user.email.toLowerCase();
-        const isAdmin = adminEmails.includes(normalizedEmail);
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { role: isAdmin ? UserRole.ADMIN : UserRole.READER },
-        });
-        if (isAdmin) {
-          console.log(`✅ Admin user created: ${user.email}`);
-        } else {
-          console.log(`ℹ️ Regular user created: ${user.email} (role: READER)`);
-        }
-      } else {
+      if (!user.id) {
         console.log(`ℹ️ Regular user created: ${user.email || "unknown"} (role: READER)`);
+        return;
+      }
+
+      const role = await syncUserRole(user.id, user.email);
+      if (role === UserRole.ADMIN) {
+        console.log(`✅ Admin user created: ${user.email}`);
+      } else {
+        console.log(`ℹ️ Regular user created: ${user.email || "unknown"} (role: ${role})`);
       }
     },
   },
