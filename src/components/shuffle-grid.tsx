@@ -89,10 +89,7 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
       .filter((p) => !activities.some((a) => a.id === p.id))
       .map((p) => ({
         id: p.id,
-        image: buildOptimizedUrl(
-          p.smallThumbPath || p.microThumbPath || p.filePath || "",
-          480
-        ),
+        image: buildOptimizedUrl(p.smallThumbPath || p.microThumbPath || p.filePath || "", 480),
         title: p.title || (locale === "zh" ? "相册照片" : "Gallery photo"),
         type: "gallery" as const,
         href: localePath(locale, "/gallery"),
