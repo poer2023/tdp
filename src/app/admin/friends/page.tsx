@@ -24,6 +24,7 @@ export default async function FriendsManagementPage() {
     id: friend.id,
     name: friend.name,
     avatar: friend.avatar ?? null,
+    cover: friend.cover ?? null,
     description: friend.description ?? null,
     createdAt: friend.createdAt.toISOString(),
     updatedAt: friend.updatedAt.toISOString(),

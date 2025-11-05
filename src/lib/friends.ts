@@ -6,12 +6,14 @@ export interface CreateFriendInput {
   name: string;
   passphrase: string;
   avatar?: string | null;
+  cover?: string | null;
   description?: string | null;
 }
 
 export interface UpdateFriendInput {
   name?: string;
   avatar?: string | null;
+  cover?: string | null;
   description?: string | null;
 }
 
@@ -47,6 +49,7 @@ export async function createFriend(input: CreateFriendInput): Promise<Friend> {
       name: input.name,
       accessToken: hashedPassphrase,
       avatar: input.avatar,
+      cover: input.cover,
       description: input.description,
     },
   });

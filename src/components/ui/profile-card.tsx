@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 export interface ProfileCardProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string;
   avatar?: string | null;
+  cover?: string | null;
   description?: string | null;
   timestamp?: string;
   stats?: string;
@@ -11,10 +12,11 @@ export interface ProfileCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
-  ({ className, name, avatar, description, timestamp, stats, actions, ...props }, ref) => {
-    // 默认头像
-    const defaultAvatar = "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg";
-    const avatarUrl = avatar || defaultAvatar;
+  ({ className, name, avatar, cover, description, timestamp, stats, actions, ...props }, ref) => {
+    // 默认图片
+    const defaultImage = "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg";
+    const avatarUrl = avatar || defaultImage;
+    const coverUrl = cover || avatar || defaultImage;
 
     return (
       <>
@@ -65,7 +67,7 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
           {/* 头部图片区域 */}
           <div className="relative overflow-hidden profile-card-image-container rounded-t-3xl">
             <img
-              src={avatarUrl}
+              src={coverUrl}
               alt={name}
               className="w-full aspect-square object-cover profile-card-image-scale"
             />

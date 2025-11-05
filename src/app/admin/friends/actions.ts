@@ -26,6 +26,7 @@ export async function createFriendAction(formData: FormData): Promise<CreateFrie
 
   const name = String(formData.get("name") ?? "").trim();
   const avatar = formData.get("avatar") ? String(formData.get("avatar")) : null;
+  const cover = formData.get("cover") ? String(formData.get("cover")) : null;
   const description = formData.get("description") ? String(formData.get("description")) : null;
   let passphrase = formData.get("passphrase") ? String(formData.get("passphrase")) : "";
 
@@ -42,6 +43,7 @@ export async function createFriendAction(formData: FormData): Promise<CreateFrie
       name,
       passphrase,
       avatar: avatar ?? undefined,
+      cover: cover ?? undefined,
       description: description ?? undefined,
     });
 
@@ -61,6 +63,7 @@ export async function updateFriendProfileAction(friendId: string, formData: Form
 
   const name = String(formData.get("name") ?? "").trim();
   const avatar = formData.get("avatar") ? String(formData.get("avatar")) : null;
+  const cover = formData.get("cover") ? String(formData.get("cover")) : null;
   const description = formData.get("description") ? String(formData.get("description")) : null;
 
   if (!name) {
@@ -71,6 +74,7 @@ export async function updateFriendProfileAction(friendId: string, formData: Form
     await updateFriend(friendId, {
       name,
       avatar: avatar ?? null,
+      cover: cover ?? null,
       description: description ?? null,
     });
     revalidatePath("/admin/friends");

@@ -12,6 +12,7 @@ type FriendCard = {
   id: string;
   name: string;
   avatar: string | null;
+  cover: string | null;
   description: string | null;
   createdAt: string;
   updatedAt: string;
@@ -145,6 +146,7 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
             key={friend.id}
             name={friend.name}
             avatar={friend.avatar}
+            cover={friend.cover}
             description={friend.description}
             timestamp={formatDate(friend.createdAt)}
             stats={`${friend.momentCount} 个时刻`}
