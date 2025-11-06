@@ -86,12 +86,7 @@ export function FriendCreateForm() {
         type="avatar"
       />
 
-      <ImageUploadField
-        label="封面"
-        value={cover}
-        onChange={(url) => setCover(url)}
-        type="cover"
-      />
+      <ImageUploadField label="封面" value={cover} onChange={(url) => setCover(url)} type="cover" />
 
       <div>
         <label

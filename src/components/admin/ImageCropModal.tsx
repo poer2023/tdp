@@ -45,9 +45,9 @@ export function ImageCropModal({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80">
-      <div className="w-full max-w-2xl mx-4">
+      <div className="mx-4 w-full max-w-2xl">
         {/* 裁剪区域 */}
-        <div className="relative h-[500px] bg-zinc-900 rounded-t-2xl overflow-hidden">
+        <div className="relative h-[500px] overflow-hidden rounded-t-2xl bg-zinc-900">
           <Cropper
             image={imageSrc}
             crop={crop}
@@ -62,12 +62,10 @@ export function ImageCropModal({
         </div>
 
         {/* 控制面板 */}
-        <div className="bg-white dark:bg-zinc-900 rounded-b-2xl p-6 space-y-4">
+        <div className="space-y-4 rounded-b-2xl bg-white p-6 dark:bg-zinc-900">
           {/* 缩放滑块 */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              缩放
-            </label>
+            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">缩放</label>
             <input
               type="range"
               min={1}
@@ -75,7 +73,7 @@ export function ImageCropModal({
               step={0.1}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer slider"
+              className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-zinc-200 dark:bg-zinc-700"
             />
           </div>
 
@@ -85,7 +83,7 @@ export function ImageCropModal({
               type="button"
               onClick={onCancel}
               disabled={isProcessing}
-              className="px-6 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-xl bg-zinc-100 px-6 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
             >
               取消
             </button>
@@ -93,7 +91,7 @@ export function ImageCropModal({
               type="button"
               onClick={handleConfirm}
               disabled={isProcessing}
-              className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isProcessing ? "处理中..." : "确认裁剪"}
             </button>

@@ -120,35 +120,27 @@ export function ImageUploadField({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">{label}</label>
 
       {/* 预览区域 */}
       {value ? (
-        <div className="relative inline-block group">
-          <div className="relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-zinc-200 dark:border-zinc-700">
-            <Image
-              src={value}
-              alt={label}
-              fill
-              className="object-cover"
-              unoptimized
-            />
+        <div className="group relative inline-block">
+          <div className="relative h-32 w-32 overflow-hidden rounded-2xl border-2 border-zinc-200 dark:border-zinc-700">
+            <Image src={value} alt={label} fill className="object-cover" unoptimized />
           </div>
           {/* 删除按钮 */}
           <button
             type="button"
             onClick={handleRemove}
-            className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
           >
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </button>
           {/* 更换按钮 */}
           <button
             type="button"
             onClick={handleButtonClick}
-            className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-sm font-medium rounded-2xl"
+            className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50 text-sm font-medium text-white opacity-0 transition-opacity group-hover:opacity-100"
           >
             更换图片
           </button>
@@ -159,16 +151,16 @@ export function ImageUploadField({
           type="button"
           onClick={handleButtonClick}
           disabled={isUploading}
-          className="w-32 h-32 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-2xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 dark:hover:border-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex h-32 w-32 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-zinc-300 transition-colors hover:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:hover:border-blue-500"
         >
           {isUploading ? (
             <>
-              <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
               <span className="text-xs text-zinc-500">上传中...</span>
             </>
           ) : (
             <>
-              <Upload className="w-6 h-6 text-zinc-400" />
+              <Upload className="h-6 w-6 text-zinc-400" />
               <span className="text-xs text-zinc-500">选择图片</span>
             </>
           )}
@@ -185,9 +177,7 @@ export function ImageUploadField({
       />
 
       {/* 错误提示 */}
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {/* 提示文本 */}
       <p className="text-xs text-zinc-500 dark:text-zinc-400">
