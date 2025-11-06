@@ -48,7 +48,7 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const image = formData.get("image") as File | null;
-    const type = (formData.get("type") as string | null) ?? "avatar"; // 'avatar' or 'cover'
+    const _type = (formData.get("type") as string | null) ?? "avatar"; // 'avatar' or 'cover'
 
     if (!image) {
       return NextResponse.json({ error: "Missing image file" }, { status: 400 });

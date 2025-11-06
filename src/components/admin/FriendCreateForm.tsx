@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useActionState, useState } from "react";
+import { useEffect, useRef, useActionState, useState, startTransition } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { createFriendFormAction, type CreateFriendFormState } from "@/app/admin/friends/actions";
@@ -30,8 +30,10 @@ export function FriendCreateForm() {
   useEffect(() => {
     if (state.success) {
       formRef.current?.reset();
-      setAvatar("");
-      setCover("");
+      startTransition(() => {
+        setAvatar("");
+        setCover("");
+      });
     }
   }, [state.success]);
 
