@@ -29,6 +29,7 @@ export default async function FriendEditPage({ params }: PageProps) {
     id: friend.id,
     name: friend.name,
     avatar: friend.avatar ?? null,
+    cover: friend.cover ?? null,
     description: friend.description ?? null,
   };
 

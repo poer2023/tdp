@@ -14,12 +14,14 @@ import {
   type FriendProfileFormState,
   updateFriendPassphraseAction,
 } from "@/app/admin/friends/actions";
+import { ImageUploadField } from "./ImageUploadField";
 
 interface FriendEditFormProps {
   friend: {
     id: string;
     name: string;
     avatar: string | null;
+    cover: string | null;
     description: string | null;
   };
 }
@@ -46,6 +48,8 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
   const [passphrase, setPassphrase] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const resetPassphraseAction = updateFriendPassphraseAction.bind(null, friend.id);
+  const [avatar, setAvatar] = useState<string>(friend.avatar ?? "");
+  const [cover, setCover] = useState<string>(friend.cover ?? "");
 
   useEffect(() => {
     if (state.success) {
@@ -89,18 +93,23 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
           />
         </div>
 
-        <div>
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="avatar">
-            头像 URL
-          </label>
-          <input
-            id="avatar"
-            name="avatar"
-            defaultValue={friend.avatar ?? ""}
-            placeholder="https://example.com/avatar.jpg"
-            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-          />
-        </div>
+        {/* 隐藏字段用于传递上传的图片 URL */}
+        <input type="hidden" name="avatar" value={avatar} />
+        <input type="hidden" name="cover" value={cover} />
+
+        <ImageUploadField
+          label="头像"
+          value={avatar}
+          onChange={(url) => setAvatar(url)}
+          type="avatar"
+        />
+
+        <ImageUploadField
+          label="封面"
+          value={cover}
+          onChange={(url) => setCover(url)}
+          type="cover"
+        />
 
         <div>
           <label

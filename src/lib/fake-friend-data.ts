@@ -24,6 +24,7 @@ export function generateFakeFriend(passphrase: string): Friend {
     description: "这是一个神秘的朋友空间",
     createdAt: new Date(),
     updatedAt: new Date(),
+    cover: null,
   };
 }
 

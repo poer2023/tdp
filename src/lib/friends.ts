@@ -6,12 +6,14 @@ export interface CreateFriendInput {
   name: string;
   passphrase: string;
   avatar?: string | null;
+  cover?: string | null;
   description?: string | null;
 }
 
 export interface UpdateFriendInput {
   name?: string;
   avatar?: string | null;
+  cover?: string | null;
   description?: string | null;
 }
 
@@ -47,6 +49,7 @@ export async function createFriend(input: CreateFriendInput): Promise<Friend> {
       name: input.name,
       accessToken: hashedPassphrase,
       avatar: input.avatar,
+      cover: input.cover,
       description: input.description,
     },
   });
@@ -60,10 +63,21 @@ export function getFriendById(id: string): Promise<Friend | null> {
 }
 
 /**
- * 列出所有朋友
+ * 列出所有朋友（包含私密时刻数量统计）
  */
-export function listFriends(): Promise<Friend[]> {
-  return prisma.friend.findMany({ orderBy: { createdAt: "desc" } });
+export async function listFriends() {
+  const friends = await prisma.friend.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      _count: {
+        select: {
+          privateMoments: true,
+        },
+      },
+    },
+  });
+
+  return friends;
 }
 
 /**

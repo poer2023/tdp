@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useActionState } from "react";
+import { useEffect, useRef, useActionState, useState, startTransition } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { createFriendFormAction, type CreateFriendFormState } from "@/app/admin/friends/actions";
+import { ImageUploadField } from "./ImageUploadField";
 
 const initialState: CreateFriendFormState = { success: false };
 
@@ -23,10 +24,16 @@ function SubmitButton() {
 export function FriendCreateForm() {
   const formRef = useRef<HTMLFormElement | null>(null);
   const [state, formAction] = useActionState(createFriendFormAction, initialState);
+  const [avatar, setAvatar] = useState<string>("");
+  const [cover, setCover] = useState<string>("");
 
   useEffect(() => {
     if (state.success) {
       formRef.current?.reset();
+      startTransition(() => {
+        setAvatar("");
+        setCover("");
+      });
     }
   }, [state.success]);
 
@@ -68,18 +75,18 @@ export function FriendCreateForm() {
         </p>
       </div>
 
-      <div>
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="avatar">
-          头像 URL（可选）
-        </label>
-        <input
-          id="avatar"
-          name="avatar"
-          type="url"
-          placeholder="https://example.com/avatar.jpg"
-          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-        />
-      </div>
+      {/* 隐藏字段用于传递上传的图片 URL */}
+      <input type="hidden" name="avatar" value={avatar} />
+      <input type="hidden" name="cover" value={cover} />
+
+      <ImageUploadField
+        label="头像"
+        value={avatar}
+        onChange={(url) => setAvatar(url)}
+        type="avatar"
+      />
+
+      <ImageUploadField label="封面" value={cover} onChange={(url) => setCover(url)} type="cover" />
 
       <div>
         <label

@@ -105,6 +105,7 @@
     "prisma": "6.18.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-easy-crop": "5.5.3",
     "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
     "recharts": "^3.3.0",
