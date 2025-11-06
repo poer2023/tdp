@@ -354,7 +354,10 @@ export async function getRecentActivities(limit = 4): Promise<RecentActivity[]> 
 /**
  * 将 PublicPost 转换为 Blog8 组件所需的格式
  */
-export function toBlog8Post(post: PublicPost, locale: string = "en"): {
+export function toBlog8Post(
+  post: PublicPost,
+  locale: string = "en"
+): {
   id: string;
   title: string;
   summary: string;

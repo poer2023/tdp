@@ -30,12 +30,10 @@ const Blog8 = ({
     <section className="py-32">
       <div className="container mx-auto max-w-6xl">
         <div className="mb-16 text-center">
-          <h2 className="mx-auto mb-6 text-pretty text-3xl font-semibold md:text-4xl lg:max-w-3xl">
+          <h2 className="mx-auto mb-6 text-3xl font-semibold text-pretty md:text-4xl lg:max-w-3xl">
             {heading}
           </h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
-            {description}
-          </p>
+          <p className="text-muted-foreground mx-auto max-w-2xl md:text-lg">{description}</p>
         </div>
 
         <div className="flex flex-col gap-y-10 md:gap-y-16 lg:gap-y-20">
@@ -46,8 +44,10 @@ const Blog8 = ({
             >
               <div className="sm:col-span-5">
                 <div className="mb-4 md:mb-6">
-                  <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wider text-muted-foreground md:gap-5 lg:gap-6">
-                    {post.tags?.map((tag) => <span key={tag}>{tag}</span>)}
+                  <div className="text-muted-foreground flex flex-wrap gap-3 text-xs tracking-wider uppercase md:gap-5 lg:gap-6">
+                    {post.tags?.map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
                   </div>
                 </div>
                 <h3 className="text-xl font-semibold md:text-2xl lg:text-3xl">
@@ -55,24 +55,18 @@ const Blog8 = ({
                     {post.title}
                   </Link>
                 </h3>
-                <p className="mt-4 text-muted-foreground md:mt-5">
-                  {post.summary}
-                </p>
+                <p className="text-muted-foreground mt-4 md:mt-5">{post.summary}</p>
                 <div className="mt-6 flex items-center space-x-4 text-sm md:mt-8">
                   <span className="text-muted-foreground">{post.author}</span>
                   <span className="text-muted-foreground">•</span>
-                  <span className="text-muted-foreground">
-                    {post.published}
-                  </span>
+                  <span className="text-muted-foreground">{post.published}</span>
                 </div>
                 <div className="mt-6 flex items-center space-x-2 md:mt-8">
                   <Link
                     href={post.url}
                     className="inline-flex items-center font-semibold hover:underline md:text-base"
                   >
-                    <span>
-                      {locale === "zh" ? "阅读更多" : "Read more"}
-                    </span>
+                    <span>{locale === "zh" ? "阅读更多" : "Read more"}</span>
                     <ArrowRight className="ml-2 size-4 transition-transform hover:translate-x-1" />
                   </Link>
                 </div>
@@ -90,7 +84,7 @@ const Blog8 = ({
                         priority={false}
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-muted">
+                      <div className="bg-muted flex h-full w-full items-center justify-center">
                         <span className="text-muted-foreground">
                           {locale === "zh" ? "暂无图片" : "No image"}
                         </span>

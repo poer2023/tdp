@@ -33,14 +33,7 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
     ? "探索关于现代 Web 开发、UI 设计和组件驱动架构的最新见解与教程。"
     : "Discover the latest insights and tutorials about modern web development, UI design, and component-driven architecture.";
 
-  return (
-    <Blog8
-      heading={heading}
-      description={description}
-      posts={blog8Posts}
-      locale={l}
-    />
-  );
+  return <Blog8 heading={heading} description={description} posts={blog8Posts} locale={l} />;
 }
 
 export function generateStaticParams() {
