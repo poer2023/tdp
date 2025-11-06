@@ -14,8 +14,8 @@ export interface ProfileCardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
   ({ className, name, avatar, cover, description, timestamp, stats, actions, ...props }, ref) => {
-    // 默认图片
-    const defaultImage = "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg";
+    // 默认图片 - 使用项目本地的 Christoph Nolte 摄影作品
+    const defaultImage = "/images/default-profile.webp";
     const avatarUrl = avatar || defaultImage;
     const coverUrl = cover || avatar || defaultImage;
 
