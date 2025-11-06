@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Copy, Trash2, Download } from "lucide-react";
+import { Trash2, Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -65,7 +65,7 @@ export function QuickActionsToolbar({
             <AlertDialogHeader>
               <AlertDialogTitle>应用批量设置到所有图片?</AlertDialogTitle>
               <AlertDialogDescription>
-                这将使用"批量设置"标签页中的标题、描述、分类和文章ID,
+                这将使用&quot;批量设置&quot;标签页中的标题、描述、分类和文章ID,
                 覆盖所有图片当前的单独编辑内容。
                 <br />
                 <br />
@@ -98,7 +98,7 @@ export function QuickActionsToolbar({
             <AlertDialogHeader>
               <AlertDialogTitle>清除所有单独设置?</AlertDialogTitle>
               <AlertDialogDescription>
-                这将清空所有图片的标题、描述,并将分类重置为"原创",
+                这将清空所有图片的标题、描述,并将分类重置为&quot;原创&quot;,
                 清除所有文章关联。
                 <br />
                 <br />

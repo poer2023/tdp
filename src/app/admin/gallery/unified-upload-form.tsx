@@ -568,7 +568,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                 {/* 提示信息 */}
                 <Alert>
                   <AlertDescription className="text-xs">
-                    💡 <strong>提示</strong>：可以为每张图片设置不同的元数据。使用"复制到全部"按钮快速应用某张图片的设置,或使用"应用批量设置"将批量编辑的内容作为起点。
+                    💡 <strong>提示</strong>：可以为每张图片设置不同的元数据。使用&quot;复制到全部&quot;按钮快速应用某张图片的设置,或使用&quot;应用批量设置&quot;将批量编辑的内容作为起点。
                   </AlertDescription>
                 </Alert>
               </TabsContent>

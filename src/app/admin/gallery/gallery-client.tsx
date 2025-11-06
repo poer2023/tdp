@@ -10,7 +10,7 @@ type GalleryClientProps = {
   posts: PostSummary[];
 };
 
-export function AdminGalleryClient({ images, posts }: GalleryClientProps) {
+export function AdminGalleryClient({ images, posts: _posts }: GalleryClientProps) {
   return (
     <div className="space-y-6">
       <header className="space-y-2">
