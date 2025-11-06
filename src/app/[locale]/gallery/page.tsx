@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { listGalleryImages } from "@/lib/gallery";
 import type { GalleryCategory } from "@/lib/gallery";
-import { GalleryMasonry } from "@/components/gallery-masonry";
+import { convertGalleryImageToItemData } from "@/lib/gallery-utils";
+import { Gallery } from "@/components/ui/react-tailwind-image-gallery";
 import { GalleryCategoryTabs } from "@/components/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
 
@@ -66,9 +67,12 @@ export default async function LocalizedGalleryPage({ params, searchParams }: Pag
         </nav>
       )}
 
-      {/* Masonry grid with whitespace margins */}
+      {/* Gallery grid with hover effects */}
       <section className="rounded-xl bg-white p-0 dark:bg-transparent">
-        <GalleryMasonry images={images} locale={l} />
+        <Gallery
+          data={images.map(convertGalleryImageToItemData)}
+          locale={l}
+        />
       </section>
 
       {/* Footer */}
