@@ -3,24 +3,50 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { startTransition, useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
+import { Menu, Info, FileText } from "lucide-react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
+
+interface NavItem {
+  href: string;
+  label: string;
+  match: string;
+  exact: boolean;
+  icon?: React.ReactNode;
+  description?: string;
+  items?: {
+    href: string;
+    label: string;
+    match: string;
+    icon?: React.ReactNode;
+    description?: string;
+  }[];
+}
 
 export function MainNav() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   // Detect current locale from pathname using utility function
   const locale = getLocaleFromPathname(pathname) ?? "en";
 
-  // Ensure component is mounted (for SSR compatibility)
-  useEffect(() => {
-    startTransition(() => setMounted(true));
-  }, []);
-
-  const links = [
+  const links: NavItem[] = [
     {
       href: localePath(locale, "/posts"),
       label: locale === "zh" ? "博客" : "Blog",
@@ -31,7 +57,7 @@ export function MainNav() {
       href: localePath(locale, "/m"),
       label: locale === "zh" ? "瞬间" : "Moments",
       match: "/m",
-      exact: false, // 包含子路径（如 /m/friends）以支持标签页导航
+      exact: false,
     },
     {
       href: localePath(locale, "/gallery"),
@@ -40,16 +66,26 @@ export function MainNav() {
       exact: false,
     },
     {
-      href: localePath(locale, "/about"),
+      href: "#",
       label: locale === "zh" ? "关于" : "About",
       match: "/about",
       exact: false,
-    },
-    {
-      href: localePath(locale, "/about/changelog"),
-      label: locale === "zh" ? "开发日志" : "Changelog",
-      match: "/about/changelog",
-      exact: false,
+      items: [
+        {
+          href: localePath(locale, "/about"),
+          label: locale === "zh" ? "关于" : "About",
+          match: "/about",
+          icon: <Info className="size-5 shrink-0" />,
+          description: locale === "zh" ? "了解更多关于我们的信息" : "Learn more about us",
+        },
+        {
+          href: localePath(locale, "/about/changelog"),
+          label: locale === "zh" ? "开发日志" : "Changelog",
+          match: "/about/changelog",
+          icon: <FileText className="size-5 shrink-0" />,
+          description: locale === "zh" ? "查看项目更新日志" : "View project changelog",
+        },
+      ],
     },
   ];
 
@@ -58,124 +94,184 @@ export function MainNav() {
     startTransition(() => setMobileMenuOpen(false));
   }, [pathname]);
 
-  // Close mobile menu on Escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMobileMenuOpen(false);
-    };
-    if (mobileMenuOpen) {
-      document.addEventListener("keydown", handleEscape);
-      // Prevent body scroll when menu is open
-      document.body.style.overflow = "hidden";
+  const renderDesktopMenuItem = (link: NavItem) => {
+    if (link.items) {
+      // Render dropdown menu for items with subitems
+      return (
+        <NavigationMenuItem key={link.label}>
+          <NavigationMenuTrigger className="text-sm leading-6 text-zinc-600 transition-colors hover:text-zinc-900 data-[state=open]:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 dark:data-[state=open]:text-zinc-100">
+            {link.label}
+          </NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <ul className="w-80 p-3">
+              {link.items.map((subItem) => {
+                const isActive = pathname.includes(subItem.match);
+                return (
+                  <li key={subItem.href}>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href={subItem.href}
+                        className={cn(
+                          "flex gap-4 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
+                          isActive && "bg-zinc-100 dark:bg-zinc-800"
+                        )}
+                      >
+                        {subItem.icon}
+                        <div>
+                          <div className="text-sm font-semibold">{subItem.label}</div>
+                          {subItem.description && (
+                            <p className="text-sm leading-snug text-zinc-600 dark:text-zinc-400">
+                              {subItem.description}
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                );
+              })}
+            </ul>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+      );
     }
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "";
-    };
-  }, [mobileMenuOpen]);
+
+    // Render simple link
+    const isActive = link.exact
+      ? pathname === link.href || pathname === localePath(locale, link.match)
+      : pathname.includes(link.match);
+
+    return (
+      <Link
+        key={link.href}
+        href={link.href}
+        className={cn(
+          "text-sm leading-6 transition-colors",
+          isActive
+            ? "font-medium text-zinc-900 dark:text-zinc-100"
+            : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+        )}
+        aria-current={isActive ? "page" : undefined}
+      >
+        {link.label}
+      </Link>
+    );
+  };
+
+  const renderMobileMenuItem = (link: NavItem) => {
+    if (link.items) {
+      // Render accordion for items with subitems
+      return (
+        <AccordionItem key={link.label} value={link.label} className="border-b-0">
+          <AccordionTrigger className="py-0 font-semibold text-zinc-700 hover:no-underline dark:text-zinc-200">
+            {link.label}
+          </AccordionTrigger>
+          <AccordionContent className="mt-2">
+            {link.items.map((subItem) => {
+              const isActive = pathname.includes(subItem.match);
+              return (
+                <Link
+                  key={subItem.href}
+                  href={subItem.href}
+                  className={cn(
+                    "flex gap-4 rounded-md p-3 leading-none transition-colors outline-none select-none hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                    isActive && "bg-zinc-100 dark:bg-zinc-800"
+                  )}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {subItem.icon}
+                  <div>
+                    <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {subItem.label}
+                    </div>
+                    {subItem.description && (
+                      <p className="text-sm leading-snug text-zinc-600 dark:text-zinc-400">
+                        {subItem.description}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </AccordionContent>
+        </AccordionItem>
+      );
+    }
+
+    // Render simple link
+    const isActive = link.exact
+      ? pathname === link.href || pathname === localePath(locale, link.match)
+      : pathname.includes(link.match);
+
+    return (
+      <Link
+        key={link.href}
+        href={link.href}
+        className={cn(
+          "rounded-lg px-4 py-3 text-base font-medium transition-all",
+          isActive
+            ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
+            : "text-zinc-700 hover:bg-zinc-100/70 hover:text-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100"
+        )}
+        aria-current={isActive ? "page" : undefined}
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        {link.label}
+      </Link>
+    );
+  };
 
   return (
-    <>
-      <nav className="flex items-center gap-6" role="navigation" aria-label="Main navigation">
-        <Link
-          href={locale === "zh" ? "/zh" : "/en"}
-          className="text-lg font-semibold text-zinc-900 dark:text-zinc-100"
-          aria-label="Home"
-        >
-          ZHI
-        </Link>
+    <nav className="flex items-center gap-6" role="navigation" aria-label="Main navigation">
+      <Link
+        href={locale === "zh" ? "/zh" : "/en"}
+        className="text-lg font-semibold text-zinc-900 dark:text-zinc-100"
+        aria-label="Home"
+      >
+        ZHI
+      </Link>
 
-        {/* Desktop Navigation - hidden on mobile */}
-        <div className="hidden items-center gap-6 md:flex">
-          {links.map((link) => {
-            const isActive = link.exact
-              ? pathname === link.href || pathname === localePath(locale, link.match)
-              : pathname.includes(link.match);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm leading-6 transition-colors ${
-                  isActive
-                    ? "font-medium text-zinc-900 dark:text-zinc-100"
-                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                }`}
-                aria-current={isActive ? "page" : undefined}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </div>
+      {/* Desktop Navigation - hidden on mobile */}
+      <div className="hidden items-center gap-6 md:flex">
+        <NavigationMenu>
+          <NavigationMenuList>
+            {links.map((link) => renderDesktopMenuItem(link))}
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>
 
-        {/* Mobile Hamburger Button */}
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 md:hidden dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-          onClick={() => setMobileMenuOpen(true)}
-          aria-label={locale === "zh" ? "打开菜单" : "Open menu"}
-          aria-expanded={mobileMenuOpen}
-        >
-          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
-      </nav>
-
-      {/* Mobile Menu Drawer - rendered via Portal to document.body */}
-      {mounted &&
-        createPortal(
-          <>
-            {/* Backdrop overlay */}
-            <div
-              className={`fixed inset-0 z-[9998] bg-black/15 transition-opacity duration-300 ease-out md:hidden dark:bg-black/25 ${
-                mobileMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-              aria-hidden="true"
-            />
-
-            {/* Drawer panel */}
-            <div
-              className={`fixed top-0 right-0 left-0 z-[9999] overflow-y-auto overscroll-contain bg-white/30 px-4 py-3 shadow-lg backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 ease-out md:hidden dark:bg-zinc-900/30 ${
-                mobileMenuOpen ? "translate-y-0" : "-translate-y-full"
-              }`}
-              role="dialog"
-              aria-modal="true"
-              aria-label={locale === "zh" ? "导航菜单" : "Navigation menu"}
+      {/* Mobile Menu Sheet */}
+      <div className="md:hidden">
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              aria-label={locale === "zh" ? "打开菜单" : "Open menu"}
             >
-              {/* Mobile navigation links */}
-              <nav className="flex flex-col gap-2 pb-2">
-                {links.map((link) => {
-                  const isActive = link.exact
-                    ? pathname === link.href || pathname === localePath(locale, link.match)
-                    : pathname.includes(link.match);
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={`rounded-lg px-4 py-3 text-base font-medium transition-all ${
-                        isActive
-                          ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
-                          : "text-zinc-700 hover:bg-zinc-100/70 hover:text-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100"
-                      }`}
-                      aria-current={isActive ? "page" : undefined}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  );
-                })}
-              </nav>
+              <Menu className="h-6 w-6" />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="top" className="overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>
+                <Link
+                  href={locale === "zh" ? "/zh" : "/en"}
+                  className="text-lg font-semibold"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  ZHI
+                </Link>
+              </SheetTitle>
+            </SheetHeader>
+            <div className="my-6 flex flex-col gap-4">
+              <Accordion type="single" collapsible className="flex w-full flex-col gap-4">
+                {links.map((link) => renderMobileMenuItem(link))}
+              </Accordion>
             </div>
-          </>,
-          document.body
-        )}
-    </>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </nav>
   );
 }

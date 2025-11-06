@@ -350,3 +350,48 @@ export async function getRecentActivities(limit = 4): Promise<RecentActivity[]> 
     return [];
   }
 }
+
+/**
+ * 将 PublicPost 转换为 Blog8 组件所需的格式
+ */
+export function toBlog8Post(
+  post: PublicPost,
+  locale: string = "en"
+): {
+  id: string;
+  title: string;
+  summary: string;
+  author: string;
+  published: string;
+  url: string;
+  image: string;
+  tags?: string[];
+} {
+  const formatDate = (isoString: string | null) => {
+    if (!isoString) return locale === "zh" ? "未发布" : "Not published";
+    const date = new Date(isoString);
+    if (locale === "zh") {
+      return date.toLocaleDateString("zh-CN", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  return {
+    id: post.id,
+    title: post.title,
+    summary: post.excerpt,
+    author: post.author?.name || (locale === "zh" ? "匿名" : "Anonymous"),
+    published: formatDate(post.publishedAt),
+    url: `/${locale}/posts/${post.slug}`,
+    image: post.coverImagePath || "/images/placeholder-cover.svg",
+    tags: post.tags,
+  };
+}
