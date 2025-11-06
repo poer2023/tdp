@@ -38,12 +38,8 @@ export function QuickActionsToolbar({
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
       {/* 左侧: 提示信息 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          快捷操作
-        </span>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">
-          共 {imageCount} 张图片
-        </span>
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">快捷操作</span>
+        <span className="text-xs text-zinc-500 dark:text-zinc-400">共 {imageCount} 张图片</span>
       </div>
 
       {/* 右侧: 操作按钮 */}
@@ -51,12 +47,7 @@ export function QuickActionsToolbar({
         {/* 应用批量设置 */}
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={disabled}
-            >
+            <Button type="button" variant="outline" size="sm" disabled={disabled}>
               <Download className="mr-1 h-3 w-3" />
               应用批量设置
             </Button>
@@ -74,9 +65,7 @@ export function QuickActionsToolbar({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>取消</AlertDialogCancel>
-              <AlertDialogAction onClick={onApplyBulk}>
-                确认应用
-              </AlertDialogAction>
+              <AlertDialogAction onClick={onApplyBulk}>确认应用</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -84,12 +73,7 @@ export function QuickActionsToolbar({
         {/* 清除所有 */}
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={disabled}
-            >
+            <Button type="button" variant="outline" size="sm" disabled={disabled}>
               <Trash2 className="mr-1 h-3 w-3" />
               清除所有
             </Button>
@@ -98,8 +82,7 @@ export function QuickActionsToolbar({
             <AlertDialogHeader>
               <AlertDialogTitle>清除所有单独设置?</AlertDialogTitle>
               <AlertDialogDescription>
-                这将清空所有图片的标题、描述,并将分类重置为&quot;原创&quot;,
-                清除所有文章关联。
+                这将清空所有图片的标题、描述,并将分类重置为&quot;原创&quot;, 清除所有文章关联。
                 <br />
                 <br />
                 <strong>此操作不可撤销。</strong>

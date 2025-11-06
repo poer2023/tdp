@@ -49,7 +49,7 @@ export function IndividualEditCard({
   disabled = false,
 }: IndividualEditCardProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800 md:flex-row md:items-start">
+    <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 md:flex-row md:items-start dark:border-zinc-800">
       {/* 左侧: 图片预览 */}
       <div className="flex-shrink-0">
         <div className="relative h-24 w-24 overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-900">
@@ -60,16 +60,13 @@ export function IndividualEditCard({
           />
           {/* Live Photo 标识 */}
           {file.isLivePhoto && (
-            <Badge
-              variant="secondary"
-              className="absolute bottom-1 left-1 text-xs"
-            >
+            <Badge variant="secondary" className="absolute bottom-1 left-1 text-xs">
               <Video size={10} className="mr-1" />
               Live
             </Badge>
           )}
         </div>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 truncate max-w-[96px]">
+        <p className="mt-1 max-w-[96px] truncate text-xs text-zinc-500 dark:text-zinc-400">
           {file.file.name}
         </p>
       </div>
@@ -101,9 +98,7 @@ export function IndividualEditCard({
             </Label>
             <Select
               value={metadata.category}
-              onValueChange={(value: GalleryCategory) =>
-                onMetadataChange({ category: value })
-              }
+              onValueChange={(value: GalleryCategory) => onMetadataChange({ category: value })}
               disabled={disabled}
             >
               <SelectTrigger id={`category-${file.id}`} className="h-8 text-sm">
@@ -132,7 +127,7 @@ export function IndividualEditCard({
               onMetadataChange({ description: e.target.value })
             }
             disabled={disabled}
-            className="text-sm resize-none"
+            className="resize-none text-sm"
           />
         </div>
 

@@ -14,13 +14,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   Accordion,
   AccordionContent,
@@ -105,7 +99,7 @@ export function MainNav() {
       // Render dropdown menu for items with subitems
       return (
         <NavigationMenuItem key={link.label}>
-          <NavigationMenuTrigger className="text-sm leading-6 transition-colors text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 data-[state=open]:text-zinc-900 dark:data-[state=open]:text-zinc-100">
+          <NavigationMenuTrigger className="text-sm leading-6 text-zinc-600 transition-colors hover:text-zinc-900 data-[state=open]:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 dark:data-[state=open]:text-zinc-100">
             {link.label}
           </NavigationMenuTrigger>
           <NavigationMenuContent>
@@ -118,7 +112,7 @@ export function MainNav() {
                       <Link
                         href={subItem.href}
                         className={cn(
-                          "flex select-none gap-4 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
+                          "flex gap-4 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
                           isActive && "bg-zinc-100 dark:bg-zinc-800"
                         )}
                       >
@@ -169,7 +163,7 @@ export function MainNav() {
       // Render accordion for items with subitems
       return (
         <AccordionItem key={link.label} value={link.label} className="border-b-0">
-          <AccordionTrigger className="py-0 font-semibold hover:no-underline text-zinc-700 dark:text-zinc-200">
+          <AccordionTrigger className="py-0 font-semibold text-zinc-700 hover:no-underline dark:text-zinc-200">
             {link.label}
           </AccordionTrigger>
           <AccordionContent className="mt-2">
@@ -180,7 +174,7 @@ export function MainNav() {
                   key={subItem.href}
                   href={subItem.href}
                   className={cn(
-                    "flex select-none gap-4 rounded-md p-3 leading-none outline-none transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                    "flex gap-4 rounded-md p-3 leading-none transition-colors outline-none select-none hover:bg-zinc-100 dark:hover:bg-zinc-800",
                     isActive && "bg-zinc-100 dark:bg-zinc-800"
                   )}
                   onClick={() => setMobileMenuOpen(false)}

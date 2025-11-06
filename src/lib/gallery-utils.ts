@@ -26,15 +26,12 @@ export interface GalleryItemData {
  * @param image - GalleryImage from database
  * @returns GalleryItemData for UI rendering
  */
-export function convertGalleryImageToItemData(
-  image: GalleryImage
-): GalleryItemData {
+export function convertGalleryImageToItemData(image: GalleryImage): GalleryItemData {
   // Prioritize thumbnail paths for better performance
   const src = image.mediumPath || image.smallThumbPath || image.filePath;
 
   // Calculate if image is wide (aspect ratio > 1.5)
-  const isWide =
-    image.width && image.height && image.width / image.height > 1.5;
+  const isWide = image.width && image.height && image.width / image.height > 1.5;
 
   // Wide images span 2 columns on small+ screens
   const span = isWide ? "sm:col-span-2" : "col-span-1";

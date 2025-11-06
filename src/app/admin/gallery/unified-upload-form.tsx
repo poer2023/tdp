@@ -5,13 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -67,9 +61,9 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
   });
 
   // 单独编辑元数据
-  const [individualMetadata, setIndividualMetadata] = React.useState<
-    Map<string, FileMetadata>
-  >(new Map());
+  const [individualMetadata, setIndividualMetadata] = React.useState<Map<string, FileMetadata>>(
+    new Map()
+  );
 
   // 当前活动标签页
   const [activeTab, setActiveTab] = React.useState<"bulk" | "individual">("bulk");
@@ -92,11 +86,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
       error?: string;
     }
   ) => {
-    setFiles((prev) =>
-      prev.map((file) =>
-        file.id === id ? { ...file, ...updates } : file
-      )
-    );
+    setFiles((prev) => prev.map((file) => (file.id === id ? { ...file, ...updates } : file)));
   };
 
   /**
@@ -121,9 +111,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
         });
 
       // 移除已删除文件的元数据
-      const currentFileIds = new Set(
-        files.filter((f) => f.type === "image").map((f) => f.id)
-      );
+      const currentFileIds = new Set(files.filter((f) => f.type === "image").map((f) => f.id));
       for (const id of newMetadata.keys()) {
         if (!currentFileIds.has(id)) {
           newMetadata.delete(id);
@@ -137,10 +125,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
   /**
    * 更新单个图片的元数据
    */
-  const updateIndividualMetadata = (
-    fileId: string,
-    updates: Partial<FileMetadata>
-  ) => {
+  const updateIndividualMetadata = (fileId: string, updates: Partial<FileMetadata>) => {
     setIndividualMetadata((prev) => {
       const newMap = new Map(prev);
       const current = newMap.get(fileId);
@@ -318,9 +303,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
 
     try {
       const imageFiles = files.filter((f) => f.type === "image");
-      const videoFilesMap = new Map(
-        files.filter((f) => f.type === "video").map((f) => [f.id, f])
-      );
+      const videoFilesMap = new Map(files.filter((f) => f.type === "video").map((f) => [f.id, f]));
 
       // 并发上传控制
       const CONCURRENCY = 3;
@@ -345,9 +328,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
 
           // 根据活动标签页选择元数据
           const metadata =
-            activeTab === "individual"
-              ? individualMetadata.get(imageFile.id)
-              : undefined; // undefined 会使用 bulkMetadata
+            activeTab === "individual" ? individualMetadata.get(imageFile.id) : undefined; // undefined 会使用 bulkMetadata
 
           return uploadSingleFile(imageFile, pairedVideo, metadata);
         });
@@ -399,9 +380,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
   };
 
   const imageCount = files.filter((f) => f.type === "image").length;
-  const livePhotoCount = files.filter(
-    (f) => f.isLivePhoto && f.type === "image"
-  ).length;
+  const livePhotoCount = files.filter((f) => f.isLivePhoto && f.type === "image").length;
 
   return (
     <div className={className}>
@@ -417,7 +396,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-6">
             {/* 左侧：图片上传器 + 预览（占2列，lg屏幕sticky） */}
             <div className="lg:col-span-2">
-              <div className="lg:sticky lg:top-4 space-y-3">
+              <div className="space-y-3 lg:sticky lg:top-4">
                 <EnhancedImageUploader
                   files={files}
                   onChange={setFiles}
@@ -432,173 +411,176 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
             {/* 右侧：元数据编辑（占3列） */}
             <div className="lg:col-span-3">
               {files.length > 0 && (
-                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "bulk" | "individual")} className="w-full">
+                <Tabs
+                  value={activeTab}
+                  onValueChange={(value) => setActiveTab(value as "bulk" | "individual")}
+                  className="w-full"
+                >
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="bulk">批量设置</TabsTrigger>
-                    <TabsTrigger value="individual">
-                      单独编辑
-                    </TabsTrigger>
+                    <TabsTrigger value="individual">单独编辑</TabsTrigger>
                   </TabsList>
 
                   {/* 批量设置 Tab */}
-                  <TabsContent value="bulk" className="space-y-3 mt-3">
-                <div className="grid gap-4 md:grid-cols-2">
-                  {/* 标题 */}
-                  <div className="space-y-2">
-                    <Label htmlFor="bulk-title">标题（可选）</Label>
-                    <Input
-                      id="bulk-title"
-                      placeholder="为所有图片设置相同标题"
-                      value={bulkMetadata.title}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setBulkMetadata((prev) => ({
-                          ...prev,
-                          title: e.target.value,
-                        }))
-                      }
-                      disabled={isUploading}
-                    />
-                  </div>
-
-                  {/* 分类 */}
-                  <div className="space-y-2">
-                    <Label htmlFor="bulk-category">分类</Label>
-                    <Select
-                      value={bulkMetadata.category}
-                      onValueChange={(value: GalleryCategory) =>
-                        setBulkMetadata((prev) => ({
-                          ...prev,
-                          category: value,
-                        }))
-                      }
-                      disabled={isUploading}
-                    >
-                      <SelectTrigger id="bulk-category">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ORIGINAL">原创</SelectItem>
-                        <SelectItem value="REPOST">转发</SelectItem>
-                        <SelectItem value="AI">AI 生成</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* 描述 */}
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="bulk-description">描述（可选）</Label>
-                    <Textarea
-                      id="bulk-description"
-                      placeholder="为所有图片设置相同描述"
-                      rows={3}
-                      value={bulkMetadata.description}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                        setBulkMetadata((prev) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                      disabled={isUploading}
-                    />
-                  </div>
-
-                  {/* 关联文章 ID */}
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="bulk-postId">关联文章 ID（可选）</Label>
-                    <Input
-                      id="bulk-postId"
-                      placeholder="输入文章 ID"
-                      value={bulkMetadata.postId}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setBulkMetadata((prev) => ({
-                          ...prev,
-                          postId: e.target.value,
-                        }))
-                      }
-                      disabled={isUploading}
-                    />
-                  </div>
-                </div>
-
-                {/* 提示信息 */}
-                <Alert>
-                  <AlertDescription className="text-xs">
-                    💡 <strong>自动功能</strong>：上传时将自动提取 EXIF 元数据（拍摄时间、GPS 坐标、相机信息等）并生成缩略图。
-                  </AlertDescription>
-                </Alert>
-              </TabsContent>
-
-              {/* 单独编辑 Tab */}
-              <TabsContent value="individual" className="space-y-3 mt-3">
-                {/* 快捷操作工具栏 */}
-                <QuickActionsToolbar
-                  onApplyBulk={applyBulkToIndividual}
-                  onClearAll={clearAllIndividual}
-                  disabled={isUploading}
-                  imageCount={imageCount}
-                />
-
-                {/* 图片列表 - 自适应高度，最大高度由视口决定 */}
-                <div className="space-y-3 max-h-[calc(100vh-32rem)] overflow-y-auto pr-2">
-                  {files
-                    .filter((f) => f.type === "image")
-                    .map((file) => {
-                      const metadata = individualMetadata.get(file.id) || {
-                        title: "",
-                        description: "",
-                        category: "ORIGINAL" as GalleryCategory,
-                        postId: "",
-                      };
-
-                      return (
-                        <IndividualEditCard
-                          key={file.id}
-                          file={file}
-                          metadata={metadata}
-                          onMetadataChange={(updates) =>
-                            updateIndividualMetadata(file.id, updates)
+                  <TabsContent value="bulk" className="mt-3 space-y-3">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {/* 标题 */}
+                      <div className="space-y-2">
+                        <Label htmlFor="bulk-title">标题（可选）</Label>
+                        <Input
+                          id="bulk-title"
+                          placeholder="为所有图片设置相同标题"
+                          value={bulkMetadata.title}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setBulkMetadata((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
                           }
-                          onCopyToAll={() => copyToAll(file.id)}
                           disabled={isUploading}
                         />
-                      );
-                    })}
-                </div>
+                      </div>
 
-                {/* 提示信息 */}
-                <Alert>
-                  <AlertDescription className="text-xs">
-                    💡 <strong>提示</strong>：可以为每张图片设置不同的元数据。使用&quot;复制到全部&quot;按钮快速应用某张图片的设置,或使用&quot;应用批量设置&quot;将批量编辑的内容作为起点。
-                  </AlertDescription>
+                      {/* 分类 */}
+                      <div className="space-y-2">
+                        <Label htmlFor="bulk-category">分类</Label>
+                        <Select
+                          value={bulkMetadata.category}
+                          onValueChange={(value: GalleryCategory) =>
+                            setBulkMetadata((prev) => ({
+                              ...prev,
+                              category: value,
+                            }))
+                          }
+                          disabled={isUploading}
+                        >
+                          <SelectTrigger id="bulk-category">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="ORIGINAL">原创</SelectItem>
+                            <SelectItem value="REPOST">转发</SelectItem>
+                            <SelectItem value="AI">AI 生成</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* 描述 */}
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="bulk-description">描述（可选）</Label>
+                        <Textarea
+                          id="bulk-description"
+                          placeholder="为所有图片设置相同描述"
+                          rows={3}
+                          value={bulkMetadata.description}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                            setBulkMetadata((prev) => ({
+                              ...prev,
+                              description: e.target.value,
+                            }))
+                          }
+                          disabled={isUploading}
+                        />
+                      </div>
+
+                      {/* 关联文章 ID */}
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="bulk-postId">关联文章 ID（可选）</Label>
+                        <Input
+                          id="bulk-postId"
+                          placeholder="输入文章 ID"
+                          value={bulkMetadata.postId}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setBulkMetadata((prev) => ({
+                              ...prev,
+                              postId: e.target.value,
+                            }))
+                          }
+                          disabled={isUploading}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 提示信息 */}
+                    <Alert>
+                      <AlertDescription className="text-xs">
+                        💡 <strong>自动功能</strong>：上传时将自动提取 EXIF 元数据（拍摄时间、GPS
+                        坐标、相机信息等）并生成缩略图。
+                      </AlertDescription>
+                    </Alert>
+                  </TabsContent>
+
+                  {/* 单独编辑 Tab */}
+                  <TabsContent value="individual" className="mt-3 space-y-3">
+                    {/* 快捷操作工具栏 */}
+                    <QuickActionsToolbar
+                      onApplyBulk={applyBulkToIndividual}
+                      onClearAll={clearAllIndividual}
+                      disabled={isUploading}
+                      imageCount={imageCount}
+                    />
+
+                    {/* 图片列表 - 自适应高度，最大高度由视口决定 */}
+                    <div className="max-h-[calc(100vh-32rem)] space-y-3 overflow-y-auto pr-2">
+                      {files
+                        .filter((f) => f.type === "image")
+                        .map((file) => {
+                          const metadata = individualMetadata.get(file.id) || {
+                            title: "",
+                            description: "",
+                            category: "ORIGINAL" as GalleryCategory,
+                            postId: "",
+                          };
+
+                          return (
+                            <IndividualEditCard
+                              key={file.id}
+                              file={file}
+                              metadata={metadata}
+                              onMetadataChange={(updates) =>
+                                updateIndividualMetadata(file.id, updates)
+                              }
+                              onCopyToAll={() => copyToAll(file.id)}
+                              disabled={isUploading}
+                            />
+                          );
+                        })}
+                    </div>
+
+                    {/* 提示信息 */}
+                    <Alert>
+                      <AlertDescription className="text-xs">
+                        💡 <strong>提示</strong>
+                        ：可以为每张图片设置不同的元数据。使用&quot;复制到全部&quot;按钮快速应用某张图片的设置,或使用&quot;应用批量设置&quot;将批量编辑的内容作为起点。
+                      </AlertDescription>
+                    </Alert>
+                  </TabsContent>
+                </Tabs>
+              )}
+
+              {/* 上传消息 */}
+              {uploadMessage && (
+                <Alert
+                  variant={uploadMessage.type === "error" ? "destructive" : "default"}
+                  className="mt-3"
+                >
+                  <AlertDescription className="text-sm">{uploadMessage.text}</AlertDescription>
                 </Alert>
-              </TabsContent>
-            </Tabs>
-          )}
+              )}
 
-          {/* 上传消息 */}
-          {uploadMessage && (
-            <Alert variant={uploadMessage.type === "error" ? "destructive" : "default"} className="mt-3">
-              <AlertDescription className="text-sm">{uploadMessage.text}</AlertDescription>
-            </Alert>
-          )}
-
-          {/* 上传按钮 */}
-          {files.length > 0 && (
-            <div className="flex items-center justify-between pt-3 mt-3 border-t">
-              <div className="text-xs text-muted-foreground">
-                准备上传 {imageCount} 张图片
-                {livePhotoCount > 0 && ` (包含 ${livePhotoCount} 组 Live Photo)`}
-              </div>
-              <Button
-                onClick={handleUpload}
-                disabled={isUploading}
-                size="default"
-              >
-                {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isUploading ? "上传中..." : "开始上传"}
-              </Button>
-            </div>
-          )}
+              {/* 上传按钮 */}
+              {files.length > 0 && (
+                <div className="mt-3 flex items-center justify-between border-t pt-3">
+                  <div className="text-muted-foreground text-xs">
+                    准备上传 {imageCount} 张图片
+                    {livePhotoCount > 0 && ` (包含 ${livePhotoCount} 组 Live Photo)`}
+                  </div>
+                  <Button onClick={handleUpload} disabled={isUploading} size="default">
+                    {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isUploading ? "上传中..." : "开始上传"}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

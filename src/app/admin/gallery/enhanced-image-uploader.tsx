@@ -40,10 +40,7 @@ interface EnhancedImageUploaderProps {
  * - 预览卡片上显示上传状态和进度
  * - 支持拖拽、移除、状态管理
  */
-export const EnhancedImageUploader = React.forwardRef<
-  HTMLDivElement,
-  EnhancedImageUploaderProps
->(
+export const EnhancedImageUploader = React.forwardRef<HTMLDivElement, EnhancedImageUploaderProps>(
   (
     {
       files,
@@ -156,8 +153,7 @@ export const EnhancedImageUploader = React.forwardRef<
 
       // 去重：避免添加已存在的文件
       const uniqueNewFiles = filesArray.filter(
-        (newFile) =>
-          !files.some((existingFile) => existingFile.file.name === newFile.name)
+        (newFile) => !files.some((existingFile) => existingFile.file.name === newFile.name)
       );
 
       // Live Photo 配对
@@ -176,9 +172,7 @@ export const EnhancedImageUploader = React.forwardRef<
 
       // 如果是 Live Photo，同时移除配对的文件
       if (file.isLivePhoto && file.pairedWith) {
-        updatedFiles = files.filter(
-          (f) => f.id !== id && f.id !== file.pairedWith
-        );
+        updatedFiles = files.filter((f) => f.id !== id && f.id !== file.pairedWith);
       } else {
         updatedFiles = files.filter((f) => f.id !== id);
       }
@@ -222,13 +216,11 @@ export const EnhancedImageUploader = React.forwardRef<
         {/* 拖拽上传区域 - 压缩版 */}
         <div
           className={cn(
-            "border-2 border-dashed rounded-lg p-4 text-center transition-colors duration-300",
+            "rounded-lg border-2 border-dashed p-4 text-center transition-colors duration-300",
             isDragging && !disabled
               ? "border-primary bg-primary/10"
               : "border-muted-foreground/30 bg-transparent",
-            disabled
-              ? "opacity-50 cursor-not-allowed"
-              : "cursor-pointer hover:border-primary/50"
+            disabled ? "cursor-not-allowed opacity-50" : "hover:border-primary/50 cursor-pointer"
           )}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
@@ -259,10 +251,8 @@ export const EnhancedImageUploader = React.forwardRef<
               <Upload className="h-5 w-5" />
             </Button>
             <div>
-              <p className="text-sm font-medium">
-                选择图片或拖拽到这里
-              </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm font-medium">选择图片或拖拽到这里</p>
+              <p className="text-muted-foreground text-xs">
                 支持 JPG, PNG, WEBP, HEIC。最大 {maxSize}MB。
                 {accept.includes("video") && " 支持 Live Photo。"}
               </p>
@@ -281,24 +271,21 @@ export const EnhancedImageUploader = React.forwardRef<
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ duration: 0.2 }}
-                  className="relative group aspect-square"
+                  className="group relative aspect-square"
                 >
                   {/* 图片预览 */}
                   <img
                     src={uploadFile.preview}
                     alt={`Preview of ${uploadFile.file.name}`}
                     className={cn(
-                      "object-cover w-full h-full rounded-md",
+                      "h-full w-full rounded-md object-cover",
                       uploadFile.status === "error" && "opacity-50"
                     )}
                   />
 
                   {/* Live Photo 标识 */}
                   {uploadFile.isLivePhoto && (
-                    <Badge
-                      variant="secondary"
-                      className="absolute bottom-2 left-2 text-xs"
-                    >
+                    <Badge variant="secondary" className="absolute bottom-2 left-2 text-xs">
                       <Video size={12} className="mr-1" />
                       Live
                     </Badge>
@@ -306,14 +293,11 @@ export const EnhancedImageUploader = React.forwardRef<
 
                   {/* 上传中状态 */}
                   {uploadFile.status === "uploading" && (
-                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center rounded-md">
-                      <Loader2 className="h-8 w-8 text-white animate-spin mb-2" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center rounded-md bg-black/60">
+                      <Loader2 className="mb-2 h-8 w-8 animate-spin text-white" />
                       <div className="w-full px-4">
-                        <Progress
-                          value={uploadFile.progress}
-                          className="h-2 bg-white/20"
-                        />
-                        <p className="text-white text-xs mt-2 text-center">
+                        <Progress value={uploadFile.progress} className="h-2 bg-white/20" />
+                        <p className="mt-2 text-center text-xs text-white">
                           {uploadFile.progress}%
                         </p>
                       </div>
@@ -323,17 +307,17 @@ export const EnhancedImageUploader = React.forwardRef<
                   {/* 成功状态 */}
                   {uploadFile.status === "success" && (
                     <div className="absolute top-2 left-2">
-                      <CheckCircle className="text-green-500 bg-white rounded-full" />
+                      <CheckCircle className="rounded-full bg-white text-green-500" />
                     </div>
                   )}
 
                   {/* 错误状态 */}
                   {uploadFile.status === "error" && (
-                    <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center rounded-md">
-                      <div className="text-center p-2">
-                        <AlertCircle className="text-red-500 mx-auto mb-1" />
+                    <div className="absolute inset-0 flex items-center justify-center rounded-md bg-red-500/20">
+                      <div className="p-2 text-center">
+                        <AlertCircle className="mx-auto mb-1 text-red-500" />
                         {uploadFile.error && (
-                          <p className="text-xs text-red-600 bg-white/90 rounded px-2 py-1">
+                          <p className="rounded bg-white/90 px-2 py-1 text-xs text-red-600">
                             {uploadFile.error}
                           </p>
                         )}
@@ -342,13 +326,12 @@ export const EnhancedImageUploader = React.forwardRef<
                   )}
 
                   {/* 移除按钮 */}
-                  {(uploadFile.status === "pending" ||
-                    uploadFile.status === "error") && (
+                  {(uploadFile.status === "pending" || uploadFile.status === "error") && (
                     <Button
                       type="button"
                       variant="destructive"
                       size="icon"
-                      className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveFile(uploadFile.id);
@@ -366,14 +349,12 @@ export const EnhancedImageUploader = React.forwardRef<
 
         {/* 文件统计 */}
         {files.length > 0 && (
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             已选择 {displayFiles.length} 个文件
-            {files.filter((f) => f.isLivePhoto && f.type === "image").length >
-              0 && (
+            {files.filter((f) => f.isLivePhoto && f.type === "image").length > 0 && (
               <span className="ml-2">
-                （包含{" "}
-                {files.filter((f) => f.isLivePhoto && f.type === "image").length}{" "}
-                组 Live Photo）
+                （包含 {files.filter((f) => f.isLivePhoto && f.type === "image").length} 组 Live
+                Photo）
               </span>
             )}
           </div>

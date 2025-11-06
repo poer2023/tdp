@@ -28,15 +28,7 @@ interface ImageUploaderProps {
  */
 export const ImageUploader = React.forwardRef<HTMLDivElement, ImageUploaderProps>(
   (
-    {
-      files,
-      onChange,
-      maxFiles = 5,
-      maxSize = 4,
-      accept = "image/*",
-      className,
-      ...props
-    },
+    { files, onChange, maxFiles = 5, maxSize = 4, accept = "image/*", className, ...props },
     ref
   ) => {
     // State to manage drag-over visual feedback
@@ -45,15 +37,15 @@ export const ImageUploader = React.forwardRef<HTMLDivElement, ImageUploaderProps
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     // Memoize preview URLs to prevent re-rendering and memory leaks
-    const previewUrls = React.useMemo(() =>
-      files.map(file => URL.createObjectURL(file)),
+    const previewUrls = React.useMemo(
+      () => files.map((file) => URL.createObjectURL(file)),
       [files]
     );
 
     // Effect to clean up object URLs on unmount
     React.useEffect(() => {
       return () => {
-        previewUrls.forEach(url => URL.revokeObjectURL(url));
+        previewUrls.forEach((url) => URL.revokeObjectURL(url));
       };
     }, [previewUrls]);
 
@@ -104,7 +96,7 @@ export const ImageUploader = React.forwardRef<HTMLDivElement, ImageUploaderProps
       <div ref={ref} className={cn("space-y-4", className)} {...props}>
         <div
           className={cn(
-            "border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 cursor-pointer",
+            "cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors duration-300",
             isDragging
               ? "border-primary bg-primary/10"
               : "border-muted-foreground/30 bg-transparent"
@@ -131,10 +123,8 @@ export const ImageUploader = React.forwardRef<HTMLDivElement, ImageUploaderProps
               <Upload className="h-6 w-6" />
             </Button>
             <div>
-              <p className="font-medium">
-                Choose images or drag & drop it here
-              </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="font-medium">Choose images or drag & drop it here</p>
+              <p className="text-muted-foreground text-sm">
                 JPG, JPEG, PNG and WEBP. Max {maxSize}MB.
               </p>
             </div>
@@ -142,7 +132,7 @@ export const ImageUploader = React.forwardRef<HTMLDivElement, ImageUploaderProps
         </div>
 
         {previewUrls.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             <AnimatePresence>
               {previewUrls.map((url, index) => {
                 const file = files[index];
@@ -155,18 +145,18 @@ export const ImageUploader = React.forwardRef<HTMLDivElement, ImageUploaderProps
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.2 }}
-                    className="relative group aspect-square"
+                    className="group relative aspect-square"
                   >
                     <img
                       src={url}
                       alt={`Preview of ${file.name}`}
-                      className="object-cover w-full h-full rounded-md"
+                      className="h-full w-full rounded-md object-cover"
                     />
                     <Button
                       type="button"
                       variant="destructive"
                       size="icon"
-                      className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveFile(index);

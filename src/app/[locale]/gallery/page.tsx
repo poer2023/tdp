@@ -69,10 +69,7 @@ export default async function LocalizedGalleryPage({ params, searchParams }: Pag
 
       {/* Gallery grid with hover effects */}
       <section className="rounded-xl bg-white p-0 dark:bg-transparent">
-        <Gallery
-          data={images.map(convertGalleryImageToItemData)}
-          locale={l}
-        />
+        <Gallery data={images.map(convertGalleryImageToItemData)} locale={l} />
       </section>
 
       {/* Footer */}

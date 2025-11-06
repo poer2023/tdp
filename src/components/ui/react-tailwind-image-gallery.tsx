@@ -24,12 +24,12 @@ export function Gallery({ data, onImageClick, locale }: GalleryProps) {
   return (
     <section className="py-12 md:py-20">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {data.map((img) => (
             <Link
               key={img.id}
               href={`/${locale}/gallery/${img.id}`}
-              className={`group cursor-pointer relative overflow-hidden rounded-lg ${img.span} block`}
+              className={`group relative cursor-pointer overflow-hidden rounded-lg ${img.span} block`}
               onClick={(e) => {
                 // 如果提供了 onImageClick，则阻止默认跳转并触发点击事件
                 if (onImageClick) {
@@ -38,7 +38,7 @@ export function Gallery({ data, onImageClick, locale }: GalleryProps) {
                 }
               }}
             >
-              <div className="relative w-full h-full min-h-[200px] aspect-square">
+              <div className="relative aspect-square h-full min-h-[200px] w-full">
                 <Image
                   src={img.src}
                   alt={img.alt}
@@ -50,8 +50,8 @@ export function Gallery({ data, onImageClick, locale }: GalleryProps) {
                 />
               </div>
               {/* 悬停渐变遮罩 */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                <p className="text-white text-base md:text-lg font-medium transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 ease-in-out">
+              <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <p className="translate-y-4 transform text-base font-medium text-white transition-transform duration-300 ease-in-out group-hover:translate-y-0 md:text-lg">
                   {img.title}
                 </p>
               </div>
@@ -72,7 +72,7 @@ export function ImageModal({ src, onClose }: ImageModalProps) {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50 opacity-100"
+      className="bg-opacity-80 fixed inset-0 z-50 flex items-center justify-center bg-black opacity-100"
       onClick={onClose}
       onKeyDown={(e) => {
         if (e.key === "Escape") onClose();
@@ -81,18 +81,18 @@ export function ImageModal({ src, onClose }: ImageModalProps) {
       aria-modal="true"
       aria-label="图片预览"
     >
-      <div className="relative max-w-[90vw] max-h-[90vh]">
+      <div className="relative max-h-[90vh] max-w-[90vw]">
         <Image
           src={src}
           alt="Enlarged view"
           width={1200}
           height={900}
-          className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+          className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         />
       </div>
       <button
-        className="absolute top-5 right-5 text-white text-4xl font-bold hover:text-gray-300 transition-colors"
+        className="absolute top-5 right-5 text-4xl font-bold text-white transition-colors hover:text-gray-300"
         onClick={onClose}
         aria-label="关闭预览"
       >
@@ -101,4 +101,3 @@ export function ImageModal({ src, onClose }: ImageModalProps) {
     </div>
   );
 }
-
