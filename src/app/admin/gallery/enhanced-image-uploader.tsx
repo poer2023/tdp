@@ -274,6 +274,7 @@ export const EnhancedImageUploader = React.forwardRef<HTMLDivElement, EnhancedIm
                   className="group relative aspect-square"
                 >
                   {/* 图片预览 */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={uploadFile.preview}
                     alt={`Preview of ${uploadFile.file.name}`}

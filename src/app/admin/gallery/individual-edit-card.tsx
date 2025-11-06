@@ -53,6 +53,7 @@ export function IndividualEditCard({
       {/* 左侧: 图片预览 */}
       <div className="flex-shrink-0">
         <div className="relative h-24 w-24 overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-900">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={file.preview}
             alt={metadata.title || "预览"}

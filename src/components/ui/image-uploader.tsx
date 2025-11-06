@@ -147,6 +147,7 @@ export const ImageUploader = React.forwardRef<HTMLDivElement, ImageUploaderProps
                     transition={{ duration: 0.2 }}
                     className="group relative aspect-square"
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={url}
                       alt={`Preview of ${file.name}`}
