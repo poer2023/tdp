@@ -23,6 +23,7 @@
 ### 第一次使用
 
 1. **配置测试环境**（防止数据丢失）
+
    ```bash
    # 复制测试环境配置模板
    cp .env.test.example .env.test
@@ -33,6 +34,7 @@
    ```
 
 2. **配置备份系统**（可选，用于自动化备份）
+
    ```bash
    # 复制备份配置模板
    cp .env.backup.example .env.backup
@@ -42,6 +44,7 @@
    ```
 
 3. **测试备份功能**
+
    ```bash
    # 创建开发数据库备份
    npm run backup:create
@@ -70,6 +73,7 @@ npm run backup:create:pre-migration
 ```
 
 **备份类型**:
+
 - `manual` - 手动备份（默认）
 - `pre-migration` - 迁移前备份（保留30天）
 - `auto` - 自动备份（保留7天）
@@ -86,6 +90,7 @@ npm run backup:verify latest
 ```
 
 **验证内容**:
+
 - ✅ 文件完整性
 - ✅ 备份内容分析
 - ✅ 恢复测试（在临时数据库中）
@@ -180,6 +185,7 @@ npm run migrate:deploy
 ```
 
 **部署脚本会自动执行**:
+
 1. ✅ 迁移前检查（数据库连接、磁盘空间）
 2. ✅ 创建备份
 3. ✅ 验证备份完整性
@@ -217,6 +223,7 @@ npm run validate:data
 ```
 
 **验证内容**:
+
 - ✅ 数据库连接
 - ✅ Schema完整性
 - ✅ 数据完整性
@@ -239,6 +246,7 @@ npm run backup:restore backups/pre-migration/backup_YYYYMMDD_HHMMSS.dump
 ### 保护机制
 
 **强制数据库URL验证**:
+
 - ✅ 测试数据库URL必须包含 `test` 关键字
 - ✅ 否则拒绝执行集成测试
 - ✅ 防止在生产/开发数据库上运行测试
@@ -477,11 +485,13 @@ docker-compose -f docker-compose.backup.yml up -d
 ### 迁移前检查 (Pre-Migration)
 
 - [ ] **迁移已在开发环境测试**
+
   ```bash
   npx prisma migrate dev
   ```
 
 - [ ] **迁移已在测试环境验证**
+
   ```bash
   # 在测试环境运行
   npx prisma migrate deploy
@@ -489,22 +499,26 @@ docker-compose -f docker-compose.backup.yml up -d
   ```
 
 - [ ] **生产数据库备份完成**
+
   ```bash
   npm run backup:create:pre-migration
   ```
 
 - [ ] **备份已验证**
+
   ```bash
   npm run backup:verify latest
   ```
 
 - [ ] **磁盘空间充足** (至少3倍数据库大小)
+
   ```bash
   df -h
   du -sh /var/lib/postgresql/data
   ```
 
 - [ ] **回滚脚本已准备**
+
   ```bash
   ls -lh backups/pre-migration/latest.dump
   ```
@@ -514,11 +528,13 @@ docker-compose -f docker-compose.backup.yml up -d
 ### 迁移执行 (Migration)
 
 - [ ] **执行迁移**
+
   ```bash
   npm run migrate:deploy
   ```
 
 - [ ] **监控迁移日志**
+
   ```bash
   tail -f migration_report_*.txt
   ```
@@ -528,36 +544,43 @@ docker-compose -f docker-compose.backup.yml up -d
 ### 迁移后验证 (Post-Migration)
 
 - [ ] **迁移成功完成**
+
   ```bash
   npx prisma migrate status
   ```
 
 - [ ] **应用启动无错误**
+
   ```bash
   docker-compose logs -f app
   ```
 
 - [ ] **数据完整性验证通过**
+
   ```bash
   npm run validate:data
   ```
 
 - [ ] **关键查询性能正常**
+
   ```bash
   # 运行关键业务查询测试
   ```
 
 - [ ] **无错误日志激增**
+
   ```bash
   docker-compose logs app | grep ERROR
   ```
 
 - [ ] **健康检查通过**
+
   ```bash
   npm run health-check
   ```
 
 - [ ] **迁移后备份已创建**
+
   ```bash
   npm run backup:create
   ```

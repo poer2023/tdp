@@ -71,15 +71,16 @@
 
 ```yaml
 postgres (健康检查)
-  ↓
+↓
 backup (备份 + 验证)
-  ↓
+↓
 migrate (Prisma 迁移)
-  ↓
+↓
 app (应用启动)
 ```
 
 **关键特性**：
+
 - `depends_on` 确保严格的执行顺序
 - `service_completed_successfully` 确保前一步成功才执行下一步
 - 任何步骤失败都会阻止后续步骤
@@ -118,6 +119,7 @@ docker compose down
 #### 3. 创建告警 Issue
 
 系统会自动创建 GitHub Issue，包含：
+
 - 迁移失败详细日志
 - 退出码和错误信息
 - 回滚状态
@@ -128,6 +130,7 @@ docker compose down
 #### ✅ 场景 1：迁移失败 + 回滚成功
 
 **系统行为**：
+
 1. 检测到迁移失败
 2. 自动从备份恢复数据库
 3. 创建 GitHub Issue（标签：`migration-failure`, `rollback-completed`, `urgent`）
@@ -144,7 +147,9 @@ docker compose down
 
 **Migration Logs**:
 ```
+
 Error: P3009 Migration failed: ...
+
 ```
 
 **Rollback Status**: ✅ Completed - Database restored from latest backup
@@ -160,6 +165,7 @@ Error: P3009 Migration failed: ...
 #### ❌ 场景 2：迁移失败 + 回滚失败（严重）
 
 **系统行为**：
+
 1. 检测到迁移失败
 2. 尝试自动回滚
 3. 回滚过程失败
@@ -182,6 +188,7 @@ Both migration and automatic rollback have failed. Manual intervention required 
 **Rollback Status**: ❌ FAILED
 
 **IMMEDIATE ACTION REQUIRED**:
+
 1. SSH to server: `ssh user@server-ip`
 2. Check backup directory: `ls -lh ./backups/`
 3. Manually restore latest backup
@@ -210,6 +217,7 @@ Both migration and automatic rollback have failed. Manual intervention required 
 ### 备份保留策略
 
 默认配置：
+
 - **每日备份**：保留最近 7 天
 - **自动清理**：删除超过保留期的备份
 
@@ -218,6 +226,7 @@ Both migration and automatic rollback have failed. Manual intervention required 
 ### 备份失败告警
 
 如果定时备份失败，系统会：
+
 1. 创建 GitHub Issue（标签：`backup-failure`, `scheduled`, `monitoring`）
 2. 包含失败原因和排查建议
 
@@ -243,15 +252,15 @@ Both migration and automatic rollback have failed. Manual intervention required 
 
 #### 告警标签分类
 
-| 标签 | 含义 | 优先级 |
-|------|------|--------|
-| `migration-failure` | 迁移失败 | 高 |
-| `rollback-completed` | 回滚成功 | 中 |
-| `rollback-failed` | 回滚失败 | 紧急 |
-| `backup-failure` | 备份失败 | 中 |
-| `critical` | 严重故障 | 紧急 |
-| `urgent` | 需要及时处理 | 高 |
-| `scheduled` | 定时任务相关 | 低 |
+| 标签                 | 含义         | 优先级 |
+| -------------------- | ------------ | ------ |
+| `migration-failure`  | 迁移失败     | 高     |
+| `rollback-completed` | 回滚成功     | 中     |
+| `rollback-failed`    | 回滚失败     | 紧急   |
+| `backup-failure`     | 备份失败     | 中     |
+| `critical`           | 严重故障     | 紧急   |
+| `urgent`             | 需要及时处理 | 高     |
+| `scheduled`          | 定时任务相关 | 低     |
 
 ### 防重复告警
 
@@ -326,6 +335,7 @@ docker compose run --rm migrate sh -c "npx prisma migrate deploy"
 **症状**：迁移失败，但系统没有执行回滚
 
 **可能原因**：
+
 - Docker 容器状态检测失败
 - 回滚脚本权限问题
 
@@ -371,6 +381,7 @@ df -h
 **症状**：失败发生但没有收到 GitHub Issue
 
 **可能原因**：
+
 - `GITHUB_TOKEN` 权限不足
 - GitHub API 限流
 - 网络连接问题
@@ -395,6 +406,7 @@ export GITHUB_REPOSITORY="owner/repo"
 **症状**：定时备份工作流没有在预定时间运行
 
 **可能原因**：
+
 - GitHub Actions cron 调度延迟（正常现象，可能延迟5-15分钟）
 - 工作流被禁用
 - 仓库处于非活跃状态
@@ -417,6 +429,7 @@ export GITHUB_REPOSITORY="owner/repo"
 **症状**：部署卡在健康检查步骤，最终超时失败
 
 **可能原因**：
+
 - 应用启动时间过长
 - 数据库连接问题
 - 端口被占用

@@ -89,11 +89,11 @@ NODE_ENV=production
 
 ### 访问控制
 
-| 环境 | 访问权限 | 备份策略 | 监控 |
-|------|---------|---------|------|
-| **开发** | 开发团队全员 | 每周备份 | 基础监控 |
-| **测试** | CI/CD + 开发团队 | 按需备份 | 错误日志 |
-| **生产** | 仅运维人员 | **每日备份** + 验证 | 全面监控 |
+| 环境     | 访问权限         | 备份策略            | 监控     |
+| -------- | ---------------- | ------------------- | -------- |
+| **开发** | 开发团队全员     | 每周备份            | 基础监控 |
+| **测试** | CI/CD + 开发团队 | 按需备份            | 错误日志 |
+| **生产** | 仅运维人员       | **每日备份** + 验证 | 全面监控 |
 
 ### 备份策略
 
@@ -179,31 +179,31 @@ graph TD
 // 需要监控的指标
 const monitoringMetrics = {
   // 连接监控
-  activeConnections: 'SELECT count(*) FROM pg_stat_activity',
-  maxConnections: 'SHOW max_connections',
+  activeConnections: "SELECT count(*) FROM pg_stat_activity",
+  maxConnections: "SHOW max_connections",
 
   // 性能监控
-  databaseSize: 'SELECT pg_size_pretty(pg_database_size(current_database()))',
-  tableRowCounts: 'SELECT relname, n_live_tup FROM pg_stat_user_tables',
+  databaseSize: "SELECT pg_size_pretty(pg_database_size(current_database()))",
+  tableRowCounts: "SELECT relname, n_live_tup FROM pg_stat_user_tables",
 
   // 健康检查
-  checksumFailures: 'SELECT sum(checksum_failures) FROM pg_stat_database',
-  replicationLag: 'SELECT pg_last_xact_replay_timestamp()', // 如果有主从
+  checksumFailures: "SELECT sum(checksum_failures) FROM pg_stat_database",
+  replicationLag: "SELECT pg_last_xact_replay_timestamp()", // 如果有主从
 
   // 备份监控
-  lastBackupAge: 'ls -lt /backups/ | head -2',
-  backupSize: 'du -sh /backups/latest.dump',
+  lastBackupAge: "ls -lt /backups/ | head -2",
+  backupSize: "du -sh /backups/latest.dump",
 };
 ```
 
 ### 告警阈值
 
-| 指标 | 警告阈值 | 严重阈值 | 操作 |
-|------|---------|---------|------|
-| 连接数 | >70% | >90% | 扩容/优化连接池 |
-| 磁盘使用 | >70% | >85% | 清理/扩容 |
-| 备份年龄 | >36小时 | >48小时 | 手动触发备份 |
-| 查询延迟 | >1s | >3s | 性能分析 |
+| 指标     | 警告阈值 | 严重阈值 | 操作            |
+| -------- | -------- | -------- | --------------- |
+| 连接数   | >70%     | >90%     | 扩容/优化连接池 |
+| 磁盘使用 | >70%     | >85%     | 清理/扩容       |
+| 备份年龄 | >36小时  | >48小时  | 手动触发备份    |
+| 查询延迟 | >1s      | >3s      | 性能分析        |
 
 ---
 
@@ -307,15 +307,15 @@ docker-compose restart postgres
 
 ### 迁移历史
 
-| 日期 | 迁移 | 描述 | 执行人 | 状态 |
-|------|------|------|--------|------|
-| 2025-01-08 | 20251028193000_align_sync_schema | 修复 enum 迁移问题 | Claude | ✅ 成功 |
-| 2025-01-08 | 20251106213128_add_friend_cover_field | 添加朋友封面字段 | Claude | ✅ 成功 |
+| 日期       | 迁移                                  | 描述               | 执行人 | 状态    |
+| ---------- | ------------------------------------- | ------------------ | ------ | ------- |
+| 2025-01-08 | 20251028193000_align_sync_schema      | 修复 enum 迁移问题 | Claude | ✅ 成功 |
+| 2025-01-08 | 20251106213128_add_friend_cover_field | 添加朋友封面字段   | Claude | ✅ 成功 |
 
 ### 重大事件
 
-| 日期 | 事件 | 影响 | 处理方式 | 教训 |
-|------|------|------|---------|------|
+| 日期       | 事件                   | 影响     | 处理方式             | 教训                                                              |
+| ---------- | ---------------------- | -------- | -------------------- | ----------------------------------------------------------------- |
 | 2025-01-08 | 集成测试清空开发数据库 | 数据丢失 | 无备份，数据无法恢复 | 1. 必须隔离测试数据库<br>2. 必须定期备份<br>3. 添加数据库保护机制 |
 
 ---
