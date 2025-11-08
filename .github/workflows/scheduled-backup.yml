@@ -141,20 +141,11 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
         run: |
           ISSUE_TITLE="⚠️ Scheduled Database Backup Failed"
-          ISSUE_BODY="## Scheduled Backup Failure
-
-The automated daily database backup has failed.
-
-**Timestamp**: $(date '+%Y-%m-%d %H:%M:%S UTC')
-
-**Workflow Run**: [View Logs](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})
-
-**Action Required**:
-1. Check server disk space
-2. Verify database connectivity
-3. Review backup script logs
-4. Ensure manual backup if issue persists
-
-**Next scheduled backup**: $(date -u -d '+1 day' '+%Y-%m-%d 02:00 UTC')"
+          printf -v ISSUE_BODY $'## Scheduled Backup Failure\n\nThe automated daily database backup has failed.\n\n**Timestamp**: %s\n\n**Workflow Run**: [View Logs](%s/%s/actions/runs/%s)\n\n**Action Required**:\n1. Check server disk space\n2. Verify database connectivity\n3. Review backup script logs\n4. Ensure manual backup if issue persists\n\n**Next scheduled backup**: %s' \
+            "$(date '+%Y-%m-%d %H:%M:%S UTC')" \
+            "${GITHUB_SERVER_URL}" \
+            "${GITHUB_REPOSITORY}" \
+            "${GITHUB_RUN_ID}" \
+            "$(date -u -d '+1 day' '+%Y-%m-%d 02:00 UTC')"
 
           ./scripts/alert-github-issue.sh "$ISSUE_TITLE" "$ISSUE_BODY" "backup-failure,scheduled,monitoring" || true
