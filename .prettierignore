@@ -25,6 +25,7 @@ public/uploads/*
 # GitHub Actions workflows (use yamllint for validation instead)
 # Prettier's YAML parser has limitations with complex GitHub Actions syntax
 .github/workflows/deploy.yml
+.github/workflows/scheduled-backup.yml
 
 # (no special ignores for e2e; keep them checked by Prettier)
 

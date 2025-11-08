@@ -63,28 +63,26 @@ jobs:
             echo "Retention: ${RETENTION_DAYS} days"
 
             # Execute backup using Docker
-            docker compose run --rm \
-              -e BACKUP_DIR=/backups \
-              backup sh -c "
-                echo '==> Creating scheduled backup...';
-                /scripts/backup-database.sh --retention-days ${RETENTION_DAYS};
+            docker compose run --rm -e BACKUP_DIR=/backups backup sh -c "
+              echo '==> Creating scheduled backup...';
+              /scripts/backup-database.sh --retention-days ${RETENTION_DAYS};
 
-                echo '==> Verifying backup integrity...';
-                LATEST_BACKUP=\$(ls -t /backups/backup_*.sql.gz 2>/dev/null | head -n1);
-                if [ -z \"\$LATEST_BACKUP\" ]; then
-                  echo '❌ No backup file found!';
-                  exit 1;
-                fi;
+              echo '==> Verifying backup integrity...';
+              LATEST_BACKUP=\$(ls -t /backups/backup_*.sql.gz 2>/dev/null | head -n1);
+              if [ -z \"\$LATEST_BACKUP\" ]; then
+                echo '❌ No backup file found!';
+                exit 1;
+              fi;
 
-                if ! gunzip -t \"\$LATEST_BACKUP\" 2>/dev/null; then
-                  echo '❌ Backup file is corrupted!';
-                  exit 1;
-                fi;
+              if ! gunzip -t \"\$LATEST_BACKUP\" 2>/dev/null; then
+                echo '❌ Backup file is corrupted!';
+                exit 1;
+              fi;
 
-                BACKUP_SIZE=\$(du -h \"\$LATEST_BACKUP\" | cut -f1);
-                echo \"✅ Scheduled backup completed: \$BACKUP_SIZE\";
-                echo \"   File: \$(basename \"\$LATEST_BACKUP\")\";
-              "
+              BACKUP_SIZE=\$(du -h \"\$LATEST_BACKUP\" | cut -f1);
+              echo \"✅ Scheduled backup completed: \$BACKUP_SIZE\";
+              echo \"   File: \$(basename \"\$LATEST_BACKUP\")\";
+            "
 
             # List current backups
             echo "==> Current backups:"
