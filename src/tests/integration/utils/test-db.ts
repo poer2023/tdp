@@ -6,29 +6,27 @@ const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_
 function validateTestDatabaseUrl(url: string | undefined): void {
   if (!url) {
     throw new Error(
-      '🚨 数据库保护: 未配置数据库URL\n' +
-      '请设置 TEST_DATABASE_URL 或 DATABASE_URL 环境变量'
+      "🚨 数据库保护: 未配置数据库URL\n" + "请设置 TEST_DATABASE_URL 或 DATABASE_URL 环境变量"
     );
   }
 
   // 检查URL是否包含测试标识
   const isTestDatabase =
-    url.includes('test') ||
-    url.includes('TEST') ||
-    url.includes('_test') ||
-    url.includes('-test');
+    url.includes("test") || url.includes("TEST") || url.includes("_test") || url.includes("-test");
 
   // 如果不是测试数据库，拒绝执行
   if (!isTestDatabase) {
     throw new Error(
-      '🚨 数据库保护: 禁止在非测试数据库上运行集成测试！\n\n' +
-      '当前数据库URL: ' + url.replace(/:[^:@]+@/, ':***@') + '\n\n' +
-      '解决方案:\n' +
-      '1. 使用独立的测试数据库，URL必须包含 "test" 关键字\n' +
-      '2. 在 .env.test 文件中配置: TEST_DATABASE_URL="postgresql://...test..."\n' +
-      '3. 或者在数据库名称中添加 test 标识: database_name_test\n\n' +
-      '⚠️  集成测试会清空数据库所有数据！\n' +
-      '⚠️  绝不能在生产或开发数据库上运行！'
+      "🚨 数据库保护: 禁止在非测试数据库上运行集成测试！\n\n" +
+        "当前数据库URL: " +
+        url.replace(/:[^:@]+@/, ":***@") +
+        "\n\n" +
+        "解决方案:\n" +
+        '1. 使用独立的测试数据库，URL必须包含 "test" 关键字\n' +
+        '2. 在 .env.test 文件中配置: TEST_DATABASE_URL="postgresql://...test..."\n' +
+        "3. 或者在数据库名称中添加 test 标识: database_name_test\n\n" +
+        "⚠️  集成测试会清空数据库所有数据！\n" +
+        "⚠️  绝不能在生产或开发数据库上运行！"
     );
   }
 }

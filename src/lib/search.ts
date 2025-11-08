@@ -63,6 +63,7 @@ export async function searchPosts(
     const sanitized = sanitizeQuery(q);
     const localeFilter = locale ? Prisma.sql`AND p.locale = ${locale}` : Prisma.empty;
 
+    // Try using pre-computed searchVector column if exists, fallback to on-the-fly calculation
     const results = await prisma.$queryRaw<
       Array<{
         id: string;
@@ -84,11 +85,14 @@ export async function searchPosts(
         p.locale,
         u.name as "authorName",
         ts_rank(
-          to_tsvector('simple',
-            COALESCE(p.title, '') || ' ' ||
-            COALESCE(p.excerpt, '') || ' ' ||
-            COALESCE(p.content, '') || ' ' ||
-            COALESCE(p.tags, '')
+          COALESCE(
+            p."searchVector",
+            to_tsvector('simple',
+              COALESCE(p.title, '') || ' ' ||
+              COALESCE(p.excerpt, '') || ' ' ||
+              COALESCE(p.content, '') || ' ' ||
+              COALESCE(p.tags, '')
+            )
           ),
           to_tsquery('simple', ${sanitized})
         ) as rank
@@ -96,11 +100,14 @@ export async function searchPosts(
       LEFT JOIN "User" u ON p."authorId" = u.id
       WHERE p.status = 'PUBLISHED'
         ${localeFilter}
-        AND to_tsvector('simple',
-          COALESCE(p.title, '') || ' ' ||
-          COALESCE(p.excerpt, '') || ' ' ||
-          COALESCE(p.content, '') || ' ' ||
-          COALESCE(p.tags, '')
+        AND COALESCE(
+          p."searchVector",
+          to_tsvector('simple',
+            COALESCE(p.title, '') || ' ' ||
+            COALESCE(p.excerpt, '') || ' ' ||
+            COALESCE(p.content, '') || ' ' ||
+            COALESCE(p.tags, '')
+          )
         ) @@ to_tsquery('simple', ${sanitized})
       ORDER BY rank DESC, p."publishedAt" DESC NULLS LAST
       LIMIT ${limit}

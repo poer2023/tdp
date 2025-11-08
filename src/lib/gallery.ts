@@ -241,18 +241,63 @@ export async function getAdjacentImageIds(id: string): Promise<{
 }> {
   return withDbFallback(
     async () => {
-      const currentImage = await prisma.galleryImage.findUnique({ where: { id } });
-      if (!currentImage) return { prev: null, next: null };
-      const prevImage = await prisma.galleryImage.findFirst({
-        where: { createdAt: { lt: currentImage.createdAt } },
-        orderBy: { createdAt: "desc" },
-        select: { id: true, filePath: true, mediumPath: true },
-      });
-      const nextImage = await prisma.galleryImage.findFirst({
-        where: { createdAt: { gt: currentImage.createdAt } },
-        orderBy: { createdAt: "asc" },
-        select: { id: true, filePath: true, mediumPath: true },
-      });
+      // Optimized: Use a single raw query to get current, prev, and next images
+      const result = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          createdAt: Date;
+          filePath: string;
+          mediumPath: string | null;
+          position: string;
+        }>
+      >`
+        WITH current_img AS (
+          SELECT "id", "createdAt", "filePath", "mediumPath"
+          FROM "GalleryImage"
+          WHERE "id" = ${id}
+        )
+        SELECT
+          "id",
+          "createdAt",
+          "filePath",
+          "mediumPath",
+          'prev' as position
+        FROM "GalleryImage"
+        WHERE "createdAt" < (SELECT "createdAt" FROM current_img)
+        ORDER BY "createdAt" DESC
+        LIMIT 1
+
+        UNION ALL
+
+        SELECT
+          "id",
+          "createdAt",
+          "filePath",
+          "mediumPath",
+          'current' as position
+        FROM current_img
+
+        UNION ALL
+
+        SELECT
+          "id",
+          "createdAt",
+          "filePath",
+          "mediumPath",
+          'next' as position
+        FROM "GalleryImage"
+        WHERE "createdAt" > (SELECT "createdAt" FROM current_img)
+        ORDER BY "createdAt" ASC
+        LIMIT 1
+      `;
+
+      if (!result.find((r) => r.position === "current")) {
+        return { prev: null, next: null };
+      }
+
+      const prevImage = result.find((r) => r.position === "prev");
+      const nextImage = result.find((r) => r.position === "next");
+
       return {
         prev: prevImage?.id || null,
         next: nextImage?.id || null,

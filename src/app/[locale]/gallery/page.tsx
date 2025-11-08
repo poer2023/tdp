@@ -6,7 +6,8 @@ import { Gallery } from "@/components/ui/react-tailwind-image-gallery";
 import { GalleryCategoryTabs } from "@/components/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
 
-export const revalidate = 0;
+// Revalidate every 60 seconds - gallery doesn't change frequently
+export const revalidate = 60;
 
 type PageProps = {
   params: Promise<{ locale: string }>;

@@ -8,9 +8,55 @@ import { PostLocale, PostStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { generateBlogPostingSchema, generateAlternateLinks } from "@/lib/seo";
 import { LikeButton } from "@/components/like-button";
+import { cache } from "react";
 
 // Ensure Node.js runtime for Prisma
 export const runtime = "nodejs";
+
+// Cache the post query to avoid duplicate database calls
+const getPostBySlug = cache(async (slug: string, locale: string) => {
+  const l = locale === "zh" ? PostLocale.ZH : PostLocale.EN;
+
+  // Find post by slug - try direct match first
+  let post = await prisma.post.findFirst({
+    where: {
+      slug,
+      status: PostStatus.PUBLISHED,
+    },
+    include: {
+      author: {
+        select: { name: true, image: true },
+      },
+    },
+  });
+
+  // If not found, check if this slug is an alias
+  if (!post) {
+    const alias = await prisma.postAlias.findUnique({
+      where: {
+        locale_oldSlug: {
+          locale: l,
+          oldSlug: slug,
+        },
+      },
+      include: {
+        post: {
+          include: {
+            author: {
+              select: { name: true, image: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (alias?.post && alias.post.status === PostStatus.PUBLISHED) {
+      post = alias.post;
+    }
+  }
+
+  return post;
+});
 
 type PageProps = {
   params: Promise<{ locale: string; slug: string }>;
@@ -20,32 +66,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { locale, slug } = await params;
   const l = locale === "zh" ? "zh" : "en";
 
-  // Find post by slug - try direct match first, then check PostAlias
-  let post = await prisma.post.findFirst({
-    where: {
-      slug,
-      status: PostStatus.PUBLISHED,
-    },
-  });
-
-  // If not found, check if this slug is an alias (e.g., pinyin slug for Chinese post)
-  if (!post) {
-    const alias = await prisma.postAlias.findUnique({
-      where: {
-        locale_oldSlug: {
-          locale: locale === "zh" ? PostLocale.ZH : PostLocale.EN,
-          oldSlug: slug,
-        },
-      },
-      include: {
-        post: true,
-      },
-    });
-
-    if (alias?.post && alias.post.status === PostStatus.PUBLISHED) {
-      post = alias.post;
-    }
-  }
+  // Use cached query to get post data
+  const post = await getPostBySlug(slug, locale);
 
   if (!post) {
     return { title: l === "zh" ? "文章未找到" : "Post Not Found" };
@@ -104,43 +126,8 @@ export default async function LocalizedPostPage({ params }: PageProps) {
   const { locale, slug } = await params;
   const l = locale === "zh" ? "zh" : "en";
 
-  // Find post by slug - try direct match first, then check PostAlias table
-  let post = await prisma.post.findFirst({
-    where: {
-      slug,
-      status: PostStatus.PUBLISHED,
-    },
-    include: {
-      author: {
-        select: { name: true, image: true },
-      },
-    },
-  });
-
-  // If not found, check if this slug is an alias (e.g., pinyin slug for Chinese post)
-  if (!post) {
-    const alias = await prisma.postAlias.findUnique({
-      where: {
-        locale_oldSlug: {
-          locale: locale === "zh" ? PostLocale.ZH : PostLocale.EN,
-          oldSlug: slug,
-        },
-      },
-      include: {
-        post: {
-          include: {
-            author: {
-              select: { name: true, image: true },
-            },
-          },
-        },
-      },
-    });
-
-    if (alias?.post && alias.post.status === PostStatus.PUBLISHED) {
-      post = alias.post;
-    }
-  }
+  // Use cached query to get post data
+  const post = await getPostBySlug(slug, locale);
 
   if (!post) {
     notFound();

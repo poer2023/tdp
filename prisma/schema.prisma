@@ -146,6 +146,8 @@ model GalleryImage {
 
   @@index([locationName(ops: raw("gin_trgm_ops"))], map: "idx_gallery_location_trgm", type: Gin)
   @@index([title(ops: raw("gin_trgm_ops"))], map: "idx_gallery_title_trgm", type: Gin)
+  @@index([createdAt, id])
+  @@index([category, createdAt])
 }
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.

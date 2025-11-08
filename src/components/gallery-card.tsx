@@ -2,10 +2,12 @@ import type { GalleryImage } from "@/lib/gallery";
 import { LivePhotoPlayer } from "./live-photo-player";
 import Image from "next/image";
 import Link from "next/link";
+import { formatDate } from "@/lib/date-utils";
 
 interface GalleryCardProps {
   image: GalleryImage;
   locale?: "zh" | "en";
+  index?: number; // For prioritizing above-the-fold images
 }
 
 /**
@@ -15,9 +17,10 @@ interface GalleryCardProps {
  * - 元数据作为"证据链"呈现
  * - 交互微妙（translate-y-0.5, shadow-sm）
  */
-export function GalleryCard({ image, locale = "zh" }: GalleryCardProps) {
+export function GalleryCard({ image, locale = "zh", index = 0 }: GalleryCardProps) {
   const hasLocation = image.latitude && image.longitude;
   const capturedDate = image.capturedAt ? new Date(image.capturedAt) : new Date(image.createdAt);
+  const isPriority = index < 6; // Prioritize first 6 images (2 rows on desktop)
 
   return (
     <Link href={`/${locale}/gallery/${image.id}`} className="block">
@@ -35,8 +38,10 @@ export function GalleryCard({ image, locale = "zh" }: GalleryCardProps) {
               src={image.filePath}
               alt={image.title || "相册照片"}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover"
+              priority={isPriority}
+              loading={isPriority ? undefined : "lazy"}
               placeholder="blur"
               blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2Y0ZjRmNSIvPjwvc3ZnPg=="
             />
@@ -105,11 +110,7 @@ export function GalleryCard({ image, locale = "zh" }: GalleryCardProps) {
                 />
               </svg>
               <time dateTime={capturedDate.toISOString()} className="leading-tight">
-                {new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }).format(capturedDate)}
+                {formatDate(capturedDate, locale)}
               </time>
             </div>
 

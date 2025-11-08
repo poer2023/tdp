@@ -22,7 +22,21 @@ ALTER TABLE "SyncJobLog" ALTER COLUMN "platform_text" SET NOT NULL;
 ALTER TABLE "SyncJobLog" DROP COLUMN "platform";
 ALTER TABLE "SyncJobLog" RENAME COLUMN "platform_text" TO "platform";
 
--- Normalize legacy enum values before redefinition
+-- Prepare ExternalCredential.platform for TEXT conversion (必须在更新数据之前)
+ALTER TABLE "ExternalCredential" ADD COLUMN IF NOT EXISTS "platform_text" TEXT;
+UPDATE "ExternalCredential" SET "platform_text" = "platform"::text WHERE "platform_text" IS NULL;
+ALTER TABLE "ExternalCredential" ALTER COLUMN "platform_text" SET NOT NULL;
+ALTER TABLE "ExternalCredential" DROP COLUMN "platform";
+ALTER TABLE "ExternalCredential" RENAME COLUMN "platform_text" TO "platform";
+
+-- Prepare ExternalCredential.type for TEXT conversion (必须在更新数据之前)
+ALTER TABLE "ExternalCredential" ADD COLUMN IF NOT EXISTS "type_text" TEXT;
+UPDATE "ExternalCredential" SET "type_text" = "type"::text WHERE "type_text" IS NULL;
+ALTER TABLE "ExternalCredential" ALTER COLUMN "type_text" SET NOT NULL;
+ALTER TABLE "ExternalCredential" DROP COLUMN "type";
+ALTER TABLE "ExternalCredential" RENAME COLUMN "type_text" TO "type";
+
+-- Normalize legacy enum values (现在所有列都是 TEXT 类型,可以安全地更新)
 UPDATE "ExternalCredential" SET "platform" = 'GITHUB' WHERE "platform" = 'NOTION';
 UPDATE "SyncJobLog" SET "platform" = 'GITHUB' WHERE "platform" = 'NOTION';
 UPDATE "ExternalCredential" SET "type" = 'API_KEY' WHERE "type" IN ('PASSWORD', 'ENCRYPTED');
@@ -37,7 +51,7 @@ END $$;
 
 CREATE TYPE "CredentialPlatform_new" AS ENUM ('STEAM', 'HOYOVERSE', 'BILIBILI', 'DOUBAN', 'JELLYFIN', 'GITHUB');
 ALTER TABLE "ExternalCredential" ALTER COLUMN "platform" TYPE "CredentialPlatform_new" USING "platform"::text::"CredentialPlatform_new";
-DROP TYPE "CredentialPlatform";
+DROP TYPE IF EXISTS "CredentialPlatform";
 ALTER TYPE "CredentialPlatform_new" RENAME TO "CredentialPlatform";
 
 -- Recreate CredentialType enum without deprecated variants
@@ -50,7 +64,7 @@ END $$;
 
 CREATE TYPE "CredentialType_new" AS ENUM ('COOKIE', 'API_KEY', 'OAUTH_TOKEN', 'PERSONAL_ACCESS_TOKEN');
 ALTER TABLE "ExternalCredential" ALTER COLUMN "type" TYPE "CredentialType_new" USING "type"::text::"CredentialType_new";
-DROP TYPE "CredentialType";
+DROP TYPE IF EXISTS "CredentialType";
 ALTER TYPE "CredentialType_new" RENAME TO "CredentialType";
 
 -- Align MediaWatchSyncLog structure
