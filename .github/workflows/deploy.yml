@@ -230,6 +230,11 @@ jobs:
             echo "==> Generating .env file (hybrid mode)"
 
             # Validate critical variables
+            if [ -z "${ENV_DATABASE_URL:-}" ]; then
+              echo "❌ ENV_DATABASE_URL not set in GitHub Secrets" >&2
+              echo "   This is required for database backups and migrations" >&2
+              exit 1
+            fi
             if [ -z "${ENV_CREDENTIAL_ENCRYPTION_KEY:-}" ]; then
               echo "❌ ENV_CREDENTIAL_ENCRYPTION_KEY not set in GitHub Secrets" >&2
               exit 1

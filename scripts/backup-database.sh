@@ -52,7 +52,11 @@ if [ -z "${DATABASE_URL:-}" ]; then
     log_warn "DATABASE_URL environment variable is not set"
     log_warn "Skipping database backup (DATABASE_URL not available in current context)"
     log_info "This is expected if DATABASE_URL is only available inside Docker containers"
+    log_info "Context: Running from $(pwd), User: $(whoami), Env vars available: $(env | grep -c '^')"
     exit 0  # Exit successfully to allow deployment to continue
+else
+    log_info "DATABASE_URL is available (length: ${#DATABASE_URL} chars)"
+    log_info "Database backup will proceed with verification"
 fi
 
 # Extract connection details from DATABASE_URL
