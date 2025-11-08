@@ -251,71 +251,6 @@ jobs:
               FEATURE_ADMIN_DASHBOARD_OLD=$(grep '^FEATURE_ADMIN_DASHBOARD=' .env 2>/dev/null | cut -d= -f2 || echo "")
             fi
 
-            # Generate core infrastructure section from GitHub Secrets
-            {
-              printf '%s\n' "# ============================================================================"
-              printf '%s\n' "# Core Infrastructure Configuration (from GitHub Secrets)"
-              printf '%s\n\n' "# ============================================================================"
-
-              printf '%s\n' "# PostgreSQL 数据库连接"
-              printf '%s\n\n' "DATABASE_URL=\${ENV_DATABASE_URL}"
-
-              printf '%s\n' "# NextAuth 配置"
-              printf '%s\n' "NEXTAUTH_URL=\${ENV_NEXTAUTH_URL}"
-              printf '%s\n' "# NextAuth v5 标准配置 (2025 最佳实践)"
-              printf '%s\n' "AUTH_SECRET=\${ENV_NEXTAUTH_SECRET}"
-              printf '%s\n\n' "# 向后兼容"
-              printf '%s\n\n' "NEXTAUTH_SECRET=\${ENV_NEXTAUTH_SECRET}"
-
-              printf '%s\n' "# Google OAuth 凭据"
-              printf '%s\n' "GOOGLE_CLIENT_ID=\${ENV_GOOGLE_CLIENT_ID}"
-              printf '%s\n\n' "GOOGLE_CLIENT_SECRET=\${ENV_GOOGLE_CLIENT_SECRET}"
-
-              printf '%s\n' "# 管理员配置"
-              printf '%s\n' "ADMIN_EMAILS=\${ENV_ADMIN_EMAILS}"
-              printf '%s\n\n' "MAX_UPLOAD_SIZE_MB=\${ENV_MAX_UPLOAD_SIZE_MB:-10}"
-
-              printf '%s\n' "# 凭据加密密钥 (AES-256-GCM) - 用于加密数据库中的第三方 API 凭据"
-              printf '%s\n\n' "CREDENTIAL_ENCRYPTION_KEY=\${ENV_CREDENTIAL_ENCRYPTION_KEY}"
-
-              printf '%s\n' "# API 安全密钥"
-              printf '%s\n\n' "ADMIN_API_KEY=\${ENV_ADMIN_API_KEY}"
-              printf '%s\n\n' "CRON_SECRET=\${ENV_CRON_SECRET}"
-
-              printf '%s\n' "# 朋友认证 JWT 密钥"
-              printf '%s\n\n' "FRIEND_JWT_SECRET=\${ENV_FRIEND_JWT_SECRET}"
-
-              printf '%s\n' "# ============================================================================"
-              printf '%s\n' "# Feature Flags (default from GitHub Secrets, can override on server)"
-              printf '%s\n\n' "# ============================================================================"
-
-              printf '%s\n' "# 启用管理员凭据管理功能"
-              printf '%s\n\n' "FEATURE_ADMIN_CREDENTIALS=\${FEATURE_ADMIN_CREDENTIALS_VALUE}"
-
-              printf '%s\n' "# 启用访问分析功能"
-              printf '%s\n\n' "FEATURE_ADMIN_ANALYTICS=\${FEATURE_ADMIN_ANALYTICS_VALUE}"
-
-              printf '%s\n' "# 启用相册管理功能"
-              printf '%s\n\n' "FEATURE_ADMIN_GALLERY=\${FEATURE_ADMIN_GALLERY_VALUE}"
-
-              printf '%s\n' "# 启用文章管理功能"
-              printf '%s\n\n' "FEATURE_ADMIN_POSTS=\${FEATURE_ADMIN_POSTS_VALUE}"
-
-              printf '%s\n' "# 启用同步仪表板"
-              printf '%s\n\n' "FEATURE_ADMIN_SYNC=\${FEATURE_ADMIN_SYNC_VALUE}"
-
-              printf '%s\n' "# 启用内容导出工具"
-              printf '%s\n\n' "FEATURE_ADMIN_EXPORT=\${FEATURE_ADMIN_EXPORT_VALUE}"
-
-              printf '%s\n' "# 启用管理仪表板统计功能"
-              printf '%s\n\n' "FEATURE_ADMIN_DASHBOARD=\${FEATURE_ADMIN_DASHBOARD_VALUE}"
-
-              printf '%s\n' "# ============================================================================"
-              printf '%s\n' "# NOTE: Third-party API credentials (Bilibili, Douban, Steam) are managed"
-              printf '%s\n' "# through the web UI at /admin/credentials and stored encrypted in database."
-              printf '%s\n' "# ============================================================================"
-            } > .env
-
             # Determine feature flag values: server override OR GitHub Secrets default OR "on"
             FEATURE_ADMIN_CREDENTIALS_FINAL="${FEATURE_ADMIN_CREDENTIALS_OLD:-${ENV_FEATURE_ADMIN_CREDENTIALS:-on}}"
             FEATURE_ADMIN_ANALYTICS_FINAL="${FEATURE_ADMIN_ANALYTICS_OLD:-${ENV_FEATURE_ADMIN_ANALYTICS:-on}}"
@@ -325,27 +260,70 @@ jobs:
             FEATURE_ADMIN_EXPORT_FINAL="${FEATURE_ADMIN_EXPORT_OLD:-${ENV_FEATURE_ADMIN_EXPORT:-on}}"
             FEATURE_ADMIN_DASHBOARD_FINAL="${FEATURE_ADMIN_DASHBOARD_OLD:-${ENV_FEATURE_ADMIN_DASHBOARD:-on}}"
 
-            # Substitute environment variables (core infrastructure)
-            sed -i "s|\${ENV_DATABASE_URL}|${ENV_DATABASE_URL}|g" .env
-            sed -i "s|\${ENV_NEXTAUTH_URL}|${ENV_NEXTAUTH_URL}|g" .env
-            sed -i "s|\${ENV_NEXTAUTH_SECRET}|${ENV_NEXTAUTH_SECRET}|g" .env
-            sed -i "s|\${ENV_GOOGLE_CLIENT_ID}|${ENV_GOOGLE_CLIENT_ID}|g" .env
-            sed -i "s|\${ENV_GOOGLE_CLIENT_SECRET}|${ENV_GOOGLE_CLIENT_SECRET}|g" .env
-            sed -i "s|\${ENV_MAX_UPLOAD_SIZE_MB:-10}|${ENV_MAX_UPLOAD_SIZE_MB:-10}|g" .env
-            sed -i "s|\${ENV_ADMIN_EMAILS}|${ENV_ADMIN_EMAILS}|g" .env
-            sed -i "s|\${ENV_ADMIN_API_KEY}|${ENV_ADMIN_API_KEY}|g" .env
-            sed -i "s|\${ENV_CREDENTIAL_ENCRYPTION_KEY}|${ENV_CREDENTIAL_ENCRYPTION_KEY}|g" .env
-            sed -i "s|\${ENV_CRON_SECRET}|${ENV_CRON_SECRET}|g" .env
-            sed -i "s|\${ENV_FRIEND_JWT_SECRET}|${ENV_FRIEND_JWT_SECRET}|g" .env
+            # Generate core infrastructure section from GitHub Secrets
+            {
+              printf '%s\n' "# ============================================================================"
+              printf '%s\n' "# Core Infrastructure Configuration (from GitHub Secrets)"
+              printf '%s\n\n' "# ============================================================================"
 
-            # Substitute feature flags (with hybrid logic)
-            sed -i "s|\${FEATURE_ADMIN_CREDENTIALS_VALUE}|${FEATURE_ADMIN_CREDENTIALS_FINAL}|g" .env
-            sed -i "s|\${FEATURE_ADMIN_ANALYTICS_VALUE}|${FEATURE_ADMIN_ANALYTICS_FINAL}|g" .env
-            sed -i "s|\${FEATURE_ADMIN_GALLERY_VALUE}|${FEATURE_ADMIN_GALLERY_FINAL}|g" .env
-            sed -i "s|\${FEATURE_ADMIN_POSTS_VALUE}|${FEATURE_ADMIN_POSTS_FINAL}|g" .env
-            sed -i "s|\${FEATURE_ADMIN_SYNC_VALUE}|${FEATURE_ADMIN_SYNC_FINAL}|g" .env
-            sed -i "s|\${FEATURE_ADMIN_EXPORT_VALUE}|${FEATURE_ADMIN_EXPORT_FINAL}|g" .env
-            sed -i "s|\${FEATURE_ADMIN_DASHBOARD_VALUE}|${FEATURE_ADMIN_DASHBOARD_FINAL}|g" .env
+              printf '%s\n' "# PostgreSQL 数据库连接"
+              printf '%s\n\n' "DATABASE_URL=${ENV_DATABASE_URL}"
+
+              printf '%s\n' "# NextAuth 配置"
+              printf '%s\n' "NEXTAUTH_URL=${ENV_NEXTAUTH_URL}"
+              printf '%s\n' "# NextAuth v5 标准配置 (2025 最佳实践)"
+              printf '%s\n' "AUTH_SECRET=${ENV_NEXTAUTH_SECRET}"
+              printf '%s\n' "# 向后兼容"
+              printf '%s\n\n' "NEXTAUTH_SECRET=${ENV_NEXTAUTH_SECRET}"
+
+              printf '%s\n' "# Google OAuth 凭据"
+              printf '%s\n' "GOOGLE_CLIENT_ID=${ENV_GOOGLE_CLIENT_ID}"
+              printf '%s\n\n' "GOOGLE_CLIENT_SECRET=${ENV_GOOGLE_CLIENT_SECRET}"
+
+              printf '%s\n' "# 管理员配置"
+              printf '%s\n' "ADMIN_EMAILS=${ENV_ADMIN_EMAILS}"
+              printf '%s\n\n' "MAX_UPLOAD_SIZE_MB=${ENV_MAX_UPLOAD_SIZE_MB:-10}"
+
+              printf '%s\n' "# 凭据加密密钥 (AES-256-GCM) - 用于加密数据库中的第三方 API 凭据"
+              printf '%s\n\n' "CREDENTIAL_ENCRYPTION_KEY=${ENV_CREDENTIAL_ENCRYPTION_KEY}"
+
+              printf '%s\n' "# API 安全密钥"
+              printf '%s\n\n' "ADMIN_API_KEY=${ENV_ADMIN_API_KEY}"
+              printf '%s\n\n' "CRON_SECRET=${ENV_CRON_SECRET}"
+
+              printf '%s\n' "# 朋友认证 JWT 密钥"
+              printf '%s\n\n' "FRIEND_JWT_SECRET=${ENV_FRIEND_JWT_SECRET}"
+
+              printf '%s\n' "# ============================================================================"
+              printf '%s\n' "# Feature Flags (default from GitHub Secrets, can override on server)"
+              printf '%s\n\n' "# ============================================================================"
+
+              printf '%s\n' "# 启用管理员凭据管理功能"
+              printf '%s\n\n' "FEATURE_ADMIN_CREDENTIALS=${FEATURE_ADMIN_CREDENTIALS_FINAL}"
+
+              printf '%s\n' "# 启用访问分析功能"
+              printf '%s\n\n' "FEATURE_ADMIN_ANALYTICS=${FEATURE_ADMIN_ANALYTICS_FINAL}"
+
+              printf '%s\n' "# 启用相册管理功能"
+              printf '%s\n\n' "FEATURE_ADMIN_GALLERY=${FEATURE_ADMIN_GALLERY_FINAL}"
+
+              printf '%s\n' "# 启用文章管理功能"
+              printf '%s\n\n' "FEATURE_ADMIN_POSTS=${FEATURE_ADMIN_POSTS_FINAL}"
+
+              printf '%s\n' "# 启用同步仪表板"
+              printf '%s\n\n' "FEATURE_ADMIN_SYNC=${FEATURE_ADMIN_SYNC_FINAL}"
+
+              printf '%s\n' "# 启用内容导出工具"
+              printf '%s\n\n' "FEATURE_ADMIN_EXPORT=${FEATURE_ADMIN_EXPORT_FINAL}"
+
+              printf '%s\n' "# 启用管理仪表板统计功能"
+              printf '%s\n\n' "FEATURE_ADMIN_DASHBOARD=${FEATURE_ADMIN_DASHBOARD_FINAL}"
+
+              printf '%s\n' "# ============================================================================"
+              printf '%s\n' "# NOTE: Third-party API credentials (Bilibili, Douban, Steam) are managed"
+              printf '%s\n' "# through the web UI at /admin/credentials and stored encrypted in database."
+              printf '%s\n' "# ============================================================================"
+            } > .env
 
             echo "✅ .env file generated successfully (core from Secrets, feature flags hybrid)"
 
