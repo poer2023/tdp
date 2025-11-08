@@ -1,0 +1,162 @@
+# Scheduled Database Backup Workflow
+name: Scheduled Database Backup
+
+on:
+  # Run daily at 2:00 AM UTC (10:00 AM Beijing Time)
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      retention_days:
+        description: 'Backup retention days'
+        required: false
+        default: '7'
+        type: string
+
+jobs:
+  backup:
+    name: Create Database Backup
+    runs-on: ubuntu-latest
+    environment: production
+
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      PROJECT_DIR: ${{ secrets.PROJECT_DIR }}
+      RETENTION_DAYS: ${{ github.event.inputs.retention_days || '7' }}
+
+    steps:
+      - name: Check required secrets
+        shell: bash
+        env:
+          HAS_SSH_KEY: ${{ secrets.SSH_KEY != '' }}
+        run: |
+          set -euo pipefail
+          missing=()
+          [[ -n "${SSH_HOST:-}" ]] || missing+=(SSH_HOST)
+          [[ -n "${SSH_USER:-}" ]] || missing+=(SSH_USER)
+          [[ "${HAS_SSH_KEY}" == "true" ]] || missing+=(SSH_KEY)
+          [[ -n "${PROJECT_DIR:-}" ]] || missing+=(PROJECT_DIR)
+          if (( ${#missing[@]} > 0 )); then
+            echo "Missing required secrets: ${missing[*]}" >&2
+            exit 1
+          fi
+
+      - name: Create scheduled backup
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT || '22' }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script_stop: true
+          envs: PROJECT_DIR,RETENTION_DAYS
+          script: |
+            set -euo pipefail
+
+            cd "${PROJECT_DIR}"
+
+            echo "==> Creating scheduled database backup"
+            echo "Retention: ${RETENTION_DAYS} days"
+
+            # Execute backup using Docker
+            docker compose run --rm \
+              -e BACKUP_DIR=/backups \
+              backup sh -c "
+                echo '==> Creating scheduled backup...';
+                /scripts/backup-database.sh --retention-days ${RETENTION_DAYS};
+
+                echo '==> Verifying backup integrity...';
+                LATEST_BACKUP=\$(ls -t /backups/backup_*.sql.gz 2>/dev/null | head -n1);
+                if [ -z \"\$LATEST_BACKUP\" ]; then
+                  echo '❌ No backup file found!';
+                  exit 1;
+                fi;
+
+                if ! gunzip -t \"\$LATEST_BACKUP\" 2>/dev/null; then
+                  echo '❌ Backup file is corrupted!';
+                  exit 1;
+                fi;
+
+                BACKUP_SIZE=\$(du -h \"\$LATEST_BACKUP\" | cut -f1);
+                echo \"✅ Scheduled backup completed: \$BACKUP_SIZE\";
+                echo \"   File: \$(basename \"\$LATEST_BACKUP\")\";
+              "
+
+            # List current backups
+            echo "==> Current backups:"
+            ls -lh backups/ | grep "backup_.*\.sql\.gz" || echo "No backups found"
+
+            # Disk usage check
+            echo "==> Backup directory disk usage:"
+            du -sh backups/
+
+      - name: Backup summary
+        if: always()
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Scheduled backup completed successfully"
+            {
+              echo "# ✅ Scheduled Backup Successful";
+              echo;
+              echo "- **Host**: ${SSH_HOST:-unknown}";
+              echo "- **Retention**: ${RETENTION_DAYS} days";
+              echo "- **Next backup**: $(date -u -d '+1 day' '+%Y-%m-%d 02:00 UTC')";
+              echo;
+              echo "Backup files are stored on the server in: \`./backups/\`";
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "❌ Scheduled backup failed"
+            {
+              echo "# ❌ Scheduled Backup Failed";
+              echo;
+              echo "Please check the backup logs and server status.";
+              echo;
+              echo "- **Host**: ${SSH_HOST:-unknown}";
+              echo "- **Check**: SSH to server and verify disk space";
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  notification:
+    name: Backup Notification
+    runs-on: ubuntu-latest
+    needs: backup
+    if: failure()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create failure alert
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: |
+          ISSUE_TITLE="⚠️ Scheduled Database Backup Failed"
+          ISSUE_BODY="## Scheduled Backup Failure
+
+The automated daily database backup has failed.
+
+**Timestamp**: $(date '+%Y-%m-%d %H:%M:%S UTC')
+
+**Workflow Run**: [View Logs](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})
+
+**Action Required**:
+1. Check server disk space
+2. Verify database connectivity
+3. Review backup script logs
+4. Ensure manual backup if issue persists
+
+**Next scheduled backup**: $(date -u -d '+1 day' '+%Y-%m-%d 02:00 UTC')"
+
+          ./scripts/alert-github-issue.sh "$ISSUE_TITLE" "$ISSUE_BODY" "backup-failure,scheduled,monitoring" || true

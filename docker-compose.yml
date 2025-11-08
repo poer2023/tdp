@@ -19,6 +19,7 @@ services:
 
   # Pre-migration backup service
   # Creates a database backup before running migrations to ensure zero data loss
+  # Includes backup verification to ensure backup integrity
   backup:
     image: postgres:16-alpine
     container_name: tdp-backup
@@ -30,8 +31,24 @@ services:
     command: >
       sh -c "
       echo '==> Creating pre-migration backup...';
-      /scripts/backup-database.sh;
-      echo '==> Backup completed successfully';
+      /scripts/backup-database.sh || exit 1;
+
+      echo '==> Verifying backup integrity...';
+      LATEST_BACKUP=$$(ls -t /backups/backup_*.sql.gz 2>/dev/null | head -n1);
+      if [ -z \"$$LATEST_BACKUP\" ]; then
+        echo '❌ No backup file found after creation!';
+        exit 1;
+      fi;
+
+      echo '==> Testing backup file readability...';
+      if ! gunzip -t \"$$LATEST_BACKUP\" 2>/dev/null; then
+        echo '❌ Backup file is corrupted or unreadable!';
+        exit 1;
+      fi;
+
+      BACKUP_SIZE=$$(du -h \"$$LATEST_BACKUP\" | cut -f1);
+      echo \"✅ Backup verified successfully: $$BACKUP_SIZE\";
+      echo \"   File: $$(basename \"$$LATEST_BACKUP\")\";
       "
     depends_on:
       postgres:

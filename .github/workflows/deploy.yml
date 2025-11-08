@@ -360,22 +360,79 @@ jobs:
             echo "==> Pulling latest Docker images"
             docker compose pull
 
-            echo "==> Creating database backup before migration"
-            ./scripts/backup-database.sh || {
-              backup_exit_code=$?
-              echo "⚠️ Backup script exited with code: $backup_exit_code"
-              echo "This may be expected if DATABASE_URL is only available in Docker containers"
-              echo "Continuing with deployment..."
-            }
-
-            echo "==> Verifying migration status"
-            ./scripts/verify-migration.sh --check-only || {
-              echo "⚠️ Pre-migration check failed, but continuing"
-              echo "This may indicate schema drift - review migration history"
-            }
-
-            echo "==> Restarting services (includes automatic migration)"
+            echo "==> Starting deployment with automatic backup and migration"
+            echo "Docker Compose will handle: backup → migrate → app startup"
             docker compose up -d --remove-orphans
+
+            echo "==> Checking migration container status"
+            MIGRATE_EXIT_CODE=$(docker inspect tdp-migrate --format='{{.State.ExitCode}}' 2>/dev/null || echo "255")
+
+            if [ "$MIGRATE_EXIT_CODE" != "0" ]; then
+              echo "❌ Migration container failed with exit code: $MIGRATE_EXIT_CODE"
+              echo "==> Fetching migration logs..."
+              docker logs tdp-migrate || true
+
+              echo "==> Starting automatic rollback..."
+              # Stop all containers
+              docker compose down
+
+              # Restore from latest backup
+              if ./scripts/restore-from-backup.sh; then
+                echo "✅ Database restored from backup successfully"
+
+                # Create GitHub Issue alert
+                ISSUE_TITLE="🚨 Database Migration Failed - Auto Rollback Completed"
+                ISSUE_BODY="## Migration Failure Details
+
+**Exit Code**: $MIGRATE_EXIT_CODE
+
+**Migration Logs**:
+\`\`\`
+$(docker logs tdp-migrate 2>&1 || echo 'No logs available')
+\`\`\`
+
+**Rollback Status**: ✅ Completed - Database restored from latest backup
+
+**Next Steps**:
+1. Review migration logs above
+2. Fix migration issues locally
+3. Test migration thoroughly before re-deploying
+
+**System Status**: All containers stopped, database rolled back to pre-migration state"
+
+                ./scripts/alert-github-issue.sh "$ISSUE_TITLE" "$ISSUE_BODY" "migration-failure,rollback-completed,urgent" || true
+              else
+                echo "❌ Automatic rollback failed!"
+
+                # Create critical alert
+                ISSUE_TITLE="🚨🚨 CRITICAL: Migration Failed AND Rollback Failed"
+                ISSUE_BODY="## Critical Failure
+
+Both migration and automatic rollback have failed. Manual intervention required immediately.
+
+**Migration Exit Code**: $MIGRATE_EXIT_CODE
+
+**Migration Logs**:
+\`\`\`
+$(docker logs tdp-migrate 2>&1 || echo 'No logs available')
+\`\`\`
+
+**Rollback Status**: ❌ FAILED
+
+**IMMEDIATE ACTION REQUIRED**:
+1. SSH to server: \`ssh user@$SSH_HOST\`
+2. Check backup directory: \`ls -lh ./backups/\`
+3. Manually restore latest backup
+4. Contact DevOps team immediately"
+
+                ./scripts/alert-github-issue.sh "$ISSUE_TITLE" "$ISSUE_BODY" "migration-failure,rollback-failed,critical" || true
+              fi
+
+              echo "=== Deployment ABORTED due to migration failure ==="
+              exit 1
+            fi
+
+            echo "✅ Migration completed successfully"
 
             echo "==> Waiting for HTTP health (port 3000) up to 300s"
             start_ts=$(date +%s)
