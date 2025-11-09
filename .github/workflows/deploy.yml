@@ -95,7 +95,7 @@ jobs:
           for attempt in $(seq 1 "$MAX_CI_CHECKS"); do
             CI_JSON=$(gh run list \
               --repo="$REPO" \
-              --workflow="ci-critical.yml" \
+              --workflow="ci.yml" \
               --commit="$COMMIT_SHA" \
               --limit 1 \
               --json status,conclusion)
