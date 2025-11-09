@@ -1,9 +1,6 @@
 name: Prettier Auto Format
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
