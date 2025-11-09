@@ -46,9 +46,11 @@ COPY --from=builder --chown=node:node /app/public ./public
 # (sharp for image processing, tsx for script execution, prisma for migrations)
 COPY --from=deps --chown=node:node /app/node_modules/sharp ./node_modules/sharp
 COPY --from=builder --chown=node:node /app/node_modules/tsx ./node_modules/tsx
+
+# Copy Prisma CLI and all its dependencies for migrations
 COPY --from=builder --chown=node:node /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder --chown=node:node /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=node:node /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=builder --chown=node:node /app/node_modules/.bin ./node_modules/.bin
 
 # Copy prisma schema for migrations
 COPY --chown=node:node prisma ./prisma

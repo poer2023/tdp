@@ -85,10 +85,11 @@ services:
     container_name: tdp-migrate
     env_file:
       - .env
+    working_dir: /app
     # 挂载 prisma 目录以确保使用最新的 schema
     volumes:
       - ./prisma:/app/prisma:ro
-    command: ["node", "/app/node_modules/prisma/build/index.js", "migrate", "deploy"]
+    command: ["sh", "-c", "npx prisma migrate deploy"]
     depends_on:
       postgres:
         condition: service_healthy
