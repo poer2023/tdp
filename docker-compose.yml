@@ -88,7 +88,7 @@ services:
     # 挂载 prisma 目录以确保使用最新的 schema
     volumes:
       - ./prisma:/app/prisma:ro
-    command: ["/app/node_modules/.bin/prisma", "migrate", "deploy"]
+    command: ["node", "/app/node_modules/prisma/build/index.js", "migrate", "deploy"]
     depends_on:
       postgres:
         condition: service_healthy
