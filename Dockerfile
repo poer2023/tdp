@@ -43,9 +43,15 @@ COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 COPY --from=builder --chown=node:node /app/public ./public
 
 # Copy specific dependencies for runtime scripts
-# (sharp for image processing, tsx for script execution)
+# (sharp for image processing, tsx for script execution, prisma for migrations)
 COPY --from=deps --chown=node:node /app/node_modules/sharp ./node_modules/sharp
 COPY --from=builder --chown=node:node /app/node_modules/tsx ./node_modules/tsx
+COPY --from=builder --chown=node:node /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=node:node /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=node:node /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+
+# Copy prisma schema for migrations
+COPY --chown=node:node prisma ./prisma
 
 # Copy scripts for maintenance operations (thumbnail generation, etc.)
 COPY --chown=node:node scripts ./scripts

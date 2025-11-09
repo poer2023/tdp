@@ -77,16 +77,13 @@ services:
 
   migrate:
     # 数据库迁移服务 - 一次性运行
-    # 使用本地构建的 migrator 阶段镜像，确保内置 Prisma CLI 与 prisma/ 目录
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: migrator
+    # 使用 GHCR 预构建镜像，包含 Prisma CLI 和 schema
     image: ghcr.io/poer2023/tdp:${IMAGE_TAG:-latest}
+    pull_policy: always
     container_name: tdp-migrate
     env_file:
       - .env
-    # 若仍使用远程镜像，可挂载 prisma 目录（双保险）
+    # 挂载 prisma 目录以确保使用最新的 schema
     volumes:
       - ./prisma:/app/prisma:ro
     command: ["sh", "-c", "npx prisma migrate deploy"]
