@@ -59,8 +59,9 @@ COPY --chown=node:node prisma ./prisma
 COPY --chown=node:node scripts ./scripts
 COPY --chown=node:node package.json ./
 
-# Copy health check and entrypoint scripts
+# Copy health check, migration, and entrypoint scripts
 COPY --chown=node:node docker/healthcheck.js ./docker/healthcheck.js
+COPY --chown=node:node docker/migrate.sh ./docker/migrate.sh
 COPY --chown=node:node docker/entrypoint.sh ./docker/entrypoint.sh
 
 # Chainguard node image runs as node user (UID 65532) by default
