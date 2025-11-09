@@ -28,38 +28,34 @@ services:
     volumes:
       - ./backups:/backups
       - ./scripts:/scripts:ro
-    command: >
-      sh -c "
-      echo '==> Creating pre-migration backup...';
-
-      if [ -z \"$$DATABASE_URL\" ]; then
-        echo '⚠️  WARNING: DATABASE_URL not set in backup container';
-        echo '⚠️  Skipping backup - DATABASE_URL environment variable is missing';
-        echo '⚠️  This may indicate that .env file was not properly loaded';
-        echo '⚠️  Proceeding without backup (acceptable for DATABASE_URL-less deploys)';
-        exit 0;
-      fi;
-
-      /scripts/backup-database.sh || exit 1;
-
-      echo '==> Verifying backup integrity...';
-      LATEST_BACKUP=$$(ls -t /backups/backup_*.sql.gz 2>/dev/null | head -n1);
-      if [ -z \"$$LATEST_BACKUP\" ]; then
-        echo '❌ No backup file found after creation!';
-        echo '   DATABASE_URL was available but backup creation failed';
-        exit 1;
-      fi;
-
-      echo '==> Testing backup file readability...';
-      if ! gunzip -t \"$$LATEST_BACKUP\" 2>/dev/null; then
-        echo '❌ Backup file is corrupted or unreadable!';
-        exit 1;
-      fi;
-
-      BACKUP_SIZE=$$(du -h \"$$LATEST_BACKUP\" | cut -f1);
-      echo \"✅ Backup verified successfully: $$BACKUP_SIZE\";
-      echo \"   File: $$(basename \"$$LATEST_BACKUP\")\";
-      "
+    command:
+      - sh
+      - -c
+      - |
+        echo '==> Creating pre-migration backup...';
+        if [ -z "$$DATABASE_URL" ]; then
+          echo '⚠️  WARNING: DATABASE_URL not set in backup container';
+          echo '⚠️  Skipping backup - DATABASE_URL environment variable is missing';
+          echo '⚠️  This may indicate that .env file was not properly loaded';
+          echo '⚠️  Proceeding without backup (acceptable for DATABASE_URL-less deploys)';
+          exit 0;
+        fi;
+        /scripts/backup-database.sh || exit 1;
+        echo '==> Verifying backup integrity...';
+        LATEST_BACKUP=$$(ls -t /backups/backup_*.sql.gz 2>/dev/null | head -n1);
+        if [ -z "$$LATEST_BACKUP" ]; then
+          echo '❌ No backup file found after creation!';
+          echo '   DATABASE_URL was available but backup creation failed';
+          exit 1;
+        fi;
+        echo '==> Testing backup file readability...';
+        if ! gunzip -t "$$LATEST_BACKUP" 2>/dev/null; then
+          echo '❌ Backup file is corrupted or unreadable!';
+          exit 1;
+        fi;
+        BACKUP_SIZE=$$(du -h "$$LATEST_BACKUP" | cut -f1);
+        echo "✅ Backup verified successfully: $$BACKUP_SIZE";
+        echo "   File: $$(basename "$$LATEST_BACKUP")";
     depends_on:
       postgres:
         condition: service_healthy
