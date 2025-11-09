@@ -17,8 +17,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source code and build
+# Copy source code with root privileges then hand ownership back to node user
+USER root
 COPY . .
+RUN chown -R node:node /app
+USER node
 RUN npx prisma generate && npm run build
 
 # === Migration Stage: Database migrations ===
@@ -42,15 +45,12 @@ COPY --from=builder --chown=node:node /app/.next/standalone ./
 COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 COPY --from=builder --chown=node:node /app/public ./public
 
-# Copy specific dependencies for runtime scripts
-# (sharp for image processing, tsx for script execution, prisma for migrations)
-COPY --from=deps --chown=node:node /app/node_modules/sharp ./node_modules/sharp
-COPY --from=builder --chown=node:node /app/node_modules/tsx ./node_modules/tsx
+# Copy production dependencies for the Next.js standalone server and Prisma CLI
+COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 
-# Copy Prisma CLI and all its dependencies for migrations
-COPY --from=builder --chown=node:node /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=node:node /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=node:node /app/node_modules/.bin ./node_modules/.bin
+# Bring over dev-only tooling that is still required at runtime
+COPY --from=builder --chown=node:node /app/node_modules/tsx ./node_modules/tsx
+COPY --from=builder --chown=node:node /app/node_modules/.bin/tsx ./node_modules/.bin/tsx
 
 # Copy prisma schema for migrations
 COPY --chown=node:node prisma ./prisma
