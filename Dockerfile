@@ -65,7 +65,7 @@ COPY --chown=node:node docker/migrate.sh ./docker/migrate.sh
 COPY --chown=node:node docker/entrypoint.sh ./docker/entrypoint.sh
 
 # Chainguard node image runs as node user (UID 65532) by default
-# No need for USER directive or chmod (scripts must be executable in repo)
+# Scripts must be executable in git repo - permissions are preserved by COPY
 
 EXPOSE 3000
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
