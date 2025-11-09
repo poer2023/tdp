@@ -4,7 +4,7 @@ on:
   # Trigger after CI Critical Path completes successfully
   # This ensures code quality gates pass before building Docker image
   workflow_run:
-    workflows: ["CI Critical Path"]
+    workflows: ["CI"]
     types: [completed]
     branches: [main]
 
