@@ -89,7 +89,20 @@ services:
     # 挂载 prisma 目录以确保使用最新的 schema
     volumes:
       - ./prisma:/app/prisma:ro
-    command: ["sh", "-c", "npx prisma migrate deploy"]
+    # Debug: List files and test node before running prisma
+    command:
+      - sh
+      - -c
+      - |
+        echo "==> Debug: Checking environment"
+        echo "Working dir: $(pwd)"
+        echo "Node version: $(node --version)"
+        echo "Checking /app/node_modules/prisma/build/index.js"
+        ls -la /app/node_modules/prisma/build/index.js || echo "FILE NOT FOUND!"
+        echo "Checking .bin directory"
+        ls -la /app/node_modules/.bin/ | head -20
+        echo "==> Running prisma migrate deploy"
+        node /app/node_modules/prisma/build/index.js migrate deploy
     depends_on:
       postgres:
         condition: service_healthy
