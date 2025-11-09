@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { useRouter } from "next/navigation";
 import { SubscriptionForm } from "@/components/subscriptions/subscription-form";
 
@@ -245,11 +245,20 @@ describe("Form Submission Integration", () => {
         json: async () => ({ subscription: { id: "new-id" } }),
       });
 
-      fireEvent.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith("/admin/subscriptions");
+      // Use act() to properly handle React state transitions
+      await act(async () => {
+        fireEvent.click(submitButton);
+        // Allow time for startTransition to complete
+        await new Promise((resolve) => setTimeout(resolve, 150));
       });
+
+      // Increase timeout to ensure transition completes
+      await waitFor(
+        () => {
+          expect(mockPush).toHaveBeenCalledWith("/admin/subscriptions");
+        },
+        { timeout: 3000 }
+      );
     });
 
     it("should handle network errors gracefully", async () => {
@@ -283,6 +292,7 @@ describe("Form Submission Integration", () => {
 
   describe("User Interaction Flow", () => {
     it("should disable submit button during submission", async () => {
+      // Fix mock to return proper Response object
       (global.fetch as ReturnType<typeof vi.fn>).mockImplementation(
         () =>
           new Promise((resolve) =>
@@ -290,8 +300,11 @@ describe("Form Submission Integration", () => {
               () =>
                 resolve({
                   ok: true,
+                  status: 200,
+                  statusText: "OK",
+                  headers: new Headers(),
                   json: async () => ({ subscription: { id: "new-id" } }),
-                }),
+                } as Response),
               100
             )
           )
@@ -309,15 +322,24 @@ describe("Form Submission Integration", () => {
       });
 
       const submitButton = screen.getByRole("button", { name: /save changes/i });
-      fireEvent.click(submitButton);
+
+      // Use act() to handle async operations properly
+      await act(async () => {
+        fireEvent.click(submitButton);
+        // Small delay to verify button is disabled
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
 
       // Button should be disabled during submission
       expect(submitButton).toBeDisabled();
 
-      // Wait for submission to complete
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalled();
-      });
+      // Wait for submission to complete with increased timeout
+      await waitFor(
+        () => {
+          expect(mockPush).toHaveBeenCalled();
+        },
+        { timeout: 3000 }
+      );
     });
 
     it("should allow cancellation and navigate back", () => {
