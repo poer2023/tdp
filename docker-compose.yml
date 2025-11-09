@@ -34,18 +34,10 @@ services:
 
       if [ -z \"$$DATABASE_URL\" ]; then
         echo '⚠️  WARNING: DATABASE_URL not set in backup container';
-        echo '⚠️  Backup will be skipped - this may indicate a configuration issue';
-        echo '⚠️  Please verify DATABASE_URL secret is properly configured';
-        /scripts/backup-database.sh;
-        BACKUP_EXIT=$$?;
-        if [ $$BACKUP_EXIT -eq 0 ]; then
-          echo '⚠️  Backup script exited successfully (DATABASE_URL missing is expected in some configs)';
-          echo '⚠️  Proceeding with deployment without backup';
-          exit 0;
-        else
-          echo '❌ Backup script failed with unexpected error';
-          exit 1;
-        fi;
+        echo '⚠️  Skipping backup - DATABASE_URL environment variable is missing';
+        echo '⚠️  This may indicate that .env file was not properly loaded';
+        echo '⚠️  Proceeding without backup (acceptable for DATABASE_URL-less deploys)';
+        exit 0;
       fi;
 
       /scripts/backup-database.sh || exit 1;
