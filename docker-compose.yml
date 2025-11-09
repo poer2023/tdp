@@ -89,8 +89,9 @@ services:
     # 挂载 prisma 目录以确保使用最新的 schema
     volumes:
       - ./prisma:/app/prisma:ro
-    # Use dedicated migration script (sh is available via shebang)
-    command: ["/app/docker/migrate.sh"]
+    # Execute migration script explicitly with sh
+    # (Direct execution fails, explicit sh invocation required)
+    entrypoint: ["/bin/sh", "/app/docker/migrate.sh"]
     depends_on:
       postgres:
         condition: service_healthy
