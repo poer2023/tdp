@@ -6,7 +6,8 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev \
+  && npx prisma generate
 
 # === Builder Stage: Build application ===
 FROM cgr.dev/chainguard/node:latest-dev AS builder
