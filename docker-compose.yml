@@ -27,35 +27,49 @@ services:
       - .env
     volumes:
       - ./backups:/backups
-      - ./scripts:/scripts:ro
     command:
       - sh
       - -c
       - |
-        echo '==> Creating pre-migration backup...';
-        if [ -z "$$DATABASE_URL" ]; then
-          echo '⚠️  WARNING: DATABASE_URL not set in backup container';
-          echo '⚠️  Skipping backup - DATABASE_URL environment variable is missing';
-          echo '⚠️  This may indicate that .env file was not properly loaded';
-          echo '⚠️  Proceeding without backup (acceptable for DATABASE_URL-less deploys)';
+        echo '==> Pre-migration backup starting...';
+        if [ -z "$${DATABASE_URL:-}" ]; then
+          echo '⚠️  DATABASE_URL not available - skipping backup';
+          echo '   This is acceptable for deployments without DATABASE_URL configured';
           exit 0;
         fi;
-        /scripts/backup-database.sh || exit 1;
-        echo '==> Verifying backup integrity...';
-        LATEST_BACKUP=$$(ls -t /backups/backup_*.sql.gz 2>/dev/null | head -n1);
-        if [ -z "$$LATEST_BACKUP" ]; then
-          echo '❌ No backup file found after creation!';
-          echo '   DATABASE_URL was available but backup creation failed';
+
+        echo '==> Extracting database connection details...';
+        DB_USER=$$(echo "$$DATABASE_URL" | sed -n 's/.*:\/\/\([^:]*\):.*/\1/p');
+        DB_PASS=$$(echo "$$DATABASE_URL" | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p');
+        DB_HOST=$$(echo "$$DATABASE_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p');
+        DB_PORT=$$(echo "$$DATABASE_URL" | sed -n 's/.*:\([0-9]*\)\/.*/\1/p');
+        DB_NAME=$$(echo "$$DATABASE_URL" | sed -n 's/.*\/\([^?]*\).*/\1/p');
+
+        echo "   Database: $$DB_NAME at $$DB_HOST:$$DB_PORT";
+
+        TIMESTAMP=$$(date +%Y%m%d_%H%M%S);
+        BACKUP_FILE="/backups/backup_$${TIMESTAMP}.sql.gz";
+
+        echo '==> Creating backup...';
+        mkdir -p /backups;
+        export PGPASSWORD="$$DB_PASS";
+
+        if pg_dump -h "$$DB_HOST" -p "$$DB_PORT" -U "$$DB_USER" -d "$$DB_NAME" --format=plain --no-owner --no-acl | gzip > "$$BACKUP_FILE"; then
+          BACKUP_SIZE=$$(du -h "$$BACKUP_FILE" | cut -f1);
+          echo "✅ Backup created: $$BACKUP_SIZE";
+
+          echo '==> Verifying backup integrity...';
+          if gunzip -t "$$BACKUP_FILE" 2>/dev/null; then
+            echo "✅ Backup verified successfully: $$(basename "$$BACKUP_FILE")";
+            exit 0;
+          else
+            echo '❌ Backup verification failed - file is corrupted';
+            exit 1;
+          fi;
+        else
+          echo '❌ Backup creation failed';
           exit 1;
         fi;
-        echo '==> Testing backup file readability...';
-        if ! gunzip -t "$$LATEST_BACKUP" 2>/dev/null; then
-          echo '❌ Backup file is corrupted or unreadable!';
-          exit 1;
-        fi;
-        BACKUP_SIZE=$$(du -h "$$LATEST_BACKUP" | cut -f1);
-        echo "✅ Backup verified successfully: $$BACKUP_SIZE";
-        echo "   File: $$(basename "$$LATEST_BACKUP")";
     depends_on:
       postgres:
         condition: service_healthy
