@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { Container } from "@/components/ui/container";
 import { LanguageBadge } from "@/components/ui/language-badge";
 import { SearchResultSkeleton } from "@/components/search/search-skeleton";
 import { SearchEmptyState } from "@/components/search/search-empty-state";
@@ -91,7 +92,7 @@ export default function SearchPage() {
   const totalResults = results.posts.length + results.images.length + results.moments.length;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 md:py-10">
+    <Container width="standard" padding="px-4 py-6 sm:px-6 sm:py-8 md:py-10">
       {/* Breadcrumbs */}
       <nav
         className="mb-4 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400"
@@ -337,6 +338,6 @@ export default function SearchPage() {
           </p>
         </div>
       )}
-    </div>
+    </Container>
   );
 }

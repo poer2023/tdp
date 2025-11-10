@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { Container } from "@/components/ui/container";
 import { restoreMomentAction, purgeMomentAction } from "../manage-actions";
 
 export const runtime = "nodejs";
@@ -13,9 +14,11 @@ export default async function LocalizedMomentsTrashPage({ params }: Props) {
   const session = await auth();
   if (!session?.user?.id) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-10 text-sm text-zinc-600 dark:text-zinc-400">
-        {l === "zh" ? "请登录以查看回收站。" : "Please sign in to view trash."}
-      </div>
+      <Container width="narrow" padding="px-6 py-10">
+        <div className="text-sm text-zinc-600 dark:text-zinc-400">
+          {l === "zh" ? "请登录以查看回收站。" : "Please sign in to view trash."}
+        </div>
+      </Container>
     );
   }
   const userId = session.user.id;
@@ -25,7 +28,7 @@ export default async function LocalizedMomentsTrashPage({ params }: Props) {
     select: { id: true, slug: true, content: true, deletedAt: true },
   });
   return (
-    <div className="mx-auto max-w-2xl px-6 py-10">
+    <Container width="narrow" padding="px-6 py-10">
       <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
         {l === "zh" ? "回收站" : "Trash"}
       </h1>
@@ -53,7 +56,7 @@ export default async function LocalizedMomentsTrashPage({ params }: Props) {
           </li>
         ))}
       </ul>
-    </div>
+    </Container>
   );
 }
 

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Particles } from "@/components/ui/particles";
+import { Container } from "@/components/ui/container";
 import { useTheme } from "@/hooks/use-theme";
 import { LiveHighlightsSection } from "@/components/about/live-highlights-section";
 import type { AboutLocale } from "@/lib/about-content";
@@ -42,14 +43,14 @@ type AboutContentData = {
 interface ParticlesAboutContentProps {
   data: AboutContentData;
   locale: AboutLocale;
-  layoutClass: string;
+  layoutClass?: string; // Make optional since we'll use Container
   initialHighlights?: LiveHighlightsData;
 }
 
 export function ParticlesAboutContent({
   data,
   locale,
-  layoutClass,
+  layoutClass, // Keep for backward compatibility but won't use
   initialHighlights,
 }: ParticlesAboutContentProps) {
   const { theme } = useTheme();
@@ -74,7 +75,7 @@ export function ParticlesAboutContent({
       />
 
       {/* 原有内容 */}
-      <div className={layoutClass}>
+      <Container width="standard" className="flex min-h-screen flex-col gap-12 sm:gap-16 md:gap-20">
         <section className="space-y-6">
           <span className="inline-flex items-center rounded-full border border-zinc-200 px-4 py-1 text-xs font-medium tracking-[0.2em] text-zinc-600 uppercase dark:border-zinc-800 dark:text-zinc-400">
             {data.tag}
@@ -228,7 +229,7 @@ export function ParticlesAboutContent({
             </Link>
           </div>
         </section>
-      </div>
+      </Container>
     </div>
   );
 }

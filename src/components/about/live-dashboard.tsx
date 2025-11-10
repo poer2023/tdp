@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Container } from "@/components/ui/container";
 import {
   ArrowLeft,
   Film,
@@ -116,7 +117,7 @@ export function LiveDashboard({ locale }: LiveDashboardProps) {
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:px-12 md:py-16">
+    <Container width="dashboard" className="min-h-screen" padding="px-4 py-8 sm:px-6 sm:py-12 md:px-12 md:py-16">
       {/* Header */}
       <div className="mb-8">
         <Link
@@ -185,6 +186,6 @@ export function LiveDashboard({ locale }: LiveDashboardProps) {
           </div>
         </div>
       )}
-    </div>
+    </Container>
   );
 }

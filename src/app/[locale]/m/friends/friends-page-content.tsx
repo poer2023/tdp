@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Container } from "@/components/ui/container";
 import { FriendAuthForm } from "@/components/friends/FriendAuthForm";
 import { FriendHeader } from "@/components/friends/FriendHeader";
 import { FriendMomentTimeline, type FriendMoment } from "@/components/friends/FriendMomentTimeline";
@@ -42,7 +43,7 @@ export function FriendsPageContent({
   const pathname = usePathname();
 
   return (
-    <div className="container mx-auto px-4 py-10">
+    <Container width="standard" padding="px-4 py-10">
       {/* 标签页导航 */}
       <div className="mb-8">
         <MomentTabs locale={locale} currentPath={pathname} />
@@ -75,6 +76,6 @@ export function FriendsPageContent({
           </div>
         </>
       )}
-    </div>
+    </Container>
   );
 }
