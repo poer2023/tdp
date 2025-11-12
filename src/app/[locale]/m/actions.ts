@@ -109,8 +109,13 @@ export async function createMomentAction(
       location,
     });
     return { status: "success", id };
-  } catch (_e) {
-    return { status: "error", message: "发布失败" };
+  } catch (error) {
+    console.error("❌ Moment creation failed:", error);
+    console.error("Stack trace:", error instanceof Error ? error.stack : "No stack available");
+    return {
+      status: "error",
+      message: error instanceof Error ? error.message : "发布失败"
+    };
   }
 }
 
