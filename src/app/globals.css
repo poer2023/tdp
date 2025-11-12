@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@heroui/styles";
 @import "leaflet/dist/leaflet.css";
 
 :root {
