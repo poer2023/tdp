@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { Particles } from "@/components/ui/particles";
+import { Container } from "@/components/ui/container";
 import { useTheme } from "@/hooks/use-theme";
 import { MomentCard } from "@/components/moments/moment-card";
 import { OpenComposerButton } from "@/components/moments/open-composer-button";
@@ -38,7 +39,7 @@ export function ParticlesMomentsContent({
       />
 
       {/* 原有内容 */}
-      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+      <Container width="narrow">
         <header className="mb-4 flex items-center justify-between sm:mb-6">
           <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-100">
             {locale === "zh" ? "瞬间" : "Moments"}
@@ -68,7 +69,7 @@ export function ParticlesMomentsContent({
             </div>
           ))}
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

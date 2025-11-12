@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Container } from "@/components/ui/container";
 
 interface Post {
   id: string;
@@ -28,7 +29,7 @@ const Blog8 = ({
 }: Blog8Props) => {
   return (
     <section className="py-32">
-      <div className="container mx-auto max-w-6xl">
+      <Container width="wide" noPadding>
         <div className="mb-16 text-center">
           <h2 className="mx-auto mb-6 text-3xl font-semibold text-pretty md:text-4xl lg:max-w-3xl">
             {heading}
@@ -96,7 +97,7 @@ const Blog8 = ({
             </article>
           ))}
         </div>
-      </div>
+      </Container>
     </section>
   );
 };

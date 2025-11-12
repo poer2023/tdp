@@ -9,6 +9,7 @@ import prisma from "@/lib/prisma";
 import { generateBlogPostingSchema, generateAlternateLinks } from "@/lib/seo";
 import { LikeButton } from "@/components/like-button";
 import { cache } from "react";
+import { Container } from "@/components/ui/container";
 
 // Ensure Node.js runtime for Prisma
 export const runtime = "nodejs";
@@ -140,12 +141,13 @@ export default async function LocalizedPostPage({ params }: PageProps) {
   const schema = generateBlogPostingSchema(post, `${baseUrl}/${l}/posts/${post.slug}`);
 
   return (
-    <article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12 md:py-16">
-      {/* JSON-LD Schema for SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-      />
+    <Container width="reading" padding="px-4 py-8 sm:px-6 sm:py-12 md:py-16">
+      <article>
+        {/* JSON-LD Schema for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
 
       {/* Header */}
       <header className="mb-8 sm:mb-10 md:mb-12">
@@ -183,12 +185,13 @@ export default async function LocalizedPostPage({ params }: PageProps) {
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
       </div>
 
-      <footer className="mt-8 flex items-center justify-between border-t border-zinc-200 pt-6 sm:mt-12 sm:pt-8 md:mt-16 dark:border-zinc-800">
-        <Link href={`/${l}/posts`} className="text-blue-600 hover:underline dark:text-blue-400">
-          {l === "zh" ? "← 返回文章列表" : "← Back to posts"}
-        </Link>
-        <LikeButton slug={post.slug} locale={postLocale} />
-      </footer>
-    </article>
+        <footer className="mt-8 flex items-center justify-between border-t border-zinc-200 pt-6 sm:mt-12 sm:pt-8 md:mt-16 dark:border-zinc-800">
+          <Link href={`/${l}/posts`} className="text-blue-600 hover:underline dark:text-blue-400">
+            {l === "zh" ? "← 返回文章列表" : "← Back to posts"}
+          </Link>
+          <LikeButton slug={post.slug} locale={postLocale} />
+        </footer>
+      </article>
+    </Container>
   );
 }

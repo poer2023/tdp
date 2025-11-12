@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getMomentByIdOrSlug, type MomentImage, type MomentVisibility } from "@/lib/moments";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
+import { Container } from "@/components/ui/container";
 import { BackButton } from "@/components/moments/back-button";
 import { MomentLightbox } from "@/components/moments/moment-lightbox";
 import { MomentCard } from "@/components/moments/moment-card";
@@ -38,7 +39,7 @@ export default async function LocalizedMomentDetailPage({ params, searchParams }
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+    <Container width="narrow">
       <div className="mb-3 sm:mb-4">
         <BackButton />
       </div>
@@ -92,7 +93,7 @@ export default async function LocalizedMomentDetailPage({ params, searchParams }
         locationName={(m.location as unknown as { name?: string } | null)?.name ?? null}
         locale={l}
       />
-    </div>
+    </Container>
   );
 }
 

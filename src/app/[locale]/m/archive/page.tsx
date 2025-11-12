@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { localePath } from "@/lib/locale-path";
+import { Container } from "@/components/ui/container";
 
 export const runtime = "nodejs";
 export const revalidate = 0;
@@ -30,7 +31,7 @@ export default async function LocalizedMomentsArchivePage({ params, searchParams
 
   const ym = `${year}-${String(month).padStart(2, "0")}`;
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
+    <Container width="narrow">
       <h1 className="text-xl font-semibold text-zinc-900 sm:text-2xl dark:text-zinc-100">
         {l === "zh" ? "瞬间归档" : "Moments Archive"}
       </h1>
@@ -50,7 +51,7 @@ export default async function LocalizedMomentsArchivePage({ params, searchParams
           </li>
         ))}
       </ul>
-    </div>
+    </Container>
   );
 }
 
