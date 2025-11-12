@@ -6,6 +6,7 @@ import { Particles } from "@/components/ui/particles";
 import { Container } from "@/components/ui/container";
 import { useTheme } from "@/hooks/use-theme";
 import { MomentMasonry } from "@/components/moments/moment-masonry";
+import { MomentLightbox } from "@/components/moments/moment-lightbox";
 import { OpenComposerButton } from "@/components/moments/open-composer-button";
 import { DeleteIcon } from "@/components/moments/delete-icon";
 import { MomentTabs } from "@/components/moments/moment-tabs";
@@ -63,6 +64,9 @@ export function ParticlesMomentsContent({
           isAdmin={isAdmin}
         />
       </Container>
+
+      {/* 全屏图片预览 Lightbox */}
+      <MomentLightbox />
     </div>
   );
 }

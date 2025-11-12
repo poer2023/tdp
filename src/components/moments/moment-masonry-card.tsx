@@ -60,6 +60,14 @@ function getImageAspectRatio(image: MomentImage): string {
 }
 
 /**
+ * 设计系统常量
+ */
+const CARD_SHADOW = "shadow-[0_4px_10px_rgba(0,0,0,0.1)]";
+const CARD_SHADOW_HOVER = "hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]";
+const CARD_HOVER_TRANSFORM = "hover:-translate-y-0.5 hover:scale-[1.02]";
+const CARD_TRANSITION = "transition-all duration-300";
+
+/**
  * 颜色方案定义
  */
 type ColorScheme = {
@@ -179,7 +187,14 @@ export function MomentMasonryCard({
     return (
       <Link
         href={cardLink}
-        className="group relative block overflow-hidden rounded-xl shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02]"
+        onClick={(e) => {
+          e.preventDefault();
+          // Open lightbox for image preview
+          window.dispatchEvent(new CustomEvent('open-moment-lightbox', {
+            detail: { images: moment.images, initialIndex: 0 }
+          }));
+        }}
+        className={`group relative block overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}
       >
         <div className={`relative ${aspectRatio}`}>
           <Image
@@ -216,18 +231,28 @@ export function MomentMasonryCard({
     const aspectRatio = getImageAspectRatio(firstImage);
 
     return (
-      <div className="group relative overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 dark:bg-zinc-900">
+      <div className={`group relative overflow-hidden rounded-[10px] bg-white dark:bg-zinc-900 ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}>
+        {/* 图片区域 - 无内边距 */}
+        <div
+          className={`relative ${aspectRatio} cursor-pointer`}
+          onClick={(e) => {
+            e.stopPropagation();
+            // Open lightbox for image preview
+            window.dispatchEvent(new CustomEvent('open-moment-lightbox', {
+              detail: { images: moment.images, initialIndex: 0 }
+            }));
+          }}
+        >
+          <Image
+            src={firstImage.previewUrl || firstImage.url}
+            alt={moment.content?.slice(0, 50) || "Moment image"}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          />
+        </div>
+
         <Link href={cardLink} className="block">
-          {/* 图片区域 - 无内边距 */}
-          <div className={`relative ${aspectRatio}`}>
-            <Image
-              src={firstImage.previewUrl || firstImage.url}
-              alt={moment.content?.slice(0, 50) || "Moment image"}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            />
-          </div>
 
           {/* 文字区域 - 24px 内边距 */}
           <div className="p-6">
@@ -283,7 +308,7 @@ export function MomentMasonryCard({
   return (
     <Link
       href={cardLink}
-      className="group block overflow-hidden rounded-xl shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+      className={`group block overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}
     >
       <div className={`p-6 ${colorScheme.bg} ${colorScheme.border || ""}`}>
         <p className={`mb-4 text-base leading-relaxed ${colorScheme.text}`}>

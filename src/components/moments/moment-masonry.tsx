@@ -41,7 +41,7 @@ export function MomentMasonry({
           "--columns-sm": "2",       // 640-768px
           "--columns-md": "3",       // 768-1024px
           "--columns-lg": "4",       // ≥1024px
-          "--gap": "1rem",           // 16px
+          "--gap": "1.25rem",        // 20px (Design Spec)
         } as React.CSSProperties
       }
     >
