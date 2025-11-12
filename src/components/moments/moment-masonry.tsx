@@ -37,11 +37,11 @@ export function MomentMasonry({
       className="masonry-container"
       style={
         {
-          "--columns-mobile": "1",
-          "--columns-sm": "2",
-          "--columns-lg": "3",
-          "--columns-xl": "4",
-          "--gap": "1rem",
+          "--columns-mobile": "1",  // <640px
+          "--columns-sm": "2",       // 640-768px
+          "--columns-md": "3",       // 768-1024px
+          "--columns-lg": "4",       // ≥1024px
+          "--gap": "1rem",           // 16px
         } as React.CSSProperties
       }
     >
@@ -51,21 +51,24 @@ export function MomentMasonry({
           column-gap: var(--gap);
         }
 
+        /* 小平板：2列 */
         @media (min-width: 640px) {
           .masonry-container {
             column-count: var(--columns-sm);
           }
         }
 
-        @media (min-width: 1024px) {
+        /* 大平板：3列 */
+        @media (min-width: 768px) {
           .masonry-container {
-            column-count: var(--columns-lg);
+            column-count: var(--columns-md);
           }
         }
 
-        @media (min-width: 1280px) {
+        /* 桌面端：固定4列 */
+        @media (min-width: 1024px) {
           .masonry-container {
-            column-count: var(--columns-xl);
+            column-count: var(--columns-lg);
           }
         }
 
