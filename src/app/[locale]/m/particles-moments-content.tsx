@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Particles } from "@/components/ui/particles";
 import { Container } from "@/components/ui/container";
 import { useTheme } from "@/hooks/use-theme";
-import { MomentCard } from "@/components/moments/moment-card";
+import { MomentMasonry } from "@/components/moments/moment-masonry";
 import { OpenComposerButton } from "@/components/moments/open-composer-button";
 import { DeleteIcon } from "@/components/moments/delete-icon";
 import { MomentTabs } from "@/components/moments/moment-tabs";
@@ -51,24 +51,17 @@ export function ParticlesMomentsContent({
         <div className="mb-6">
           <MomentTabs locale={locale} currentPath={pathname} />
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
-          {moments.map((m) => (
-            <div key={m.id} className="relative space-y-2">
-              <MomentCard
-                id={m.id}
-                slug={m.slug}
-                content={m.content}
-                images={m.images}
-                createdAt={m.createdAt}
-                visibility={m.visibility}
-                tags={m.tags}
-                locationName={(m.location as { name?: string } | null)?.name ?? null}
-                locale={locale}
-              />
-              {isAdmin && <DeleteIcon id={m.id} />}
-            </div>
-          ))}
-        </div>
+
+        {/* 瀑布流布局 */}
+        <MomentMasonry
+          moments={moments.map((m) => ({
+            ...m,
+            isPublic: m.visibility === "PUBLIC",
+            location: (m.location as { name?: string } | null)?.name ?? null,
+          }))}
+          locale={locale}
+          isAdmin={isAdmin}
+        />
       </Container>
     </div>
   );
