@@ -26,7 +26,7 @@ interface ThumbnailCarouselProps {
   onImageClick?: (id: string) => void;
 }
 
-function Thumbnails({
+export function Thumbnails({
   images,
   index,
   setIndex,

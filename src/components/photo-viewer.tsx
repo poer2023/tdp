@@ -10,7 +10,7 @@ import { LivePhotoPlayer } from "@/components/live-photo-player";
 import Image from "next/image";
 import { useImageCache } from "@/hooks/use-image-cache";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { ThumbnailCarousel } from "@/components/ui/thumbnail-carousel";
+import { Thumbnails } from "@/components/ui/thumbnail-carousel";
 
 const SLIDE_STORAGE_KEY = "gallery-slide-direction";
 
@@ -94,6 +94,7 @@ export function PhotoViewer({
     fromAlt: string;
     phase: "pre" | "animating";
   } | null>(null);
+  const [thumbnailIndex, setThumbnailIndex] = useState(0);
 
   // Calculate visual adjacent IDs from thumbnails array (not timeline)
   const visualAdjacentIds = useRef<{ prev: string | null; next: string | null }>({
@@ -103,13 +104,18 @@ export function PhotoViewer({
   useEffect(() => {
     if (!thumbnails || !currentId) {
       visualAdjacentIds.current = { prev: null, next: null };
+      setThumbnailIndex(0);
       return;
     }
     const currentIndex = thumbnails.findIndex((t) => t.id === currentId);
     if (currentIndex === -1) {
       visualAdjacentIds.current = { prev: null, next: null };
+      setThumbnailIndex(0);
       return;
     }
+    // Update thumbnail index
+    setThumbnailIndex(currentIndex);
+
     // Visual order: index 0 = newest (left), index N = oldest (right)
     // prev = left = newer = index - 1
     // next = right = older = index + 1
@@ -948,12 +954,14 @@ export function PhotoViewer({
         </aside>
       </div>
 
-      {/* Bottom carousel - exclude right sidebar on desktop */}
+      {/* Bottom thumbnail strip - exclude right sidebar on desktop */}
       {Array.isArray(thumbnails) && thumbnails.length > 0 && (
         <div className="pointer-events-auto fixed right-0 bottom-0 left-0 z-[61] border-t border-zinc-200 bg-white/75 backdrop-blur lg:right-[380px] xl:right-[420px] dark:border-zinc-800 dark:bg-zinc-900/60">
           <div className="px-4 py-3">
-            <ThumbnailCarousel
+            <Thumbnails
               images={thumbnails}
+              index={thumbnailIndex}
+              setIndex={setThumbnailIndex}
               currentId={currentId || image.id}
               locale={locale}
               onImageClick={handleThumbnailClick}
