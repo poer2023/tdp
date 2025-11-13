@@ -8,6 +8,7 @@ export function MomentLightbox() {
   const [open, setOpen] = useState(false);
   const [images, setImages] = useState<MomentImage[]>([]);
   const [idx, setIdx] = useState(0);
+  const [textContent, setTextContent] = useState<string | null>(null);
 
   // Listen for custom event to open lightbox
   useEffect(() => {
@@ -19,6 +20,7 @@ export function MomentLightbox() {
         startTransition(() => {
           setImages(newImages);
           setIdx(Math.min(initialIndex, newImages.length - 1));
+          setTextContent(null); // Clear text mode
           setOpen(true);
         });
       }
@@ -26,6 +28,25 @@ export function MomentLightbox() {
 
     window.addEventListener('open-moment-lightbox', handleOpen);
     return () => window.removeEventListener('open-moment-lightbox', handleOpen);
+  }, []);
+
+  // Listen for text lightbox event
+  useEffect(() => {
+    const handleTextOpen = (e: Event) => {
+      const customEvent = e as CustomEvent<{ text: string }>;
+      const { text } = customEvent.detail;
+
+      if (text) {
+        startTransition(() => {
+          setTextContent(text);
+          setImages([]); // Clear image mode
+          setOpen(true);
+        });
+      }
+    };
+
+    window.addEventListener('open-text-lightbox', handleTextOpen);
+    return () => window.removeEventListener('open-text-lightbox', handleTextOpen);
   }, []);
 
   // 键盘导航
@@ -46,10 +67,11 @@ export function MomentLightbox() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, images.length]);
 
-  // 修改：支持单图时也显示
-  if (!open || images.length < 1) return null;
+  // Check if lightbox should be open (either images or text)
+  if (!open || (images.length < 1 && !textContent)) return null;
 
-  const cur = images[idx]!;
+  const isTextMode = !!textContent;
+  const cur = images[idx];
   const prev = () => setIdx((i) => (i - 1 + images.length) % images.length);
   const next = () => setIdx((i) => (i + 1) % images.length);
   const isSingleImage = images.length === 1;
@@ -72,7 +94,7 @@ export function MomentLightbox() {
       </button>
 
       {/* 左箭头 - 仅多图时显示 */}
-      {!isSingleImage && (
+      {!isTextMode && !isSingleImage && (
         <button
           className="absolute top-1/2 left-5 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
           onClick={(e) => {
@@ -86,7 +108,7 @@ export function MomentLightbox() {
       )}
 
       {/* 右箭头 - 仅多图时显示 */}
-      {!isSingleImage && (
+      {!isTextMode && !isSingleImage && (
         <button
           className="absolute top-1/2 right-5 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
           onClick={(e) => {
@@ -99,22 +121,34 @@ export function MomentLightbox() {
         </button>
       )}
 
-      {/* 图片容器 */}
+      {/* 内容容器 - 图片或文字 */}
       <div
         className="flex h-full w-full items-center justify-center p-5"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={cur.url}
-          alt={cur.alt || ""}
-          className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-          onClick={(e) => e.stopPropagation()}
-        />
+        {isTextMode ? (
+          /* 文字内容显示 */
+          <div className="max-h-[85vh] max-w-[800px] overflow-y-auto rounded-lg bg-white/95 p-8 shadow-2xl backdrop-blur-sm dark:bg-zinc-900/95 md:p-12">
+            <p className="whitespace-pre-wrap text-lg leading-relaxed text-zinc-800 dark:text-zinc-200 md:text-xl">
+              {textContent}
+            </p>
+          </div>
+        ) : (
+          /* 图片显示 */
+          cur && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={cur.url}
+              alt={cur.alt || ""}
+              className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )
+        )}
       </div>
 
       {/* 图片计数器 - 仅多图时显示 */}
-      {!isSingleImage && (
+      {!isTextMode && !isSingleImage && (
         <div className="absolute bottom-5 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/60 px-4 py-2 text-sm text-white backdrop-blur-sm">
           {idx + 1} / {images.length}
         </div>

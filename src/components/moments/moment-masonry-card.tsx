@@ -403,9 +403,15 @@ export function MomentMasonryCard({
   const colorScheme = getColorScheme(moment.id);
 
   return (
-    <Link
-      href={cardLink}
-      className={`group block overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        // Open text lightbox instead of navigating
+        window.dispatchEvent(new CustomEvent('open-text-lightbox', {
+          detail: { text: moment.content }
+        }));
+      }}
+      className={`group block cursor-pointer overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}
     >
       <div className={`p-4 md:p-5 ${colorScheme.bg} ${colorScheme.border || ""}`}>
         <p className={`mb-4 text-base leading-relaxed ${colorScheme.text}`}>
@@ -449,6 +455,6 @@ export function MomentMasonryCard({
           </div>
         )}
       </div>
-    </Link>
+    </div>
   );
 }
