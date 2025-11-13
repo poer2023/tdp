@@ -56,7 +56,7 @@ export function Thumbnails({
       const centerOffset = containerWidth / 2 - FULL_WIDTH_PX / 2;
       scrollPosition -= centerOffset;
 
-      thumbnailsRef.current.scrollTo({
+      thumbnailsRef.current.scrollTo?.({
         left: scrollPosition,
         behavior: "smooth",
       });
