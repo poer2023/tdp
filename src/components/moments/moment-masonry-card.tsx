@@ -173,7 +173,7 @@ export function MomentMasonryCard({
 }: MomentMasonryCardProps) {
   const hasImages = moment.images && moment.images.length > 0;
   const firstImage = hasImages ? moment.images[0] : null;
-  const hasContent = moment.content && moment.content.trim().length > 50;
+  const hasContent = moment.content && moment.content.trim().length > 0;
   const imageCount = moment.images?.length || 0;
 
   // Determine card type: distinguish single-image vs multi-image
