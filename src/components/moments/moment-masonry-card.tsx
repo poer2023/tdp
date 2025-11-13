@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Clock, MapPin, Tag, Eye, EyeOff } from "lucide-react";
 import type { MomentListItem, MomentImage } from "@/lib/moments";
+import { MultiImageGrid } from "./multi-image-grid";
 
 type MomentWithMasonryData = MomentListItem & {
   isPublic: boolean;
@@ -172,9 +173,18 @@ export function MomentMasonryCard({
   const hasImages = moment.images && moment.images.length > 0;
   const firstImage = hasImages ? moment.images[0] : null;
   const hasContent = moment.content && moment.content.trim().length > 50;
+  const imageCount = moment.images?.length || 0;
 
-  // Determine card type
-  const cardType = hasImages ? (hasContent ? "image-text" : "image-only") : "text-only";
+  // Determine card type: distinguish single-image vs multi-image
+  const cardType = hasImages
+    ? imageCount === 1
+      ? hasContent
+        ? "image-text"
+        : "image-only"
+      : hasContent
+      ? "multi-image-text"
+      : "multi-image-only"
+    : "text-only";
 
   const cardLink = moment.slug
     ? `/${locale}/m/${moment.slug}`
@@ -223,6 +233,92 @@ export function MomentMasonryCard({
           )}
         </div>
       </Link>
+    );
+  }
+
+  // ==================== 纯多图卡片 ====================
+  if (cardType === "multi-image-only" && moment.images) {
+    return (
+      <div className={`group relative overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}>
+        <MultiImageGrid
+          images={moment.images}
+          onImageClick={(index) => {
+            window.dispatchEvent(new CustomEvent('open-moment-lightbox', {
+              detail: { images: moment.images, initialIndex: index }
+            }));
+          }}
+        />
+
+        {/* Visibility indicator */}
+        {!moment.isPublic && (
+          <div className="absolute top-2 right-2 rounded-full bg-black/50 p-1.5 backdrop-blur-sm">
+            <EyeOff className="h-3 w-3 text-white" />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ==================== 多图文混合卡片 ====================
+  if (cardType === "multi-image-text" && moment.images) {
+    return (
+      <div className={`group relative overflow-hidden rounded-[10px] bg-white dark:bg-zinc-900 ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}>
+        {/* 多图网格区域 - 无内边距 */}
+        <MultiImageGrid
+          images={moment.images}
+          onImageClick={(index) => {
+            window.dispatchEvent(new CustomEvent('open-moment-lightbox', {
+              detail: { images: moment.images, initialIndex: index }
+            }));
+          }}
+        />
+
+        <Link href={cardLink} className="block">
+          {/* 文字区域 - 24px 内边距 */}
+          <div className="p-6">
+            <p className="mb-3 line-clamp-3 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+              {moment.content}
+            </p>
+
+            {/* 元数据 */}
+            <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5" />
+                <span>{formatMomentDate(moment.createdAt, locale)}</span>
+              </div>
+
+              {moment.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span className="truncate">{moment.location}</span>
+                </div>
+              )}
+
+              {!moment.isPublic && (
+                <div className="flex items-center gap-1">
+                  <EyeOff className="h-3.5 w-3.5" />
+                  <span>{locale === "zh" ? "私密" : "Private"}</span>
+                </div>
+              )}
+            </div>
+
+            {/* 标签 */}
+            {moment.tags && moment.tags.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {moment.tags.slice(0, 3).map((tag, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                  >
+                    <Tag className="h-2.5 w-2.5" />
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </Link>
+      </div>
     );
   }
 
