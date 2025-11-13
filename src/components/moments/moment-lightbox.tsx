@@ -59,9 +59,9 @@ export function MomentLightbox() {
       className="fixed inset-0 z-[90] bg-black/85 backdrop-blur-sm"
       onClick={() => setOpen(false)}
     >
-      {/* 关闭按钮 */}
+      {/* 关闭按钮 - 44px minimum touch target */}
       <button
-        className="absolute top-5 right-5 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+        className="absolute top-5 right-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
         onClick={(e) => {
           e.stopPropagation();
           setOpen(false);

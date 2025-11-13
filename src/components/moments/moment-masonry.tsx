@@ -41,14 +41,15 @@ export function MomentMasonry({
           "--columns-sm": "2",       // 640-768px
           "--columns-md": "3",       // 768-1024px
           "--columns-lg": "4",       // ≥1024px
-          "--gap": "1.25rem",        // 20px (Design Spec)
+          "--gap-mobile": "0.75rem", // 12px (Mobile)
+          "--gap-desktop": "1.25rem", // 20px (Desktop)
         } as React.CSSProperties
       }
     >
       <style jsx>{`
         .masonry-container {
           column-count: var(--columns-mobile);
-          column-gap: var(--gap);
+          column-gap: var(--gap-mobile);
         }
 
         /* 小平板：2列 */
@@ -58,10 +59,11 @@ export function MomentMasonry({
           }
         }
 
-        /* 大平板：3列 */
+        /* 大平板：3列，桌面间距 */
         @media (min-width: 768px) {
           .masonry-container {
             column-count: var(--columns-md);
+            column-gap: var(--gap-desktop);
           }
         }
 
@@ -74,7 +76,13 @@ export function MomentMasonry({
 
         .masonry-container > * {
           break-inside: avoid;
-          margin-bottom: var(--gap);
+          margin-bottom: var(--gap-mobile);
+        }
+
+        @media (min-width: 768px) {
+          .masonry-container > * {
+            margin-bottom: var(--gap-desktop);
+          }
         }
       `}</style>
 

@@ -274,8 +274,8 @@ export function MomentMasonryCard({
         />
 
         <Link href={cardLink} className="block">
-          {/* 文字区域 - 24px 内边距 */}
-          <div className="p-6">
+          {/* 文字区域 - 16px mobile / 24px desktop 内边距 */}
+          <div className="p-4 md:p-6">
             <p className="mb-3 line-clamp-3 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
               {moment.content}
             </p>
@@ -350,8 +350,8 @@ export function MomentMasonryCard({
 
         <Link href={cardLink} className="block">
 
-          {/* 文字区域 - 24px 内边距 */}
-          <div className="p-6">
+          {/* 文字区域 - 16px mobile / 24px desktop 内边距 */}
+          <div className="p-4 md:p-6">
             <p className="mb-3 line-clamp-3 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
               {moment.content}
             </p>
@@ -406,7 +406,7 @@ export function MomentMasonryCard({
       href={cardLink}
       className={`group block overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}
     >
-      <div className={`p-6 ${colorScheme.bg} ${colorScheme.border || ""}`}>
+      <div className={`p-4 md:p-5 ${colorScheme.bg} ${colorScheme.border || ""}`}>
         <p className={`mb-4 text-base leading-relaxed ${colorScheme.text}`}>
           {moment.content}
         </p>
