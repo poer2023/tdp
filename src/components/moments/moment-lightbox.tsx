@@ -9,6 +9,7 @@ export function MomentLightbox() {
   const [images, setImages] = useState<MomentImage[]>([]);
   const [idx, setIdx] = useState(0);
   const [textContent, setTextContent] = useState<string | null>(null);
+  const [imageLoading, setImageLoading] = useState(true);
 
   // Listen for custom event to open lightbox
   useEffect(() => {
@@ -21,6 +22,7 @@ export function MomentLightbox() {
           setImages(newImages);
           setIdx(Math.min(initialIndex, newImages.length - 1));
           setTextContent(null); // Clear text mode
+          setImageLoading(true); // Reset loading state
           setOpen(true);
         });
       }
@@ -48,6 +50,13 @@ export function MomentLightbox() {
     window.addEventListener('open-text-lightbox', handleTextOpen);
     return () => window.removeEventListener('open-text-lightbox', handleTextOpen);
   }, []);
+
+  // Reset loading state when image index changes
+  useEffect(() => {
+    if (open && !textContent && images.length > 0) {
+      setImageLoading(true);
+    }
+  }, [idx, open, textContent, images.length]);
 
   // 键盘导航
   useEffect(() => {
@@ -136,13 +145,25 @@ export function MomentLightbox() {
         ) : (
           /* 图片显示 */
           cur && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={cur.url}
-              alt={cur.alt || ""}
-              className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            />
+            <div className="relative">
+              {/* Loading skeleton */}
+              {imageLoading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="h-32 w-32 animate-pulse rounded-lg bg-white/10" />
+                </div>
+              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cur.url}
+                alt={cur.alt || ""}
+                className={`max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl transition-opacity duration-300 ${
+                  imageLoading ? "opacity-0" : "opacity-100"
+                }`}
+                onLoad={() => setImageLoading(false)}
+                onError={() => setImageLoading(false)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
           )
         )}
       </div>
