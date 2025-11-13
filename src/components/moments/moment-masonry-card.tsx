@@ -66,6 +66,7 @@ function getImageAspectRatio(image: MomentImage): string {
 const CARD_SHADOW = "shadow-[0_4px_10px_rgba(0,0,0,0.1)]";
 const CARD_SHADOW_HOVER = "hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]";
 const CARD_HOVER_TRANSFORM = "hover:-translate-y-0.5 hover:scale-[1.02]";
+const CARD_CLICK_STATE = "active:scale-[0.98]";
 const CARD_TRANSITION = "transition-all duration-300";
 
 /**
@@ -204,7 +205,7 @@ export function MomentMasonryCard({
             detail: { images: moment.images, initialIndex: 0 }
           }));
         }}
-        className={`group relative block overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}
+        className={`group relative block overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}
       >
         <div className={`relative ${aspectRatio}`}>
           <Image
@@ -239,7 +240,7 @@ export function MomentMasonryCard({
   // ==================== 纯多图卡片 ====================
   if (cardType === "multi-image-only" && moment.images) {
     return (
-      <div className={`group relative overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}>
+      <div className={`group relative overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}>
         <MultiImageGrid
           images={moment.images}
           onImageClick={(index) => {
@@ -262,7 +263,7 @@ export function MomentMasonryCard({
   // ==================== 多图文混合卡片 ====================
   if (cardType === "multi-image-text" && moment.images) {
     return (
-      <div className={`group relative overflow-hidden rounded-[10px] bg-white dark:bg-zinc-900 ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}>
+      <div className={`group relative overflow-hidden rounded-[10px] bg-white dark:bg-zinc-900 ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}>
         {/* 多图网格区域 - 无内边距 */}
         <MultiImageGrid
           images={moment.images}
@@ -327,7 +328,7 @@ export function MomentMasonryCard({
     const aspectRatio = getImageAspectRatio(firstImage);
 
     return (
-      <div className={`group relative overflow-hidden rounded-[10px] bg-white dark:bg-zinc-900 ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}>
+      <div className={`group relative overflow-hidden rounded-[10px] bg-white dark:bg-zinc-900 ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}>
         {/* 图片区域 - 无内边距 */}
         <div
           className={`relative ${aspectRatio} cursor-pointer`}
@@ -404,7 +405,7 @@ export function MomentMasonryCard({
   return (
     <Link
       href={cardLink}
-      className={`group block overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM}`}
+      className={`group block overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}
     >
       <div className={`p-4 md:p-5 ${colorScheme.bg} ${colorScheme.border || ""}`}>
         <p className={`mb-4 text-base leading-relaxed ${colorScheme.text}`}>
