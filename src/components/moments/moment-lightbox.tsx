@@ -9,7 +9,7 @@ export function MomentLightbox() {
   const [images, setImages] = useState<MomentImage[]>([]);
   const [idx, setIdx] = useState(0);
   const [textContent, setTextContent] = useState<string | null>(null);
-  const [imageLoading, setImageLoading] = useState(true);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
   // Listen for custom event to open lightbox
   useEffect(() => {
@@ -22,7 +22,7 @@ export function MomentLightbox() {
           setImages(newImages);
           setIdx(Math.min(initialIndex, newImages.length - 1));
           setTextContent(null); // Clear text mode
-          setImageLoading(true); // Reset loading state
+          setLoadedImages(new Set()); // Reset loaded images
           setOpen(true);
         });
       }
@@ -51,13 +51,6 @@ export function MomentLightbox() {
     return () => window.removeEventListener('open-text-lightbox', handleTextOpen);
   }, []);
 
-  // Reset loading state when image index changes
-  useEffect(() => {
-    if (open && !textContent && images.length > 0) {
-      setImageLoading(true);
-    }
-  }, [idx, open, textContent, images.length]);
-
   // 键盘导航
   useEffect(() => {
     if (!open) return;
@@ -66,9 +59,9 @@ export function MomentLightbox() {
       if (e.key === "Escape") {
         setOpen(false);
       } else if (e.key === "ArrowLeft" && images.length > 1) {
-        prev();
+        setIdx((i) => (i - 1 + images.length) % images.length);
       } else if (e.key === "ArrowRight" && images.length > 1) {
-        next();
+        setIdx((i) => (i + 1) % images.length);
       }
     };
 
@@ -147,7 +140,7 @@ export function MomentLightbox() {
           cur && (
             <div className="relative">
               {/* Loading skeleton */}
-              {imageLoading && (
+              {!loadedImages.has(idx) && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="h-32 w-32 animate-pulse rounded-lg bg-white/10" />
                 </div>
@@ -157,10 +150,10 @@ export function MomentLightbox() {
                 src={cur.url}
                 alt={cur.alt || ""}
                 className={`max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl transition-opacity duration-300 ${
-                  imageLoading ? "opacity-0" : "opacity-100"
+                  !loadedImages.has(idx) ? "opacity-0" : "opacity-100"
                 }`}
-                onLoad={() => setImageLoading(false)}
-                onError={() => setImageLoading(false)}
+                onLoad={() => setLoadedImages((prev) => new Set(prev).add(idx))}
+                onError={() => setLoadedImages((prev) => new Set(prev).add(idx))}
                 onClick={(e) => e.stopPropagation()}
               />
             </div>

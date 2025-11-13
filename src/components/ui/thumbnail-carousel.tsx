@@ -131,19 +131,13 @@ export function ThumbnailCarousel({
   locale = "zh",
   onImageClick,
 }: ThumbnailCarouselProps) {
-  const [index, setIndex] = useState(0);
+  // Calculate initial index from currentId
+  const initialIndex = images.findIndex((img) => img.id === currentId);
+  const [index, setIndex] = useState(initialIndex !== -1 ? initialIndex : 0);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const x = useMotionValue(0);
-
-  // Update index when currentId changes
-  useEffect(() => {
-    const currentIndex = images.findIndex((img) => img.id === currentId);
-    if (currentIndex !== -1 && currentIndex !== index) {
-      setIndex(currentIndex);
-    }
-  }, [currentId, images, index]);
 
   useEffect(() => {
     if (!isDragging && containerRef.current) {
