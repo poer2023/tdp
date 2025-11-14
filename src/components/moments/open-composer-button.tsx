@@ -19,7 +19,7 @@ export function OpenComposerButton({ label }: { label: string }) {
 
   return (
     <button
-      className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+      className="h-10 whitespace-nowrap rounded-full bg-[#0F172A] px-5 text-sm font-semibold text-white transition-all duration-200 hover:bg-[#111A2C] active:scale-[0.98] active:bg-[#0B1120] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] dark:focus-visible:outline-[#93C5FD]"
       onClick={open}
       type="button"
     >

@@ -32,70 +32,69 @@ export function MomentMasonry({
     );
   }
 
+  // Floating row logic: last 2 cards get special styling when total >= 8
+  const hasFloatingRow = moments.length >= 8;
+  const mainMoments = hasFloatingRow ? moments.slice(0, -2) : moments;
+  const floatingMoments = hasFloatingRow ? moments.slice(-2) : [];
+
   return (
-    <div
-      className="masonry-container"
-      style={
-        {
-          "--columns-mobile": "1",  // <640px
-          "--columns-sm": "2",       // 640-768px
-          "--columns-md": "3",       // 768-1024px
-          "--columns-lg": "4",       // ≥1024px
-          "--gap-mobile": "0.75rem", // 12px (Mobile)
-          "--gap-desktop": "1.25rem", // 20px (Desktop)
-        } as React.CSSProperties
-      }
-    >
-      <style jsx>{`
-        .masonry-container {
-          column-count: var(--columns-mobile);
-          column-gap: var(--gap-mobile);
-        }
+    <div className="pb-16 pt-8">
+      {/* Main masonry grid */}
+      <div className="columns-2 gap-3 sm:columns-3 sm:gap-[18px] lg:columns-5 lg:gap-6">
+        {mainMoments.map((moment) => (
+          <div key={moment.id} className="mb-4 break-inside-avoid lg:mb-7">
+            <MomentMasonryCard
+              moment={moment}
+              locale={locale}
+              onDelete={onDelete}
+              isAdmin={isAdmin}
+            />
+          </div>
+        ))}
+      </div>
 
-        /* 小平板：2列 */
-        @media (min-width: 640px) {
-          .masonry-container {
-            column-count: var(--columns-sm);
-          }
-        }
+      {/* Floating row (last 2 cards with offset) - desktop only */}
+      {hasFloatingRow && floatingMoments.length === 2 && (
+        <div className="columns-2 gap-3 sm:columns-3 sm:gap-[18px] lg:columns-5 lg:gap-6">
+          {/* Second-to-last card: offset left */}
+          <div className="mb-4 hidden break-inside-avoid md:block lg:mb-7 lg:-translate-x-[50px] lg:translate-y-10">
+            <MomentMasonryCard
+              moment={floatingMoments[0]}
+              locale={locale}
+              onDelete={onDelete}
+              isAdmin={isAdmin}
+            />
+          </div>
 
-        /* 大平板：3列，桌面间距 */
-        @media (min-width: 768px) {
-          .masonry-container {
-            column-count: var(--columns-md);
-            column-gap: var(--gap-desktop);
-          }
-        }
+          {/* Last card: offset right */}
+          <div className="mb-4 hidden break-inside-avoid md:block lg:mb-7 lg:translate-x-[50px] lg:translate-y-10">
+            <MomentMasonryCard
+              moment={floatingMoments[1]}
+              locale={locale}
+              onDelete={onDelete}
+              isAdmin={isAdmin}
+            />
+          </div>
 
-        /* 桌面端：固定4列 */
-        @media (min-width: 1024px) {
-          .masonry-container {
-            column-count: var(--columns-lg);
-          }
-        }
-
-        .masonry-container > * {
-          break-inside: avoid;
-          margin-bottom: var(--gap-mobile);
-        }
-
-        @media (min-width: 768px) {
-          .masonry-container > * {
-            margin-bottom: var(--gap-desktop);
-          }
-        }
-      `}</style>
-
-      {moments.map((moment) => (
-        <div key={moment.id} className="masonry-item">
-          <MomentMasonryCard
-            moment={moment}
-            locale={locale}
-            onDelete={onDelete}
-            isAdmin={isAdmin}
-          />
+          {/* Mobile fallback: show without offset on small screens */}
+          <div className="mb-4 block break-inside-avoid md:hidden">
+            <MomentMasonryCard
+              moment={floatingMoments[0]}
+              locale={locale}
+              onDelete={onDelete}
+              isAdmin={isAdmin}
+            />
+          </div>
+          <div className="mb-4 block break-inside-avoid md:hidden">
+            <MomentMasonryCard
+              moment={floatingMoments[1]}
+              locale={locale}
+              onDelete={onDelete}
+              isAdmin={isAdmin}
+            />
+          </div>
         </div>
-      ))}
+      )}
     </div>
   );
 }

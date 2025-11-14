@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, MapPin, Tag, Eye, EyeOff } from "lucide-react";
+import { Clock, Eye, Heart, Sparkles } from "lucide-react";
 import type { MomentListItem, MomentImage } from "@/lib/moments";
 import { MultiImageGrid } from "./multi-image-grid";
 
@@ -20,115 +20,6 @@ interface MomentMasonryCardProps {
 }
 
 // ==================== 工具函数 ====================
-
-/**
- * 简单哈希函数：将字符串转换为数字
- */
-function hashString(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return Math.abs(hash);
-}
-
-/**
- * 智能图片比例计算
- * 支持常见比例，对极端比例进行裁剪
- */
-function getImageAspectRatio(image: MomentImage): string {
-  const width = image.w || 1;
-  const height = image.h || 1;
-  const ratio = width / height;
-
-  // 极端宽图裁剪为 16:9
-  if (ratio > 2) return "aspect-[16/9]";
-
-  // 极端高图裁剪为 3:4
-  if (ratio < 0.5) return "aspect-[3/4]";
-
-  // 常见比例检测 (允许 10% 误差)
-  if (Math.abs(ratio - 1) < 0.1) return "aspect-square";
-  if (Math.abs(ratio - 4 / 3) < 0.1) return "aspect-[4/3]";
-  if (Math.abs(ratio - 3 / 4) < 0.1) return "aspect-[3/4]";
-  if (Math.abs(ratio - 16 / 9) < 0.1) return "aspect-[16/9]";
-  if (Math.abs(ratio - 9 / 16) < 0.1) return "aspect-[9/16]";
-
-  // 保持原始比例
-  return `aspect-[${width}/${height}]`;
-}
-
-/**
- * 设计系统常量
- */
-const CARD_SHADOW = "shadow-[0_4px_10px_rgba(0,0,0,0.1)]";
-const CARD_SHADOW_HOVER = "hover:shadow-[0_8px_24px_rgba(0,0,0,0.15)]";
-const CARD_HOVER_TRANSFORM = "hover:-translate-y-0.5 hover:scale-[1.02]";
-const CARD_CLICK_STATE = "active:scale-[0.98]";
-const CARD_TRANSITION = "transition-all duration-300";
-
-/**
- * 颜色方案定义
- */
-type ColorScheme = {
-  bg: string;
-  text: string;
-  border?: string;
-};
-
-const COLOR_SCHEMES: Record<string, ColorScheme> = {
-  white: {
-    bg: "bg-white dark:bg-zinc-900",
-    text: "text-zinc-900 dark:text-zinc-100",
-    border: "border border-zinc-200 dark:border-zinc-800",
-  },
-  blue: {
-    bg: "bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30",
-    text: "text-zinc-800 dark:text-zinc-200",
-  },
-  purple: {
-    bg: "bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30",
-    text: "text-zinc-800 dark:text-zinc-200",
-  },
-  green: {
-    bg: "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30",
-    text: "text-zinc-800 dark:text-zinc-200",
-  },
-  orange: {
-    bg: "bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30",
-    text: "text-zinc-800 dark:text-zinc-200",
-  },
-  pink: {
-    bg: "bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30",
-    text: "text-zinc-800 dark:text-zinc-200",
-  },
-  cyan: {
-    bg: "bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-950/30 dark:to-sky-950/30",
-    text: "text-zinc-800 dark:text-zinc-200",
-  },
-  yellow: {
-    bg: "bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30",
-    text: "text-zinc-800 dark:text-zinc-200",
-  },
-  gray: {
-    bg: "bg-gradient-to-br from-zinc-50 to-slate-50 dark:from-zinc-900/30 dark:to-slate-900/30",
-    text: "text-zinc-800 dark:text-zinc-200",
-  },
-};
-
-const COLOR_SCHEME_KEYS = Object.keys(COLOR_SCHEMES);
-
-/**
- * 根据 moment.id 选择颜色方案
- */
-function getColorScheme(momentId: string): ColorScheme {
-  const hash = hashString(momentId);
-  const index = hash % COLOR_SCHEME_KEYS.length;
-  const key = COLOR_SCHEME_KEYS[index]!;
-  return COLOR_SCHEMES[key]!;
-}
 
 /**
  * 格式化日期
@@ -176,7 +67,7 @@ export function MomentMasonryCard({
   const hasContent = moment.content && moment.content.trim().length > 0;
   const imageCount = moment.images?.length || 0;
 
-  // Determine card type: distinguish single-image vs multi-image
+  // Determine card type
   const cardType = hasImages
     ? imageCount === 1
       ? hasContent
@@ -191,269 +82,240 @@ export function MomentMasonryCard({
     ? `/${locale}/m/${moment.slug}`
     : `/${locale}/m#${moment.id}`;
 
-  // ==================== 纯图片卡片 ====================
+  // ==================== 纯图片卡片 (Image-only) ====================
   if (cardType === "image-only" && firstImage) {
-    const aspectRatio = getImageAspectRatio(firstImage);
-
     return (
-      <Link
-        href={cardLink}
+      <div
         onClick={(e) => {
           e.preventDefault();
-          // Open lightbox for image preview
-          window.dispatchEvent(new CustomEvent('open-moment-lightbox', {
-            detail: { images: moment.images, initialIndex: 0 }
-          }));
+          window.dispatchEvent(
+            new CustomEvent("open-moment-lightbox", {
+              detail: { images: moment.images, initialIndex: 0 },
+            })
+          );
         }}
-        className={`group relative block overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}
+        className="group relative block cursor-pointer overflow-hidden rounded-[24px] bg-white shadow-[0_25px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-[0_35px_70px_rgba(15,23,42,0.12)] active:scale-[0.99] dark:bg-[#111827] dark:shadow-[0_25px_50px_rgba(0,0,0,0.35)]"
       >
-        <div className={`relative ${aspectRatio}`}>
+        <div className="relative aspect-auto">
           <Image
             src={firstImage.previewUrl || firstImage.url}
             alt={moment.content?.slice(0, 50) || "Moment image"}
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            width={firstImage.w || 800}
+            height={firstImage.h || 600}
+            className="h-auto w-full rounded-[24px] object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />
 
-          {/* Overlay with meta info - 悬停时显示 */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-              <div className="flex items-center gap-2 text-xs">
-                <Clock className="h-3 w-3" />
-                <span>{formatMomentDate(moment.createdAt, locale)}</span>
+          {/* Eye + Heart icons overlay - 右上角 */}
+          <div className="absolute right-3 top-3 flex items-center gap-1.5">
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(15,23,42,0.45)]"
+              aria-hidden="true"
+              title="View count"
+            >
+              <Eye className="h-[18px] w-[18px] text-white/85" />
+            </div>
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(15,23,42,0.45)]"
+              aria-hidden="true"
+              title="Like"
+            >
+              <Heart className="h-[18px] w-[18px] text-white/85" />
+            </div>
+          </div>
+
+          {/* 底部元数据 */}
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between p-3 sm:p-4">
+            {/* 左下角: Private pill */}
+            {!moment.isPublic && (
+              <div className="flex items-center gap-1.5">
+                <div className="h-2 w-2 rounded-full bg-[#F87171]" />
+                <span className="text-[11px] text-[#9CA3AF]">
+                  {locale === "zh" ? "私密" : "Private"}
+                </span>
               </div>
-            </div>
+            )}
+            <div className="flex-1" />
+            {/* 右下角: 时间 */}
+            <span className="text-[11px] text-[#9CA3AF]">
+              {formatMomentDate(moment.createdAt, locale)}
+            </span>
           </div>
-
-          {/* Visibility indicator */}
-          {!moment.isPublic && (
-            <div className="absolute top-2 right-2 rounded-full bg-black/50 p-1.5 backdrop-blur-sm">
-              <EyeOff className="h-3 w-3 text-white" />
-            </div>
-          )}
         </div>
-      </Link>
-    );
-  }
-
-  // ==================== 纯多图卡片 ====================
-  if (cardType === "multi-image-only" && moment.images) {
-    return (
-      <div className={`group relative overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}>
-        <MultiImageGrid
-          images={moment.images}
-          onImageClick={(index) => {
-            window.dispatchEvent(new CustomEvent('open-moment-lightbox', {
-              detail: { images: moment.images, initialIndex: index }
-            }));
-          }}
-        />
-
-        {/* Visibility indicator */}
-        {!moment.isPublic && (
-          <div className="absolute top-2 right-2 rounded-full bg-black/50 p-1.5 backdrop-blur-sm">
-            <EyeOff className="h-3 w-3 text-white" />
-          </div>
-        )}
       </div>
     );
   }
 
-  // ==================== 多图文混合卡片 ====================
-  if (cardType === "multi-image-text" && moment.images) {
+  // ==================== 纯多图卡片 (Multi-image-only) ====================
+  if (cardType === "multi-image-only" && moment.images) {
     return (
-      <div className={`group relative overflow-hidden rounded-[10px] bg-white dark:bg-zinc-900 ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}>
-        {/* 多图网格区域 - 无内边距 */}
+      <div className="group relative overflow-hidden rounded-[24px] bg-white shadow-[0_25px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-[0_35px_70px_rgba(15,23,42,0.12)] active:scale-[0.99] dark:bg-[#111827] dark:shadow-[0_25px_50px_rgba(0,0,0,0.35)]">
         <MultiImageGrid
           images={moment.images}
           onImageClick={(index) => {
-            window.dispatchEvent(new CustomEvent('open-moment-lightbox', {
-              detail: { images: moment.images, initialIndex: index }
-            }));
+            window.dispatchEvent(
+              new CustomEvent("open-moment-lightbox", {
+                detail: { images: moment.images, initialIndex: index },
+              })
+            );
+          }}
+        />
+
+        {/* 底部元数据 */}
+        <div className="flex items-center justify-between p-3 sm:p-4">
+          {!moment.isPublic && (
+            <div className="flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-[#F87171]" />
+              <span className="text-[11px] text-[#9CA3AF]">
+                {locale === "zh" ? "私密" : "Private"}
+              </span>
+            </div>
+          )}
+          <div className="flex-1" />
+          <span className="text-[11px] text-[#9CA3AF]">
+            {formatMomentDate(moment.createdAt, locale)}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // ==================== 多图文混合卡片 (Multi-image-text) ====================
+  if (cardType === "multi-image-text" && moment.images) {
+    return (
+      <div className="group relative overflow-hidden rounded-[24px] bg-white shadow-[0_25px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-[0_35px_70px_rgba(15,23,42,0.12)] active:scale-[0.99] dark:bg-[#111827] dark:shadow-[0_25px_50px_rgba(0,0,0,0.35)]">
+        {/* 多图网格区域 */}
+        <MultiImageGrid
+          images={moment.images}
+          onImageClick={(index) => {
+            window.dispatchEvent(
+              new CustomEvent("open-moment-lightbox", {
+                detail: { images: moment.images, initialIndex: index },
+              })
+            );
           }}
         />
 
         <Link href={cardLink} className="block">
-          {/* 文字区域 - 16px mobile / 24px desktop 内边距 */}
-          <div className="p-4 md:p-6">
-            <p className="mb-3 line-clamp-3 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+          {/* 文字区域 */}
+          <div className="p-5 sm:p-6">
+            <p className="mb-5 line-clamp-2 text-base leading-[26px] text-[#111827] dark:text-[#F8FAFC]">
               {moment.content}
             </p>
 
-            {/* 元数据 */}
-            <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-              <div className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                <span>{formatMomentDate(moment.createdAt, locale)}</span>
-              </div>
-
-              {moment.location && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  <span className="truncate">{moment.location}</span>
-                </div>
-              )}
-
+            {/* 底部元数据 */}
+            <div className="flex items-center justify-between">
               {!moment.isPublic && (
-                <div className="flex items-center gap-1">
-                  <EyeOff className="h-3.5 w-3.5" />
-                  <span>{locale === "zh" ? "私密" : "Private"}</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-2 rounded-full bg-[#F87171]" />
+                  <span className="text-[11px] text-[#9CA3AF]">
+                    {locale === "zh" ? "私密" : "Private"}
+                  </span>
                 </div>
               )}
+              <div className="flex-1" />
+              <span className="text-[11px] text-[#9CA3AF]">
+                {formatMomentDate(moment.createdAt, locale)}
+              </span>
             </div>
-
-            {/* 标签 */}
-            {moment.tags && moment.tags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {moment.tags.slice(0, 3).map((tag, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-                  >
-                    <Tag className="h-2.5 w-2.5" />
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
         </Link>
       </div>
     );
   }
 
-  // ==================== 图文混合卡片 ====================
+  // ==================== 图文混合卡片 (Image-text) ====================
   if (cardType === "image-text" && firstImage) {
-    const aspectRatio = getImageAspectRatio(firstImage);
-
     return (
-      <div className={`group relative overflow-hidden rounded-[10px] bg-white dark:bg-zinc-900 ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}>
-        {/* 图片区域 - 无内边距 */}
+      <div className="group relative overflow-hidden rounded-[24px] bg-white shadow-[0_25px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-[0_35px_70px_rgba(15,23,42,0.12)] active:scale-[0.99] dark:bg-[#111827] dark:shadow-[0_25px_50px_rgba(0,0,0,0.35)]">
+        {/* 图片区域 */}
         <div
-          className={`relative ${aspectRatio} cursor-pointer`}
+          className="relative cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
-            // Open lightbox for image preview
-            window.dispatchEvent(new CustomEvent('open-moment-lightbox', {
-              detail: { images: moment.images, initialIndex: 0 }
-            }));
+            window.dispatchEvent(
+              new CustomEvent("open-moment-lightbox", {
+                detail: { images: moment.images, initialIndex: 0 },
+              })
+            );
           }}
         >
           <Image
             src={firstImage.previewUrl || firstImage.url}
             alt={moment.content?.slice(0, 50) || "Moment image"}
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            width={firstImage.w || 800}
+            height={firstImage.h || 600}
+            className="h-auto w-full rounded-t-[24px] object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
           />
         </div>
 
         <Link href={cardLink} className="block">
-
-          {/* 文字区域 - 16px mobile / 24px desktop 内边距 */}
-          <div className="p-4 md:p-6">
-            <p className="mb-3 line-clamp-3 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">
+          {/* 文字区域 */}
+          <div className="p-5 sm:p-6">
+            <p className="mb-5 line-clamp-2 text-base leading-[26px] text-[#111827] dark:text-[#F8FAFC]">
               {moment.content}
             </p>
 
-            {/* 元数据 */}
-            <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-              <div className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                <span>{formatMomentDate(moment.createdAt, locale)}</span>
-              </div>
-
-              {moment.location && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  <span className="truncate">{moment.location}</span>
-                </div>
-              )}
-
+            {/* 底部元数据 */}
+            <div className="flex items-center justify-between">
               {!moment.isPublic && (
-                <div className="flex items-center gap-1">
-                  <EyeOff className="h-3.5 w-3.5" />
-                  <span>{locale === "zh" ? "私密" : "Private"}</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-2 rounded-full bg-[#F87171]" />
+                  <span className="text-[11px] text-[#9CA3AF]">
+                    {locale === "zh" ? "私密" : "Private"}
+                  </span>
                 </div>
               )}
+              <div className="flex-1" />
+              <span className="text-[11px] text-[#9CA3AF]">
+                {formatMomentDate(moment.createdAt, locale)}
+              </span>
             </div>
-
-            {/* 标签 */}
-            {moment.tags && moment.tags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {moment.tags.slice(0, 3).map((tag, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-                  >
-                    <Tag className="h-2.5 w-2.5" />
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
         </Link>
       </div>
     );
   }
 
-  // ==================== 纯文字卡片 ====================
-  const colorScheme = getColorScheme(moment.id);
-
+  // ==================== 纯文字卡片 (Text-only) ====================
   return (
     <div
       onClick={(e) => {
         e.stopPropagation();
-        // Open text lightbox instead of navigating
-        window.dispatchEvent(new CustomEvent('open-text-lightbox', {
-          detail: { text: moment.content }
-        }));
+        window.dispatchEvent(
+          new CustomEvent("open-text-lightbox", {
+            detail: { text: moment.content },
+          })
+        );
       }}
-      className={`group block cursor-pointer overflow-hidden rounded-[10px] ${CARD_SHADOW} ${CARD_SHADOW_HOVER} ${CARD_TRANSITION} ${CARD_HOVER_TRANSFORM} ${CARD_CLICK_STATE}`}
+      className="group block cursor-pointer overflow-hidden rounded-[24px] bg-[#F7F8FB] shadow-[0_25px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-[0_35px_70px_rgba(15,23,42,0.12)] active:scale-[0.99] dark:bg-[#1E2433] dark:shadow-[0_25px_50px_rgba(0,0,0,0.35)]"
+      aria-label={locale === "zh" ? "打开文字瞬间" : "Open text moment"}
     >
-      <div className={`p-4 md:p-5 ${colorScheme.bg} ${colorScheme.border || ""}`}>
-        <p className={`mb-4 text-base leading-relaxed ${colorScheme.text}`}>
+      <div className="p-5 sm:p-6">
+        <p className="mb-5 line-clamp-3 text-[22px] leading-8 text-[#111827] dark:text-[#F8FAFC]">
           {moment.content}
         </p>
 
-        {/* 元数据 */}
-        <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-          <div className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5" />
-            <span>{formatMomentDate(moment.createdAt, locale)}</span>
+        {/* 底部信息条 */}
+        <div className="flex h-8 items-center justify-between rounded-full bg-white/80 px-3 dark:bg-white/5">
+          {/* 左侧: Icon + Tag/Notes */}
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="h-3 w-3 text-[#94A3B8]" aria-hidden="true" />
+            <span className="text-xs text-[#94A3B8]">
+              {moment.tags && moment.tags.length > 0
+                ? moment.tags[0]
+                : locale === "zh"
+                ? "随记"
+                : "Notes"}
+            </span>
           </div>
 
-          {moment.location && (
-            <div className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
-              <span className="truncate">{moment.location}</span>
-            </div>
-          )}
-
-          {!moment.isPublic && (
-            <div className="flex items-center gap-1">
-              <EyeOff className="h-3.5 w-3.5" />
-              <span>{locale === "zh" ? "私密" : "Private"}</span>
-            </div>
-          )}
+          {/* 右侧: 时间 */}
+          <span className="text-xs text-[#94A3B8]">
+            {formatMomentDate(moment.createdAt, locale)}
+          </span>
         </div>
-
-        {/* 标签 */}
-        {moment.tags && moment.tags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {moment.tags.slice(0, 3).map((tag, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1 rounded-full bg-white/60 px-2.5 py-0.5 text-xs text-zinc-700 backdrop-blur-sm dark:bg-zinc-800/60 dark:text-zinc-300"
-              >
-                <Tag className="h-2.5 w-2.5" />
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -11,14 +11,14 @@ interface MultiImageGridProps {
 export function MultiImageGrid({ images, onImageClick }: MultiImageGridProps) {
   const count = images.length;
 
-  // 2图布局: 1×2 横向网格
+  // 2图布局: 上下排列的纵向2列布局
   if (count === 2) {
     return (
-      <div className="grid grid-cols-2 gap-[5px]">
+      <div className="grid grid-rows-2 gap-1.5">
         {images.map((img, idx) => (
           <div
             key={idx}
-            className="relative aspect-square cursor-pointer overflow-hidden rounded-md"
+            className="relative aspect-square cursor-pointer overflow-hidden rounded-[18px]"
             onClick={(e) => {
               e.stopPropagation();
               onImageClick(idx);
@@ -37,14 +37,14 @@ export function MultiImageGrid({ images, onImageClick }: MultiImageGridProps) {
     );
   }
 
-  // 3图布局: 1大图 + 2小图竖排
+  // 3图布局: 左侧一张竖直占满 (比例 2:3), 右侧两张上下 (高度等分)
   if (count === 3) {
     return (
-      <div className="grid grid-cols-2 gap-[5px]">
-        {/* 第一张大图 - 占据左侧全高 */}
+      <div className="grid grid-cols-2 gap-1.5">
+        {/* 第一张大图 - 占据左侧全高, 比例 2:3 */}
         <div
-          className="relative row-span-2 cursor-pointer overflow-hidden rounded-md"
-          style={{ aspectRatio: "1 / 1" }}
+          className="relative row-span-2 cursor-pointer overflow-hidden rounded-[18px]"
+          style={{ aspectRatio: "2 / 3" }}
           onClick={(e) => {
             e.stopPropagation();
             onImageClick(0);
@@ -59,11 +59,11 @@ export function MultiImageGrid({ images, onImageClick }: MultiImageGridProps) {
           />
         </div>
 
-        {/* 右侧两张小图 */}
+        {/* 右侧两张小图 - 高度等分 */}
         {images.slice(1).map((img, idx) => (
           <div
             key={idx + 1}
-            className="relative aspect-square cursor-pointer overflow-hidden rounded-md"
+            className="relative aspect-square cursor-pointer overflow-hidden rounded-[18px]"
             onClick={(e) => {
               e.stopPropagation();
               onImageClick(idx + 1);
@@ -85,11 +85,11 @@ export function MultiImageGrid({ images, onImageClick }: MultiImageGridProps) {
   // 4图及以上布局: 2×2 网格
   if (count >= 4) {
     return (
-      <div className="grid grid-cols-2 gap-[5px]">
+      <div className="grid grid-cols-2 gap-1.5">
         {images.slice(0, 4).map((img, idx) => (
           <div
             key={idx}
-            className="relative aspect-square cursor-pointer overflow-hidden rounded-md"
+            className="relative aspect-square cursor-pointer overflow-hidden rounded-[18px]"
             onClick={(e) => {
               e.stopPropagation();
               onImageClick(idx);
@@ -104,8 +104,8 @@ export function MultiImageGrid({ images, onImageClick }: MultiImageGridProps) {
             />
             {/* 如果超过4张图,在第4张上显示 "+N" 标识 */}
             {idx === 3 && count > 4 && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                <span className="text-2xl font-semibold text-white">
+              <div className="absolute inset-0 flex items-center justify-center rounded-[18px] bg-[rgba(15,23,42,0.8)]">
+                <span className="text-[22px] font-bold text-white">
                   +{count - 4}
                 </span>
               </div>
