@@ -111,7 +111,7 @@ export function Thumbnails({
                   item.mediumPath ??
                   item.filePath
                 }
-                alt={item.title || ""}
+                alt="thumb"
                 className="w-full h-full object-cover pointer-events-none select-none"
                 draggable={false}
                 loading="lazy"
