@@ -10,6 +10,7 @@ import { LivePhotoPlayer } from "@/components/live-photo-player";
 import Image from "next/image";
 import { useImageCache } from "@/hooks/use-image-cache";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Thumbnails } from "@/components/ui/thumbnail-carousel";
 
 const SLIDE_STORAGE_KEY = "gallery-slide-direction";
 
@@ -49,7 +50,6 @@ export function PhotoViewer({
   const router = useRouter();
   const imageCache = useImageCache();
   const backButtonRef = useRef<HTMLAnchorElement>(null);
-  const thumbnailStripRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const scaleRef = useRef(scale);
@@ -94,6 +94,7 @@ export function PhotoViewer({
     fromAlt: string;
     phase: "pre" | "animating";
   } | null>(null);
+  const [thumbnailIndex, setThumbnailIndex] = useState(0);
 
   // Calculate visual adjacent IDs from thumbnails array (not timeline)
   const visualAdjacentIds = useRef<{ prev: string | null; next: string | null }>({
@@ -103,13 +104,18 @@ export function PhotoViewer({
   useEffect(() => {
     if (!thumbnails || !currentId) {
       visualAdjacentIds.current = { prev: null, next: null };
+      setThumbnailIndex(0);
       return;
     }
     const currentIndex = thumbnails.findIndex((t) => t.id === currentId);
     if (currentIndex === -1) {
       visualAdjacentIds.current = { prev: null, next: null };
+      setThumbnailIndex(0);
       return;
     }
+    // Update thumbnail index
+    setThumbnailIndex(currentIndex);
+
     // Visual order: index 0 = newest (left), index N = oldest (right)
     // prev = left = newer = index - 1
     // next = right = older = index + 1
@@ -279,77 +285,6 @@ export function PhotoViewer({
       }
     };
   }, [scale]);
-
-  // Auto-scroll thumbnail strip to current image with manual calculation
-  useEffect(() => {
-    if (!currentId || !thumbnailStripRef.current || !thumbnails) return;
-
-    const container = thumbnailStripRef.current;
-    const currentIndex = thumbnails.findIndex((t) => t.id === currentId);
-    if (currentIndex === -1) return;
-
-    // Use requestAnimationFrame to ensure DOM is ready
-    requestAnimationFrame(() => {
-      const currentThumb = container.querySelector(`a[href*="${currentId}"]`) as HTMLElement;
-      if (!currentThumb) return;
-
-      const containerWidth = container.clientWidth;
-      const scrollWidth = container.scrollWidth;
-      const maxScroll = scrollWidth - containerWidth;
-
-      // If content fits in container, no need to scroll
-      if (maxScroll <= 0) return;
-
-      // Calculate thumb position (using gap-2 = 8px between items)
-      const thumbWidth = 56; // h-14 w-14
-      const gap = 8;
-      const padding = 16; // px-4
-      const thumbLeft = padding + currentIndex * (thumbWidth + gap);
-
-      // Pre-calculate target scroll position based on boundary detection
-      let targetScrollLeft: number;
-
-      // Check if at start boundary (first few items)
-      if (currentIndex < 3) {
-        targetScrollLeft = 0;
-      }
-      // Check if at end boundary (last few items)
-      else if (currentIndex >= thumbnails.length - 3) {
-        targetScrollLeft = maxScroll;
-      }
-      // Middle position: center the thumbnail
-      else {
-        const centerPosition = thumbLeft - containerWidth / 2 + thumbWidth / 2;
-        targetScrollLeft = Math.max(0, Math.min(centerPosition, maxScroll));
-      }
-
-      // Only scroll if target position is different from current
-      if (Math.abs(container.scrollLeft - targetScrollLeft) > 1) {
-        container.scrollTo({
-          left: targetScrollLeft,
-          behavior: "smooth",
-        });
-      }
-    });
-  }, [currentId, thumbnails]);
-
-  // Mouse wheel horizontal scroll support for thumbnail strip
-  useEffect(() => {
-    const thumbnailStrip = thumbnailStripRef.current;
-    if (!thumbnailStrip) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      // Prevent default vertical scroll
-      e.preventDefault();
-      // Scroll horizontally based on wheel delta
-      thumbnailStrip.scrollLeft += e.deltaY;
-    };
-
-    thumbnailStrip.addEventListener("wheel", handleWheel, { passive: false });
-    return () => {
-      thumbnailStrip.removeEventListener("wheel", handleWheel);
-    };
-  }, []);
 
   // Keyboard navigation with proactive preloading
   useEffect(() => {
@@ -885,7 +820,7 @@ export function PhotoViewer({
       {/* Main content */}
       <div className="flex h-full flex-col lg:flex-row">
         {/* Image area */}
-        <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4 sm:p-6">
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4 pb-28 sm:p-6 sm:pb-32">
           {image.isLivePhoto && image.livePhotoVideoPath ? (
             <div className="relative h-full w-full">
               <LivePhotoPlayer
@@ -1019,33 +954,18 @@ export function PhotoViewer({
         </aside>
       </div>
 
-      {/* Bottom film strip - exclude right sidebar on desktop */}
+      {/* Bottom thumbnail strip - exclude right sidebar on desktop */}
       {Array.isArray(thumbnails) && thumbnails.length > 0 && (
         <div className="pointer-events-auto fixed right-0 bottom-0 left-0 z-[61] border-t border-zinc-200 bg-white/75 backdrop-blur lg:right-[380px] xl:right-[420px] dark:border-zinc-800 dark:bg-zinc-900/60">
-          <div
-            ref={thumbnailStripRef}
-            className="flex items-center gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {thumbnails.map((t) => (
-              <Link
-                key={t.id}
-                href={localePath(locale, `/gallery/${t.id}`)}
-                className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-md ring-1 ${
-                  currentId === t.id ? "ring-blue-500" : "ring-zinc-200 dark:ring-zinc-700"
-                }`}
-                title={image.title || ""}
-                onClick={() => handleThumbnailClick(t.id)}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={t.smallThumbPath ?? t.microThumbPath ?? t.mediumPath ?? t.filePath}
-                  alt="thumb"
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </Link>
-            ))}
+          <div className="px-4 py-3">
+            <Thumbnails
+              images={thumbnails}
+              index={thumbnailIndex}
+              setIndex={setThumbnailIndex}
+              currentId={currentId || image.id}
+              locale={locale}
+              onImageClick={handleThumbnailClick}
+            />
           </div>
         </div>
       )}
