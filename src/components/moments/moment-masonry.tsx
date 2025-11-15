@@ -59,7 +59,7 @@ export function MomentMasonry({
           {/* Second-to-last card: offset left */}
           <div className="mb-4 hidden break-inside-avoid md:block lg:mb-7 lg:-translate-x-[50px] lg:translate-y-10">
             <MomentMasonryCard
-              moment={floatingMoments[0]}
+              moment={floatingMoments[0]!}
               locale={locale}
               onDelete={onDelete}
               isAdmin={isAdmin}
@@ -69,7 +69,7 @@ export function MomentMasonry({
           {/* Last card: offset right */}
           <div className="mb-4 hidden break-inside-avoid md:block lg:mb-7 lg:translate-x-[50px] lg:translate-y-10">
             <MomentMasonryCard
-              moment={floatingMoments[1]}
+              moment={floatingMoments[1]!}
               locale={locale}
               onDelete={onDelete}
               isAdmin={isAdmin}
@@ -79,7 +79,7 @@ export function MomentMasonry({
           {/* Mobile fallback: show without offset on small screens */}
           <div className="mb-4 block break-inside-avoid md:hidden">
             <MomentMasonryCard
-              moment={floatingMoments[0]}
+              moment={floatingMoments[0]!}
               locale={locale}
               onDelete={onDelete}
               isAdmin={isAdmin}
@@ -87,7 +87,7 @@ export function MomentMasonry({
           </div>
           <div className="mb-4 block break-inside-avoid md:hidden">
             <MomentMasonryCard
-              moment={floatingMoments[1]}
+              moment={floatingMoments[1]!}
               locale={locale}
               onDelete={onDelete}
               isAdmin={isAdmin}

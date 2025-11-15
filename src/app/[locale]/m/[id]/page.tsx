@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocalizedMomentDetailPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
-  const sp = (await searchParams) || {};
+  const _sp = (await searchParams) || {};
   const l = locale === "zh" ? "zh" : "en";
 
   const m = await getMomentByIdOrSlug(id);

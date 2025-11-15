@@ -3,8 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, Eye, Heart, Sparkles } from "lucide-react";
-import type { MomentListItem, MomentImage } from "@/lib/moments";
+import { Eye, Heart, Sparkles } from "lucide-react";
+import type { MomentListItem } from "@/lib/moments";
 import { MultiImageGrid } from "./multi-image-grid";
 
 type MomentWithMasonryData = MomentListItem & {
@@ -59,8 +59,8 @@ function formatMomentDate(date: Date, locale: "zh" | "en"): string {
 export function MomentMasonryCard({
   moment,
   locale,
-  onDelete,
-  isAdmin = false,
+  onDelete: _onDelete,
+  isAdmin: _isAdmin = false,
 }: MomentMasonryCardProps) {
   const hasImages = moment.images && moment.images.length > 0;
   const firstImage = hasImages ? moment.images[0] : null;

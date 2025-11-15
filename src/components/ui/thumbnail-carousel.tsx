@@ -29,8 +29,8 @@ interface ThumbnailCarouselProps {
 export function Thumbnails({
   images,
   index,
-  setIndex,
-  currentId,
+  setIndex: _setIndex,
+  currentId: _currentId,
   locale = "zh",
   onImageClick,
 }: {
@@ -98,7 +98,7 @@ export function Thumbnails({
             <Link
               href={localePath(locale, `/gallery/${item.id}`)}
               className="block w-full h-full"
-              onClick={(e) => {
+              onClick={(_e) => {
                 if (onImageClick) {
                   onImageClick(item.id);
                 }

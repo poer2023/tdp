@@ -50,7 +50,7 @@ interface ParticlesAboutContentProps {
 export function ParticlesAboutContent({
   data,
   locale,
-  layoutClass, // Keep for backward compatibility but won't use
+  layoutClass: _layoutClass, // Keep for backward compatibility but won't use
   initialHighlights,
 }: ParticlesAboutContentProps) {
   const { theme } = useTheme();
