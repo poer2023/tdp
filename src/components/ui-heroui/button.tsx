@@ -1,16 +1,16 @@
 "use client";
 
-import { Button as HeroUIButton } from "@heroui/react";
-import type { ButtonProps as HeroUIButtonProps } from "@heroui/react";
-
-export interface ButtonProps extends Omit<HeroUIButtonProps, "onPress"> {
-  onClick?: () => void;
-}
-
 /**
- * HeroUI Button 组件封装
- * 提供与现有代码库兼容的 onClick 接口
+ * HeroUI Button 组件 - 直接导出官方组件
+ *
+ * 官方文档: https://v3.heroui.com/docs/components/button
+ *
+ * 使用 onPress 而不是 onClick (React Aria 规范)
+ *
+ * @example
+ * <Button variant="primary" onPress={() => console.log("pressed")}>
+ *   Click me
+ * </Button>
  */
-export function Button({ onClick, ...props }: ButtonProps) {
-  return <HeroUIButton onPress={onClick} {...props} />;
-}
+export { Button } from "@heroui/react";
+export type { ButtonProps } from "@heroui/react";

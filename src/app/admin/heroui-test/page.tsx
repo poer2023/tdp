@@ -16,16 +16,16 @@ export default function HeroUITestPage() {
         <section className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
           <h2 className="mb-4 text-lg font-semibold">Button 组件测试</h2>
           <div className="flex flex-wrap gap-4">
-            <Button variant="primary" onClick={() => alert("Primary clicked!")}>
+            <Button variant="primary" onPress={() => alert("Primary clicked!")}>
               Primary Button
             </Button>
-            <Button variant="secondary" onClick={() => alert("Secondary clicked!")}>
+            <Button variant="secondary" onPress={() => alert("Secondary clicked!")}>
               Secondary Button
             </Button>
-            <Button variant="ghost" onClick={() => alert("Ghost clicked!")}>
+            <Button variant="ghost" onPress={() => alert("Ghost clicked!")}>
               Ghost Button
             </Button>
-            <Button variant="danger" onClick={() => alert("Danger clicked!")}>
+            <Button variant="danger" onPress={() => alert("Danger clicked!")}>
               Danger Button
             </Button>
           </div>
@@ -153,11 +153,11 @@ export default function HeroUITestPage() {
         <section className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
           <h2 className="mb-4 text-lg font-semibold">测试说明</h2>
           <ul className="list-inside list-disc space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-            <li>点击按钮测试 onClick 事件处理</li>
+            <li>点击按钮测试 onPress 事件处理（HeroUI 官方 API）</li>
             <li>测试不同的按钮变体（primary, secondary, ghost, danger）</li>
             <li>测试不同的尺寸（sm, md, lg）</li>
             <li>测试禁用和加载状态</li>
-            <li>测试 Card 组件的不同变体（default, bordered, flat）</li>
+            <li>测试 Card 组件的不同变体（default, secondary, tertiary）</li>
             <li>测试 Input 组件的各种状态（必填、禁用、错误）</li>
             <li>测试 Select 组件的选项和状态</li>
             <li>切换深色模式查看样式适配</li>
