@@ -152,7 +152,8 @@ describe("SubscriptionDashboard", () => {
       const annualButton = screen.getByRole("button", { name: /annual view/i });
       fireEvent.click(annualButton);
 
-      expect(annualButton).toHaveClass(/bg-blue-600/);
+      // Check for HeroUI Button solid/primary variant classes instead of specific Tailwind classes
+      expect(annualButton).toHaveClass(/button--solid|button--primary/);
     });
 
     it("should switch back to monthly view when clicked", () => {
@@ -164,7 +165,8 @@ describe("SubscriptionDashboard", () => {
       fireEvent.click(annualButton);
       fireEvent.click(monthlyButton);
 
-      expect(monthlyButton).toHaveClass(/bg-blue-600/);
+      // Check for HeroUI Button solid/primary variant classes instead of specific Tailwind classes
+      expect(monthlyButton).toHaveClass(/button--solid|button--primary/);
     });
   });
 
@@ -229,14 +231,20 @@ describe("SubscriptionDashboard", () => {
     it("should render add subscription button", () => {
       render(<SubscriptionDashboard locale="en" initialSubscriptions={mockSubscriptions} />);
 
-      expect(screen.getByRole("link", { name: /add subscription/i })).toBeInTheDocument();
+      // There are multiple "Add Subscription" buttons on the page, use getAllByRole
+      const addLinks = screen.getAllByRole("link", { name: /add subscription/i });
+      expect(addLinks.length).toBeGreaterThan(0);
+      expect(addLinks[0]).toBeInTheDocument();
     });
 
     it("should navigate to new subscription page when clicked", () => {
       render(<SubscriptionDashboard locale="en" initialSubscriptions={mockSubscriptions} />);
 
-      const addLink = screen.getByRole("link", { name: /add subscription/i });
-      expect(addLink).toHaveAttribute("href", "/admin/subscriptions/new");
+      // There are multiple "Add Subscription" buttons, verify they all have correct href
+      const addLinks = screen.getAllByRole("link", { name: /add subscription/i });
+      addLinks.forEach((link) => {
+        expect(link).toHaveAttribute("href", "/admin/subscriptions/new");
+      });
     });
   });
 
