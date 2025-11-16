@@ -15,6 +15,7 @@ import {
   updateFriendPassphraseAction,
 } from "@/app/admin/friends/actions";
 import { ImageUploadField } from "./ImageUploadField";
+import { Input, Textarea, Alert, Button, Card } from "@/components/ui-heroui";
 
 interface FriendEditFormProps {
   friend: {
@@ -31,13 +32,9 @@ const initialState: FriendProfileFormState = { success: false };
 function SaveButton() {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-    >
+    <Button type="submit" variant="primary" isDisabled={pending}>
       {pending ? "保存中..." : "保存修改"}
-    </button>
+    </Button>
   );
 }
 
@@ -76,104 +73,77 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
 
   return (
     <div className="space-y-6">
-      <form
-        action={formAction}
-        className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80"
-      >
-        <div>
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="name">
-            昵称
-          </label>
-          <input
+      <Card variant="secondary">
+        <form action={formAction} className="space-y-6 p-6">
+          <Input
             id="name"
             name="name"
+            label="昵称"
             defaultValue={friend.name}
-            required
-            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            isRequired
           />
-        </div>
 
-        {/* 隐藏字段用于传递上传的图片 URL */}
-        <input type="hidden" name="avatar" value={avatar} />
-        <input type="hidden" name="cover" value={cover} />
+          {/* 隐藏字段用于传递上传的图片 URL */}
+          <input type="hidden" name="avatar" value={avatar} />
+          <input type="hidden" name="cover" value={cover} />
 
-        <ImageUploadField
-          label="头像"
-          value={avatar}
-          onChange={(url) => setAvatar(url)}
-          type="avatar"
-        />
+          <ImageUploadField
+            label="头像"
+            value={avatar}
+            onChange={(url) => setAvatar(url)}
+            type="avatar"
+          />
 
-        <ImageUploadField
-          label="封面"
-          value={cover}
-          onChange={(url) => setCover(url)}
-          type="cover"
-        />
+          <ImageUploadField
+            label="封面"
+            value={cover}
+            onChange={(url) => setCover(url)}
+            type="cover"
+          />
 
-        <div>
-          <label
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-200"
-            htmlFor="description"
-          >
-            关系描述
-          </label>
-          <textarea
+          <Textarea
             id="description"
             name="description"
-            rows={3}
+            label="关系描述"
             defaultValue={friend.description ?? ""}
             placeholder="我们之间的回忆..."
-            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            rows={3}
           />
-        </div>
 
-        {state.error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {state.error}
+          {state.error && <Alert status="danger" description={state.error} />}
+
+          <div className="flex items-center gap-3">
+            <SaveButton />
+            <Button variant="secondary" asChild>
+              <Link href="/admin/friends">返回列表</Link>
+            </Button>
           </div>
-        )}
+        </form>
+      </Card>
 
-        <div className="flex items-center gap-3">
-          <SaveButton />
-          <Link
-            href="/admin/friends"
-            className="rounded-xl border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-          >
-            返回列表
-          </Link>
-        </div>
-      </form>
-
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80">
+      <Card variant="secondary" className="p-6">
         <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">安全设置</h2>
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
           重置该朋友的访问密码并即时生成新密码。
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="button"
-            onClick={handleGeneratePassphrase}
-            disabled={isPending}
-            className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
+          <Button
+            variant="primary"
+            onPress={handleGeneratePassphrase}
+            isDisabled={isPending}
           >
             {isPending ? "生成中..." : "生成新口令"}
-          </button>
+          </Button>
           {passphrase && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-              <p className="font-medium">新口令</p>
+            <Alert status="warning" title="新口令">
               <p className="mt-1 font-mono text-base">{passphrase}</p>
               <p className="mt-1 text-[11px]">请立即复制并通知朋友，该口令只显示一次。</p>
-            </div>
+            </Alert>
           )}
         </div>
-      </div>
+      </Card>
 
-      {showSuccess && (
-        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-          信息已更新。
-        </div>
-      )}
+      {showSuccess && <Alert status="success" description="信息已更新。" />}
     </div>
   );
 }
