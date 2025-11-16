@@ -54,7 +54,7 @@ export function EditPostForm({ post }: { post: PublicPost }) {
       </div>
 
       {state.status === "error" && state.message && (
-        <Alert variant="danger" title="保存失败" description={state.message} className="mt-4" />
+        <Alert status="danger" title="保存失败" description={state.message} className="mt-4" />
       )}
 
       <form action={formAction} className="mt-6 space-y-5">
@@ -126,7 +126,7 @@ export function EditPostForm({ post }: { post: PublicPost }) {
             </div>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               onPress={() => setShowPreview((prev) => !prev)}
               className="whitespace-nowrap"

@@ -42,5 +42,3 @@ export function Alert({
     </HeroUIAlert>
   );
 }
-
-export type { ComponentProps as AlertPropsBase } from "@heroui/react";

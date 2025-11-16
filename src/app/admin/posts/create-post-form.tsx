@@ -153,7 +153,7 @@ export function CreatePostForm() {
               </div>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onPress={() => setShowPreview((prev) => !prev)}
                 className="self-start mt-7 whitespace-nowrap"
               >

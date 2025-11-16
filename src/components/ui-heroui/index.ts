@@ -85,6 +85,7 @@ export type { TooltipProps } from "./tooltip";
 export type { SkeletonProps } from "./skeleton";
 export type { SpinnerProps } from "./spinner";
 export type { AvatarProps } from "./avatar";
-export type { ChipProps, BadgeProps } from "./chip";
+export type { ChipProps } from "./chip";
+export type { BadgeProps } from "./badge";
 export type { SurfaceProps } from "./surface";
 export type { PopoverProps } from "./popover";

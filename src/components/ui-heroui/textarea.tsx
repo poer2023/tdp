@@ -1,54 +1,51 @@
 "use client";
 
-import { TextArea as HeroUITextArea } from "@heroui/react";
-import { TextField } from "@heroui/react";
-import type { ComponentProps } from "react";
-
-/**
- * HeroUI Textarea 组件封装
- *
- * 官方文档: https://v3.heroui.com/docs/components/textarea
- *
- * 使用 TextField + TextArea 组合提供完整的表单功能
- * 包括 label, description, error 提示
- */
-
-export interface TextareaProps extends ComponentProps<typeof HeroUITextArea> {
+export interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "size"> {
   label?: string;
   description?: string;
   error?: string;
+  errorMessage?: string;
   isRequired?: boolean;
   isDisabled?: boolean;
+  isInvalid?: boolean;
 }
 
+/**
+ * Textarea 组件 - 使用 Tailwind 样式
+ * 暂时不使用 HeroUI TextArea，因为 beta 版本 API 不稳定
+ */
 export function Textarea({
   label,
   description,
   error,
-  isRequired,
+  errorMessage,
   className,
+  isRequired,
+  isDisabled,
+  isInvalid,
   ...props
 }: TextareaProps) {
-  // 如果有 label/description/error，使用 TextField 包裹
-  if (label || description || error) {
-    return (
-      <TextField
-        className={className}
-        isRequired={isRequired}
-        isInvalid={!!error}
-      >
-        {label && <TextField.Label>{label}</TextField.Label>}
-        {description && !error && (
-          <TextField.Description>{description}</TextField.Description>
-        )}
-        <HeroUITextArea {...props} />
-        {error && <TextField.ErrorMessage>{error}</TextField.ErrorMessage>}
-      </TextField>
-    );
-  }
+  // errorMessage 是 error 的别名,优先使用 error
+  const displayError = error || errorMessage;
 
-  // 否则直接使用原生 TextArea
-  return <HeroUITextArea className={className} {...props} />;
+  return (
+    <div className={className}>
+      {label && (
+        <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          {label}
+          {isRequired && <span className="ml-1 text-red-500">*</span>}
+        </label>
+      )}
+      {description && !displayError && (
+        <p className="mb-2 text-xs text-zinc-500 dark:text-zinc-400">{description}</p>
+      )}
+      <textarea
+        required={isRequired}
+        disabled={isDisabled}
+        className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-500 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-400"
+        {...props}
+      />
+      {displayError && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{displayError}</p>}
+    </div>
+  );
 }
-
-export type { ComponentProps as TextareaProps } from "@heroui/react";

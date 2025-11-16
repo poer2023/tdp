@@ -7,10 +7,12 @@ export interface SelectItemProps {
 
 export interface SelectProps {
   label?: string;
+  name?: string;
   placeholder?: string;
   isRequired?: boolean;
   isDisabled?: boolean;
   value?: string;
+  defaultSelectedKeys?: string[];
   onChange?: (value: string) => void;
   children: React.ReactElement<SelectItemProps> | React.ReactElement<SelectItemProps>[];
   className?: string;
@@ -29,15 +31,19 @@ export function SelectItem({ children }: SelectItemProps) {
  */
 export function Select({
   label,
+  name,
   placeholder = "选择一项",
   isRequired,
   isDisabled,
   value,
+  defaultSelectedKeys,
   onChange,
   children,
   className,
 }: SelectProps) {
   const childArray = Array.isArray(children) ? children : [children];
+  // defaultSelectedKeys[0] 用作 defaultValue
+  const defaultValue = defaultSelectedKeys?.[0];
 
   return (
     <div className={className}>
@@ -48,7 +54,9 @@ export function Select({
         </label>
       )}
       <select
+        name={name}
         value={value}
+        defaultValue={defaultValue}
         onChange={(e) => onChange?.(e.target.value)}
         required={isRequired}
         disabled={isDisabled}
