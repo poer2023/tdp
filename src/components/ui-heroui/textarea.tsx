@@ -18,6 +18,7 @@ export interface TextareaProps extends ComponentProps<typeof HeroUITextArea> {
   description?: string;
   error?: string;
   isRequired?: boolean;
+  isDisabled?: boolean;
 }
 
 export function Textarea({
