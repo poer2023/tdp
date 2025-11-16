@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { InputHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes } from "react";
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
   label?: string;
@@ -38,8 +38,9 @@ export function Input({
   const displayError = error || errorMessage;
   const invalid = isInvalid ?? Boolean(displayError);
 
-  // 生成唯一 ID: 优先使用传入的 id，其次使用 name，最后生成随机 ID
-  const inputId = id || name || `input-${Math.random().toString(36).substring(2, 11)}`;
+  // 生成唯一 ID: 优先使用传入的 id，其次使用 name，最后使用 React 的 useId hook
+  const reactId = useId();
+  const inputId = id || name || reactId;
 
   const inputClass = cn(
     "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-500 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-400",

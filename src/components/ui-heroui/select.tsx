@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, isValidElement, type ReactNode } from "react";
+import { Children, isValidElement, useId, type ReactNode } from "react";
 
 export interface SelectItemProps {
   id: string;
@@ -51,8 +51,9 @@ export function Select({
   // defaultSelectedKeys[0] 用作 defaultValue
   const defaultValue = defaultSelectedKeys?.[0];
 
-  // 生成唯一 ID: 优先使用传入的 id，其次使用 name，最后生成随机 ID
-  const selectId = id || name || `select-${Math.random().toString(36).substring(2, 11)}`;
+  // 生成唯一 ID: 优先使用传入的 id，其次使用 name，最后使用 React 的 useId hook
+  const reactId = useId();
+  const selectId = id || name || reactId;
 
   return (
     <div className={className}>
