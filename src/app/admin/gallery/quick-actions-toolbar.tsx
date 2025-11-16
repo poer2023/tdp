@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Trash2, Download } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui-heroui";
 import {
   AlertDialog,
   AlertDialogAction,

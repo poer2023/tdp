@@ -12,7 +12,7 @@ import { PostStatus, type Prisma } from "@prisma/client";
 import { ActionCard } from "@/components/admin/action-card";
 import { getAdminLocale, t } from "@/lib/admin-i18n";
 import { features } from "@/config/features";
-import { AdminErrorBoundary } from "@/components/error-boundaries/admin-error-boundary";
+import AdminErrorBoundary from "@/components/error-boundaries/admin-error-boundary";
 import { ModuleLoadingSkeleton } from "@/components/error-boundaries/module-error-fallback";
 
 // Dynamic imports for dashboard sections

@@ -1,6 +1,7 @@
 "use client";
 
 import { useConfirm } from "@/hooks/use-confirm";
+import { Button } from "@/components/ui-heroui";
 
 interface DeletePostButtonProps {
   postId: string;
@@ -29,12 +30,9 @@ export function DeletePostButton({ postId, postTitle, deleteAction }: DeletePost
 
   return (
     <form onSubmit={handleDelete}>
-      <button
-        type="submit"
-        className="rounded-full border border-red-500 px-3 py-1 text-red-600 transition hover:bg-red-50 dark:border-red-400/60 dark:text-red-300 dark:hover:bg-red-500/10"
-      >
+      <Button type="submit" color="danger" variant="ghost" size="sm">
         删除
-      </button>
+      </Button>
     </form>
   );
 }

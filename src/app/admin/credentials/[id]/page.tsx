@@ -13,6 +13,7 @@ import { t } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
 import Link from "next/link";
 import { CredentialPlatform, CredentialType } from "@prisma/client";
+import { Card, Chip, Surface } from "@/components/ui-heroui";
 
 export const runtime = "nodejs";
 
@@ -110,8 +111,10 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Page Header */}
-      <header>
+      <Surface
+        variant="flat"
+        className="rounded-3xl border border-zinc-200 bg-white/80 p-6 dark:border-zinc-800 dark:bg-zinc-900/80"
+      >
         <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
           <Link href="/admin/credentials" className="hover:text-zinc-900 dark:hover:text-zinc-100">
             {t(locale, "credentials")}
@@ -119,106 +122,79 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
           <span>/</span>
           <span className="text-zinc-900 dark:text-zinc-100">{t(locale, "editCredential")}</span>
         </div>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
           {t(locale, "editCredential")}
         </h1>
-      </header>
+      </Surface>
 
-      {/* Credential Info */}
-      <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              {t(locale, "credentialCreatedAt")}
-            </span>
-            <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              {new Date(credential.createdAt).toLocaleString()}
-            </div>
-          </div>
-          <div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              {t(locale, "credentialUpdatedAt")}
-            </span>
-            <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              {new Date(credential.updatedAt).toLocaleString()}
-            </div>
-          </div>
-          <div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              {t(locale, "credentialStatus")}
-            </span>
-            <div className="mt-1">
-              <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                  credential.isValid
-                    ? "bg-green-100 text-green-800 dark:bg-green-950/20 dark:text-green-400"
-                    : "bg-red-100 text-red-800 dark:bg-red-950/20 dark:text-red-400"
-                }`}
+      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card.Content className="space-y-6 p-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Metric label={t(locale, "credentialCreatedAt")} value={credential.createdAt} />
+            <Metric label={t(locale, "credentialUpdatedAt")} value={credential.updatedAt} />
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                {t(locale, "credentialStatus")}
+              </p>
+              <Chip
+                size="sm"
+                variant="flat"
+                color={credential.isValid ? "success" : "danger"}
+                className="font-semibold"
               >
                 {credential.isValid ? t(locale, "isValid") : t(locale, "isInvalid")}
-              </span>
+              </Chip>
             </div>
+            <Metric label={t(locale, "usageCount")} value={credential.usageCount} />
+            <Metric label={t(locale, "failureCount")} value={credential.failureCount} />
+            {credential.lastValidatedAt && (
+              <Metric label={t(locale, "lastValidated")} value={credential.lastValidatedAt} />
+            )}
           </div>
+
+          <CredentialForm action={updateAction} locale={locale} credential={decryptedCredential} />
+        </Card.Content>
+      </Card>
+
+      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card.Content className="space-y-6 p-5">
           <div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              {t(locale, "usageCount")}
-            </span>
-            <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              {credential.usageCount}
-            </div>
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              {locale === "zh" ? "操作" : "Actions"}
+            </h2>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              {locale === "zh"
+                ? "验证凭据有效性或触发数据同步"
+                : "Validate the credential and trigger manual syncs."}
+            </p>
           </div>
-          <div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              {t(locale, "failureCount")}
-            </span>
-            <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              {credential.failureCount}
-            </div>
+          <CredentialActions credentialId={credential.id} locale={locale} />
+          <div className="rounded-2xl border border-red-200/60 bg-red-50/80 p-4 dark:border-red-900/30 dark:bg-red-950/20">
+            <h3 className="text-sm font-semibold text-red-900 dark:text-red-200">
+              {t(locale, "deleteCredential")}
+            </h3>
+            <p className="mt-1 text-xs text-red-700 dark:text-red-300">
+              {t(locale, "confirmDeleteCredentialDescription")}
+            </p>
+            <DeleteCredentialButton
+              confirmMessage={t(locale, "confirmDeleteCredential")}
+              buttonText={t(locale, "deleteCredential")}
+              formAction={deleteAction}
+            />
           </div>
-          {credential.lastValidatedAt && (
-            <div>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {t(locale, "lastValidated")}
-              </span>
-              <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                {new Date(credential.lastValidatedAt).toLocaleString()}
-              </div>
-            </div>
-          )}
-        </div>
+        </Card.Content>
+      </Card>
+    </div>
+  );
+}
 
-        <CredentialForm action={updateAction} locale={locale} credential={decryptedCredential} />
-      </div>
-
-      {/* Actions Section */}
-      <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          {locale === "zh" ? "操作" : "Actions"}
-        </h2>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          {locale === "zh"
-            ? "验证凭据有效性或触发数据同步"
-            : "Validate credential or trigger data sync"}
-        </p>
-        <div className="mt-4">
-          <CredentialActions credentialId={id} locale={locale} />
-        </div>
-      </div>
-
-      {/* Delete Section */}
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-900/30 dark:bg-red-950/10">
-        <h2 className="text-lg font-semibold text-red-900 dark:text-red-400">
-          {t(locale, "deleteCredential")}
-        </h2>
-        <p className="mt-2 text-sm text-red-700 dark:text-red-300">
-          {t(locale, "confirmDeleteCredentialDescription")}
-        </p>
-        <DeleteCredentialButton
-          confirmMessage={t(locale, "confirmDeleteCredential")}
-          buttonText={t(locale, "deleteCredential")}
-          formAction={deleteAction}
-        />
-      </div>
+function Metric({ label, value }: { label: string; value: Date | number }) {
+  const formatted =
+    value instanceof Date ? value.toLocaleString() : typeof value === "number" ? value.toLocaleString() : value;
+  return (
+    <div>
+      <p className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">{formatted}</p>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { listGalleryImages } from "@/lib/gallery";
 import { listPostSummaries } from "@/lib/posts";
 import { features } from "@/config/features";
-import { AdminErrorBoundary } from "@/components/error-boundaries/admin-error-boundary";
+import AdminErrorBoundary from "@/components/error-boundaries/admin-error-boundary";
 import { AdminGalleryClientShell } from "./gallery-client-shell";
 
 export const revalidate = 0;

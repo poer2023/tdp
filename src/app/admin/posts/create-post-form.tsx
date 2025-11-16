@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { createPostAction, type PostFormState } from "./actions";
-import { Input, Textarea, Select, Button, Alert, Card } from "@/components/ui-heroui";
+import { Input, Textarea, Select, Button, Alert, Card, Chip } from "@/components/ui-heroui";
 
 const INITIAL_STATE: PostFormState = {
   status: "idle",
@@ -39,41 +39,36 @@ export function CreatePostForm() {
 
   return (
     <Card variant="secondary">
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <Card.Header>
+        <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">创建新文章</h2>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <Card.Title>创建新文章</Card.Title>
+            <Card.Description>
               上传封面、填写 Markdown 内容并设置标签。
-            </p>
+            </Card.Description>
           </div>
           {state.status === "success" && state.message && (
-            <div className="flex items-center gap-3">
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+            <div className="flex flex-wrap items-center gap-3">
+              <Chip status="success" size="sm">
                 {state.message}
-              </span>
+              </Chip>
               {state.previewUrl && (
-                <a
-                  href={state.previewUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
+                <Button
+                  asChild
+                  variant="secondary"
+                  size="sm"
                 >
-                  立即预览
-                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </a>
+                  <a href={state.previewUrl} target="_blank" rel="noopener noreferrer">
+                    立即预览
+                  </a>
+                </Button>
               )}
             </div>
           )}
         </div>
+      </Card.Header>
 
+      <Card.Content className="space-y-6">
         {state.status === "error" && state.message && (
           <Alert status="danger" description={state.message} />
         )}
@@ -82,7 +77,7 @@ export function CreatePostForm() {
           <Alert status="success" description={state.message} />
         )}
 
-      <form ref={formRef} action={formAction} className="grid gap-5 md:grid-cols-2">
+        <form ref={formRef} action={formAction} className="grid gap-5 md:grid-cols-2">
         <div className="space-y-4 md:col-span-1">
           <div className="space-y-1">
             <Input
@@ -186,7 +181,7 @@ export function CreatePostForm() {
           </Button>
         </div>
       </form>
-      </div>
+      </Card.Content>
     </Card>
   );
 }

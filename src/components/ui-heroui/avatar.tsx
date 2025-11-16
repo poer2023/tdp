@@ -1,12 +1,23 @@
 "use client";
 
-/**
- * HeroUI Avatar 组件 - 直接导出官方组件
- *
- * 官方文档: https://v3.heroui.com/docs/components/avatar
- *
- * 头像组件,支持图片、fallback 文本和占位符
- */
+import { Avatar as HeroUIAvatar } from "@heroui/react";
+import type { AvatarProps as HeroUIAvatarProps } from "@heroui/react";
+import type { ReactNode } from "react";
 
-export { Avatar } from "@heroui/react";
-export type { AvatarProps } from "@heroui/react";
+export interface AvatarProps extends Omit<HeroUIAvatarProps, "children"> {
+  src?: string;
+  alt?: string;
+  fallback?: ReactNode;
+  children?: ReactNode;
+}
+
+export function Avatar({ src, alt, children, fallback, ...props }: AvatarProps) {
+  return (
+    <HeroUIAvatar {...props}>
+      {src && <HeroUIAvatar.Image src={src} alt={alt} />}
+      {(children || fallback) && (
+        <HeroUIAvatar.Fallback>{children ?? fallback}</HeroUIAvatar.Fallback>
+      )}
+    </HeroUIAvatar>
+  );
+}

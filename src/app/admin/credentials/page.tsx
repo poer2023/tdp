@@ -16,8 +16,9 @@ import type { AdminLocale } from "@/lib/admin-translations";
 import { CredentialFilters } from "@/components/admin/credential-filters";
 import { features } from "@/config/features";
 import { ComingSoonFallback } from "@/components/feature-toggle";
-import { AdminErrorBoundary } from "@/components/error-boundaries/admin-error-boundary";
+import AdminErrorBoundary from "@/components/error-boundaries/admin-error-boundary";
 import { ModuleLoadingSkeleton } from "@/components/error-boundaries/module-error-fallback";
+import { Button, Surface } from "@/components/ui-heroui";
 
 const CredentialsContent = dynamic(
   () =>
@@ -104,25 +105,29 @@ export default async function CredentialsPage({
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
-            {t(locale, "credentials")}
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            {t(locale, "credentialDescription")}
-          </p>
+      <Surface className="rounded-3xl border border-zinc-200 bg-white/80 p-6 dark:border-zinc-800 dark:bg-zinc-900/80">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
+              Credentials
+            </p>
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+              {t(locale, "credentials")}
+            </h1>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              {t(locale, "credentialDescription")}
+            </p>
+          </div>
+          <Button asChild color="primary" variant="solid">
+            <Link href="/admin/credentials/new" className="inline-flex items-center gap-2">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              {t(locale, "addCredential")}
+            </Link>
+          </Button>
         </div>
-        <Link
-          href="/admin/credentials/new"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          {t(locale, "addCredential")}
-        </Link>
-      </header>
+      </Surface>
 
       <CredentialFilters locale={locale} params={params} platforms={platforms} />
 

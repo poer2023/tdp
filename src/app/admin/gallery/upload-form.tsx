@@ -1,10 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { uploadGalleryImageAction, type GalleryFormState } from "./actions";
 import type { PostSummary } from "@/lib/posts";
-import { Input, Textarea, Select, Button, Alert, Card } from "@/components/ui-heroui";
-import { Chip } from "@/components/ui-heroui";
+import { Input, Textarea, Select, Button, Alert, Card, Chip } from "@/components/ui-heroui";
 
 const INITIAL_STATE: GalleryFormState = {
   status: "idle",
@@ -13,16 +12,12 @@ const INITIAL_STATE: GalleryFormState = {
 export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState(uploadGalleryImageAction, INITIAL_STATE);
-  const [category, setCategory] = useState("REPOST");
-  const [postId, setPostId] = useState("");
 
   useEffect(() => {
     if (state.status === "success") {
       formRef.current?.reset();
-      setCategory("REPOST");
-      setPostId("");
     }
-  }, [state]);
+  }, [state.status]);
 
   return (
     <Card className="border-zinc-200/70 bg-white/80 backdrop-blur dark:border-zinc-800/70 dark:bg-zinc-900/70">
@@ -45,7 +40,7 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
 
       <Card.Content>
         {state.status === "error" && state.message && (
-          <Alert variant="danger" className="mb-4">
+          <Alert color="danger" className="mb-4">
             {state.message}
           </Alert>
         )}
@@ -69,16 +64,15 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
             </Field>
 
             <Field label="分类">
-              <Select value={category} onChange={setCategory}>
+              <Select name="category" defaultSelectedKeys={["REPOST"]}>
                 <Select.Item id="REPOST">转发</Select.Item>
                 <Select.Item id="ORIGINAL">拍照</Select.Item>
                 <Select.Item id="AI">AI</Select.Item>
               </Select>
-              <input type="hidden" name="category" value={category} />
             </Field>
 
             <Field label="关联文章 (可选)">
-              <Select value={postId} onChange={setPostId} placeholder="不关联文章">
+              <Select name="postId" defaultSelectedKeys={[""]}>
                 <Select.Item id="">不关联文章</Select.Item>
                 {posts.map((post) => (
                   <Select.Item key={post.id} id={post.id}>
@@ -86,7 +80,6 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
                   </Select.Item>
                 ))}
               </Select>
-              <input type="hidden" name="postId" value={postId} />
             </Field>
           </div>
 

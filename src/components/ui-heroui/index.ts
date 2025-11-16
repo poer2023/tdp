@@ -21,7 +21,7 @@
 // ============================================================================
 
 export { Button } from "./button";
-export { Card } from "./card";
+export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./card";
 export { Tabs } from "./tabs";
 export { Accordion } from "./accordion";
 export { Tooltip } from "./tooltip";
@@ -31,7 +31,7 @@ export { Avatar } from "./avatar";
 export { Chip } from "./chip";
 export { Badge } from "./badge"; // Chip 别名
 export { Surface } from "./surface";
-export { ListBox } from "./listbox";
+export { ListBox, ListBoxItem } from "./listbox";
 export { Separator } from "./separator";
 export { Popover } from "./popover";
 
@@ -45,6 +45,7 @@ export { Textarea } from "./textarea";
 export { Checkbox, CheckboxGroup } from "./checkbox";
 export { Switch } from "./switch";
 export { Form, Label, Description, FieldError } from "./form";
+export { Progress } from "./progress";
 
 // ============================================================================
 // 反馈组件
@@ -89,3 +90,4 @@ export type { ChipProps } from "./chip";
 export type { BadgeProps } from "./badge";
 export type { SurfaceProps } from "./surface";
 export type { PopoverProps } from "./popover";
+export type { ProgressProps } from "./progress";

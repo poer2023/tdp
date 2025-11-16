@@ -11,6 +11,7 @@ import { SubscriptionExpandableCard } from "@/components/subscriptions/subscript
 import { StatsCard } from "@/components/ui/stats-card";
 import type { ChartDataItem } from "@/components/ui/stats-card";
 import { useConfirm } from "@/hooks/use-confirm";
+import { Surface, Button, Card, Select } from "@/components/ui-heroui";
 
 type BillingCycle = "MONTHLY" | "ANNUAL" | "ONE_TIME";
 
@@ -298,68 +299,65 @@ export default function SubscriptionDashboard({
 
   return (
     <div className="space-y-6 pb-16">
-      <header className="space-y-2">
-        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">
-          {translation("subscriptions")}
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
-          {translation("subscriptionOverview")}
-        </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {translation("subscriptionDescription")}
-        </p>
-      </header>
+      <Surface
+        variant="flat"
+        className="rounded-3xl border border-zinc-200 bg-white/80 p-6 dark:border-zinc-800 dark:bg-zinc-900/80"
+      >
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
+              {translation("subscriptions")}
+            </p>
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+              {translation("subscriptionOverview")}
+            </h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              {translation("subscriptionDescription")}
+            </p>
+          </div>
+          <Button asChild color="primary">
+            <Link href="/admin/subscriptions/new">{translation("addSubscription")}</Link>
+          </Button>
+        </div>
+      </Surface>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{translation("monthlySpend")}</p>
-          <p className="mt-2 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            {formatCNY(totals.monthly)}
-          </p>
-        </div>
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{translation("annualSpend")}</p>
-          <p className="mt-2 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-            {formatCNY(totals.annual)}
-          </p>
-        </div>
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {translation("markdownExport")}
-          </p>
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={isExporting || items.length === 0}
-            className="mt-3 inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-400"
-          >
-            {isExporting ? `${translation("markdownExport")}...` : translation("downloadMarkdown")}
-          </button>
-          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-            {translation("markdownExportDescription")}
-          </p>
-        </div>
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <SummaryCard label={translation("monthlySpend")} value={formatCNY(totals.monthly)} />
+        <SummaryCard label={translation("annualSpend")} value={formatCNY(totals.annual)} />
+        <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+          <Card.Content className="space-y-3 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
+              {translation("markdownExport")}
+            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              {translation("markdownExportDescription")}
+            </p>
+            <Button
+              color="secondary"
+              onPress={handleExport}
+              isDisabled={isExporting || items.length === 0}
+            >
+              {isExporting ? `${translation("markdownExport")}...` : translation("downloadMarkdown")}
+            </Button>
+          </Card.Content>
+        </Card>
+        <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+          <Card.Content className="space-y-2 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
+              {translation("subscriptionManagement")}
+            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              {translation("createNewSubscription")}
+            </p>
+            <Button asChild variant="light">
+              <Link href="/admin/subscriptions/new">{translation("addSubscription")}</Link>
+            </Button>
+          </Card.Content>
+        </Card>
       </section>
 
-      <section className="flex items-center justify-between rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            {translation("subscriptionManagement")}
-          </h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {translation("createNewSubscription")}
-          </p>
-        </div>
-        <Link
-          href="/admin/subscriptions/new"
-          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500"
-        >
-          {translation("addSubscription")}
-        </Link>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card.Content className="space-y-4 p-5">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
               {translation("subscriptionList")}
@@ -368,84 +366,89 @@ export default function SubscriptionDashboard({
               {translation("filterByCycle")}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={cycleFilter}
-              onChange={(event) =>
-                setCycleFilter(
-                  event.target.value === "ALL" ? "ALL" : (event.target.value as BillingCycle)
-                )
-              }
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
-            >
-              <option value="ALL">All</option>
-              {billingCycleOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
 
-            <div className="flex items-center gap-2 rounded-full border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900">
-              <button
-                type="button"
-                onClick={() => setViewMode("MONTHLY")}
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  viewMode === "MONTHLY"
-                    ? "bg-blue-600 text-white"
-                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                }`}
-              >
-                {translation("monthlyView")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("ANNUAL")}
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  viewMode === "ANNUAL"
-                    ? "bg-blue-600 text-white"
-                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                }`}
-              >
-                {translation("annualView")}
-              </button>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Select
+              label={translation("billingCycle")}
+              value={cycleFilter}
+              onChange={(value) =>
+                setCycleFilter(value === "ALL" ? "ALL" : (value as BillingCycle))
+              }
+            >
+              <Select.Item id="ALL">All</Select.Item>
+              {billingCycleOptions.map((option) => (
+                <Select.Item key={option.value} id={option.value}>
+                  {option.label}
+                </Select.Item>
+              ))}
+            </Select>
+
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
+                {translation("chartTrend")}
+              </p>
+              <div className="flex gap-2">
+                {(["MONTHLY", "ANNUAL"] as ViewMode[]).map((mode) => (
+                  <Button
+                    key={mode}
+                    variant={viewMode === mode ? "solid" : "light"}
+                    onPress={() => setViewMode(mode)}
+                    className="flex-1"
+                  >
+                    {mode === "MONTHLY" ? translation("monthlyView") : translation("annualView")}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </Card.Content>
+      </Card>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <SubscriptionPieChart data={barChartData} viewMode={viewMode} locale={locale} />
-
-          <StatsCard
-            title={translation("chartTrend")}
-            currentValue={currentMonthValue}
-            valuePrefix="¥"
-            description={translation("trendDescription")}
-            chartData={statsChartData}
-            defaultBarColor="bg-zinc-200 dark:bg-zinc-700"
-            highlightedBarColor="bg-blue-500"
-          />
-        </div>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <SubscriptionPieChart data={barChartData} viewMode={viewMode} locale={locale} />
+        <StatsCard
+          title={translation("chartTrend")}
+          currentValue={currentMonthValue}
+          valuePrefix="¥"
+          description={translation("trendDescription")}
+          chartData={statsChartData}
+        />
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        {filteredItems.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-zinc-300 bg-white p-6 text-center dark:border-zinc-700 dark:bg-zinc-900">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              {translation("createFirstSubscription")}
-            </p>
-          </div>
-        ) : (
-          filteredItems.map((subscription) => (
+      {filteredItems.length === 0 ? (
+        <Card
+          variant="secondary"
+          className="border border-dashed border-zinc-300 text-center dark:border-zinc-700"
+        >
+          <Card.Content className="py-10 text-sm text-zinc-500 dark:text-zinc-400">
+            {translation("createFirstSubscription")}
+          </Card.Content>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {filteredItems.map((subscription) => (
             <SubscriptionExpandableCard
               key={subscription.id}
               subscription={subscription}
               locale={locale}
               onDelete={handleDelete}
             />
-          ))
-        )}
-      </section>
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+function SummaryCard({ label, value }: { label: string; value: string }) {
+  return (
+    <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card.Content className="space-y-2 p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
+          {label}
+        </p>
+        <p className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">{value}</p>
+      </Card.Content>
+    </Card>
   );
 }

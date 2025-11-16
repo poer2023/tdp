@@ -3,6 +3,7 @@
 import { t, type AdminLocale } from "@/lib/admin-translations";
 import { TrendLineChart } from "@/app/admin/analytics/components/TrendLineChart";
 import { TopPagesCard } from "@/components/ui/top-pages-card";
+import { Card, Chip } from "@/components/ui-heroui";
 
 type PeriodOption = "7d" | "30d";
 
@@ -57,11 +58,11 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
     metrics.totalVisitors > 0 ? Math.round(metrics.weekViews / 7) : metrics.weekViews;
 
   const localeTotal = overview.localeDistribution.reduce((sum, item) => sum + item.count, 0);
+  const hasLocaleData = overview.localeDistribution.length > 0;
 
   return (
-    <div className="space-y-10">
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-4">
+    <div className="space-y-8 sm:space-y-10">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatCard
           title={t(locale, "todayVisits")}
           value={metrics.todayViews}
@@ -75,21 +76,31 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
           subtitle={t(locale, "dailyAverage")}
         />
         <StatCard title={t(locale, "registeredUsers")} value={metrics.totalUsers} />
-      </div>
+      </section>
 
-      <section className="grid gap-6 md:grid-cols-2">
-        <div className="flex h-full flex-col rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            {t(locale, "trendChart")}
-          </h2>
-          {overview.chartData.length > 0 ? (
-            <TrendLineChart data={overview.chartData} locale={locale} />
-          ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-              {t(locale, "noDataYet")}
-            </p>
-          )}
-        </div>
+      <section className="grid gap-6 lg:grid-cols-2">
+        <Card
+          variant="secondary"
+          className="h-full border border-zinc-200/80 dark:border-zinc-800/80"
+        >
+          <Card.Content className="flex h-full flex-col gap-4 p-5">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
+                {t(locale, "analytics")}
+              </p>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                {t(locale, "trendChart")}
+              </h2>
+            </div>
+            {overview.chartData.length > 0 ? (
+              <TrendLineChart data={overview.chartData} locale={locale} />
+            ) : (
+              <p className="py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                {t(locale, "noDataYet")}
+              </p>
+            )}
+          </Card.Content>
+        </Card>
 
         <TopPagesCard
           data={overview.topPages}
@@ -101,66 +112,73 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
         />
       </section>
 
-      <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-          {t(locale, "languageDistribution")}
-        </h2>
-        <div className="space-y-4">
-          {overview.localeDistribution.length > 0 ? (
-            overview.localeDistribution.map((entry) => {
-              const percentage =
-                localeTotal > 0 ? Math.round((entry.count / localeTotal) * 100) : 0;
-              const langName =
-                entry.locale === "zh" ? "中文" : entry.locale === "en" ? "English" : "未知";
-              const color = entry.locale === "zh" ? "blue" : "green";
-
-              return (
-                <div key={entry.locale ?? "unknown"} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">{langName}</span>
-                    <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                      {entry.count.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="relative h-8 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                    <div
-                      className={`flex h-full items-center justify-center transition-all ${
-                        color === "blue" ? "bg-blue-500" : "bg-green-500"
-                      }`}
-                      style={{ width: `${percentage}%` }}
-                    >
-                      {percentage > 15 && (
-                        <span className="text-xs font-semibold text-white">{percentage}%</span>
-                      )}
-                    </div>
-                    {percentage <= 15 && (
-                      <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                        {percentage}%
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-              {t(locale, "noDataYet")}
+      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card.Content className="space-y-5 p-5">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
+              {t(locale, "audience")}
             </p>
-          )}
-        </div>
-      </section>
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              {t(locale, "languageDistribution")}
+            </h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              {locale === "zh" ? "了解访问者语言偏好" : "See visitor language preferences"}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {hasLocaleData ? (
+              overview.localeDistribution.map((entry) => {
+                const percentage =
+                  localeTotal > 0 ? Math.round((entry.count / localeTotal) * 100) : 0;
+                const langName =
+                  entry.locale === "zh" ? "中文" : entry.locale === "en" ? "English" : "未知";
+                const colorClass = entry.locale === "zh" ? "bg-blue-500" : "bg-emerald-500";
+
+                return (
+                  <div key={entry.locale ?? "unknown"} className="space-y-2">
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <span className="font-medium text-zinc-700 dark:text-zinc-300">{langName}</span>
+                      <Chip size="sm" variant="flat">
+                        {entry.count.toLocaleString()}
+                      </Chip>
+                    </div>
+                    <div className="relative h-3 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                      <div
+                        className={`absolute inset-y-0 left-0 rounded-full ${colorClass}`}
+                        style={{ width: `${percentage}%` }}
+                        aria-label={`${langName} ${percentage}%`}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                      <span>{percentage}%</span>
+                      <span>{entry.locale?.toUpperCase() ?? "N/A"}</span>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                {t(locale, "noDataYet")}
+              </p>
+            )}
+          </div>
+        </Card.Content>
+      </Card>
     </div>
   );
 }
 
 function StatCard({ title, value, subtitle }: { title: string; value: number; subtitle?: string }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">{title}</p>
-      <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-        {value.toLocaleString()}
-      </p>
-      {subtitle && <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>}
-    </div>
+    <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card.Content className="space-y-2 p-5">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">{title}</p>
+        <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+          {value.toLocaleString()}
+        </p>
+        {subtitle && <p className="text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>}
+      </Card.Content>
+    </Card>
   );
 }

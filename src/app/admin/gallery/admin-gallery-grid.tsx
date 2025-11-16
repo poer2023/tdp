@@ -10,6 +10,7 @@ import {
   type BulkUpdateState,
 } from "./bulk-actions";
 import { useConfirm } from "@/hooks/use-confirm";
+import { Button, Card } from "@/components/ui-heroui";
 
 export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
   const router = useRouter();
@@ -55,33 +56,24 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
     <section className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         {!selectMode ? (
-          <button
-            onClick={() => setSelectMode(true)}
-            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-          >
+          <Button variant="secondary" onPress={() => setSelectMode(true)}>
             进入选择模式
-          </button>
+          </Button>
         ) : (
           <>
-            <button
-              onClick={() => toggleAll(true)}
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-            >
+            <Button variant="light" onPress={() => toggleAll(true)}>
               全选
-            </button>
-            <button
-              onClick={() => toggleAll(false)}
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-            >
+            </Button>
+            <Button variant="light" onPress={() => toggleAll(false)}>
               取消全选
-            </button>
-            <button
-              onClick={() => setOpen(true)}
-              disabled={selectedIds.length === 0}
-              className="rounded-lg border border-zinc-900 bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-50 dark:bg-zinc-50 dark:text-zinc-900"
+            </Button>
+            <Button
+              variant="primary"
+              onPress={() => setOpen(true)}
+              isDisabled={selectedIds.length === 0}
             >
               批量编辑（{selectedIds.length}）
-            </button>
+            </Button>
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -102,13 +94,14 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
               }}
               className="inline-flex"
             >
-              <button
+              <Button
                 type="submit"
-                disabled={selectedIds.length === 0 || delPending || deleteTransitionPending}
-                className="rounded-lg border border-red-500 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-400/60 dark:text-red-300 dark:hover:bg-red-500/10"
+                variant="light"
+                color="danger"
+                isDisabled={selectedIds.length === 0 || delPending || deleteTransitionPending}
               >
                 删除所选
-              </button>
+              </Button>
             </form>
             <form
               action={(fd) => {
@@ -119,23 +112,23 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
               }}
               className="inline-flex"
             >
-              <button
+              <Button
                 type="submit"
-                disabled={selectedIds.length === 0 || pending}
-                className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                variant="light"
+                isDisabled={selectedIds.length === 0 || pending}
               >
                 清空位置
-              </button>
+              </Button>
             </form>
-            <button
-              onClick={() => {
+            <Button
+              variant="light"
+              onPress={() => {
                 setSelectMode(false);
                 setSelected({});
               }}
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
             >
               退出
-            </button>
+            </Button>
           </>
         )}
 
@@ -154,9 +147,10 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {images.map((image, index) => (
-          <figure
+          <Card
             key={image.id}
-            className="group relative overflow-hidden rounded-3xl border border-zinc-200/70 bg-white/80 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-zinc-800/70 dark:bg-zinc-900/70"
+            variant="secondary"
+            className="group relative overflow-hidden transition hover:-translate-y-1 hover:shadow-lg"
           >
             {selectMode && (
               <label className="absolute top-3 left-3 z-10 inline-flex items-center gap-2 rounded-full bg-white/90 px-2 py-1 text-xs shadow-sm ring-1 ring-zinc-200 backdrop-blur dark:bg-zinc-900/80 dark:ring-zinc-700">
@@ -180,12 +174,12 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                 className="object-cover transition duration-500 group-hover:scale-105"
               />
             </div>
-            <figcaption className="space-y-2 px-4 py-3 text-sm">
+            <Card.Content className="space-y-2 px-4 py-3 text-sm">
               <p className="font-semibold text-zinc-900 dark:text-zinc-50">
                 {image.title ?? "未命名照片"}
               </p>
-            </figcaption>
-          </figure>
+            </Card.Content>
+          </Card>
         ))}
       </div>
 

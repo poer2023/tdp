@@ -15,13 +15,32 @@ import {
   assembleCredentialData,
   extractCredentialFormValues,
 } from "@/lib/credential-configs";
-import { ChevronDown, ChevronUp, Info, Eye, EyeOff } from "lucide-react";
+import { ChevronDown, ChevronUp, Info } from "lucide-react";
+import { Button, Card, Input, Select, Switch, Textarea } from "@/components/ui-heroui";
 
 type CredentialFormProps = {
   action: (formData: FormData) => Promise<void>;
   locale: AdminLocale;
   credential?: ExternalCredential;
 };
+
+const PLATFORM_OPTIONS: { value: CredentialPlatform; labelKey: keyof typeof import("@/lib/admin-translations").adminTranslations.en }[] =
+  [
+    { value: "STEAM", labelKey: "steam" },
+    { value: "GITHUB", labelKey: "github" },
+    { value: "BILIBILI", labelKey: "bilibili" },
+    { value: "DOUBAN", labelKey: "douban" },
+    { value: "HOYOVERSE", labelKey: "hoyoverse" },
+    { value: "JELLYFIN", labelKey: "jellyfin" },
+  ];
+
+const SYNC_OPTIONS = [
+  { id: "daily", labelKey: "syncFrequencyDaily" },
+  { id: "twice_daily", labelKey: "syncFrequencyTwiceDaily" },
+  { id: "three_times_daily", labelKey: "syncFrequencyThreeTimesDaily" },
+  { id: "four_times_daily", labelKey: "syncFrequencyFourTimesDaily" },
+  { id: "six_times_daily", labelKey: "syncFrequencySixTimesDaily" },
+];
 
 export function CredentialForm({ action, locale, credential }: CredentialFormProps) {
   const router = useRouter();
@@ -93,211 +112,174 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Platform Selection */}
-      <div>
-        <label
-          htmlFor="platform"
-          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-        >
-          {t(locale, "credentialPlatform")}
-        </label>
-        <select
-          id="platform"
-          name="platform"
-          required
-          value={selectedPlatform}
-          onChange={(e) => {
-            setSelectedPlatform(e.target.value as CredentialPlatform);
-            setFormValues({}); // Reset form values when platform changes
-            setShowInstructions(false);
-          }}
-          disabled={!!credential} // Disable platform change when editing
-          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
-        >
-          <option value="" disabled>
-            {t(locale, "selectPlatform")}
-          </option>
-          <option value="STEAM">{t(locale, "steam")}</option>
-          <option value="GITHUB">GitHub</option>
-          <option value="BILIBILI">{t(locale, "bilibili")}</option>
-          <option value="DOUBAN">{t(locale, "douban")}</option>
-          <option value="HOYOVERSE">{t(locale, "hoyoverse")}</option>
-          <option value="JELLYFIN">{t(locale, "jellyfin")}</option>
-        </select>
-      </div>
-
-      {/* Instructions Panel - Show after platform selection */}
-      {selectedPlatform && platformConfig && (
-        <div className="rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
-          <button
-            type="button"
-            onClick={() => setShowInstructions(!showInstructions)}
-            className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card.Content className="space-y-6 p-5">
+          <Select
+            label={t(locale, "credentialPlatform")}
+            value={selectedPlatform}
+            onChange={(value) => {
+              setSelectedPlatform(value as CredentialPlatform);
+              setFormValues({});
+              setShowInstructions(false);
+            }}
+            isDisabled={!!credential}
+            isRequired
           >
-            <div className="flex items-center gap-2">
-              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {locale === "zh" ? "如何获取凭据？" : "How to get credentials?"}
-              </span>
-            </div>
-            {showInstructions ? (
-              <ChevronUp className="h-5 w-5 text-zinc-500" />
-            ) : (
-              <ChevronDown className="h-5 w-5 text-zinc-500" />
-            )}
-          </button>
+            <Select.Item id="">{t(locale, "selectPlatform")}</Select.Item>
+            {PLATFORM_OPTIONS.map((option) => (
+              <Select.Item key={option.value} id={option.value}>
+                {t(locale, option.labelKey)}
+              </Select.Item>
+            ))}
+          </Select>
 
-          {showInstructions && (
-            <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
-              <ol className="list-decimal space-y-2 pl-5 text-sm text-zinc-700 dark:text-zinc-300">
-                {platformConfig.instructions[locale].map((instruction, index) => (
-                  <li key={index} className="pl-2">
-                    {instruction}
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Dynamic Platform-Specific Fields */}
-      {selectedPlatform && platformConfig && (
-        <div className="space-y-4">
-          {platformConfig.fields.map((field) => (
-            <div key={field.name}>
-              <label
-                htmlFor={field.name}
-                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-              >
-                {field.label[locale]}
-                {field.required && <span className="ml-1 text-red-500">*</span>}
-              </label>
-              {field.type === "textarea" ? (
-                <textarea
-                  id={field.name}
-                  name={field.name}
-                  required={field.required}
-                  rows={4}
-                  value={formValues[field.name] || ""}
-                  onChange={(e) => setFormValues({ ...formValues, [field.name]: e.target.value })}
-                  placeholder={field.placeholder?.[locale]}
-                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
-                />
-              ) : field.type === "password" ? (
-                <div className="relative">
-                  <input
-                    id={field.name}
-                    name={field.name}
-                    type={passwordVisibility[field.name] ? "text" : "password"}
-                    required={field.required}
-                    value={formValues[field.name] || ""}
-                    onChange={(e) => setFormValues({ ...formValues, [field.name]: e.target.value })}
-                    placeholder={field.placeholder?.[locale]}
-                    className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 pr-10 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility(field.name)}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
-                  >
-                    {passwordVisibility[field.name] ? (
-                      <EyeOff className="h-4 w-4" />
+          {selectedPlatform && platformConfig && (
+            <Card variant="secondary" className="border border-zinc-100 dark:border-zinc-800">
+              <Card.Content className="space-y-3 p-4">
+                <Button
+                  type="button"
+                  variant="light"
+                  className="w-full justify-between"
+                  onPress={() => setShowInstructions((prev) => !prev)}
+                  startContent={<Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />}
+                  endContent={
+                    showInstructions ? (
+                      <ChevronUp className="h-4 w-4 text-zinc-500" />
                     ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              ) : (
-                <input
-                  id={field.name}
-                  name={field.name}
-                  type={field.type}
-                  required={field.required}
-                  value={formValues[field.name] || ""}
-                  onChange={(e) => setFormValues({ ...formValues, [field.name]: e.target.value })}
-                  placeholder={field.placeholder?.[locale]}
-                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
-                />
-              )}
-              {field.helperText && (
-                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                  {field.helperText[locale]}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+                      <ChevronDown className="h-4 w-4 text-zinc-500" />
+                    )
+                  }
+                >
+                  {locale === "zh" ? "如何获取凭据？" : "How to get credentials?"}
+                </Button>
+                {showInstructions && (
+                  <ol className="list-decimal space-y-2 rounded-xl bg-zinc-50 p-4 text-sm text-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-200">
+                    {platformConfig.instructions[locale].map((instruction) => (
+                      <li key={instruction} className="pl-2">
+                        {instruction}
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </Card.Content>
+            </Card>
+          )}
 
-      {/* Auto Sync Settings */}
-      {selectedPlatform && platformConfig && (
-        <div className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
-          <h3 className="mb-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            {t(locale, "autoSyncSettings")}
-          </h3>
-          <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">
-            {t(locale, "autoSyncDescription")}
-          </p>
+          {selectedPlatform && platformConfig && (
+            <div className="space-y-4">
+              {platformConfig.fields.map((field) => {
+                const value = formValues[field.name] || "";
+                const common = {
+                  id: field.name,
+                  name: field.name,
+                  value,
+                  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+                    setFormValues({ ...formValues, [field.name]: e.target.value }),
+                  label: field.label[locale],
+                  placeholder: field.placeholder?.[locale],
+                  isRequired: field.required,
+                };
 
-          {/* Enable Auto Sync Checkbox */}
-          <div className="mb-4 flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="autoSyncEnabled"
-              checked={autoSyncEnabled}
-              onChange={(e) => setAutoSyncEnabled(e.target.checked)}
-              className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:ring-zinc-50"
-            />
-            <label htmlFor="autoSyncEnabled" className="text-sm text-zinc-700 dark:text-zinc-300">
-              {t(locale, "enableAutoSync")}
-            </label>
-          </div>
+                if (field.type === "textarea") {
+                  return (
+                    <Textarea
+                      key={field.name}
+                      {...common}
+                      rows={4}
+                      description={field.helperText?.[locale]}
+                    />
+                  );
+                }
 
-          {/* Sync Frequency Selector - Only show when enabled */}
-          {autoSyncEnabled && (
-            <div>
-              <label
-                htmlFor="syncFrequency"
-                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-              >
-                {t(locale, "syncFrequency")}
-              </label>
-              <select
-                id="syncFrequency"
-                value={syncFrequency}
-                onChange={(e) => setSyncFrequency(e.target.value)}
-                className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
-              >
-                <option value="daily">{t(locale, "syncFrequencyDaily")}</option>
-                <option value="twice_daily">{t(locale, "syncFrequencyTwiceDaily")}</option>
-                <option value="three_times_daily">
-                  {t(locale, "syncFrequencyThreeTimesDaily")}
-                </option>
-                <option value="four_times_daily">{t(locale, "syncFrequencyFourTimesDaily")}</option>
-                <option value="six_times_daily">{t(locale, "syncFrequencySixTimesDaily")}</option>
-              </select>
+                if (field.type === "password") {
+                  const visible = passwordVisibility[field.name];
+                  return (
+                    <div key={field.name} className="space-y-2">
+                      <Input
+                        {...common}
+                        type={visible ? "text" : "password"}
+                        inputMode="text"
+                      />
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          variant="light"
+                          size="sm"
+                          onPress={() => togglePasswordVisibility(field.name)}
+                        >
+                          {visible ? (locale === "zh" ? "隐藏" : "Hide") : locale === "zh" ? "显示" : "Show"}
+                        </Button>
+                      </div>
+                      {field.helperText && (
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                          {field.helperText[locale]}
+                        </p>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <Input
+                    key={field.name}
+                    {...common}
+                    type={field.type}
+                    description={field.helperText?.[locale]}
+                  />
+                );
+              })}
             </div>
           )}
-        </div>
+        </Card.Content>
+      </Card>
+
+      {selectedPlatform && platformConfig && (
+        <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+          <Card.Content className="space-y-4 p-5">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
+                {t(locale, "autoSync")}
+              </p>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                {t(locale, "autoSyncSettings")}
+              </h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {t(locale, "autoSyncDescription")}
+              </p>
+            </div>
+
+            <Switch
+              isSelected={autoSyncEnabled}
+              onChange={setAutoSyncEnabled}
+              aria-label={t(locale, "enableAutoSync")}
+            >
+              {t(locale, "enableAutoSync")}
+            </Switch>
+
+            {autoSyncEnabled && (
+              <Select
+                label={t(locale, "syncFrequency")}
+                value={syncFrequency}
+                onChange={(value) => setSyncFrequency(value)}
+              >
+                {SYNC_OPTIONS.map((option) => (
+                  <Select.Item key={option.id} id={option.id}>
+                    {t(locale, option.labelKey as keyof typeof import("@/lib/admin-translations").adminTranslations.en)}
+                  </Select.Item>
+                ))}
+              </Select>
+            )}
+          </Card.Content>
+        </Card>
       )}
 
-      {/* Form Actions */}
-      <div className="flex gap-3 pt-4">
-        <button
-          type="submit"
-          disabled={!selectedPlatform}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
+      <div className="flex flex-wrap gap-3">
+        <Button type="submit" color="primary" isDisabled={!selectedPlatform}>
           {t(locale, "saveChanges")}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-        >
+        </Button>
+        <Button variant="light" type="button" onPress={() => router.back()}>
           {t(locale, "cancel")}
-        </button>
+        </Button>
       </div>
     </form>
   );

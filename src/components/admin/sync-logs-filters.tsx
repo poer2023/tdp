@@ -6,8 +6,9 @@
  */
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SyncJobStatus } from "@prisma/client";
+import { Button, Card, Chip, Input, Select } from "@/components/ui-heroui";
 
 type SyncLogsFiltersProps = {
   platforms: string[];
@@ -19,12 +20,29 @@ type SyncLogsFiltersProps = {
   };
 };
 
+const ALL_OPTION = "__all__";
+const TRIGGERED_OPTIONS = [
+  { id: ALL_OPTION, label: "全部来源" },
+  { id: "system", label: "System" },
+  { id: "manual", label: "Manual" },
+  { id: "cron", label: "Cron" },
+];
+
 export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [platform, setPlatform] = useState(currentFilters.platform || "");
   const [status, setStatus] = useState(currentFilters.status || "");
   const [triggeredBy, setTriggeredBy] = useState(currentFilters.triggeredBy || "");
+  const [jobId, setJobId] = useState(currentFilters.jobId || "");
+
+  const statusOptions = useMemo(
+    () => [
+      { id: ALL_OPTION, label: "全部状态" },
+      ...Object.values(SyncJobStatus).map((value) => ({ id: value, label: value })),
+    ],
+    []
+  );
 
   const handleFilter = () => {
     const params = new URLSearchParams();
@@ -32,6 +50,7 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
     if (platform) params.set("platform", platform);
     if (status) params.set("status", status);
     if (triggeredBy) params.set("triggeredBy", triggeredBy);
+    if (jobId.trim()) params.set("jobId", jobId.trim());
 
     // Keep limit if it exists
     const limit = searchParams.get("limit");
@@ -44,111 +63,118 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
     setPlatform("");
     setStatus("");
     setTriggeredBy("");
+    setJobId("");
     router.push("/admin/sync/logs");
   };
 
-  const hasFilters = currentFilters.platform || currentFilters.status || currentFilters.triggeredBy;
+  const hasFilters =
+    currentFilters.platform || currentFilters.status || currentFilters.triggeredBy || currentFilters.jobId;
+  const platformValue = platform || ALL_OPTION;
+  const statusValue = status || ALL_OPTION;
+  const triggeredValue = triggeredBy || ALL_OPTION;
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <h3 className="mb-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Filter Logs</h3>
+    <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card.Content className="space-y-5 p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
+              Filters
+            </p>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">筛选同步日志</h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              通过平台、状态、触发来源和 Job ID 快速定位任务
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {hasFilters && (
+              <Button variant="light" size="sm" onPress={handleReset}>
+                重置
+              </Button>
+            )}
+            <Button color="primary" size="sm" onPress={handleFilter}>
+              应用筛选
+            </Button>
+          </div>
+        </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {/* Platform Filter */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Platform
-          </label>
-          <select
-            value={platform}
-            onChange={(e) => setPlatform(e.target.value)}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Select
+            label="Platform"
+            placeholder=""
+            value={platformValue}
+            onChange={(value) => setPlatform(value === ALL_OPTION ? "" : value)}
           >
-            <option value="">All Platforms</option>
+            <Select.Item id={ALL_OPTION}>全部平台</Select.Item>
             {platforms.map((p) => (
-              <option key={p} value={p}>
+              <Select.Item key={p} id={p}>
                 {p.toUpperCase()}
-              </option>
+              </Select.Item>
             ))}
-          </select>
-        </div>
+          </Select>
 
-        {/* Status Filter */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Status
-          </label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+          <Select
+            label="Status"
+            placeholder=""
+            value={statusValue}
+            onChange={(value) => setStatus(value === ALL_OPTION ? "" : (value as SyncJobStatus))}
           >
-            <option value="">All Status</option>
-            {Object.values(SyncJobStatus).map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
+            {statusOptions.map((option) => (
+              <Select.Item key={option.id} id={option.id}>
+                {option.label}
+              </Select.Item>
             ))}
-          </select>
-        </div>
+          </Select>
 
-        {/* Triggered By Filter */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            Triggered By
-          </label>
-          <select
-            value={triggeredBy}
-            onChange={(e) => setTriggeredBy(e.target.value)}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+          <Select
+            label="Triggered By"
+            placeholder=""
+            value={triggeredValue}
+            onChange={(value) => setTriggeredBy(value === ALL_OPTION ? "" : value)}
           >
-            <option value="">All Sources</option>
-            <option value="system">System</option>
-            <option value="manual">Manual</option>
-            <option value="cron">Cron</option>
-          </select>
-        </div>
-      </div>
+            {TRIGGERED_OPTIONS.map((option) => (
+              <Select.Item key={option.id} id={option.id}>
+                {option.label}
+              </Select.Item>
+            ))}
+          </Select>
 
-      {/* Action Buttons */}
-      <div className="mt-4 flex gap-3">
-        <button
-          onClick={handleFilter}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-        >
-          Apply Filters
-        </button>
+          <Input
+            label="Job ID"
+            placeholder="输入日志 ID 精确查找"
+            value={jobId}
+            onChange={(event) => setJobId(event.target.value)}
+          />
+        </div>
+
         {hasFilters && (
-          <button
-            onClick={handleReset}
-            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-          >
-            Reset
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              当前筛选:
+            </span>
+            {currentFilters.platform && (
+              <Chip size="sm" variant="flat" color="primary" className="font-medium">
+                平台: {currentFilters.platform.toUpperCase()}
+              </Chip>
+            )}
+            {currentFilters.status && (
+              <Chip size="sm" variant="flat" color="primary" className="font-medium">
+                状态: {currentFilters.status}
+              </Chip>
+            )}
+            {currentFilters.triggeredBy && (
+              <Chip size="sm" variant="flat" color="primary" className="font-medium capitalize">
+                来源: {currentFilters.triggeredBy}
+              </Chip>
+            )}
+            {currentFilters.jobId && (
+              <Chip size="sm" variant="flat" color="primary" className="font-mono text-xs">
+                Job ID: {currentFilters.jobId}
+              </Chip>
+            )}
+          </div>
         )}
-      </div>
-
-      {/* Active Filters Display */}
-      {hasFilters && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">Active filters:</span>
-          {currentFilters.platform && (
-            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
-              Platform: {currentFilters.platform.toUpperCase()}
-            </span>
-          )}
-          {currentFilters.status && (
-            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
-              Status: {currentFilters.status}
-            </span>
-          )}
-          {currentFilters.triggeredBy && (
-            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
-              Triggered By: {currentFilters.triggeredBy}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
+      </Card.Content>
+    </Card>
   );
 }

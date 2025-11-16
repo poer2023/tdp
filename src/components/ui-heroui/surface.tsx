@@ -1,12 +1,27 @@
 "use client";
 
-/**
- * HeroUI Surface 组件 - 直接导出官方组件
- *
- * 官方文档: https://v3.heroui.com/docs/components/surface
- *
- * 表面容器组件,类似 Card 但更通用
- */
+import { Surface as HeroUISurface } from "@heroui/react";
+import type { SurfaceProps as HeroUISurfaceProps } from "@heroui/react";
 
-export { Surface } from "@heroui/react";
-export type { SurfaceProps } from "@heroui/react";
+type SurfaceVariantOverride = "flat" | "bordered";
+
+export interface SurfaceProps extends Omit<HeroUISurfaceProps, "variant"> {
+  variant?: HeroUISurfaceProps["variant"] | SurfaceVariantOverride;
+}
+
+const VARIANT_MAP: Record<SurfaceVariantOverride, HeroUISurfaceProps["variant"]> = {
+  flat: "secondary",
+  bordered: "tertiary",
+};
+
+const isOverrideVariant = (value: string): value is SurfaceVariantOverride =>
+  value === "flat" || value === "bordered";
+
+export function Surface({ variant, ...props }: SurfaceProps) {
+  const resolvedVariant = variant
+    ? isOverrideVariant(variant)
+      ? VARIANT_MAP[variant]
+      : variant
+    : undefined;
+  return <HeroUISurface variant={resolvedVariant} {...props} />;
+}

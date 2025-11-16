@@ -4,13 +4,11 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useExpandable } from "@/components/hooks/use-expandable";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatCNY, formatOriginalCurrency } from "@/lib/subscription-shared";
 import { adminTranslations } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
 import { useConfirm } from "@/hooks/use-confirm";
+import { Card, Button, Chip, Progress } from "@/components/ui-heroui";
 
 type BillingCycle = "MONTHLY" | "ANNUAL" | "ONE_TIME";
 
@@ -83,19 +81,6 @@ function calculateProgress(subscription: SubscriptionRecord): number {
   return Math.round((elapsed / total) * 100);
 }
 
-function getBadgeVariant(cycle: BillingCycle): "default" | "secondary" | "outline" {
-  switch (cycle) {
-    case "MONTHLY":
-      return "default";
-    case "ANNUAL":
-      return "secondary";
-    case "ONE_TIME":
-      return "outline";
-    default:
-      return "default";
-  }
-}
-
 export function SubscriptionExpandableCard({
   subscription,
   locale,
@@ -124,13 +109,14 @@ export function SubscriptionExpandableCard({
 
   return (
     <Card
-      className="cursor-pointer overflow-hidden transition-shadow hover:shadow-lg"
+      variant="secondary"
+      className="cursor-pointer border border-zinc-200/80 transition-shadow hover:shadow-lg dark:border-zinc-800/80"
       onClick={toggleExpand}
     >
-      <CardHeader className="space-y-3 pb-4">
+      <Card.Content className="space-y-4 p-5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 space-y-1">
-            <h3 className="text-lg leading-none font-semibold tracking-tight">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               {subscription.name}
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -139,36 +125,50 @@ export function SubscriptionExpandableCard({
                 : translate(locale, "noEndDate")}
             </p>
           </div>
-          <Badge variant={getBadgeVariant(subscription.billingCycle)}>{billingCycleLabel}</Badge>
+          <Chip
+            size="sm"
+            variant="flat"
+            color={
+              subscription.billingCycle === "MONTHLY"
+                ? "primary"
+                : subscription.billingCycle === "ANNUAL"
+                  ? "secondary"
+                  : "warning"
+            }
+          >
+            {billingCycleLabel}
+          </Chip>
         </div>
 
         {subscription.endDate && (
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-500 dark:text-zinc-400">
-                {translate(locale, "progress")}
-              </span>
-              <span className="font-medium">{progress}%</span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+              <span>{translate(locale, "progress")}</span>
+              <span className="font-semibold text-zinc-900 dark:text-zinc-100">{progress}%</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} />
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className="grid grid-cols-2 gap-3 text-sm">
           <div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {translate(locale, "monthlyView")}
             </p>
-            <p className="font-semibold">{formatCNY(monthlyValue)}</p>
+            <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+              {formatCNY(monthlyValue)}
+            </p>
           </div>
           <div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {translate(locale, "annualView")}
             </p>
-            <p className="font-semibold">{formatCNY(annualValue)}</p>
+            <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+              {formatCNY(annualValue)}
+            </p>
           </div>
         </div>
-      </CardHeader>
+      </Card.Content>
 
       <AnimatePresence initial={false}>
         {isExpanded && (
@@ -179,7 +179,10 @@ export function SubscriptionExpandableCard({
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            <CardContent ref={contentRef} className="space-y-3 pt-0">
+            <Card.Content
+              ref={contentRef}
+              className="space-y-3 border-t border-zinc-100 bg-zinc-50/80 p-5 dark:border-zinc-800 dark:bg-zinc-900/40"
+            >
               <div className="space-y-2 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-900/50">
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-600 dark:text-zinc-400">
@@ -215,16 +218,14 @@ export function SubscriptionExpandableCard({
               )}
 
               <div className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                <Link
-                  href={`/admin/subscriptions/${subscription.id}`}
-                  className="inline-flex flex-1 items-center justify-center rounded-lg border border-blue-500 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-950/40"
-                >
-                  {translate(locale, "editSubscription")}
-                </Link>
-                <button
-                  type="button"
-                  onClick={async (event) => {
-                    event.stopPropagation();
+                <Button asChild variant="light" className="flex-1 justify-center">
+                  <Link href={`/admin/subscriptions/${subscription.id}`}>
+                    {translate(locale, "editSubscription")}
+                  </Link>
+                </Button>
+                <Button
+                  color="danger"
+                  onPress={async () => {
                     const confirmed = await confirm({
                       title: "删除订阅",
                       description: "确定要删除此订阅吗？该操作不可恢复。",
@@ -236,12 +237,11 @@ export function SubscriptionExpandableCard({
                       onDelete(subscription);
                     }
                   }}
-                  className="inline-flex items-center justify-center rounded-lg border border-rose-500 px-3 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50 dark:border-rose-400 dark:text-rose-300 dark:hover:bg-rose-950/40"
                 >
                   {translate(locale, "deleteSubscription")}
-                </button>
+                </Button>
               </div>
-            </CardContent>
+            </Card.Content>
           </motion.div>
         )}
       </AnimatePresence>

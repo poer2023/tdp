@@ -11,6 +11,7 @@ import { t } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
 import Link from "next/link";
 import { CredentialPlatform, CredentialType } from "@prisma/client";
+import { Card, Surface } from "@/components/ui-heroui";
 
 export const runtime = "nodejs";
 
@@ -84,8 +85,10 @@ export default function NewCredentialPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Page Header */}
-      <header>
+      <Surface
+        variant="flat"
+        className="rounded-3xl border border-zinc-200 bg-white/80 p-6 dark:border-zinc-800 dark:bg-zinc-900/80"
+      >
         <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
           <Link href="/admin/credentials" className="hover:text-zinc-900 dark:hover:text-zinc-100">
             {t(locale, "credentials")}
@@ -93,15 +96,16 @@ export default function NewCredentialPage() {
           <span>/</span>
           <span className="text-zinc-900 dark:text-zinc-100">{t(locale, "addCredential")}</span>
         </div>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
           {t(locale, "addCredential")}
         </h1>
-      </header>
+      </Surface>
 
-      {/* Form */}
-      <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <CredentialForm action={createCredential} locale={locale} />
-      </div>
+      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card.Content className="p-5">
+          <CredentialForm action={createCredential} locale={locale} />
+        </Card.Content>
+      </Card>
     </div>
   );
 }

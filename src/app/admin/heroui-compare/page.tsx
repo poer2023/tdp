@@ -1,9 +1,9 @@
 "use client";
 
+import { ActionCardLegacy } from "@/components/admin/action-card-legacy";
 import { ActionCard } from "@/components/admin/action-card";
-import { ActionCardHeroUI } from "@/components/admin/action-card-heroui";
+import { MetricCardLegacy } from "@/components/admin/metric-card-legacy";
 import { MetricCard } from "@/components/admin/metric-card";
-import { MetricCardHeroUI } from "@/components/admin/metric-card-heroui";
 
 export default function HeroUIComparePage() {
   return (
@@ -28,7 +28,7 @@ export default function HeroUIComparePage() {
           {/* 原版 */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-zinc-500">原版 (自定义样式)</h3>
-            <ActionCard
+            <ActionCardLegacy
               icon={
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -44,7 +44,7 @@ export default function HeroUIComparePage() {
               primaryAction={{ label: "新建文章", href: "/admin/posts/new" }}
             />
 
-            <ActionCard
+            <ActionCardLegacy
               icon={
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -65,7 +65,7 @@ export default function HeroUIComparePage() {
           {/* HeroUI 版本 */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-zinc-500">HeroUI v3 版本</h3>
-            <ActionCardHeroUI
+            <ActionCard
               icon={
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -81,7 +81,7 @@ export default function HeroUIComparePage() {
               primaryAction={{ label: "新建文章", href: "/admin/posts/new" }}
             />
 
-            <ActionCardHeroUI
+            <ActionCard
               icon={
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -115,10 +115,10 @@ export default function HeroUIComparePage() {
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-zinc-500">原版 (自定义样式)</h3>
             <div className="grid gap-4 sm:grid-cols-2">
-              <MetricCard label="总文章" value={42} meta="12 篇草稿" href="/admin/posts" />
-              <MetricCard label="图库" value={128} meta="4 张最近上传" href="/admin/gallery" />
-              <MetricCard label="访问量" value="1.2k" meta="本月访问" alert />
-              <MetricCard label="同步任务" value={5} meta="3 个进行中" />
+              <MetricCardLegacy label="总文章" value={42} meta="12 篇草稿" href="/admin/posts" />
+              <MetricCardLegacy label="图库" value={128} meta="4 张最近上传" href="/admin/gallery" />
+              <MetricCardLegacy label="访问量" value="1.2k" meta="本月访问" alert />
+              <MetricCardLegacy label="同步任务" value={5} meta="3 个进行中" />
             </div>
           </div>
 
@@ -126,10 +126,10 @@ export default function HeroUIComparePage() {
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-zinc-500">HeroUI v3 版本</h3>
             <div className="grid gap-4 sm:grid-cols-2">
-              <MetricCardHeroUI label="总文章" value={42} meta="12 篇草稿" href="/admin/posts" />
-              <MetricCardHeroUI label="图库" value={128} meta="4 张最近上传" href="/admin/gallery" />
-              <MetricCardHeroUI label="访问量" value="1.2k" meta="本月访问" alert />
-              <MetricCardHeroUI label="同步任务" value={5} meta="3 个进行中" />
+              <MetricCard label="总文章" value={42} meta="12 篇草稿" href="/admin/posts" />
+              <MetricCard label="图库" value={128} meta="4 张最近上传" href="/admin/gallery" />
+              <MetricCard label="访问量" value="1.2k" meta="本月访问" alert />
+              <MetricCard label="同步任务" value={5} meta="3 个进行中" />
             </div>
           </div>
         </div>

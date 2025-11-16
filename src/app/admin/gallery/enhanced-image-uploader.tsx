@@ -5,9 +5,7 @@ import { Upload, X, CheckCircle, AlertCircle, Video, Loader2 } from "lucide-reac
 import { AnimatePresence, motion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { Button, Progress, Chip } from "@/components/ui-heroui";
 
 export type UploadStatus = "pending" | "uploading" | "success" | "error";
 
@@ -286,10 +284,13 @@ export const EnhancedImageUploader = React.forwardRef<HTMLDivElement, EnhancedIm
 
                   {/* Live Photo 标识 */}
                   {uploadFile.isLivePhoto && (
-                    <Badge variant="secondary" className="absolute bottom-2 left-2 text-xs">
+                    <Chip
+                      size="sm"
+                      className="absolute bottom-2 left-2 bg-black/70 text-xs text-white"
+                    >
                       <Video size={12} className="mr-1" />
                       Live
-                    </Badge>
+                    </Chip>
                   )}
 
                   {/* 上传中状态 */}

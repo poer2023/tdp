@@ -3,10 +3,12 @@
  * Detailed sync job logs with filtering, search, and pagination
  */
 
+import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { Prisma, SyncJobStatus } from "@prisma/client";
 import { SyncLogsTable } from "@/components/admin/sync-logs-table";
 import { SyncLogsFilters } from "@/components/admin/sync-logs-filters";
+import { Button, Card, Chip, Surface } from "@/components/ui-heroui";
 
 export const revalidate = 0;
 export const runtime = "nodejs";
@@ -356,6 +358,22 @@ export default async function SyncLogsPage({
   const totalPages = Math.ceil(totalCount / limit);
   const hasNextPage = page < totalPages;
   const hasPrevPage = page > 1;
+  const showingStart = totalCount === 0 ? 0 : (page - 1) * limit + 1;
+  const showingEnd = totalCount === 0 ? 0 : Math.min(page * limit, totalCount);
+  const safeTotalPages = Math.max(totalPages, 1);
+
+  const buildPageUrl = (targetPage: number) => {
+    const params = new URLSearchParams();
+    if (platform) params.set("platform", platform);
+    if (status) params.set("status", status);
+    if (triggeredBy) params.set("triggeredBy", triggeredBy);
+    params.set("page", targetPage.toString());
+    params.set("limit", limit.toString());
+    return `/admin/sync/logs?${params.toString()}`;
+  };
+
+  const prevHref = hasPrevPage ? buildPageUrl(page - 1) : null;
+  const nextHref = hasNextPage ? buildPageUrl(page + 1) : null;
 
   // Get unique platforms for filter
   const platforms = await prisma.syncJobLog.findMany({
@@ -367,14 +385,31 @@ export default async function SyncLogsPage({
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Page Header */}
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
-          Sync Logs
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          View detailed sync job logs with filtering and search
-        </p>
-      </header>
+      <Surface
+        variant="flat"
+        className="rounded-3xl border border-zinc-200 bg-white/80 p-6 dark:border-zinc-800 dark:bg-zinc-900/70"
+      >
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
+            Sync
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+                同步日志
+              </h1>
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                查看每一次同步任务的执行记录、耗时与错误细节。
+              </p>
+            </div>
+            {!jobId && (
+              <Chip size="sm" variant="flat" color="primary" className="self-start font-semibold">
+                每页 {limit} 条
+              </Chip>
+            )}
+          </div>
+        </div>
+      </Surface>
 
       {/* Filters */}
       <SyncLogsFilters
@@ -389,16 +424,26 @@ export default async function SyncLogsPage({
 
       {/* Summary Stats */}
       {!jobId && (
-        <div className="flex gap-4 text-sm text-zinc-600 dark:text-zinc-400">
-          <span>
-            Showing {(page - 1) * limit + 1}-{Math.min(page * limit, totalCount)} of {totalCount}{" "}
-            logs
-          </span>
-          <span>·</span>
-          <span>
-            Page {page} of {totalPages}
-          </span>
-        </div>
+        <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+          <Card.Content className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                显示 {showingStart}-{showingEnd} / {totalCount || 0} 条日志
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                当前第 {page} / {safeTotalPages} 页
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Chip size="sm" variant="flat" color="primary">
+                总页数 {safeTotalPages}
+              </Chip>
+              <Chip size="sm" variant="flat">
+                未筛选总量 {totalCount}
+              </Chip>
+            </div>
+          </Card.Content>
+        </Card>
       )}
 
       {/* Logs Table */}
@@ -406,55 +451,43 @@ export default async function SyncLogsPage({
 
       {/* Pagination */}
       {!jobId && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <a
-            href={
-              hasPrevPage
-                ? `/admin/sync/logs?${new URLSearchParams({
-                    ...(platform && { platform }),
-                    ...(status && { status }),
-                    ...(triggeredBy && { triggeredBy }),
-                    page: (page - 1).toString(),
-                    limit: limit.toString(),
-                  }).toString()}`
-                : "#"
-            }
-            className={`rounded-lg border px-4 py-2 text-sm font-medium ${
-              hasPrevPage
-                ? "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                : "cursor-not-allowed border-zinc-200 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-600"
-            }`}
-            aria-disabled={!hasPrevPage}
-          >
-            Previous
-          </a>
-
-          <span className="text-sm text-zinc-600 dark:text-zinc-400">
-            Page {page} of {totalPages}
-          </span>
-
-          <a
-            href={
-              hasNextPage
-                ? `/admin/sync/logs?${new URLSearchParams({
-                    ...(platform && { platform }),
-                    ...(status && { status }),
-                    ...(triggeredBy && { triggeredBy }),
-                    page: (page + 1).toString(),
-                    limit: limit.toString(),
-                  }).toString()}`
-                : "#"
-            }
-            className={`rounded-lg border px-4 py-2 text-sm font-medium ${
-              hasNextPage
-                ? "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                : "cursor-not-allowed border-zinc-200 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-600"
-            }`}
-            aria-disabled={!hasNextPage}
-          >
-            Next
-          </a>
-        </div>
+        <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+          <Card.Content className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-zinc-600 dark:text-zinc-400">
+              第 {page} / {safeTotalPages} 页 · 共 {totalCount} 条
+            </div>
+            <div className="flex gap-2">
+              <Button
+                asChild
+                variant="light"
+                size="sm"
+                isDisabled={!hasPrevPage}
+              >
+                <Link
+                  href={prevHref ?? "#"}
+                  aria-disabled={!hasPrevPage}
+                  tabIndex={hasPrevPage ? undefined : -1}
+                >
+                  上一页
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="primary"
+                size="sm"
+                isDisabled={!hasNextPage}
+              >
+                <Link
+                  href={nextHref ?? "#"}
+                  aria-disabled={!hasNextPage}
+                  tabIndex={hasNextPage ? undefined : -1}
+                >
+                  下一页
+                </Link>
+              </Button>
+            </div>
+          </Card.Content>
+        </Card>
       )}
     </div>
   );

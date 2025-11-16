@@ -207,23 +207,23 @@ export default function HeroUIComponentsShowcase() {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Accordion 组件</h2>
         <Accordion>
-          <Accordion.Item value="item1">
+          <Accordion.Item key="item1">
             <Accordion.Trigger>什么是 HeroUI?</Accordion.Trigger>
-            <Accordion.Content>
+            <Accordion.Body>
               HeroUI 是一个现代化的 React UI 组件库,基于 React Aria 和 Tailwind CSS。
-            </Accordion.Content>
+            </Accordion.Body>
           </Accordion.Item>
-          <Accordion.Item value="item2">
+          <Accordion.Item key="item2">
             <Accordion.Trigger>如何使用 HeroUI?</Accordion.Trigger>
-            <Accordion.Content>
+            <Accordion.Body>
               安装 @heroui/react 包,然后导入需要的组件即可使用。
-            </Accordion.Content>
+            </Accordion.Body>
           </Accordion.Item>
-          <Accordion.Item value="item3">
+          <Accordion.Item key="item3">
             <Accordion.Trigger>支持哪些框架?</Accordion.Trigger>
-            <Accordion.Content>
+            <Accordion.Body>
               HeroUI 主要支持 React 和 Next.js,提供完整的 TypeScript 支持。
-            </Accordion.Content>
+            </Accordion.Body>
           </Accordion.Item>
         </Accordion>
       </section>
@@ -261,8 +261,11 @@ export default function HeroUIComponentsShowcase() {
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Tooltip 组件</h2>
         <div className="flex gap-4">
-          <Tooltip content="这是一个提示信息">
-            <Button variant="secondary">鼠标悬停查看提示</Button>
+          <Tooltip>
+            <Tooltip.Trigger>
+              <Button variant="secondary">鼠标悬停查看提示</Button>
+            </Tooltip.Trigger>
+            <Tooltip.Content>这是一个提示信息</Tooltip.Content>
           </Tooltip>
         </div>
       </section>

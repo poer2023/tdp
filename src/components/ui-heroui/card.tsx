@@ -16,8 +16,16 @@ export function Card({ children, ...props }: CardProps) {
 }
 
 // 导出子组件以支持 Card.Header, Card.Content 等用法
-Card.Header = HeroUICard.Header;
-Card.Title = HeroUICard.Title;
-Card.Description = HeroUICard.Description;
-Card.Content = HeroUICard.Content;
-Card.Footer = HeroUICard.Footer;
+const CardHeader = HeroUICard.Header;
+const CardTitle = HeroUICard.Title;
+const CardDescription = HeroUICard.Description;
+const CardContent = HeroUICard.Content;
+const CardFooter = HeroUICard.Footer;
+
+Card.Header = CardHeader;
+Card.Title = CardTitle;
+Card.Description = CardDescription;
+Card.Content = CardContent;
+Card.Footer = CardFooter;
+
+export { CardHeader, CardTitle, CardDescription, CardContent, CardFooter };

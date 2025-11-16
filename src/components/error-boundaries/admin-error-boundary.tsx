@@ -31,7 +31,7 @@ type State = {
  * </AdminErrorBoundary>
  * ```
  */
-export class AdminErrorBoundary extends Component<Props, State> {
+export default class AdminErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };

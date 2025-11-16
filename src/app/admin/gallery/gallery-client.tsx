@@ -4,6 +4,7 @@ import type { GalleryImage as GalleryImageType } from "@/lib/gallery";
 import type { PostSummary } from "@/lib/posts";
 import { UnifiedUploadForm } from "./unified-upload-form";
 import { AdminGalleryGrid } from "./admin-gallery-grid";
+import { Card } from "@/components/ui-heroui";
 
 type GalleryClientProps = {
   images: GalleryImageType[];
@@ -33,9 +34,9 @@ export function AdminGalleryClient({ images, posts: _posts }: GalleryClientProps
         {images.length ? (
           <AdminGalleryGrid images={images} />
         ) : (
-          <p className="rounded-3xl border border-dashed border-zinc-300 px-6 py-12 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+          <Card variant="secondary" className="px-6 py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
             相册还没有内容，尝试上传一张照片吧。
-          </p>
+          </Card>
         )}
       </section>
     </div>

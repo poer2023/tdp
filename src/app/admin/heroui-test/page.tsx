@@ -76,7 +76,7 @@ export default function HeroUITestPage() {
             <Card variant="secondary">
               <Card.Header>
                 <Card.Title>次要卡片</Card.Title>
-                <Card.Description>variant="secondary"</Card.Description>
+                <Card.Description>variant=&quot;secondary&quot;</Card.Description>
               </Card.Header>
               <Card.Content>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -88,7 +88,7 @@ export default function HeroUITestPage() {
             <Card variant="tertiary">
               <Card.Header>
                 <Card.Title>三级卡片</Card.Title>
-                <Card.Description>variant="tertiary"</Card.Description>
+                <Card.Description>variant=&quot;tertiary&quot;</Card.Description>
               </Card.Header>
               <Card.Content>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">

@@ -4,20 +4,16 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
+  Button,
+  Card,
+  Input,
+  Label,
+  Textarea,
   Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Alert,
+} from "@/components/ui-heroui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
   EnhancedImageUploader,
@@ -385,13 +381,13 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
   return (
     <div className={className}>
       <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl">上传图片到相册</CardTitle>
-          <CardDescription className="text-xs">
+        <Card.Header className="pb-4">
+          <Card.Title className="text-xl">上传图片到相册</Card.Title>
+          <Card.Description className="text-xs">
             支持批量上传、Live Photo 自动配对、EXIF 元数据提取
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </Card.Description>
+        </Card.Header>
+        <Card.Content className="space-y-4">
           {/* 两栏布局：左侧上传+预览，右侧编辑表单 */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-6">
             {/* 左侧：图片上传器 + 预览（占2列，lg屏幕sticky） */}
@@ -446,22 +442,17 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                         <Label htmlFor="bulk-category">分类</Label>
                         <Select
                           value={bulkMetadata.category}
-                          onValueChange={(value: GalleryCategory) =>
+                          onChange={(value) =>
                             setBulkMetadata((prev) => ({
                               ...prev,
-                              category: value,
+                              category: value as GalleryCategory,
                             }))
                           }
-                          disabled={isUploading}
+                          isDisabled={isUploading}
                         >
-                          <SelectTrigger id="bulk-category">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ORIGINAL">原创</SelectItem>
-                            <SelectItem value="REPOST">转发</SelectItem>
-                            <SelectItem value="AI">AI 生成</SelectItem>
-                          </SelectContent>
+                          <Select.Item id="ORIGINAL">原创</Select.Item>
+                          <Select.Item id="REPOST">转发</Select.Item>
+                          <Select.Item id="AI">AI 生成</Select.Item>
                         </Select>
                       </div>
 
@@ -503,10 +494,10 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
 
                     {/* 提示信息 */}
                     <Alert>
-                      <AlertDescription className="text-xs">
+                      <div className="text-xs">
                         💡 <strong>自动功能</strong>：上传时将自动提取 EXIF 元数据（拍摄时间、GPS
                         坐标、相机信息等）并生成缩略图。
-                      </AlertDescription>
+                      </div>
                     </Alert>
                   </TabsContent>
 
@@ -549,10 +540,10 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
 
                     {/* 提示信息 */}
                     <Alert>
-                      <AlertDescription className="text-xs">
+                      <div className="text-xs">
                         💡 <strong>提示</strong>
                         ：可以为每张图片设置不同的元数据。使用&quot;复制到全部&quot;按钮快速应用某张图片的设置,或使用&quot;应用批量设置&quot;将批量编辑的内容作为起点。
-                      </AlertDescription>
+                      </div>
                     </Alert>
                   </TabsContent>
                 </Tabs>
@@ -561,10 +552,10 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
               {/* 上传消息 */}
               {uploadMessage && (
                 <Alert
-                  variant={uploadMessage.type === "error" ? "destructive" : "default"}
-                  className="mt-3"
+                  status={uploadMessage.type === "error" ? "danger" : "success"}
+                  className="mt-3 text-sm"
                 >
-                  <AlertDescription className="text-sm">{uploadMessage.text}</AlertDescription>
+                  {uploadMessage.text}
                 </Alert>
               )}
 
@@ -583,7 +574,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
               )}
             </div>
           </div>
-        </CardContent>
+        </Card.Content>
       </Card>
     </div>
   );

@@ -1,6 +1,9 @@
 "use client";
 
-export interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "size"> {
+import { cn } from "@/lib/utils";
+import type { TextareaHTMLAttributes } from "react";
+
+export interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "size"> {
   label?: string;
   description?: string;
   error?: string;
@@ -27,6 +30,11 @@ export function Textarea({
 }: TextareaProps) {
   // errorMessage 是 error 的别名,优先使用 error
   const displayError = error || errorMessage;
+  const invalid = isInvalid ?? Boolean(displayError);
+  const textareaClass = cn(
+    "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-500 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-400",
+    invalid && "border-red-500 focus:border-red-500 focus:ring-red-500/20 dark:border-red-500"
+  );
 
   return (
     <div className={className}>
@@ -42,7 +50,8 @@ export function Textarea({
       <textarea
         required={isRequired}
         disabled={isDisabled}
-        className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-500 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-400"
+        aria-invalid={invalid || undefined}
+        className={textareaClass}
         {...props}
       />
       {displayError && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{displayError}</p>}

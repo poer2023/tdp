@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { BottomTabBar } from "@/components/admin/bottom-tab-bar";
 import type { AdminLocale } from "@/lib/admin-translations";
+import { Button, Surface } from "@/components/ui-heroui";
 
 type AdminFrameProps = {
   locale: AdminLocale;
@@ -44,11 +45,12 @@ export function AdminFrame({ locale, children }: AdminFrameProps) {
       )}
 
       {/* Open button (mobile) */}
-      <button
-        type="button"
+      <Button
         aria-label="Open navigation"
-        className="fixed top-[72px] left-4 z-40 inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/90 text-zinc-700 shadow-sm backdrop-blur transition hover:bg-white md:hidden dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-300"
-        onClick={() => setMobileOpen(true)}
+        variant="secondary"
+        size="sm"
+        className="fixed top-[72px] left-4 z-40 md:hidden"
+        onPress={() => setMobileOpen(true)}
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path
@@ -58,18 +60,19 @@ export function AdminFrame({ locale, children }: AdminFrameProps) {
             d="M4 6h16M4 12h16M4 18h16"
           />
         </svg>
-      </button>
+      </Button>
 
       {/* Main content */}
       <div className="h-full md:ml-64">
-        {/* Fixed Gray Card Background - Full Height, 5px edge gap to viewport */}
         <div className="h-full overflow-hidden p-[5px]">
-          <div className="h-full rounded-2xl bg-zinc-50 shadow-sm dark:bg-zinc-900">
-            {/* Scrolling Content Container Inside Card */}
+          <Surface
+            variant="flat"
+            className="h-full rounded-3xl border border-zinc-100 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+          >
             <div className="admin-scroll h-full overflow-y-auto overscroll-contain px-4 py-4 pb-20 sm:px-6 sm:py-6 md:px-8 md:py-8 md:pb-8">
               <div className="mx-auto max-w-[1200px]">{children}</div>
             </div>
-          </div>
+          </Surface>
         </div>
       </div>
 

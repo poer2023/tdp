@@ -1,8 +1,10 @@
 "use client";
 
+import { Children, isValidElement, type ReactNode } from "react";
+
 export interface SelectItemProps {
   id: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export interface SelectProps {
@@ -14,7 +16,7 @@ export interface SelectProps {
   value?: string;
   defaultSelectedKeys?: string[];
   onChange?: (value: string) => void;
-  children: React.ReactElement<SelectItemProps> | React.ReactElement<SelectItemProps>[];
+  children?: ReactNode;
   className?: string;
 }
 
@@ -41,7 +43,9 @@ export function Select({
   children,
   className,
 }: SelectProps) {
-  const childArray = Array.isArray(children) ? children : [children];
+  const childArray = Children.toArray(children).filter((child): child is React.ReactElement<SelectItemProps> =>
+    isValidElement(child)
+  );
   // defaultSelectedKeys[0] 用作 defaultValue
   const defaultValue = defaultSelectedKeys?.[0];
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Alert as HeroUIAlert, CloseButton } from "@heroui/react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 /**
  * HeroUI Alert 组件封装
@@ -11,12 +11,14 @@ import type { ComponentProps } from "react";
  * 支持 5 种状态: default, accent, success, warning, danger
  */
 
-export interface AlertProps extends ComponentProps<typeof HeroUIAlert> {
+export interface AlertProps extends Omit<ComponentProps<typeof HeroUIAlert>, "color"> {
+  status?: "default" | "accent" | "success" | "warning" | "danger";
   title?: string;
   description?: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   closable?: boolean;
   onClose?: () => void;
+  color?: ComponentProps<typeof HeroUIAlert>["color"];
 }
 
 export function Alert({
@@ -26,10 +28,14 @@ export function Alert({
   closable,
   onClose,
   children,
+  status,
+  color,
   ...props
 }: AlertProps) {
+  const resolvedColor = status ?? color;
+
   return (
-    <HeroUIAlert {...props}>
+    <HeroUIAlert color={resolvedColor} {...props}>
       {icon && <HeroUIAlert.Indicator>{icon}</HeroUIAlert.Indicator>}
       <HeroUIAlert.Content>
         {title && <HeroUIAlert.Title>{title}</HeroUIAlert.Title>}

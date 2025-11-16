@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ExportClientShell } from "../export/export-client-shell";
 import { ImportClient } from "@/components/admin/import-client";
+import { Surface, Button, Card } from "@/components/ui-heroui";
 
 type TabType = "export" | "import" | "backup";
 
@@ -26,40 +27,45 @@ export default function AdminToolsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Tools</h1>
-        <p className="text-muted-foreground">数据导入、导出和备份工具</p>
-      </div>
+      <Surface
+        variant="flat"
+        className="rounded-3xl border border-zinc-200 bg-white/80 p-6 dark:border-zinc-800 dark:bg-zinc-900/80"
+      >
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
+            Operations
+          </p>
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            工具面板
+          </h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">数据导入、导出与备份工具</p>
+        </div>
+      </Surface>
 
-      {/* Tab Navigation */}
-      <div className="border-border border-b">
-        <nav className="flex space-x-8" aria-label="Tabs">
+      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card.Content className="flex flex-wrap gap-3 p-4">
           {tabs.map((tab) => (
-            <button
+            <Button
               key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
-                activeTab === tab.id
-                  ? "border-primary text-foreground"
-                  : "text-muted-foreground hover:border-border hover:text-foreground border-transparent"
-              } `}
-              aria-current={activeTab === tab.id ? "page" : undefined}
+              variant={activeTab === tab.id ? "solid" : "light"}
+              onPress={() => handleTabChange(tab.id)}
             >
               {tab.label.en} / {tab.label.zh}
-            </button>
+            </Button>
           ))}
-        </nav>
-      </div>
+        </Card.Content>
+      </Card>
 
-      {/* Tab Content */}
-      <div className="py-4">
+      <div className="py-2">
         {activeTab === "export" && <ExportClientShell />}
         {activeTab === "import" && <ImportClient />}
         {activeTab === "backup" && (
-          <div className="border-border bg-muted/50 rounded-lg border p-8 text-center">
-            <h3 className="text-lg font-semibold">Backup Feature</h3>
-            <p className="text-muted-foreground mt-2 text-sm">备份功能开发中,敬请期待</p>
-          </div>
+          <Card variant="secondary" className="border border-dashed border-zinc-300 dark:border-zinc-800">
+            <Card.Content className="py-12 text-center">
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Backup Feature</h3>
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">备份功能开发中，敬请期待。</p>
+            </Card.Content>
+          </Card>
         )}
       </div>
     </div>

@@ -14,8 +14,22 @@ import type { ComponentProps } from "react";
  * 映射 status 到 variant
  */
 
-export interface ChipProps extends ComponentProps<typeof HeroUIChip> {
+type BaseChipProps = ComponentProps<typeof HeroUIChip>;
+
+type ExtendedColor = "primary" | "secondary";
+
+const isExtendedColor = (value: string): value is ExtendedColor =>
+  value === "primary" || value === "secondary";
+
+const EXTENDED_COLOR_MAP: Record<ExtendedColor, BaseChipProps["color"]> = {
+  primary: "accent",
+  secondary: "default",
+};
+
+export interface ChipProps extends Omit<BaseChipProps, "variant" | "color"> {
   status?: "default" | "primary" | "secondary" | "success" | "danger" | "accent" | "warning";
+  variant?: BaseChipProps["variant"] | "flat";
+  color?: BaseChipProps["color"] | ExtendedColor;
 }
 
 export function Chip({ status, children, variant, color, ...props }: ChipProps) {
@@ -54,8 +68,15 @@ export function Chip({ status, children, variant, color, ...props }: ChipProps) 
   }
 
   // Pass through variant and color props directly
+  const resolvedVariant = variant === "flat" ? "soft" : variant;
+  let resolvedColor: BaseChipProps["color"] | undefined;
+
+  if (color) {
+    resolvedColor = isExtendedColor(color) ? EXTENDED_COLOR_MAP[color] : color;
+  }
+
   return (
-    <HeroUIChip variant={variant} color={color} {...props}>
+    <HeroUIChip variant={resolvedVariant} color={resolvedColor} {...props}>
       {children}
     </HeroUIChip>
   );

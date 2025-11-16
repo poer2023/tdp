@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { RefreshCw, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
+import { Alert, Button, Card, Chip, Spinner, Surface, Table } from "@/components/ui-heroui";
 
 interface SyncJob {
   id: string;
@@ -40,6 +42,30 @@ interface SyncStatusData {
   };
   recentJobs: SyncJob[];
 }
+
+const ACTIONS = [
+  { id: "bilibili", label: "同步 Bilibili", color: "primary" as const },
+  { id: "douban", label: "同步 Douban", color: "success" as const },
+  { id: "all", label: "同步全部", color: "secondary" as const },
+];
+
+type StatusMeta = {
+  label: string;
+  color: "success" | "danger" | "warning" | "primary" | "default";
+  icon: ReactNode;
+};
+
+const STATUS_META: Record<string, StatusMeta> = {
+  SUCCESS: { label: "成功", color: "success", icon: <CheckCircle className="h-4 w-4" /> },
+  FAILED: { label: "失败", color: "danger", icon: <XCircle className="h-4 w-4" /> },
+  PARTIAL: { label: "部分完成", color: "warning", icon: <AlertCircle className="h-4 w-4" /> },
+  RUNNING: {
+    label: "运行中",
+    color: "primary",
+    icon: <RefreshCw className="h-4 w-4 animate-spin" />,
+  },
+  PENDING: { label: "等待中", color: "default", icon: <Clock className="h-4 w-4" /> },
+};
 
 export function SyncStatusDashboard() {
   const [data, setData] = useState<SyncStatusData | null>(null);
@@ -91,19 +117,12 @@ export function SyncStatusDashboard() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "SUCCESS":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case "FAILED":
-        return <XCircle className="h-5 w-5 text-red-500" />;
-      case "PARTIAL":
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
-      case "RUNNING":
-        return <RefreshCw className="h-5 w-5 animate-spin text-blue-500" />;
-      default:
-        return <Clock className="h-5 w-5 text-gray-500" />;
+  const getStatusMeta = (status: string): StatusMeta => {
+    const meta = STATUS_META[status];
+    if (meta) {
+      return meta;
     }
+    return STATUS_META.PENDING!;
   };
 
   const formatDuration = (ms: number | null) => {
@@ -123,138 +142,243 @@ export function SyncStatusDashboard() {
     });
   };
 
+  const metrics = useMemo(() => {
+    if (!data) return [];
+    const successRate =
+      data.stats.total > 0 ? Math.round((data.stats.success / data.stats.total) * 100) : 0;
+    return [
+      {
+        label: "同步总数",
+        value: data.stats.total.toLocaleString(),
+        meta: `${data.stats.running} 个进行中`,
+      },
+      {
+        label: "成功率",
+        value: `${successRate}%`,
+        meta: `${data.stats.success} 成功 / ${data.stats.failed} 失败`,
+      },
+      {
+        label: "媒体总量",
+        value: data.mediaStats.totalItems.toLocaleString(),
+        meta: `最近新增 ${data.mediaStats.recentlyAdded}`,
+      },
+      {
+        label: "部分完成",
+        value: data.stats.partial.toLocaleString(),
+        meta: `${data.stats.failed} 个失败需要关注`,
+      },
+    ];
+  }, [data]);
+
+  const platformEntries = useMemo(
+    () => (data ? Object.entries(data.platformStats ?? {}) : []),
+    [data]
+  );
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <RefreshCw className="h-8 w-8 animate-spin text-neutral-400" />
-      </div>
+      <Surface className="flex min-h-[240px] flex-col items-center justify-center gap-3 rounded-3xl border border-zinc-200 bg-white/70 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-300">
+        <Spinner size="lg" />
+        正在加载同步状态…
+      </Surface>
     );
   }
 
   if (!data) {
-    return <div className="p-12 text-center text-neutral-500">Failed to load sync status</div>;
+    return (
+      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card.Content className="p-8">
+          <Alert status="warning" title="无法加载同步状态">
+            请检查 API 响应或稍后重试。
+          </Alert>
+        </Card.Content>
+      </Card>
+    );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Quick Actions */}
-      <section className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-        <h2 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-          Manual Sync
-        </h2>
-        <div className="flex gap-3">
-          <button
-            onClick={() => triggerSync("bilibili")}
-            disabled={!!syncing}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50"
-          >
-            {syncing === "bilibili" && <RefreshCw className="h-4 w-4 animate-spin" />}
-            Sync Bilibili
-          </button>
-          <button
-            onClick={() => triggerSync("douban")}
-            disabled={!!syncing}
-            className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white transition hover:bg-green-700 disabled:opacity-50"
-          >
-            {syncing === "douban" && <RefreshCw className="h-4 w-4 animate-spin" />}
-            Sync Douban
-          </button>
-          <button
-            onClick={() => triggerSync("all")}
-            disabled={!!syncing}
-            className="flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-white transition hover:bg-purple-700 disabled:opacity-50"
-          >
-            {syncing === "all" && <RefreshCw className="h-4 w-4 animate-spin" />}
-            Sync All
-          </button>
-        </div>
-      </section>
+      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card.Content className="space-y-4 p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
+                控制台
+              </p>
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">手动触发同步</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                立即触发对应平台同步任务，执行期间按钮会锁定。
+              </p>
+            </div>
+            <Chip size="sm" variant="flat" color="primary">
+              {syncing ? `正在同步 ${syncing}` : "空闲"}
+            </Chip>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {ACTIONS.map((action) => (
+              <Button
+                key={action.id}
+                color={action.color}
+                onPress={() => triggerSync(action.id)}
+                isDisabled={!!syncing}
+                startContent={
+                  syncing === action.id ? <RefreshCw className="h-4 w-4 animate-spin" /> : undefined
+                }
+              >
+                {action.label}
+              </Button>
+            ))}
+          </div>
+        </Card.Content>
+      </Card>
 
       {/* Stats Overview */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="text-sm text-neutral-500">Total Syncs</div>
-          <div className="mt-2 text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-            {data.stats.total}
-          </div>
-        </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="text-sm text-neutral-500">Success Rate</div>
-          <div className="mt-2 text-3xl font-bold text-green-600">
-            {data.stats.total > 0 ? Math.round((data.stats.success / data.stats.total) * 100) : 0}%
-          </div>
-        </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="text-sm text-neutral-500">Total Media Items</div>
-          <div className="mt-2 text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-            {data.mediaStats.totalItems}
-          </div>
-        </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="text-sm text-neutral-500">Recently Added (24h)</div>
-          <div className="mt-2 text-3xl font-bold text-blue-600">
-            {data.mediaStats.recentlyAdded}
-          </div>
-        </div>
+        {metrics.map((metric) => (
+          <Card
+            key={metric.label}
+            variant="secondary"
+            className="border border-zinc-200/80 dark:border-zinc-800/80"
+          >
+            <Card.Content className="space-y-2 p-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                {metric.label}
+              </p>
+              <p className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">{metric.value}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{metric.meta}</p>
+            </Card.Content>
+          </Card>
+        ))}
       </section>
 
+      {/* Platform status */}
+      {platformEntries.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">平台详情</h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                最近同步时间与累计任务统计
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {platformEntries.map(([platform, info]) => {
+              const last = info.lastSync;
+              const meta = last ? getStatusMeta(last.status) : null;
+              return (
+                <Card
+                  key={platform}
+                  variant="secondary"
+                  className="border border-zinc-200/80 dark:border-zinc-800/80"
+                >
+                  <Card.Content className="space-y-3 p-5">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        {platform}
+                      </p>
+                      {meta && (
+                        <Chip size="sm" variant="flat" color={meta.color}>
+                          <span className="mr-1 inline-flex items-center">{meta.label}</span>
+                        </Chip>
+                      )}
+                    </div>
+                    <p className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+                      {info.total.toLocaleString()} 次
+                    </p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      最近同步：{last ? formatDate(last.startedAt) : "尚无记录"}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="light"
+                        size="sm"
+                        onPress={() => triggerSync(platform)}
+                        isDisabled={!!syncing && syncing !== platform}
+                      >
+                        立即同步
+                      </Button>
+                      {last?.duration && (
+                        <Chip size="sm" variant="flat">
+                          上次耗时 {formatDuration(last.duration)}
+                        </Chip>
+                      )}
+                    </div>
+                  </Card.Content>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Recent Sync Jobs */}
-      <section className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="border-b border-neutral-200 p-6 dark:border-neutral-800">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-            Recent Sync Jobs
-          </h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-neutral-50 dark:bg-neutral-800/50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                  Platform
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                  Started At
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                  Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                  Items
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                  Triggered By
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-              {data.recentJobs.slice(0, 10).map((job) => (
-                <tr key={job.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                  <td className="px-6 py-4">{getStatusIcon(job.status)}</td>
-                  <td className="px-6 py-4 font-medium text-neutral-900 dark:text-neutral-100">
-                    {job.platform}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-neutral-500">
-                    {formatDate(job.startedAt)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-neutral-500">
-                    {formatDuration(job.duration)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-neutral-500">
-                    {job.itemsSuccess}/{job.itemsTotal}
-                    {job.itemsFailed > 0 && (
-                      <span className="ml-1 text-red-500">({job.itemsFailed} failed)</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-neutral-500">{job.triggeredBy}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card.Content className="space-y-4 p-5">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">最近任务</h3>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                最新 10 条同步任务执行记录
+              </p>
+            </div>
+          </div>
+          <Table variant="striped" hoverable>
+            <Table.Head>
+              <Table.Row>
+                <Table.Header>状态</Table.Header>
+                <Table.Header>平台</Table.Header>
+                <Table.Header>开始时间</Table.Header>
+                <Table.Header>耗时</Table.Header>
+                <Table.Header>数据量</Table.Header>
+                <Table.Header>触发来源</Table.Header>
+              </Table.Row>
+            </Table.Head>
+            <Table.Body>
+              {data.recentJobs.length === 0 ? (
+                <Table.Row>
+                  <Table.Cell colSpan={6} className="text-center text-sm text-zinc-500">
+                    暂无同步记录
+                  </Table.Cell>
+                </Table.Row>
+              ) : (
+                data.recentJobs.slice(0, 10).map((job) => {
+                  const meta = getStatusMeta(job.status);
+                  return (
+                    <Table.Row key={job.id}>
+                      <Table.Cell>
+                        <Chip size="sm" variant="flat" color={meta.color} className="font-medium">
+                          <span className="mr-1 inline-flex items-center">{meta.icon}</span>
+                          {meta.label}
+                        </Chip>
+                      </Table.Cell>
+                      <Table.Cell className="font-semibold text-zinc-900 dark:text-zinc-50">
+                        {job.platform}
+                      </Table.Cell>
+                      <Table.Cell className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {formatDate(job.startedAt)}
+                      </Table.Cell>
+                      <Table.Cell className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {formatDuration(job.duration)}
+                      </Table.Cell>
+                      <Table.Cell className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {job.itemsSuccess}/{job.itemsTotal}
+                        {job.itemsFailed > 0 && (
+                          <span className="ml-1 text-red-500">({job.itemsFailed} 失败)</span>
+                        )}
+                      </Table.Cell>
+                      <Table.Cell className="text-sm capitalize text-zinc-500 dark:text-zinc-400">
+                        {job.triggeredBy}
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })
+              )}
+            </Table.Body>
+          </Table>
+        </Card.Content>
+      </Card>
     </div>
   );
 }

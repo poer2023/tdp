@@ -6,9 +6,9 @@ import { features } from "@/config/features";
 import { listAllPosts } from "@/lib/posts";
 import { deletePostAction, publishPostAction, unpublishPostAction } from "./actions";
 import { CreatePostForm } from "./create-post-form";
-import { AdminErrorBoundary } from "@/components/error-boundaries/admin-error-boundary";
+import AdminErrorBoundary from "@/components/error-boundaries/admin-error-boundary";
 import { DeletePostButton } from "./delete-post-button";
-import { Table, Chip, Button } from "@/components/ui-heroui";
+import { Table, Chip, Button, Alert } from "@/components/ui-heroui";
 
 export const revalidate = 0;
 
@@ -39,9 +39,11 @@ async function PostsListContent() {
       <CreatePostForm />
 
       {SKIP_DB && posts.length === 0 ? (
-        <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
-          当前运行于数据库离线模式（E2E_SKIP_DB）。文章列表暂不可用。
-        </section>
+        <Alert
+          status="warning"
+          title="离线模式"
+          description="当前运行于数据库离线模式（E2E_SKIP_DB）。文章列表暂不可用。"
+        />
       ) : (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
