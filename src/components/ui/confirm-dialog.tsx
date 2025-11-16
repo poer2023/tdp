@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
+import { Button } from "@/components/ui-heroui";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -41,21 +42,15 @@ export function ConfirmDialog({
               </AlertDialogPrimitive.Description>
             </div>
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <AlertDialogPrimitive.Cancel
-                onClick={onCancel}
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50 focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-              >
-                {cancelText}
+              <AlertDialogPrimitive.Cancel asChild>
+                <Button variant="secondary" onPress={onCancel}>
+                  {cancelText}
+                </Button>
               </AlertDialogPrimitive.Cancel>
-              <AlertDialogPrimitive.Action
-                onClick={onConfirm}
-                className={`inline-flex h-10 items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-white transition focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
-                  variant === "danger"
-                    ? "bg-red-600 hover:bg-red-700 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700"
-                    : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700"
-                }`}
-              >
-                {confirmText}
+              <AlertDialogPrimitive.Action asChild>
+                <Button variant={variant === "danger" ? "danger" : "primary"} onPress={onConfirm}>
+                  {confirmText}
+                </Button>
               </AlertDialogPrimitive.Action>
             </div>
           </div>
