@@ -16,7 +16,7 @@ import {
   extractCredentialFormValues,
 } from "@/lib/credential-configs";
 import { ChevronDown, ChevronUp, Info } from "lucide-react";
-import { Button, Card, Input, Select, Switch, Textarea } from "@/components/ui-heroui";
+import { Button, Card, CardContent, Input, Select, Switch, Textarea } from "@/components/ui-heroui";
 
 type CredentialFormProps = {
   action: (formData: FormData) => Promise<void>;
@@ -113,7 +113,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="space-y-6 p-5">
+        <CardContent className="space-y-6 p-5">
           <Select
             label={t(locale, "credentialPlatform")}
             value={selectedPlatform}
@@ -135,7 +135,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
 
           {selectedPlatform && platformConfig && (
             <Card variant="secondary" className="border border-zinc-100 dark:border-zinc-800">
-              <Card.Content className="space-y-3 p-4">
+              <CardContent className="space-y-3 p-4">
                 <Button
                   type="button"
                   variant="light"
@@ -161,7 +161,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
                     ))}
                   </ol>
                 )}
-              </Card.Content>
+              </CardContent>
             </Card>
           )}
 
@@ -230,12 +230,12 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
               })}
             </div>
           )}
-        </Card.Content>
+        </CardContent>
       </Card>
 
       {selectedPlatform && platformConfig && (
         <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-          <Card.Content className="space-y-4 p-5">
+          <CardContent className="space-y-4 p-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
                 {t(locale, "autoSync")}
@@ -269,7 +269,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
                 ))}
               </Select>
             )}
-          </Card.Content>
+          </CardContent>
         </Card>
       )}
 

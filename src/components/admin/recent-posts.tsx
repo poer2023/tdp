@@ -3,7 +3,7 @@ import { PostStatus, PostLocale, type Post } from "@prisma/client";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { t, type AdminLocale } from "@/lib/admin-translations";
-import { Card, Chip } from "@/components/ui-heroui";
+import { Card, CardContent, Chip } from "@/components/ui-heroui";
 
 type RecentPostsProps = {
   posts: (Post & { author: { name: string | null } | null })[];
@@ -14,7 +14,7 @@ type RecentPostsProps = {
 export function RecentPosts({ posts, locale, isServiceDegraded = false }: RecentPostsProps) {
   return (
     <Card variant="secondary" className="flex min-h-[320px] flex-col">
-      <Card.Content className="flex h-full flex-col gap-4">
+      <CardContent className="flex h-full flex-col gap-4">
         <h3 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
           {t(locale, "recentPosts")}
         </h3>
@@ -86,7 +86,7 @@ export function RecentPosts({ posts, locale, isServiceDegraded = false }: Recent
             ))}
           </ul>
         )}
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

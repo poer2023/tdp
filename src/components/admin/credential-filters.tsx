@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { CredentialPlatform, CredentialType } from "@prisma/client";
 import { adminTranslations, t, type AdminLocale } from "@/lib/admin-translations";
-import { Button, Card, Chip, Select } from "@/components/ui-heroui";
+import { Button, Card, CardContent, Chip, Select } from "@/components/ui-heroui";
 
 type SearchParams = {
   platform?: CredentialPlatform;
@@ -44,7 +44,7 @@ export function CredentialFilters({ locale, params, platforms }: Props) {
 
   return (
     <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-      <Card.Content className="space-y-4 p-5">
+      <CardContent className="space-y-4 p-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
@@ -121,7 +121,7 @@ export function CredentialFilters({ locale, params, platforms }: Props) {
             )}
           </div>
         )}
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

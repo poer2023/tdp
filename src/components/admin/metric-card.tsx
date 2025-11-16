@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Card } from "@/components/ui-heroui";
+import { Card, CardContent } from "@/components/ui-heroui";
 
 type MetricCardProps = {
   label: string;
@@ -16,7 +16,7 @@ type MetricCardProps = {
 export function MetricCard({ label, value, meta, href, alert }: MetricCardProps) {
   const cardContent = (
     <Card variant="secondary" className="min-h-[96px]">
-      <Card.Content className="flex flex-col gap-2 p-4 sm:p-5">
+      <CardContent className="flex flex-col gap-2 p-4 sm:p-5">
         <div className="flex items-start justify-between">
           <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{label}</span>
           {href && (
@@ -41,7 +41,7 @@ export function MetricCard({ label, value, meta, href, alert }: MetricCardProps)
             </p>
           )}
         </div>
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 

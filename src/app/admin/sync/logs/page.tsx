@@ -8,7 +8,7 @@ import prisma from "@/lib/prisma";
 import { Prisma, SyncJobStatus } from "@prisma/client";
 import { SyncLogsTable } from "@/components/admin/sync-logs-table";
 import { SyncLogsFilters } from "@/components/admin/sync-logs-filters";
-import { Button, Card, Chip, Surface } from "@/components/ui-heroui";
+import { Button, Card, CardContent, Chip, Surface } from "@/components/ui-heroui";
 
 export const revalidate = 0;
 export const runtime = "nodejs";
@@ -425,7 +425,7 @@ export default async function SyncLogsPage({
       {/* Summary Stats */}
       {!jobId && (
         <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-          <Card.Content className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 显示 {showingStart}-{showingEnd} / {totalCount || 0} 条日志
@@ -442,7 +442,7 @@ export default async function SyncLogsPage({
                 未筛选总量 {totalCount}
               </Chip>
             </div>
-          </Card.Content>
+          </CardContent>
         </Card>
       )}
 
@@ -452,7 +452,7 @@ export default async function SyncLogsPage({
       {/* Pagination */}
       {!jobId && totalPages > 1 && (
         <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-          <Card.Content className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm text-zinc-600 dark:text-zinc-400">
               第 {page} / {safeTotalPages} 页 · 共 {totalCount} 条
             </div>
@@ -486,7 +486,7 @@ export default async function SyncLogsPage({
                 </Link>
               </Button>
             </div>
-          </Card.Content>
+          </CardContent>
         </Card>
       )}
     </div>

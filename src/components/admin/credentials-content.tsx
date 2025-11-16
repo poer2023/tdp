@@ -13,7 +13,7 @@ import Link from "next/link";
 import { t } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
 import type { CredentialPlatform, CredentialType } from "@prisma/client";
-import { Card, Chip } from "@/components/ui-heroui";
+import { Card, CardContent, Chip } from "@/components/ui-heroui";
 
 type Credential = {
   id: string;
@@ -37,12 +37,12 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
   if (credentials.length === 0) {
     return (
       <Card variant="secondary">
-        <Card.Content className="py-12 text-center">
+        <CardContent className="py-12 text-center">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">{t(locale, "noCredentials")}</p>
           <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
             {t(locale, "createFirstCredential")}
           </p>
-        </Card.Content>
+        </CardContent>
       </Card>
     );
   }
@@ -55,7 +55,7 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
             variant="secondary"
             className="h-full transform transition-transform hover:-translate-y-0.5 hover:shadow-md"
           >
-            <Card.Content className="flex h-full flex-col gap-3">
+            <CardContent className="flex h-full flex-col gap-3">
               <div className="flex items-start justify-between">
                 <Chip status="default" size="sm">
                   {t(
@@ -156,7 +156,7 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
                   )}
                 </div>
               )}
-            </Card.Content>
+            </CardContent>
           </Card>
         </Link>
       ))}

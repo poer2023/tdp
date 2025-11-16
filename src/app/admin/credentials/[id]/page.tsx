@@ -13,7 +13,7 @@ import { t } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
 import Link from "next/link";
 import { CredentialPlatform, CredentialType } from "@prisma/client";
-import { Card, Chip, Surface } from "@/components/ui-heroui";
+import { Card, CardContent, Chip, Surface } from "@/components/ui-heroui";
 
 export const runtime = "nodejs";
 
@@ -128,7 +128,7 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
       </Surface>
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="space-y-6 p-5">
+        <CardContent className="space-y-6 p-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Metric label={t(locale, "credentialCreatedAt")} value={credential.createdAt} />
             <Metric label={t(locale, "credentialUpdatedAt")} value={credential.updatedAt} />
@@ -153,11 +153,11 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
           </div>
 
           <CredentialForm action={updateAction} locale={locale} credential={decryptedCredential} />
-        </Card.Content>
+        </CardContent>
       </Card>
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="space-y-6 p-5">
+        <CardContent className="space-y-6 p-5">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               {locale === "zh" ? "操作" : "Actions"}
@@ -182,7 +182,7 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
               formAction={deleteAction}
             />
           </div>
-        </Card.Content>
+        </CardContent>
       </Card>
     </div>
   );

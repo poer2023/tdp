@@ -9,7 +9,7 @@ import { useState } from "react";
 import type { SyncJobLog, SyncJobStatus } from "@prisma/client";
 import { format } from "date-fns";
 import Image from "next/image";
-import { Button, Card, Chip, Surface } from "@/components/ui-heroui";
+import { Button, Card, CardContent, Chip, Surface } from "@/components/ui-heroui";
 
 type MediaWatchItem = {
   id: string;
@@ -49,10 +49,10 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
   if (logs.length === 0) {
     return (
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="flex flex-col items-center gap-2 py-12 text-center">
+        <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">暂无匹配的同步日志</p>
           <p className="text-xs text-zinc-400 dark:text-zinc-500">调整筛选条件后再试一次</p>
-        </Card.Content>
+        </CardContent>
       </Card>
     );
   }
@@ -68,7 +68,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
             variant="secondary"
             className="overflow-hidden border border-zinc-200/80 dark:border-zinc-800/80"
           >
-            <Card.Content className="p-0">
+            <CardContent className="p-0">
               <div className="grid gap-4 border-b border-zinc-200/60 p-4 text-sm dark:border-zinc-800/60 md:grid-cols-12">
                 <div className="space-y-2 md:col-span-3">
                   <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -267,7 +267,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                   )}
                 </div>
               )}
-            </Card.Content>
+            </CardContent>
           </Card>
         );
       })}

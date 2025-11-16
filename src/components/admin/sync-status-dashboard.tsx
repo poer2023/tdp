@@ -3,7 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { RefreshCw, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
-import { Alert, Button, Card, Chip, Spinner, Surface, Table } from "@/components/ui-heroui";
+import {
+  Alert,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Spinner,
+  Surface,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+} from "@/components/ui-heroui";
 
 interface SyncJob {
   id: string;
@@ -187,11 +201,11 @@ export function SyncStatusDashboard() {
   if (!data) {
     return (
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="p-8">
+        <CardContent className="p-8">
           <Alert status="warning" title="无法加载同步状态">
             请检查 API 响应或稍后重试。
           </Alert>
-        </Card.Content>
+        </CardContent>
       </Card>
     );
   }
@@ -200,7 +214,7 @@ export function SyncStatusDashboard() {
     <div className="space-y-6 sm:space-y-8">
       {/* Quick Actions */}
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="space-y-4 p-5">
+        <CardContent className="space-y-4 p-5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
@@ -230,7 +244,7 @@ export function SyncStatusDashboard() {
               </Button>
             ))}
           </div>
-        </Card.Content>
+        </CardContent>
       </Card>
 
       {/* Stats Overview */}
@@ -241,13 +255,13 @@ export function SyncStatusDashboard() {
             variant="secondary"
             className="border border-zinc-200/80 dark:border-zinc-800/80"
           >
-            <Card.Content className="space-y-2 p-5">
+            <CardContent className="space-y-2 p-5">
               <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                 {metric.label}
               </p>
               <p className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">{metric.value}</p>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">{metric.meta}</p>
-            </Card.Content>
+            </CardContent>
           </Card>
         ))}
       </section>
@@ -273,7 +287,7 @@ export function SyncStatusDashboard() {
                   variant="secondary"
                   className="border border-zinc-200/80 dark:border-zinc-800/80"
                 >
-                  <Card.Content className="space-y-3 p-5">
+                  <CardContent className="space-y-3 p-5">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                         {platform}
@@ -305,7 +319,7 @@ export function SyncStatusDashboard() {
                         </Chip>
                       )}
                     </div>
-                  </Card.Content>
+                  </CardContent>
                 </Card>
               );
             })}
@@ -315,7 +329,7 @@ export function SyncStatusDashboard() {
 
       {/* Recent Sync Jobs */}
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="space-y-4 p-5">
+        <CardContent className="space-y-4 p-5">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">最近任务</h3>
@@ -325,59 +339,59 @@ export function SyncStatusDashboard() {
             </div>
           </div>
           <Table variant="striped" hoverable>
-            <Table.Head>
-              <Table.Row>
-                <Table.Header>状态</Table.Header>
-                <Table.Header>平台</Table.Header>
-                <Table.Header>开始时间</Table.Header>
-                <Table.Header>耗时</Table.Header>
-                <Table.Header>数据量</Table.Header>
-                <Table.Header>触发来源</Table.Header>
-              </Table.Row>
-            </Table.Head>
-            <Table.Body>
+            <TableHead>
+              <TableRow>
+                <TableHeader>状态</TableHeader>
+                <TableHeader>平台</TableHeader>
+                <TableHeader>开始时间</TableHeader>
+                <TableHeader>耗时</TableHeader>
+                <TableHeader>数据量</TableHeader>
+                <TableHeader>触发来源</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {data.recentJobs.length === 0 ? (
-                <Table.Row>
-                  <Table.Cell colSpan={6} className="text-center text-sm text-zinc-500">
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-sm text-zinc-500">
                     暂无同步记录
-                  </Table.Cell>
-                </Table.Row>
+                  </TableCell>
+                </TableRow>
               ) : (
                 data.recentJobs.slice(0, 10).map((job) => {
                   const meta = getStatusMeta(job.status);
                   return (
-                    <Table.Row key={job.id}>
-                      <Table.Cell>
+                    <TableRow key={job.id}>
+                      <TableCell>
                         <Chip size="sm" variant="flat" color={meta.color} className="font-medium">
                           <span className="mr-1 inline-flex items-center">{meta.icon}</span>
                           {meta.label}
                         </Chip>
-                      </Table.Cell>
-                      <Table.Cell className="font-semibold text-zinc-900 dark:text-zinc-50">
+                      </TableCell>
+                      <TableCell className="font-semibold text-zinc-900 dark:text-zinc-50">
                         {job.platform}
-                      </Table.Cell>
-                      <Table.Cell className="text-sm text-zinc-500 dark:text-zinc-400">
+                      </TableCell>
+                      <TableCell className="text-sm text-zinc-500 dark:text-zinc-400">
                         {formatDate(job.startedAt)}
-                      </Table.Cell>
-                      <Table.Cell className="text-sm text-zinc-500 dark:text-zinc-400">
+                      </TableCell>
+                      <TableCell className="text-sm text-zinc-500 dark:text-zinc-400">
                         {formatDuration(job.duration)}
-                      </Table.Cell>
-                      <Table.Cell className="text-sm text-zinc-500 dark:text-zinc-400">
+                      </TableCell>
+                      <TableCell className="text-sm text-zinc-500 dark:text-zinc-400">
                         {job.itemsSuccess}/{job.itemsTotal}
                         {job.itemsFailed > 0 && (
                           <span className="ml-1 text-red-500">({job.itemsFailed} 失败)</span>
                         )}
-                      </Table.Cell>
-                      <Table.Cell className="text-sm capitalize text-zinc-500 dark:text-zinc-400">
+                      </TableCell>
+                      <TableCell className="text-sm capitalize text-zinc-500 dark:text-zinc-400">
                         {job.triggeredBy}
-                      </Table.Cell>
-                    </Table.Row>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </Table.Body>
+            </TableBody>
           </Table>
-        </Card.Content>
+        </CardContent>
       </Card>
     </div>
   );

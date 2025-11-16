@@ -8,7 +8,7 @@ import { formatCNY, formatOriginalCurrency } from "@/lib/subscription-shared";
 import { adminTranslations } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
 import { useConfirm } from "@/hooks/use-confirm";
-import { Card, Button, Chip, Progress } from "@/components/ui-heroui";
+import { Card, CardContent, Button, Chip, Progress } from "@/components/ui-heroui";
 
 type BillingCycle = "MONTHLY" | "ANNUAL" | "ONE_TIME";
 
@@ -113,7 +113,7 @@ export function SubscriptionExpandableCard({
       className="cursor-pointer border border-zinc-200/80 transition-shadow hover:shadow-lg dark:border-zinc-800/80"
       onClick={toggleExpand}
     >
-      <Card.Content className="space-y-4 p-5">
+      <CardContent className="space-y-4 p-5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 space-y-1">
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -168,7 +168,7 @@ export function SubscriptionExpandableCard({
             </p>
           </div>
         </div>
-      </Card.Content>
+      </CardContent>
 
       <AnimatePresence initial={false}>
         {isExpanded && (
@@ -179,7 +179,7 @@ export function SubscriptionExpandableCard({
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            <Card.Content
+            <CardContent
               ref={contentRef}
               className="space-y-3 border-t border-zinc-100 bg-zinc-50/80 p-5 dark:border-zinc-800 dark:bg-zinc-900/40"
             >
@@ -241,7 +241,7 @@ export function SubscriptionExpandableCard({
                   {translate(locale, "deleteSubscription")}
                 </Button>
               </div>
-            </Card.Content>
+            </CardContent>
           </motion.div>
         )}
       </AnimatePresence>

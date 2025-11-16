@@ -8,7 +8,7 @@ import { SyncMetricsOverview } from "@/components/admin/sync-metrics-overview";
 import { RecentSyncJobs } from "@/components/admin/recent-sync-jobs";
 import Link from "next/link";
 import { features } from "@/config/features";
-import { Alert, Button, Card, Chip, Surface } from "@/components/ui-heroui";
+import { Alert, Button, Card, CardContent, Chip, Surface } from "@/components/ui-heroui";
 
 export const revalidate = 0;
 export const runtime = "nodejs";
@@ -195,20 +195,20 @@ export default async function SyncDashboardPage() {
         <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {credentials.length === 0 ? (
             <Card variant="secondary" className="col-span-full">
-              <Card.Content className="flex flex-col items-center gap-3 py-10 text-center">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {SKIP_DB ? "当前处于离线模式，无法加载凭据。" : "暂无配置的凭据"}
-                </p>
-                <Button asChild color="primary" size="sm">
-                  <Link href="/admin/credentials/new">添加第一个凭据</Link>
-                </Button>
-              </Card.Content>
-            </Card>
-          ) : (
+            <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {SKIP_DB ? "当前处于离线模式，无法加载凭据。" : "暂无配置的凭据"}
+              </p>
+              <Button asChild color="primary" size="sm">
+                <Link href="/admin/credentials/new">添加第一个凭据</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
             credentials.map((cred) => (
               <Link key={cred.id} href={`/admin/credentials/${cred.id}`} className="block">
                 <Card variant="secondary" className="transition duration-150 hover:-translate-y-0.5">
-                  <Card.Content className="flex flex-col gap-3 p-4">
+                  <CardContent className="flex flex-col gap-3 p-4">
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                         {cred.platform}
@@ -243,7 +243,7 @@ export default async function SyncDashboardPage() {
                         <p>尚未使用</p>
                       )}
                     </div>
-                  </Card.Content>
+                  </CardContent>
                 </Card>
               </Link>
             ))

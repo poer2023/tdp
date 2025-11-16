@@ -4,6 +4,11 @@ import { useState } from "react";
 import {
   Button,
   Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
   Input,
   Select,
   Textarea,
@@ -19,6 +24,11 @@ import {
   Spinner,
   Avatar,
   Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
   Surface,
   Separator,
 } from "@/components/ui-heroui";
@@ -113,52 +123,52 @@ export default function HeroUIComponentsShowcase() {
         <h2 className="text-xl font-semibold">Table 组件</h2>
         <Card variant="secondary">
           <Table variant="striped" hoverable>
-            <Table.Head>
-              <Table.Row>
-                <Table.Header>ID</Table.Header>
-                <Table.Header>名称</Table.Header>
-                <Table.Header>状态</Table.Header>
-                <Table.Header>操作</Table.Header>
-              </Table.Row>
-            </Table.Head>
-            <Table.Body>
-              <Table.Row>
-                <Table.Cell>1</Table.Cell>
-                <Table.Cell>示例项目</Table.Cell>
-                <Table.Cell>
+            <TableHead>
+              <TableRow>
+                <TableHeader>ID</TableHeader>
+                <TableHeader>名称</TableHeader>
+                <TableHeader>状态</TableHeader>
+                <TableHeader>操作</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                <TableCell>1</TableCell>
+                <TableCell>示例项目</TableCell>
+                <TableCell>
                   <Chip status="success">已发布</Chip>
-                </Table.Cell>
-                <Table.Cell>
+                </TableCell>
+                <TableCell>
                   <Button variant="ghost" size="sm" onPress={() => console.log("Edit")}>
                     编辑
                   </Button>
-                </Table.Cell>
-              </Table.Row>
-              <Table.Row>
-                <Table.Cell>2</Table.Cell>
-                <Table.Cell>测试项目</Table.Cell>
-                <Table.Cell>
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>2</TableCell>
+                <TableCell>测试项目</TableCell>
+                <TableCell>
                   <Chip status="warning">草稿</Chip>
-                </Table.Cell>
-                <Table.Cell>
+                </TableCell>
+                <TableCell>
                   <Button variant="ghost" size="sm" onPress={() => console.log("Edit")}>
                     编辑
                   </Button>
-                </Table.Cell>
-              </Table.Row>
-              <Table.Row>
-                <Table.Cell>3</Table.Cell>
-                <Table.Cell>已归档项目</Table.Cell>
-                <Table.Cell>
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>3</TableCell>
+                <TableCell>已归档项目</TableCell>
+                <TableCell>
                   <Chip status="default">已归档</Chip>
-                </Table.Cell>
-                <Table.Cell>
+                </TableCell>
+                <TableCell>
                   <Button variant="ghost" size="sm" onPress={() => console.log("Edit")}>
                     编辑
                   </Button>
-                </Table.Cell>
-              </Table.Row>
-            </Table.Body>
+                </TableCell>
+              </TableRow>
+            </TableBody>
           </Table>
         </Card>
       </section>

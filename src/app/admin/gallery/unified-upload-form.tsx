@@ -7,6 +7,10 @@ import { Loader2 } from "lucide-react";
 import {
   Button,
   Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
   Input,
   Label,
   Textarea,
@@ -381,13 +385,13 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
   return (
     <div className={className}>
       <Card>
-        <Card.Header className="pb-4">
-          <Card.Title className="text-xl">上传图片到相册</Card.Title>
-          <Card.Description className="text-xs">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl">上传图片到相册</CardTitle>
+          <CardDescription className="text-xs">
             支持批量上传、Live Photo 自动配对、EXIF 元数据提取
-          </Card.Description>
-        </Card.Header>
-        <Card.Content className="space-y-4">
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           {/* 两栏布局：左侧上传+预览，右侧编辑表单 */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-6">
             {/* 左侧：图片上传器 + 预览（占2列，lg屏幕sticky） */}
@@ -574,7 +578,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
               )}
             </div>
           </div>
-        </Card.Content>
+        </CardContent>
       </Card>
     </div>
   );

@@ -67,26 +67,48 @@ export function Button({
   startContent,
   endContent,
   children,
+  asChild,
   className,
   ...props
 }: ButtonProps) {
   const resolvedVariant = resolveVariant(variant, color);
   const resolvedSize = size === "icon" ? "sm" : size === "default" ? "md" : size;
-  const resolvedIsIconOnly = isIconOnly ?? size === "icon";
+  const resolvedIsIconOnly = asChild ? false : isIconOnly ?? size === "icon";
   const resolvedDisabled = isDisabled ?? disabled;
+  const shouldPassIsDisabled = !asChild;
+
+  let content: ReactNode = children;
+  if (!asChild) {
+    content = resolvedIsIconOnly ? (
+      children ?? startContent ?? endContent ?? null
+    ) : (
+      <span className="inline-flex items-center gap-2">
+        {startContent}
+        {children}
+        {endContent}
+      </span>
+    );
+  }
+
+  const heroProps: HeroUIButtonProps = {
+    variant: resolvedVariant,
+    size: resolvedSize,
+    isIconOnly: resolvedIsIconOnly,
+    asChild,
+    className,
+    ...props,
+  };
+
+  if (shouldPassIsDisabled) {
+    heroProps.isDisabled = resolvedDisabled;
+  }
 
   return (
     <HeroUIButton
-      variant={resolvedVariant}
-      size={resolvedSize}
-      isIconOnly={resolvedIsIconOnly}
-      isDisabled={resolvedDisabled}
-      startContent={startContent}
-      endContent={endContent}
-      className={className}
-      {...props}
+      {...heroProps}
+      aria-disabled={!shouldPassIsDisabled && resolvedDisabled ? true : undefined}
     >
-      {children}
+      {content}
     </HeroUIButton>
   );
 }

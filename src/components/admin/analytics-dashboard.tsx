@@ -3,7 +3,7 @@
 import { t, type AdminLocale } from "@/lib/admin-translations";
 import { TrendLineChart } from "@/app/admin/analytics/components/TrendLineChart";
 import { TopPagesCard } from "@/components/ui/top-pages-card";
-import { Card, Chip } from "@/components/ui-heroui";
+import { Card, CardContent, Chip } from "@/components/ui-heroui";
 
 type PeriodOption = "7d" | "30d";
 
@@ -83,7 +83,7 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
           variant="secondary"
           className="h-full border border-zinc-200/80 dark:border-zinc-800/80"
         >
-          <Card.Content className="flex h-full flex-col gap-4 p-5">
+          <CardContent className="flex h-full flex-col gap-4 p-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
                 {t(locale, "analytics")}
@@ -99,7 +99,7 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
                 {t(locale, "noDataYet")}
               </p>
             )}
-          </Card.Content>
+          </CardContent>
         </Card>
 
         <TopPagesCard
@@ -113,7 +113,7 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
       </section>
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="space-y-5 p-5">
+        <CardContent className="space-y-5 p-5">
           <div className="flex flex-col gap-1">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
               {t(locale, "audience")}
@@ -163,7 +163,7 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
               </p>
             )}
           </div>
-        </Card.Content>
+        </CardContent>
       </Card>
     </div>
   );
@@ -172,13 +172,13 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
 function StatCard({ title, value, subtitle }: { title: string; value: number; subtitle?: string }) {
   return (
     <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-      <Card.Content className="space-y-2 p-5">
+      <CardContent className="space-y-2 p-5">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{title}</p>
         <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
           {value.toLocaleString()}
         </p>
         {subtitle && <p className="text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>}
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

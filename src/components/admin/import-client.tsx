@@ -3,7 +3,17 @@
 import { useState } from "react";
 import type { ImportResult } from "@/lib/content-import";
 import { useConfirm } from "@/hooks/use-confirm";
-import { Surface, Card, Button, Alert, Chip } from "@/components/ui-heroui";
+import {
+  Surface,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Button,
+  Alert,
+  Chip,
+} from "@/components/ui-heroui";
 
 export function ImportClient() {
   const { confirm } = useConfirm();
@@ -121,11 +131,11 @@ export function ImportClient() {
       {error && <Alert status="danger" description={error} />}
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Header>
-          <Card.Title>上传文件</Card.Title>
-          <Card.Description>仅支持 ZIP 文件</Card.Description>
-        </Card.Header>
-        <Card.Content className="space-y-4">
+        <CardHeader>
+          <CardTitle>上传文件</CardTitle>
+          <CardDescription>仅支持 ZIP 文件</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-300/80 p-8 text-center dark:border-zinc-700/80">
             <input
               type="file"
@@ -160,16 +170,16 @@ export function ImportClient() {
               <p className="text-xs text-zinc-500 dark:text-zinc-400">验证文件并显示新增/更新条目</p>
             </div>
           )}
-        </Card.Content>
+        </CardContent>
       </Card>
 
       {dryRunResult && (
         <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-          <Card.Header>
-            <Card.Title>预览结果</Card.Title>
-            <Card.Description>确认无误后再应用更改</Card.Description>
-          </Card.Header>
-          <Card.Content className="space-y-4">
+          <CardHeader>
+            <CardTitle>预览结果</CardTitle>
+            <CardDescription>确认无误后再应用更改</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="flex flex-wrap gap-4 text-sm">
               <Chip variant="flat" color="primary">
                 Created {dryRunResult.summary.created}
@@ -227,7 +237,7 @@ export function ImportClient() {
                 {isProcessing ? "Importing..." : "应用导入"}
               </Button>
             )}
-          </Card.Content>
+          </CardContent>
         </Card>
       )}
 
@@ -240,11 +250,11 @@ export function ImportClient() {
       )}
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Header>
-          <Card.Title>导入格式</Card.Title>
-          <Card.Description>遵循 docs/CONTENT_FORMAT.md 文档中的结构</Card.Description>
-        </Card.Header>
-        <Card.Content className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <CardHeader>
+          <CardTitle>导入格式</CardTitle>
+          <CardDescription>遵循 docs/CONTENT_FORMAT.md 文档中的结构</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
           <p>
             ZIP files must follow the structure documented in
             <code className="ml-1 rounded bg-zinc-100 px-1 py-0.5 text-xs dark:bg-zinc-900">
@@ -257,7 +267,7 @@ export function ImportClient() {
             <li>Chinese posts auto-generate pinyin slugs if missing</li>
             <li>Duplicate slugs get -2, -3 suffix</li>
           </ul>
-        </Card.Content>
+        </CardContent>
       </Card>
     </div>
   );

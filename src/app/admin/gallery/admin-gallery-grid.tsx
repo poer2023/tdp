@@ -10,7 +10,7 @@ import {
   type BulkUpdateState,
 } from "./bulk-actions";
 import { useConfirm } from "@/hooks/use-confirm";
-import { Button, Card } from "@/components/ui-heroui";
+import { Button, Card, CardContent } from "@/components/ui-heroui";
 
 export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
   const router = useRouter();
@@ -174,11 +174,11 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                 className="object-cover transition duration-500 group-hover:scale-105"
               />
             </div>
-            <Card.Content className="space-y-2 px-4 py-3 text-sm">
+            <CardContent className="space-y-2 px-4 py-3 text-sm">
               <p className="font-semibold text-zinc-900 dark:text-zinc-50">
                 {image.title ?? "未命名照片"}
               </p>
-            </Card.Content>
+            </CardContent>
           </Card>
         ))}
       </div>

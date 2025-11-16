@@ -1,10 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import * as React from "react";
+import { useMemo } from "react";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Button, Card, Chip } from "@/components/ui-heroui";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 type PeriodOption = "7d" | "30d";
@@ -42,16 +46,9 @@ const COLORS = [
   "bg-pink-500",
 ];
 
-const PERIOD_LABELS: Record<
-  PeriodOption,
-  { short: string; compare: string; buttonLabel: { en: string; zh: string } }
-> = {
-  "7d": { short: "7D", compare: "previous 7 days", buttonLabel: { en: "Last 7 days", zh: "近 7 天" } },
-  "30d": {
-    short: "30D",
-    compare: "previous 30 days",
-    buttonLabel: { en: "Last 30 days", zh: "近 30 天" },
-  },
+const PERIOD_LABELS: Record<PeriodOption, { short: string; compare: string }> = {
+  "7d": { short: "7D", compare: "previous 7 days" },
+  "30d": { short: "30D", compare: "previous 30 days" },
 };
 
 export function TopPagesCard({
@@ -62,7 +59,7 @@ export function TopPagesCard({
   locale,
   className,
 }: TopPagesCardProps) {
-  const [activePeriod, setActivePeriod] = useState<PeriodOption>("7d");
+  const [activePeriod, setActivePeriod] = React.useState<PeriodOption>("7d");
   const totalViews = totals[activePeriod] ?? 0;
   const range = ranges[activePeriod];
   const delta = deltas?.[activePeriod] ?? null;
@@ -100,56 +97,51 @@ export function TopPagesCard({
   }, [activePeriod, data, totalViews]);
 
   return (
-    <Card
-      variant="secondary"
-      className={cn(
-        "flex h-full flex-col border border-zinc-200/80 dark:border-zinc-800/80",
-        className
-      )}
-    >
-      <Card.Content className="flex h-full flex-col gap-5 p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
-              {isZh ? "热门页面" : "Top Pages"}
-            </p>
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-              {isZh ? "页面访问" : "Page Views"}
-            </h2>
-          </div>
-          <div className="flex items-center gap-2">
-            {(Object.keys(PERIOD_LABELS) as PeriodOption[]).map((period) => {
-              const disabled = period === "30d" && (data["30d"] ?? []).length === 0;
-              return (
-                <Button
-                  key={period}
-                  variant={activePeriod === period ? "solid" : "light"}
-                  size="sm"
-                  onPress={() => setActivePeriod(period)}
-                  isDisabled={disabled}
-                >
-                  {PERIOD_LABELS[period].buttonLabel[locale]}
-                </Button>
-              );
-            })}
-          </div>
+    <Card className={cn("flex h-full flex-col gap-4", className)}>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-4">
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+            {isZh ? "页面访问" : "Page Views"}
+          </h2>
+          <Select
+            value={activePeriod}
+            onValueChange={(value) => setActivePeriod(value as PeriodOption)}
+          >
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="7d">{isZh ? "近 7 天" : "Last 7 days"}</SelectItem>
+              <SelectItem value="30d" disabled={(data["30d"] ?? []).length === 0}>
+                {isZh ? "近 30 天" : "Last 30 days"}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+      </CardHeader>
 
+      <CardContent className="flex flex-col gap-5">
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
             <span className="text-3xl font-semibold text-zinc-900 tabular-nums dark:text-zinc-50">
               {totalViews.toLocaleString()}
             </span>
             {delta !== null && Number.isFinite(delta) && (
-              <Chip
-                size="sm"
-                variant="flat"
-                color={delta >= 0 ? "success" : "danger"}
-                className="inline-flex items-center gap-1 font-medium"
-              >
-                {delta >= 0 ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                {Math.abs(delta).toFixed(1)}%
-              </Chip>
+              <div className="flex items-center gap-1">
+                {delta >= 0 ? (
+                  <ChevronUp className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-red-500" />
+                )}
+                <span
+                  className={cn(
+                    "text-sm font-medium",
+                    delta >= 0 ? "text-emerald-500 dark:text-emerald-400" : "text-red-500"
+                  )}
+                >
+                  {Math.abs(delta).toFixed(1)}%
+                </span>
+              </div>
             )}
           </div>
           {delta !== null && Number.isFinite(delta) && (
@@ -171,52 +163,42 @@ export function TopPagesCard({
           </div>
         )}
 
-        {stackedData.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-zinc-200 py-12 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-            {isZh ? "暂无足够数据。" : "Not enough data yet."}
-          </div>
-        ) : (
-          <>
-            <div className="flex h-10 w-full gap-1 overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-800/60">
-              {stackedData.map((item, index) => (
-                <div
-                  key={`${item.path}-${activePeriod}-${index}`}
-                  className={cn(
-                    "h-full cursor-pointer transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900",
-                    item.colorClass
-                  )}
-                  style={{ width: `${Math.max(item.percent, 1)}%` }}
-                  aria-label={`${item.label}: ${item.views.toLocaleString()} ${isZh ? "次访问" : "views"} (${item.percent.toFixed(1)}%)`}
-                  title={`${item.label}: ${item.views.toLocaleString()} (${item.percent.toFixed(1)}%)`}
-                />
-              ))}
-            </div>
+        <Separator />
 
-            <div className="space-y-3 text-sm">
+        {stackedData.length === 0 ? (
+          <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            {isZh ? "暂无足够数据。" : "Not enough data yet."}
+          </p>
+        ) : (
+          <TooltipProvider delayDuration={0}>
+            <div className="flex h-10 w-full gap-1 overflow-visible rounded-lg bg-zinc-100 dark:bg-zinc-800/60">
               {stackedData.map((item, index) => (
-                <div
-                  key={`${item.path}-legend-${index}`}
-                  className="flex items-center justify-between gap-3 rounded-xl bg-zinc-50 px-3 py-2 dark:bg-zinc-900/40"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={cn("h-3 w-3 rounded-full", item.colorClass)} />
-                    <div>
-                      <p className="font-medium text-zinc-900 dark:text-zinc-50">{item.label}</p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">{item.path}</p>
+                <Tooltip key={`${item.path}-${activePeriod}-${index}`}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={cn(
+                        "h-full cursor-pointer rounded-md transition-all hover:-translate-y-1 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-zinc-900",
+                        item.colorClass
+                      )}
+                      style={{ width: `${Math.max(item.percent, 1)}%`, minWidth: "32px" }}
+                      aria-label={`${item.label}: ${item.views.toLocaleString()} ${isZh ? "次访问" : "views"} (${item.percent.toFixed(1)}%)`}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <div className="space-y-1">
+                      <p className="font-medium">{item.label}</p>
+                      <p className="text-xs opacity-80">
+                        {item.views.toLocaleString()} {isZh ? "次访问" : "views"} ·{" "}
+                        {item.percent.toFixed(1)}%
+                      </p>
                     </div>
-                  </div>
-                  <div className="text-right text-xs text-zinc-500 dark:text-zinc-400">
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                      {item.views.toLocaleString()}
-                    </p>
-                    <p>{item.percent.toFixed(1)}%</p>
-                  </div>
-                </div>
+                  </TooltipContent>
+                </Tooltip>
               ))}
             </div>
-          </>
+          </TooltipProvider>
         )}
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useConfirm } from "@/hooks/use-confirm";
-import { Button, Card, Avatar, Chip, Alert } from "@/components/ui-heroui";
+import { Button, Card, CardContent, Avatar, Chip, Alert } from "@/components/ui-heroui";
 import { KeyRound, Trash2, Edit2 } from "lucide-react";
 
 type FriendCard = {
@@ -127,7 +127,7 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
   if (friends.length === 0) {
     return (
       <Card variant="secondary" className="border border-dashed border-zinc-300 dark:border-zinc-800">
-        <Card.Content className="flex flex-col items-center gap-4 py-16 text-center">
+        <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
           <div className="text-4xl">👥</div>
           <div className="max-w-sm space-y-2">
             <p className="text-base font-semibold text-zinc-800 dark:text-zinc-200">
@@ -140,7 +140,7 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
           <Button color="primary" asChild>
             <Link href="/admin/friends/create">+ 创建第一个朋友</Link>
           </Button>
-        </Card.Content>
+        </CardContent>
       </Card>
     );
   }
@@ -166,7 +166,7 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
                 {renderCover(friend)}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-black/0" />
               </div>
-              <Card.Content className="space-y-4 p-4">
+              <CardContent className="space-y-4 p-4">
                 <div className="flex items-center gap-3">
                   <Avatar src={friend.avatar ?? undefined} alt={friend.name} />
                   <div className="min-w-0 flex-1">
@@ -211,7 +211,7 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
                     {deletingId === friend.id ? "删除中..." : "删除"}
                   </Button>
                 </div>
-              </Card.Content>
+              </CardContent>
             </Card>
           );
         })}

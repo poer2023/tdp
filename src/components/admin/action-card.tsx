@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Card, Button } from "@/components/ui-heroui";
+import { Card, CardContent, Button } from "@/components/ui-heroui";
 
 type ActionCardProps = {
   icon: React.ReactNode;
@@ -32,7 +32,7 @@ export function ActionCard({
 }: ActionCardProps) {
   const cardContent = (
     <Card variant="secondary" className="group h-[96px]">
-      <Card.Content className="flex h-full items-center gap-4 p-5">
+      <CardContent className="flex h-full items-center gap-4 p-5">
         {/* Icon */}
         <div className="flex-shrink-0 text-zinc-600 dark:text-zinc-400">{icon}</div>
 
@@ -65,7 +65,7 @@ export function ActionCard({
             →
           </div>
         )}
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 

@@ -3,14 +3,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import { PostStatus } from "@prisma/client";
-import type { Post } from "@/lib/posts";
+import type { PublicPost } from "@/lib/posts";
 import { deletePostAction, publishPostAction, unpublishPostAction } from "./actions";
 import { CreatePostForm } from "./create-post-form";
 import { DeletePostButton } from "./delete-post-button";
-import { Table, Chip, Button, Alert } from "@/components/ui-heroui";
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeader,
+  TableCell,
+  Chip,
+  Button,
+  Alert,
+} from "@/components/ui-heroui";
 
 type PostsListClientProps = {
-  posts: Post[];
+  posts: PublicPost[];
   skipDb: boolean;
 };
 
@@ -59,18 +69,18 @@ export function PostsListClient({ posts, skipDb }: PostsListClientProps) {
           </div>
 
           <Table variant="striped" hoverable>
-            <Table.Head>
-              <Table.Row>
-                <Table.Header>文章</Table.Header>
-                <Table.Header>状态</Table.Header>
-                <Table.Header>发布时间</Table.Header>
-                <Table.Header>操作</Table.Header>
-              </Table.Row>
-            </Table.Head>
-            <Table.Body>
+            <TableHead>
+              <TableRow>
+                <TableHeader>文章</TableHeader>
+                <TableHeader>状态</TableHeader>
+                <TableHeader>发布时间</TableHeader>
+                <TableHeader>操作</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {posts.map((post) => (
-                <Table.Row key={post.id}>
-                  <Table.Cell>
+                <TableRow key={post.id}>
+                  <TableCell>
                     <div className="flex items-center gap-4">
                       <div className="relative h-16 w-24 overflow-hidden rounded-xl bg-zinc-200 dark:bg-zinc-800">
                         <Image
@@ -88,11 +98,11 @@ export function PostsListClient({ posts, skipDb }: PostsListClientProps) {
                         <p className="text-xs text-zinc-500 dark:text-zinc-400">{post.excerpt}</p>
                       </div>
                     </div>
-                  </Table.Cell>
-                  <Table.Cell>
+                  </TableCell>
+                  <TableCell>
                     <StatusBadge status={post.status} />
-                  </Table.Cell>
-                  <Table.Cell>
+                  </TableCell>
+                  <TableCell>
                     {post.publishedAt
                       ? new Intl.DateTimeFormat("zh-CN", {
                           year: "numeric",
@@ -100,8 +110,8 @@ export function PostsListClient({ posts, skipDb }: PostsListClientProps) {
                           day: "numeric",
                         }).format(new Date(post.publishedAt))
                       : "—"}
-                  </Table.Cell>
-                  <Table.Cell>
+                  </TableCell>
+                  <TableCell>
                     <div className="flex flex-wrap items-center gap-2">
                       <Button variant="ghost" size="sm" asChild>
                         <Link href={`/admin/posts/${post.id}`}>编辑</Link>
@@ -129,10 +139,10 @@ export function PostsListClient({ posts, skipDb }: PostsListClientProps) {
                         deleteAction={deletePostAction}
                       />
                     </div>
-                  </Table.Cell>
-                </Table.Row>
+                  </TableCell>
+                </TableRow>
               ))}
-            </Table.Body>
+            </TableBody>
           </Table>
         </section>
       )}

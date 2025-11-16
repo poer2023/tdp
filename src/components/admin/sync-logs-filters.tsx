@@ -8,7 +8,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { SyncJobStatus } from "@prisma/client";
-import { Button, Card, Chip, Input, Select } from "@/components/ui-heroui";
+import { Button, Card, CardContent, Chip, Input, Select } from "@/components/ui-heroui";
 
 type SyncLogsFiltersProps = {
   platforms: string[];
@@ -75,7 +75,7 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
 
   return (
     <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-      <Card.Content className="space-y-5 p-5">
+      <CardContent className="space-y-5 p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
@@ -174,7 +174,7 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
             )}
           </div>
         )}
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

@@ -3,7 +3,19 @@
 import { useActionState, useEffect, useRef } from "react";
 import { uploadGalleryImageAction, type GalleryFormState } from "./actions";
 import type { PostSummary } from "@/lib/posts";
-import { Input, Textarea, Select, Button, Alert, Card, Chip } from "@/components/ui-heroui";
+import {
+  Input,
+  Textarea,
+  Select,
+  Button,
+  Alert,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Chip,
+} from "@/components/ui-heroui";
 
 const INITIAL_STATE: GalleryFormState = {
   status: "idle",
@@ -21,14 +33,14 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
 
   return (
     <Card className="border-zinc-200/70 bg-white/80 backdrop-blur dark:border-zinc-800/70 dark:bg-zinc-900/70">
-      <Card.Header>
+      <CardHeader>
         <div className="flex w-full items-center justify-between">
           <div className="space-y-1">
-            <Card.Title>上传照片</Card.Title>
-            <Card.Description>
+            <CardTitle>上传照片</CardTitle>
+            <CardDescription>
               自动提取 EXIF 元数据和 GPS 坐标。HEIC 格式将自动转换为 JPEG。Live Photo
               需同时选择图片和视频文件（同名配对）。
-            </Card.Description>
+            </CardDescription>
           </div>
           {state.status === "success" && state.message && (
             <Chip color="success" variant="flat">
@@ -36,9 +48,9 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
             </Chip>
           )}
         </div>
-      </Card.Header>
+      </CardHeader>
 
-      <Card.Content>
+      <CardContent>
         {state.status === "error" && state.message && (
           <Alert color="danger" className="mb-4">
             {state.message}
@@ -112,7 +124,7 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
             </Button>
           </div>
         </form>
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

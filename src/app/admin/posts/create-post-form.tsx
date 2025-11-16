@@ -5,7 +5,19 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { createPostAction, type PostFormState } from "./actions";
-import { Input, Textarea, Select, Button, Alert, Card, Chip } from "@/components/ui-heroui";
+import {
+  Input,
+  Textarea,
+  Select,
+  Button,
+  Alert,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Chip,
+} from "@/components/ui-heroui";
 
 const INITIAL_STATE: PostFormState = {
   status: "idle",
@@ -39,13 +51,13 @@ export function CreatePostForm() {
 
   return (
     <Card variant="secondary">
-      <Card.Header>
+      <CardHeader>
         <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <Card.Title>创建新文章</Card.Title>
-            <Card.Description>
+            <CardTitle>创建新文章</CardTitle>
+            <CardDescription>
               上传封面、填写 Markdown 内容并设置标签。
-            </Card.Description>
+            </CardDescription>
           </div>
           {state.status === "success" && state.message && (
             <div className="flex flex-wrap items-center gap-3">
@@ -66,9 +78,9 @@ export function CreatePostForm() {
             </div>
           )}
         </div>
-      </Card.Header>
+      </CardHeader>
 
-      <Card.Content className="space-y-6">
+      <CardContent className="space-y-6">
         {state.status === "error" && state.message && (
           <Alert status="danger" description={state.message} />
         )}
@@ -181,7 +193,7 @@ export function CreatePostForm() {
           </Button>
         </div>
       </form>
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

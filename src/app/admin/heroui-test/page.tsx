@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Card, Input, Select } from "@/components/ui-heroui";
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  Input,
+  Select,
+} from "@/components/ui-heroui";
 
 export default function HeroUITestPage() {
   const [inputValue, setInputValue] = useState("");
@@ -57,44 +67,44 @@ export default function HeroUITestPage() {
           <h2 className="text-lg font-semibold">Card 组件测试</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card variant="default">
-              <Card.Header>
-                <Card.Title>默认卡片</Card.Title>
-                <Card.Description>这是一个默认样式的卡片</Card.Description>
-              </Card.Header>
-              <Card.Content>
+              <CardHeader>
+                <CardTitle>默认卡片</CardTitle>
+                <CardDescription>这是一个默认样式的卡片</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
                   卡片内容区域，可以放置任何内容
                 </p>
-              </Card.Content>
-              <Card.Footer>
+              </CardContent>
+              <CardFooter>
                 <Button variant="primary" size="sm">
                   操作按钮
                 </Button>
-              </Card.Footer>
+              </CardFooter>
             </Card>
 
             <Card variant="secondary">
-              <Card.Header>
-                <Card.Title>次要卡片</Card.Title>
-                <Card.Description>variant=&quot;secondary&quot;</Card.Description>
-              </Card.Header>
-              <Card.Content>
+              <CardHeader>
+                <CardTitle>次要卡片</CardTitle>
+                <CardDescription>variant=&quot;secondary&quot;</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
                   次要样式的卡片
                 </p>
-              </Card.Content>
+              </CardContent>
             </Card>
 
             <Card variant="tertiary">
-              <Card.Header>
-                <Card.Title>三级卡片</Card.Title>
-                <Card.Description>variant=&quot;tertiary&quot;</Card.Description>
-              </Card.Header>
-              <Card.Content>
+              <CardHeader>
+                <CardTitle>三级卡片</CardTitle>
+                <CardDescription>variant=&quot;tertiary&quot;</CardDescription>
+              </CardHeader>
+              <CardContent>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
                   三级样式的卡片
                 </p>
-              </Card.Content>
+              </CardContent>
             </Card>
           </div>
         </section>

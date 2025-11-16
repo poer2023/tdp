@@ -11,7 +11,7 @@ import { SubscriptionExpandableCard } from "@/components/subscriptions/subscript
 import { StatsCard } from "@/components/ui/stats-card";
 import type { ChartDataItem } from "@/components/ui/stats-card";
 import { useConfirm } from "@/hooks/use-confirm";
-import { Surface, Button, Card, Select } from "@/components/ui-heroui";
+import { Surface, Button, Card, CardContent, Select } from "@/components/ui-heroui";
 
 type BillingCycle = "MONTHLY" | "ANNUAL" | "ONE_TIME";
 
@@ -325,7 +325,7 @@ export default function SubscriptionDashboard({
         <SummaryCard label={translation("monthlySpend")} value={formatCNY(totals.monthly)} />
         <SummaryCard label={translation("annualSpend")} value={formatCNY(totals.annual)} />
         <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-          <Card.Content className="space-y-3 p-5">
+          <CardContent className="space-y-3 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
               {translation("markdownExport")}
             </p>
@@ -339,10 +339,10 @@ export default function SubscriptionDashboard({
             >
               {isExporting ? `${translation("markdownExport")}...` : translation("downloadMarkdown")}
             </Button>
-          </Card.Content>
+          </CardContent>
         </Card>
         <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-          <Card.Content className="space-y-2 p-5">
+          <CardContent className="space-y-2 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
               {translation("subscriptionManagement")}
             </p>
@@ -352,12 +352,12 @@ export default function SubscriptionDashboard({
             <Button asChild variant="light">
               <Link href="/admin/subscriptions/new">{translation("addSubscription")}</Link>
             </Button>
-          </Card.Content>
+          </CardContent>
         </Card>
       </section>
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="space-y-4 p-5">
+        <CardContent className="space-y-4 p-5">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
               {translation("subscriptionList")}
@@ -401,7 +401,7 @@ export default function SubscriptionDashboard({
               </div>
             </div>
           </div>
-        </Card.Content>
+        </CardContent>
       </Card>
 
       <section className="grid gap-4 lg:grid-cols-2">
@@ -420,9 +420,9 @@ export default function SubscriptionDashboard({
           variant="secondary"
           className="border border-dashed border-zinc-300 text-center dark:border-zinc-700"
         >
-          <Card.Content className="py-10 text-sm text-zinc-500 dark:text-zinc-400">
+          <CardContent className="py-10 text-sm text-zinc-500 dark:text-zinc-400">
             {translation("createFirstSubscription")}
-          </Card.Content>
+          </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
@@ -443,12 +443,12 @@ export default function SubscriptionDashboard({
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-      <Card.Content className="space-y-2 p-5">
+      <CardContent className="space-y-2 p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
           {label}
         </p>
         <p className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">{value}</p>
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

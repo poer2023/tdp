@@ -3,7 +3,7 @@ import Image from "next/image";
 import type { GalleryImage } from "@prisma/client";
 import { t, type AdminLocale } from "@/lib/admin-translations";
 import { localePath } from "@/lib/locale-path";
-import { Card, Chip } from "@/components/ui-heroui";
+import { Card, CardContent, Chip } from "@/components/ui-heroui";
 
 type RecentUploadsProps = {
   images: GalleryImage[];
@@ -14,7 +14,7 @@ type RecentUploadsProps = {
 export function RecentUploads({ images, locale, isServiceDegraded = false }: RecentUploadsProps) {
   return (
     <Card variant="secondary" className="flex min-h-[320px] flex-col">
-      <Card.Content className="flex h-full flex-col gap-4">
+      <CardContent className="flex h-full flex-col gap-4">
         <h3 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
           {t(locale, "recentUploads")}
         </h3>
@@ -80,7 +80,7 @@ export function RecentUploads({ images, locale, isServiceDegraded = false }: Rec
         >
           View all →
         </Link>
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

@@ -6,7 +6,19 @@ import remarkGfm from "remark-gfm";
 import { PostStatus } from "@prisma/client";
 import type { PublicPost } from "@/lib/posts";
 import { updatePostAction, type PostFormState } from "../actions";
-import { Input, Textarea, Select, Button, Alert, Card, Chip } from "@/components/ui-heroui";
+import {
+  Input,
+  Textarea,
+  Select,
+  Button,
+  Alert,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Chip,
+} from "@/components/ui-heroui";
 
 const INITIAL_STATE: PostFormState = {
   status: "idle",
@@ -19,11 +31,11 @@ export function EditPostForm({ post }: { post: PublicPost }) {
 
   return (
     <Card variant="secondary">
-      <Card.Header>
+      <CardHeader>
         <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <Card.Title>文章信息</Card.Title>
-            <Card.Description>更新标题、摘要、标签、Markdown 正文与封面。</Card.Description>
+            <CardTitle>文章信息</CardTitle>
+            <CardDescription>更新标题、摘要、标签、Markdown 正文与封面。</CardDescription>
           </div>
           {state.status === "success" && state.message && (
             <div className="flex flex-wrap items-center gap-3">
@@ -40,9 +52,9 @@ export function EditPostForm({ post }: { post: PublicPost }) {
             </div>
           )}
         </div>
-      </Card.Header>
+      </CardHeader>
 
-      <Card.Content>
+      <CardContent>
         {state.status === "error" && state.message && (
           <Alert status="danger" title="保存失败" description={state.message} className="mb-4" />
         )}
@@ -144,7 +156,7 @@ export function EditPostForm({ post }: { post: PublicPost }) {
             {isPending ? "保存中…" : "保存修改"}
           </Button>
         </form>
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

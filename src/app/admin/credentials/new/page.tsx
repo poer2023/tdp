@@ -11,7 +11,7 @@ import { t } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
 import Link from "next/link";
 import { CredentialPlatform, CredentialType } from "@prisma/client";
-import { Card, Surface } from "@/components/ui-heroui";
+import { Card, CardContent, Surface } from "@/components/ui-heroui";
 
 export const runtime = "nodejs";
 
@@ -102,9 +102,9 @@ export default function NewCredentialPage() {
       </Surface>
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="p-5">
+        <CardContent className="p-5">
           <CredentialForm action={createCredential} locale={locale} />
-        </Card.Content>
+        </CardContent>
       </Card>
     </div>
   );

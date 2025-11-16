@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { t, type AdminLocale } from "@/lib/admin-translations";
-import { Card } from "@/components/ui-heroui";
+import { Card, CardContent } from "@/components/ui-heroui";
 
 type TopPost = {
   id: string;
@@ -51,7 +51,7 @@ export function PostStatsTop({ locale = "en" }: PostStatsTopProps) {
   if (loading) {
     return (
       <Card variant="secondary" className="flex min-h-[320px] flex-col">
-        <Card.Content>
+        <CardContent>
           <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
             {t(locale, "topPosts")}
           </h3>
@@ -60,7 +60,7 @@ export function PostStatsTop({ locale = "en" }: PostStatsTopProps) {
               <div key={i} className="h-16 rounded-lg bg-zinc-100 dark:bg-zinc-900" />
             ))}
           </div>
-        </Card.Content>
+        </CardContent>
       </Card>
     );
   }
@@ -68,19 +68,19 @@ export function PostStatsTop({ locale = "en" }: PostStatsTopProps) {
   if (!data) {
     return (
       <Card variant="secondary" className="flex min-h-[320px] flex-col">
-        <Card.Content>
+        <CardContent>
           <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
             {t(locale, "topPosts")}
           </h3>
           <p className="text-sm text-zinc-500 dark:text-zinc-500">{t(locale, "failedToLoadStats")}</p>
-        </Card.Content>
+        </CardContent>
       </Card>
     );
   }
 
   return (
     <Card variant="secondary" className="flex min-h-[320px] flex-col">
-      <Card.Content>
+      <CardContent>
         <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
           {t(locale, "topPosts")}
         </h3>
@@ -163,7 +163,7 @@ export function PostStatsTop({ locale = "en" }: PostStatsTopProps) {
             </div>
           </div>
         </div>
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

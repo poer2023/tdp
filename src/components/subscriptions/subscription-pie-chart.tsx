@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { LabelList, Pie, PieChart } from "recharts";
-import { Chip, Card } from "@/components/ui-heroui";
+import { Chip, Card, CardContent } from "@/components/ui-heroui";
 import {
   ChartContainer,
   ChartTooltip,
@@ -82,26 +82,26 @@ export function SubscriptionPieChart({ data, viewMode, locale }: SubscriptionPie
   if (data.length === 0) {
     return (
       <Card variant="secondary" className="flex flex-col border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="space-y-2 p-5">
+        <CardContent className="space-y-2 p-5">
           {title}
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             {translate(locale, "noSubscriptions")}
           </p>
-        </Card.Content>
-        <Card.Content className="flex flex-1 items-center justify-center border-t border-zinc-100 py-10 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+        </CardContent>
+        <CardContent className="flex flex-1 items-center justify-center border-t border-zinc-100 py-10 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
           {translate(locale, "noSubscriptions")}
-        </Card.Content>
+        </CardContent>
       </Card>
     );
   }
 
   return (
     <Card variant="secondary" className="flex flex-col border border-zinc-200/80 dark:border-zinc-800/80">
-      <Card.Content className="space-y-2 p-5">
+      <CardContent className="space-y-2 p-5">
         {title}
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{subscriptionText}</p>
-      </Card.Content>
-      <Card.Content className="flex-1 border-t border-zinc-100 pb-0 dark:border-zinc-800">
+      </CardContent>
+      <CardContent className="flex-1 border-t border-zinc-100 pb-0 dark:border-zinc-800">
         <ChartContainer
           config={chartConfig}
           className="[&_.recharts-text]:fill-background mx-auto aspect-square max-h-[250px]"
@@ -143,7 +143,7 @@ export function SubscriptionPieChart({ data, viewMode, locale }: SubscriptionPie
             </Pie>
           </PieChart>
         </ChartContainer>
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

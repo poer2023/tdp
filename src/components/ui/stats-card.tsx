@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
-import { Card, Button } from "@/components/ui-heroui";
+import { Card, CardContent, Button } from "@/components/ui-heroui";
 import { cn } from "@/lib/utils";
 
 export type ChartDataItem = {
@@ -70,7 +70,7 @@ export function StatsCard({
 
   return (
     <Card variant="secondary" className={cn("relative overflow-hidden", className)}>
-      <Card.Content className="space-y-4 p-5">
+      <CardContent className="space-y-4 p-5">
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
             {title}
@@ -147,7 +147,7 @@ export function StatsCard({
             View Details
           </Button>
         )}
-      </Card.Content>
+      </CardContent>
     </Card>
   );
 }

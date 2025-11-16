@@ -3,7 +3,19 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { PostStatus, PostLocale } from "@prisma/client";
-import { Surface, Card, Input, Checkbox, Button, Alert, Chip } from "@/components/ui-heroui";
+import {
+  Surface,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Input,
+  Checkbox,
+  Button,
+  Alert,
+  Chip,
+} from "@/components/ui-heroui";
 
 export function ExportClient() {
   const searchParams = useSearchParams();
@@ -114,11 +126,11 @@ export function ExportClient() {
       {error && <Alert status="danger" description={error} />}
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Header>
-          <Card.Title>日期范围</Card.Title>
-          <Card.Description>留空表示不限制日期</Card.Description>
-        </Card.Header>
-        <Card.Content className="grid gap-4 md:grid-cols-2">
+        <CardHeader>
+          <CardTitle>日期范围</CardTitle>
+          <CardDescription>留空表示不限制日期</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
           <Input
             label="From"
             type="date"
@@ -131,15 +143,15 @@ export function ExportClient() {
             value={filters.to}
             onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))}
           />
-        </Card.Content>
+        </CardContent>
       </Card>
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Header>
-          <Card.Title>状态</Card.Title>
-          <Card.Description>不勾选表示导出所有状态</Card.Description>
-        </Card.Header>
-        <Card.Content className="flex flex-wrap gap-4">
+        <CardHeader>
+          <CardTitle>状态</CardTitle>
+          <CardDescription>不勾选表示导出所有状态</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-4">
           <Checkbox
             isSelected={filters.statuses.includes(PostStatus.PUBLISHED)}
             onChange={() => toggleStatus(PostStatus.PUBLISHED)}
@@ -152,15 +164,15 @@ export function ExportClient() {
           >
             Draft
           </Checkbox>
-        </Card.Content>
+        </CardContent>
       </Card>
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Header>
-          <Card.Title>语言</Card.Title>
-          <Card.Description>不勾选表示导出所有语言</Card.Description>
-        </Card.Header>
-        <Card.Content className="flex flex-wrap gap-4">
+        <CardHeader>
+          <CardTitle>语言</CardTitle>
+          <CardDescription>不勾选表示导出所有语言</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-4">
           <Checkbox
             isSelected={filters.locales.includes(PostLocale.EN)}
             onChange={() => toggleLocale(PostLocale.EN)}
@@ -173,7 +185,7 @@ export function ExportClient() {
           >
             Chinese
           </Checkbox>
-        </Card.Content>
+        </CardContent>
       </Card>
 
       {filters.statuses.length > 0 || filters.locales.length > 0 || filters.from || filters.to ? (

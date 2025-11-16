@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ExportClientShell } from "../export/export-client-shell";
 import { ImportClient } from "@/components/admin/import-client";
-import { Surface, Button, Card } from "@/components/ui-heroui";
+import { Surface, Button, Card, CardContent } from "@/components/ui-heroui";
 
 type TabType = "export" | "import" | "backup";
 
@@ -43,7 +43,7 @@ export default function AdminToolsPage() {
       </Surface>
 
       <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
-        <Card.Content className="flex flex-wrap gap-3 p-4">
+        <CardContent className="flex flex-wrap gap-3 p-4">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
@@ -53,7 +53,7 @@ export default function AdminToolsPage() {
               {tab.label.en} / {tab.label.zh}
             </Button>
           ))}
-        </Card.Content>
+        </CardContent>
       </Card>
 
       <div className="py-2">
@@ -61,10 +61,10 @@ export default function AdminToolsPage() {
         {activeTab === "import" && <ImportClient />}
         {activeTab === "backup" && (
           <Card variant="secondary" className="border border-dashed border-zinc-300 dark:border-zinc-800">
-            <Card.Content className="py-12 text-center">
+            <CardContent className="py-12 text-center">
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Backup Feature</h3>
               <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">备份功能开发中，敬请期待。</p>
-            </Card.Content>
+            </CardContent>
           </Card>
         )}
       </div>

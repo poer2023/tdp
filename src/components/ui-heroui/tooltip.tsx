@@ -8,5 +8,17 @@
  * 工具提示组件,鼠标悬停显示额外信息
  */
 
-export { Tooltip } from "@heroui/react";
-export type { TooltipProps } from "@heroui/react";
+export {
+  Tooltip,
+  TooltipRoot,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipArrow,
+} from "@heroui/react";
+export type {
+  TooltipProps,
+  TooltipRootProps,
+  TooltipTriggerProps,
+  TooltipContentProps,
+  TooltipArrowProps,
+} from "@heroui/react";
