@@ -67,6 +67,7 @@ export function Button({
   startContent,
   endContent,
   children,
+  className,
   ...props
 }: ButtonProps) {
   const resolvedVariant = resolveVariant(variant, color);
@@ -74,21 +75,27 @@ export function Button({
   const resolvedIsIconOnly = isIconOnly ?? size === "icon";
   const resolvedDisabled = isDisabled ?? disabled;
 
+  // Don't wrap content in span if isIconOnly
+  const content = resolvedIsIconOnly ? (
+    children ?? startContent ?? endContent
+  ) : (
+    <>
+      {startContent}
+      {children}
+      {endContent}
+    </>
+  );
+
   return (
     <HeroUIButton
       variant={resolvedVariant}
       size={resolvedSize}
       isIconOnly={resolvedIsIconOnly}
       isDisabled={resolvedDisabled}
+      className={className}
       {...props}
     >
-      {resolvedIsIconOnly ? children ?? startContent ?? endContent : (
-        <span className="inline-flex items-center gap-2">
-          {startContent}
-          {children}
-          {endContent}
-        </span>
-      )}
+      {content}
     </HeroUIButton>
   );
 }
