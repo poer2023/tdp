@@ -379,7 +379,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
             支持批量上传、Live Photo 自动配对、EXIF 元数据提取
           </Card.Description>
         </Card.Header>
-        <Card.Body className="space-y-4">
+        <Card.Content className="space-y-4">
           {/* 两栏布局：左侧上传+预览，右侧编辑表单 */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-6">
             {/* 左侧：图片上传器 + 预览（占2列，lg屏幕sticky） */}
@@ -414,15 +414,14 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                     <div className="grid gap-4 md:grid-cols-2">
                       {/* 标题 */}
                       <div className="space-y-2">
-                        <Label htmlFor="bulk-title">标题（可选）</Label>
+                        <Label>标题（可选）</Label>
                         <Input
-                          id="bulk-title"
                           placeholder="为所有图片设置相同标题"
                           value={bulkMetadata.title}
-                          onValueChange={(value) =>
+                          onChange={(e) =>
                             setBulkMetadata((prev) => ({
                               ...prev,
-                              title: value,
+                              title: e.target.value,
                             }))
                           }
                           isDisabled={isUploading}
@@ -431,14 +430,13 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
 
                       {/* 分类 */}
                       <div className="space-y-2">
-                        <Label htmlFor="bulk-category">分类</Label>
+                        <Label>分类</Label>
                         <Select
-                          id="bulk-category"
-                          selectedKey={bulkMetadata.category}
-                          onSelectionChange={(key) =>
+                          value={bulkMetadata.category}
+                          onChange={(value) =>
                             setBulkMetadata((prev) => ({
                               ...prev,
-                              category: key as GalleryCategory,
+                              category: value as GalleryCategory,
                             }))
                           }
                           isDisabled={isUploading}
@@ -451,16 +449,15 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
 
                       {/* 描述 */}
                       <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="bulk-description">描述（可选）</Label>
+                        <Label>描述（可选）</Label>
                         <Textarea
-                          id="bulk-description"
                           placeholder="为所有图片设置相同描述"
-                          minRows={3}
+                          rows={3}
                           value={bulkMetadata.description}
-                          onValueChange={(value) =>
+                          onChange={(e) =>
                             setBulkMetadata((prev) => ({
                               ...prev,
-                              description: value,
+                              description: e.target.value,
                             }))
                           }
                           isDisabled={isUploading}
@@ -469,15 +466,14 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
 
                       {/* 关联文章 ID */}
                       <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="bulk-postId">关联文章 ID（可选）</Label>
+                        <Label>关联文章 ID（可选）</Label>
                         <Input
-                          id="bulk-postId"
                           placeholder="输入文章 ID"
                           value={bulkMetadata.postId}
-                          onValueChange={(value) =>
+                          onChange={(e) =>
                             setBulkMetadata((prev) => ({
                               ...prev,
-                              postId: value,
+                              postId: e.target.value,
                             }))
                           }
                           isDisabled={isUploading}
@@ -567,7 +563,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
               )}
             </div>
           </div>
-        </Card.Body>
+        </Card.Content>
       </Card>
     </div>
   );
