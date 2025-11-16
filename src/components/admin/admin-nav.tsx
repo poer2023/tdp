@@ -1,9 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useTransition, useMemo } from "react";
 import type { AdminLocale } from "@/lib/admin-translations";
 import { t } from "@/lib/admin-translations";
+import { cn } from "@/lib/utils";
+import { ListBox, ListBoxItem, Surface, Button as HeroButton } from "@/components/ui-heroui";
+import Link from "next/link";
 
 type NavSection = {
   titleKey: keyof typeof import("@/lib/admin-translations").adminTranslations.en;
@@ -64,12 +67,36 @@ export function AdminNav({
   onClose?: () => void;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+
+  const flatItems = useMemo(() => {
+    return navSections.flatMap((section) =>
+      section.items.map((item) => ({
+        ...item,
+        section: section.titleKey,
+      }))
+    );
+  }, []);
+
+  const currentKey =
+    flatItems.find((item) => pathname === item.href || pathname.startsWith(item.href))?.href ??
+    flatItems[0]?.href;
+
+  const handleSelectionChange = (key: React.Key) => {
+    const href = String(key);
+    startTransition(() => router.push(href));
+    onClose?.();
+  };
 
   return (
-    <nav
-      className={`fixed top-16 left-0 z-40 flex h-[calc(100vh-64px)] w-64 flex-col bg-white transition-transform duration-200 md:translate-x-0 dark:bg-zinc-950 ${
-        mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-      }`}
+    <Surface
+      variant="flat"
+      className={cn(
+        "fixed top-16 left-0 z-40 flex h-[calc(100vh-64px)] w-64 flex-col border-r border-zinc-100 bg-white/90 backdrop-blur dark:border-zinc-900 dark:bg-zinc-950/90",
+        mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+        "transition-transform duration-200"
+      )}
       aria-label="Admin navigation"
     >
       {/* Header */}
@@ -94,36 +121,29 @@ export function AdminNav({
             </h2>
 
             {/* Section Items */}
-            <ul className="mt-3 space-y-1">
-              {section.items.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  (item.href !== "/admin" && pathname.startsWith(item.href));
-
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`group block rounded-lg px-3 py-2 transition-all duration-200 ${
-                        isActive
-                          ? "bg-zinc-100 dark:bg-zinc-900/60"
-                          : "hover:translate-x-0.5 hover:bg-zinc-100 dark:hover:bg-zinc-900/30"
-                      }`}
-                    >
-                      <span
-                        className={`text-sm font-medium transition-colors ${
-                          isActive
-                            ? "text-zinc-900 dark:text-zinc-100"
-                            : "text-zinc-700 group-hover:text-zinc-900 dark:text-zinc-300 dark:group-hover:text-zinc-100"
-                        }`}
-                      >
-                        {t(locale, item.labelKey)}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+            <ListBox
+              aria-label={t(locale, section.titleKey)}
+              selectedKeys={currentKey ? new Set([currentKey]) : new Set()}
+              onSelectionChange={(keys) => {
+                const selectedKey = Array.from(keys)[0];
+                if (selectedKey && typeof selectedKey === 'string') {
+                  handleSelectionChange(selectedKey);
+                }
+              }}
+              variant="flat"
+              selectionMode="single"
+              className="mt-3"
+            >
+              {section.items.map((item) => (
+                <ListBoxItem key={item.href} id={item.href} textValue={t(locale, item.labelKey)}>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                      {t(locale, item.labelKey)}
+                    </span>
+                  </div>
+                </ListBoxItem>
+              ))}
+            </ListBox>
           </div>
         ))}
       </div>
@@ -139,23 +159,16 @@ export function AdminNav({
         </Link>
         {/* Close button for mobile */}
         <div className="mt-4 md:hidden">
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          <HeroButton
+            variant="light"
+            size="sm"
+            onPress={onClose}
+            className="w-full justify-center"
           >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
             关闭
-          </button>
+          </HeroButton>
         </div>
       </div>
-    </nav>
+    </Surface>
   );
 }
