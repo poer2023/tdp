@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useConfirm } from "@/hooks/use-confirm";
 import { Edit2, KeyRound, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui-heroui";
 
 type FriendCard = {
   id: string;
@@ -129,12 +130,9 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
               创建朋友账号，让他们可以查看你的专属内容
             </p>
           </div>
-          <Link
-            href="/admin/friends/create"
-            className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
-          >
-            + 创建第一个朋友
-          </Link>
+          <Button variant="primary" asChild>
+            <Link href="/admin/friends/create">+ 创建第一个朋友</Link>
+          </Button>
         </div>
       </div>
     );

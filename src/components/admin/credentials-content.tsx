@@ -13,6 +13,7 @@ import Link from "next/link";
 import { t } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
 import type { CredentialPlatform, CredentialType } from "@prisma/client";
+import { Chip } from "@/components/ui-heroui";
 
 type Credential = {
   id: string;
@@ -55,7 +56,7 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
           {/* Platform & Status */}
           <div className="flex items-start justify-between">
             <div>
-              <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+              <Chip status="default">
                 {t(
                   locale,
                   credential.platform.toLowerCase() as
@@ -66,17 +67,11 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
                     | "hoyoverse"
                     | "jellyfin"
                 )}
-              </span>
+              </Chip>
             </div>
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                credential.isValid
-                  ? "bg-green-100 text-green-800 dark:bg-green-950/20 dark:text-green-400"
-                  : "bg-red-100 text-red-800 dark:bg-red-950/20 dark:text-red-400"
-              }`}
-            >
+            <Chip status={credential.isValid ? "success" : "danger"}>
               {credential.isValid ? t(locale, "isValid") : t(locale, "isInvalid")}
-            </span>
+            </Chip>
           </div>
 
           {/* Type */}
@@ -131,9 +126,9 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
           {credential.autoSync && (
             <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
+                <Chip status="accent">
                   {t(locale, "autoSync")}
-                </span>
+                </Chip>
                 {credential.syncFrequency && (
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
                     {t(

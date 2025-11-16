@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { listFriends } from "@/lib/friends";
 import { FriendCardsGrid } from "@/components/admin/FriendCardsGrid";
+import { Button } from "@/components/ui-heroui";
 
 export const metadata: Metadata = {
   title: "朋友管理",
@@ -40,12 +41,9 @@ export default async function FriendsManagementPage() {
             管理朋友故事访问和专属内容。
           </p>
         </div>
-        <Link
-          href="/admin/friends/create"
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
-        >
-          + 创建朋友
-        </Link>
+        <Button variant="primary" asChild>
+          <Link href="/admin/friends/create">+ 创建朋友</Link>
+        </Button>
       </div>
 
       <FriendCardsGrid friends={safeFriends} />
