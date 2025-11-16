@@ -10,6 +10,7 @@ export interface SelectItemProps {
 export interface SelectProps {
   label?: string;
   name?: string;
+  id?: string;
   placeholder?: string;
   isRequired?: boolean;
   isDisabled?: boolean;
@@ -34,6 +35,7 @@ export function SelectItem({ children }: SelectItemProps) {
 export function Select({
   label,
   name,
+  id,
   placeholder = "选择一项",
   isRequired,
   isDisabled,
@@ -49,15 +51,19 @@ export function Select({
   // defaultSelectedKeys[0] 用作 defaultValue
   const defaultValue = defaultSelectedKeys?.[0];
 
+  // 生成唯一 ID: 优先使用传入的 id，其次使用 name，最后生成随机 ID
+  const selectId = id || name || `select-${Math.random().toString(36).substring(2, 11)}`;
+
   return (
     <div className={className}>
       {label && (
-        <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <label htmlFor={selectId} className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
           {label}
           {isRequired && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
       <select
+        id={selectId}
         name={name}
         value={value}
         defaultValue={defaultValue}
