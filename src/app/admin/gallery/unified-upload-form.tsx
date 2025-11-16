@@ -4,20 +4,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Input, Textarea, Select, Button, Alert, Card, Tabs } from "@/components/ui-heroui";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
   EnhancedImageUploader,
@@ -384,14 +372,14 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
 
   return (
     <div className={className}>
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl">上传图片到相册</CardTitle>
-          <CardDescription className="text-xs">
+      <Card className="pb-4">
+        <Card.Header>
+          <Card.Title className="text-xl">上传图片到相册</Card.Title>
+          <Card.Description className="text-xs">
             支持批量上传、Live Photo 自动配对、EXIF 元数据提取
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </Card.Description>
+        </Card.Header>
+        <Card.Body className="space-y-4">
           {/* 两栏布局：左侧上传+预览，右侧编辑表单 */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-6">
             {/* 左侧：图片上传器 + 预览（占2列，lg屏幕sticky） */}
@@ -412,17 +400,17 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
             <div className="lg:col-span-3">
               {files.length > 0 && (
                 <Tabs
-                  value={activeTab}
-                  onValueChange={(value) => setActiveTab(value as "bulk" | "individual")}
+                  selectedKey={activeTab}
+                  onSelectionChange={(key) => setActiveTab(key as "bulk" | "individual")}
                   className="w-full"
                 >
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="bulk">批量设置</TabsTrigger>
-                    <TabsTrigger value="individual">单独编辑</TabsTrigger>
-                  </TabsList>
+                  <Tabs.List className="grid w-full grid-cols-2">
+                    <Tabs.Tab id="bulk">批量设置</Tabs.Tab>
+                    <Tabs.Tab id="individual">单独编辑</Tabs.Tab>
+                  </Tabs.List>
 
                   {/* 批量设置 Tab */}
-                  <TabsContent value="bulk" className="mt-3 space-y-3">
+                  <Tabs.Panel id="bulk" className="mt-3 space-y-3">
                     <div className="grid gap-4 md:grid-cols-2">
                       {/* 标题 */}
                       <div className="space-y-2">
@@ -431,13 +419,13 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                           id="bulk-title"
                           placeholder="为所有图片设置相同标题"
                           value={bulkMetadata.title}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          onValueChange={(value) =>
                             setBulkMetadata((prev) => ({
                               ...prev,
-                              title: e.target.value,
+                              title: value,
                             }))
                           }
-                          disabled={isUploading}
+                          isDisabled={isUploading}
                         />
                       </div>
 
@@ -445,23 +433,19 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                       <div className="space-y-2">
                         <Label htmlFor="bulk-category">分类</Label>
                         <Select
-                          value={bulkMetadata.category}
-                          onValueChange={(value: GalleryCategory) =>
+                          id="bulk-category"
+                          selectedKey={bulkMetadata.category}
+                          onSelectionChange={(key) =>
                             setBulkMetadata((prev) => ({
                               ...prev,
-                              category: value,
+                              category: key as GalleryCategory,
                             }))
                           }
-                          disabled={isUploading}
+                          isDisabled={isUploading}
                         >
-                          <SelectTrigger id="bulk-category">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ORIGINAL">原创</SelectItem>
-                            <SelectItem value="REPOST">转发</SelectItem>
-                            <SelectItem value="AI">AI 生成</SelectItem>
-                          </SelectContent>
+                          <Select.Item id="ORIGINAL">原创</Select.Item>
+                          <Select.Item id="REPOST">转发</Select.Item>
+                          <Select.Item id="AI">AI 生成</Select.Item>
                         </Select>
                       </div>
 
@@ -471,15 +455,15 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                         <Textarea
                           id="bulk-description"
                           placeholder="为所有图片设置相同描述"
-                          rows={3}
+                          minRows={3}
                           value={bulkMetadata.description}
-                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                          onValueChange={(value) =>
                             setBulkMetadata((prev) => ({
                               ...prev,
-                              description: e.target.value,
+                              description: value,
                             }))
                           }
-                          disabled={isUploading}
+                          isDisabled={isUploading}
                         />
                       </div>
 
@@ -490,28 +474,28 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                           id="bulk-postId"
                           placeholder="输入文章 ID"
                           value={bulkMetadata.postId}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          onValueChange={(value) =>
                             setBulkMetadata((prev) => ({
                               ...prev,
-                              postId: e.target.value,
+                              postId: value,
                             }))
                           }
-                          disabled={isUploading}
+                          isDisabled={isUploading}
                         />
                       </div>
                     </div>
 
                     {/* 提示信息 */}
-                    <Alert>
-                      <AlertDescription className="text-xs">
+                    <Alert variant="default">
+                      <Alert.Description className="text-xs">
                         💡 <strong>自动功能</strong>：上传时将自动提取 EXIF 元数据（拍摄时间、GPS
                         坐标、相机信息等）并生成缩略图。
-                      </AlertDescription>
+                      </Alert.Description>
                     </Alert>
-                  </TabsContent>
+                  </Tabs.Panel>
 
                   {/* 单独编辑 Tab */}
-                  <TabsContent value="individual" className="mt-3 space-y-3">
+                  <Tabs.Panel id="individual" className="mt-3 space-y-3">
                     {/* 快捷操作工具栏 */}
                     <QuickActionsToolbar
                       onApplyBulk={applyBulkToIndividual}
@@ -548,23 +532,23 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                     </div>
 
                     {/* 提示信息 */}
-                    <Alert>
-                      <AlertDescription className="text-xs">
+                    <Alert variant="default">
+                      <Alert.Description className="text-xs">
                         💡 <strong>提示</strong>
                         ：可以为每张图片设置不同的元数据。使用&quot;复制到全部&quot;按钮快速应用某张图片的设置,或使用&quot;应用批量设置&quot;将批量编辑的内容作为起点。
-                      </AlertDescription>
+                      </Alert.Description>
                     </Alert>
-                  </TabsContent>
+                  </Tabs.Panel>
                 </Tabs>
               )}
 
               {/* 上传消息 */}
               {uploadMessage && (
                 <Alert
-                  variant={uploadMessage.type === "error" ? "destructive" : "default"}
+                  variant={uploadMessage.type === "error" ? "danger" : "default"}
                   className="mt-3"
                 >
-                  <AlertDescription className="text-sm">{uploadMessage.text}</AlertDescription>
+                  <Alert.Description className="text-sm">{uploadMessage.text}</Alert.Description>
                 </Alert>
               )}
 
@@ -575,7 +559,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                     准备上传 {imageCount} 张图片
                     {livePhotoCount > 0 && ` (包含 ${livePhotoCount} 组 Live Photo)`}
                   </div>
-                  <Button onClick={handleUpload} disabled={isUploading} size="default">
+                  <Button onPress={handleUpload} isDisabled={isUploading} size="md">
                     {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isUploading ? "上传中..." : "开始上传"}
                   </Button>
@@ -583,7 +567,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
               )}
             </div>
           </div>
-        </CardContent>
+        </Card.Body>
       </Card>
     </div>
   );

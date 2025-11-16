@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { PostStatus } from "@prisma/client";
 import type { PublicPost } from "@/lib/posts";
 import { updatePostAction, type PostFormState } from "../actions";
+import { Input, Textarea, Select, Button, Alert } from "@/components/ui-heroui";
 
 const INITIAL_STATE: PostFormState = {
   status: "idle",
@@ -53,9 +54,7 @@ export function EditPostForm({ post }: { post: PublicPost }) {
       </div>
 
       {state.status === "error" && state.message && (
-        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/60 dark:text-red-200">
-          {state.message}
-        </p>
+        <Alert variant="danger" title="保存失败" description={state.message} className="mt-4" />
       )}
 
       <form action={formAction} className="mt-6 space-y-5">
@@ -63,45 +62,38 @@ export function EditPostForm({ post }: { post: PublicPost }) {
 
         <div className="grid gap-5 md:grid-cols-2">
           <Field label="标题" error={state.errors?.title}>
-            <input
+            <Input
               name="title"
               type="text"
               defaultValue={post.title}
-              required
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              isRequired
             />
           </Field>
 
           <Field label="简介" error={state.errors?.excerpt}>
-            <input
+            <Input
               name="excerpt"
               type="text"
               defaultValue={post.excerpt}
-              required
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              isRequired
             />
           </Field>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
           <Field label="标签">
-            <input
+            <Input
               name="tags"
               type="text"
               defaultValue={post.tags.join(",")}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             />
           </Field>
 
           <Field label="状态">
-            <select
-              name="status"
-              defaultValue={post.status}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            >
-              <option value={PostStatus.DRAFT}>草稿</option>
-              <option value={PostStatus.PUBLISHED}>已发布</option>
-            </select>
+            <Select value={post.status}>
+              <Select.Item id={PostStatus.DRAFT}>草稿</Select.Item>
+              <Select.Item id={PostStatus.PUBLISHED}>已发布</Select.Item>
+            </Select>
           </Field>
         </div>
 
@@ -123,23 +115,24 @@ export function EditPostForm({ post }: { post: PublicPost }) {
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <Field label="正文 (Markdown)" error={state.errors?.content}>
-                <textarea
+                <Textarea
                   name="content"
                   rows={14}
-                  required
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  isRequired
                   value={content}
                   onChange={(event) => setContent(event.target.value)}
                 />
               </Field>
             </div>
-            <button
+            <Button
               type="button"
-              onClick={() => setShowPreview((prev) => !prev)}
-              className="inline-flex items-center rounded-full border border-zinc-300 px-3 py-1 text-xs font-semibold whitespace-nowrap text-zinc-600 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              variant="outline"
+              size="sm"
+              onPress={() => setShowPreview((prev) => !prev)}
+              className="whitespace-nowrap"
             >
               {showPreview ? "隐藏预览" : "预览 Markdown"}
-            </button>
+            </Button>
           </div>
 
           {showPreview && (
@@ -157,13 +150,13 @@ export function EditPostForm({ post }: { post: PublicPost }) {
           )}
         </div>
 
-        <button
+        <Button
           type="submit"
-          disabled={isPending}
-          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+          variant="primary"
+          isDisabled={isPending}
         >
           {isPending ? "保存中…" : "保存修改"}
-        </button>
+        </Button>
       </form>
     </section>
   );
