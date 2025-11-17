@@ -80,8 +80,8 @@ export function AttentionNeeded({
   expiringCredentials.forEach((credential) => {
     if (!credential.validUntil) return;
 
-    const daysUntilExpiry = getDaysAgo(credential.validUntil);
-    const isExpired = new Date(credential.validUntil) < new Date();
+    const daysUntilExpiry = getDaysAgo(credential.validUntil as Date);
+    const isExpired = new Date(credential.validUntil as Date) < new Date();
 
     items.push({
       type: "credential_expiring",
