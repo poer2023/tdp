@@ -62,7 +62,9 @@ export function AttentionNeeded({
 
   // Add sync failure items
   failedSyncs.forEach((sync) => {
-    const daysAgo = getDaysAgo(sync.startedAt);
+    if (!sync.startedAt) return;
+
+    const daysAgo = getDaysAgo(sync.startedAt as Date);
     items.push({
       type: "sync_failure",
       title:
