@@ -67,7 +67,7 @@ export function AdminFrame({ locale, children }: AdminFrameProps) {
         <div className="h-full overflow-hidden p-[5px]">
           <Surface
             variant="flat"
-            className="h-full rounded-3xl border border-zinc-100 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+            className="h-full rounded-3xl border border-zinc-100 bg-zinc-50 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
           >
             <div className="admin-scroll h-full overflow-y-auto overscroll-contain px-4 py-4 pb-20 sm:px-6 sm:py-6 md:px-8 md:py-8 md:pb-8">
               <div className="mx-auto max-w-[1200px]">{children}</div>

@@ -8,8 +8,7 @@
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import prisma from "@/lib/prisma";
-import { PostStatus, type Prisma } from "@prisma/client";
-import { ActionCard } from "@/components/admin/action-card";
+import { PostStatus, SyncJobStatus, type Prisma } from "@prisma/client";
 import { getAdminLocale, t } from "@/lib/admin-i18n";
 import { features } from "@/config/features";
 import AdminErrorBoundary from "@/components/error-boundaries/admin-error-boundary";
@@ -36,6 +35,26 @@ const DashboardActivity = dynamic(
   }
 );
 
+const VisitsTrendChart = dynamic(
+  () =>
+    import("@/components/admin/visits-trend-chart").then((mod) => ({
+      default: mod.VisitsTrendChart,
+    })),
+  {
+    loading: () => <ModuleLoadingSkeleton rows={2} />,
+  }
+);
+
+const AttentionNeeded = dynamic(
+  () =>
+    import("@/components/admin/attention-needed").then((mod) => ({
+      default: mod.AttentionNeeded,
+    })),
+  {
+    loading: () => <ModuleLoadingSkeleton rows={2} />,
+  }
+);
+
 export const revalidate = 0;
 // Force Node.js runtime because this page queries Prisma directly
 export const runtime = "nodejs";
@@ -45,6 +64,16 @@ type RecentPostsResult = Prisma.PostGetPayload<{
   include: { author: { select: { name: true } } };
 }>[];
 type RecentUploadsResult = Awaited<ReturnType<typeof prisma.galleryImage.findMany>>;
+type DailyStatsResult = Awaited<ReturnType<typeof prisma.dailyStats.findMany>>;
+type OldDraftsResult = Prisma.PostGetPayload<{
+  select: { id: true; title: true; updatedAt: true };
+}>[];
+type FailedSyncsResult = Prisma.SyncJobLogGetPayload<{
+  select: { id: true; platform: true; startedAt: true; message: true };
+}>[];
+type ExpiringCredentialsResult = Prisma.ExternalCredentialGetPayload<{
+  select: { id: true; platform: true; validUntil: true };
+}>[];
 
 type AdminOverviewData = {
   totalPosts: number;
@@ -55,6 +84,10 @@ type AdminOverviewData = {
   geotaggedPhotos: number;
   recentPosts: RecentPostsResult;
   recentUploads: RecentUploadsResult;
+  dailyStats: DailyStatsResult;
+  oldDrafts: OldDraftsResult;
+  failedSyncs: FailedSyncsResult;
+  expiringCredentials: ExpiringCredentialsResult;
 };
 
 function getFallbackOverview(): AdminOverviewData {
@@ -67,6 +100,10 @@ function getFallbackOverview(): AdminOverviewData {
     geotaggedPhotos: 0,
     recentPosts: [] as RecentPostsResult,
     recentUploads: [] as RecentUploadsResult,
+    dailyStats: [] as DailyStatsResult,
+    oldDrafts: [] as OldDraftsResult,
+    failedSyncs: [] as FailedSyncsResult,
+    expiringCredentials: [] as ExpiringCredentialsResult,
   };
 }
 
@@ -78,6 +115,12 @@ async function loadAdminOverview(): Promise<AdminOverviewData> {
   try {
     console.log("[Admin Overview] Starting data load...");
 
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 90); // Get 90 days for chart
+
     const [
       totalPosts,
       publishedPosts,
@@ -87,6 +130,10 @@ async function loadAdminOverview(): Promise<AdminOverviewData> {
       geotaggedPhotos,
       recentPosts,
       recentUploads,
+      dailyStats,
+      oldDrafts,
+      failedSyncs,
+      expiringCredentials,
     ] = await Promise.all([
       prisma.post.count(),
       prisma.post.count({ where: { status: PostStatus.PUBLISHED } }),
@@ -103,6 +150,35 @@ async function loadAdminOverview(): Promise<AdminOverviewData> {
         orderBy: { createdAt: "desc" },
         take: 6,
       }),
+      // Daily stats for last 90 days
+      prisma.dailyStats.findMany({
+        where: { date: { gte: thirtyDaysAgo } },
+        orderBy: { date: "asc" },
+      }),
+      // Old drafts (>7 days)
+      prisma.post.findMany({
+        where: {
+          status: PostStatus.DRAFT,
+          updatedAt: { lt: sevenDaysAgo },
+        },
+        select: { id: true, title: true, updatedAt: true },
+        orderBy: { updatedAt: "asc" },
+        take: 5,
+      }),
+      // Recent failed syncs
+      prisma.syncJobLog.findMany({
+        where: { status: SyncJobStatus.FAILED },
+        select: { id: true, platform: true, startedAt: true, message: true },
+        orderBy: { startedAt: "desc" },
+        take: 3,
+      }),
+      // Credentials expiring soon or expired
+      prisma.externalCredential.findMany({
+        where: {
+          validUntil: { not: null },
+        },
+        select: { id: true, platform: true, validUntil: true },
+      }),
     ]);
 
     console.log("[Admin Overview] Data loaded successfully:", {
@@ -112,6 +188,10 @@ async function loadAdminOverview(): Promise<AdminOverviewData> {
       totalGallery,
       recentPostsCount: recentPosts.length,
       recentUploadsCount: recentUploads.length,
+      dailyStatsCount: dailyStats.length,
+      oldDraftsCount: oldDrafts.length,
+      failedSyncsCount: failedSyncs.length,
+      expiringCredentialsCount: expiringCredentials.length,
     });
 
     return {
@@ -123,6 +203,10 @@ async function loadAdminOverview(): Promise<AdminOverviewData> {
       geotaggedPhotos,
       recentPosts,
       recentUploads,
+      dailyStats,
+      oldDrafts,
+      failedSyncs,
+      expiringCredentials,
     };
   } catch (error) {
     // Always log errors to help diagnose issues
@@ -148,6 +232,10 @@ export default async function AdminHomePage() {
     geotaggedPhotos,
     recentPosts,
     recentUploads,
+    dailyStats,
+    oldDrafts,
+    failedSyncs,
+    expiringCredentials,
   } = await loadAdminOverview();
 
   const dashboardEnabled = features.get("adminDashboard");
@@ -185,104 +273,14 @@ export default async function AdminHomePage() {
         </div>
       )}
 
-      {/* Quick Actions Grid - Responsive: 1 col mobile, 2 col tablet, 3 col desktop */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
-          {t(locale, "quickActions")}
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-          <ActionCard
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-            }
-            title={t(locale, "posts")}
-            description={t(locale, "createManageArticles")}
-            primaryAction={{ label: t(locale, "newPost"), href: "/admin/posts/new" }}
-          />
-          <ActionCard
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            }
-            title={t(locale, "gallery")}
-            description={t(locale, "uploadOrganizePhotos")}
-            primaryAction={{ label: t(locale, "upload"), href: "/admin/gallery" }}
-          />
-          <ActionCard
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-            }
-            title={t(locale, "analytics")}
-            description={t(locale, "trafficInsights")}
-            primaryAction={{ label: t(locale, "viewAnalytics"), href: "/admin/analytics" }}
-          />
-          <ActionCard
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-                />
-              </svg>
-            }
-            title={t(locale, "tools")}
-            description={t(locale, "importExportContent")}
-            primaryAction={{ label: t(locale, "export"), href: "/admin/tools?tab=export" }}
-          />
-          <ActionCard
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            }
-            title={t(locale, "syncDashboard")}
-            description={t(locale, "syncNowAction")}
-            primaryAction={{ label: t(locale, "syncNow"), href: "/admin/sync" }}
-          />
-          <ActionCard
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                />
-              </svg>
-            }
-            title={t(locale, "credentials")}
-            description={t(locale, "manageCredentialsAction")}
-            primaryAction={{ label: t(locale, "manage"), href: "/admin/credentials" }}
-          />
-        </div>
-      </section>
+      {/* Visits Trend Chart - Feature-gated with dynamic loading */}
+      {dashboardEnabled ? (
+        <AdminErrorBoundary>
+          <Suspense fallback={<ModuleLoadingSkeleton rows={2} />}>
+            <VisitsTrendChart dailyStats={dailyStats} locale={locale} />
+          </Suspense>
+        </AdminErrorBoundary>
+      ) : null}
 
       {/* Recent Activity Grid - Feature-gated with dynamic loading */}
       {dashboardEnabled ? (
@@ -300,6 +298,21 @@ export default async function AdminHomePage() {
           活动记录功能已禁用
         </div>
       )}
+
+      {/* Attention Needed - Conditionally rendered only if there are items */}
+      {dashboardEnabled &&
+      (oldDrafts.length > 0 || failedSyncs.length > 0 || expiringCredentials.length > 0) ? (
+        <AdminErrorBoundary>
+          <Suspense fallback={<ModuleLoadingSkeleton rows={2} />}>
+            <AttentionNeeded
+              oldDrafts={oldDrafts}
+              failedSyncs={failedSyncs}
+              expiringCredentials={expiringCredentials}
+              locale={locale}
+            />
+          </Suspense>
+        </AdminErrorBoundary>
+      ) : null}
     </div>
   );
 }

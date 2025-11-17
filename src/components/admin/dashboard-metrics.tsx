@@ -62,17 +62,30 @@ export function DashboardMetrics({
   }
 
   return (
-    <section className="grid gap-6 sm:grid-cols-2">
+    <section className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
       <MetricCard
         label={t(locale, "postsLabel")}
         value={totalPosts}
-        meta={`${t(locale, "published")} ${publishedPosts} · ${t(locale, "drafts")} ${draftPosts}`}
+        meta={`${draftPosts} ${t(locale, "drafts")}`}
         href="/admin/posts"
+        alert={draftPosts > 0}
       />
       <MetricCard
         label={t(locale, "galleryLabel")}
         value={totalGallery}
-        meta={`${t(locale, "live")} ${livePhotos} · ${t(locale, "geotagged")} ${geotaggedPhotos}`}
+        meta={livePhotos > 0 ? `${livePhotos} Live Photo` : undefined}
+        href="/admin/gallery"
+      />
+      <MetricCard
+        label={t(locale, "published")}
+        value={publishedPosts}
+        meta={t(locale, "publishedPosts")}
+        href="/admin/posts"
+      />
+      <MetricCard
+        label={t(locale, "geotagged")}
+        value={geotaggedPhotos}
+        meta={t(locale, "geotaggedPhotos")}
         href="/admin/gallery"
       />
     </section>

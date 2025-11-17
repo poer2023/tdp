@@ -103,6 +103,14 @@ export const adminTranslations = {
     uniqueVisitors: "unique visitors",
     visits: "visits",
     registeredUsers: "Registered Users",
+    visitsTrend: "Visits Trend",
+    totalViews: "Total Views",
+    avgViews: "Avg Views",
+    peakDay: "Peak Day",
+    attentionNeeded: "Attention Needed",
+    noDataAvailable: "No data available",
+    publishedPosts: "Published posts",
+    geotaggedPhotos: "Geotagged photos",
 
     // Page types
     postsType: "Posts",
@@ -358,6 +366,14 @@ export const adminTranslations = {
     uniqueVisitors: "独立访客",
     visits: "次",
     registeredUsers: "注册用户",
+    visitsTrend: "访问趋势",
+    totalViews: "总浏览量",
+    avgViews: "平均浏览量",
+    peakDay: "峰值日期",
+    attentionNeeded: "需要关注",
+    noDataAvailable: "暂无数据",
+    publishedPosts: "已发布文章",
+    geotaggedPhotos: "带位置照片",
 
     // Page types
     postsType: "文章",
