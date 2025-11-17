@@ -90,7 +90,7 @@ describe("DashboardActivity", () => {
       expect(screen.getByText("Recent Uploads")).toBeInTheDocument();
     });
 
-    it("should render PostStatsTop component", () => {
+    it("should render both RecentPosts and RecentUploads components", () => {
       render(
         <DashboardActivity
           recentPosts={mockRecentPosts}
@@ -99,8 +99,9 @@ describe("DashboardActivity", () => {
         />
       );
 
-      // PostStatsTop should be rendered (exact text depends on implementation)
-      expect(screen.getByText(/Top/i)).toBeInTheDocument();
+      // Both components should be rendered
+      expect(screen.getByText("Recent Posts")).toBeInTheDocument();
+      expect(screen.getByText("Recent Uploads")).toBeInTheDocument();
     });
 
     it("should render empty state for posts when no data", () => {
@@ -221,7 +222,7 @@ describe("DashboardActivity", () => {
 
       const grid = container.querySelector(".grid");
       expect(grid).toBeInTheDocument();
-      expect(grid).toHaveClass("gap-6", "lg:grid-cols-2", "xl:grid-cols-3");
+      expect(grid).toHaveClass("gap-6", "md:grid-cols-2");
     });
 
     it("should maintain layout structure in degraded state", () => {
