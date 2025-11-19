@@ -29,7 +29,7 @@ export function GalleryGrid({ images, locale = "zh" }: GalleryGridProps) {
         >
           <div className="relative aspect-square overflow-hidden">
             <Image
-              src={image.smallThumbPath || image.microThumbPath || image.filePath}
+              src={image.mediumPath || image.smallThumbPath || image.filePath}
               alt={image.title ?? (locale === "zh" ? "博客相册照片" : "Gallery photo")}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

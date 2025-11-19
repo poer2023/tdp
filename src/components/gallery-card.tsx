@@ -35,7 +35,7 @@ export function GalleryCard({ image, locale = "zh", index = 0 }: GalleryCardProp
             />
           ) : (
             <Image
-              src={image.filePath}
+              src={image.mediumPath || image.smallThumbPath || image.filePath}
               alt={image.title || "相册照片"}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -52,7 +52,7 @@ export function GalleryCard({ image, locale = "zh", index = 0 }: GalleryCardProp
         <div className="space-y-2 p-4 sm:p-5">
           {/* 标题 */}
           <h3 className="text-sm leading-snug font-semibold text-zinc-900 sm:text-base dark:text-zinc-50">
-            {image.title || "未命名照片"}
+            {image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo")}
           </h3>
 
           {/* 描述 */}
@@ -89,7 +89,7 @@ export function GalleryCard({ image, locale = "zh", index = 0 }: GalleryCardProp
                 <span className="leading-tight">
                   {image.city && image.country
                     ? `${image.city}, ${image.country}`
-                    : image.locationName || "位置信息"}
+                    : image.locationName || (locale === "zh" ? "位置信息" : "Location Info")}
                 </span>
               </div>
             )}

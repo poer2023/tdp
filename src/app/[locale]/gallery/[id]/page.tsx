@@ -18,7 +18,9 @@ export default async function LocalizedGalleryDetailPage({ params }: PageProps) 
   }
 
   const adjacent = await getAdjacentImageIds(id);
-  const thumbs = (await listGalleryImages(60)).map((g) => ({
+  // Fetch all images for the thumbnail strip to ensure navigation works for all images
+  // This is necessary because the client-side navigation relies on finding the current ID in this list.
+  const thumbs = (await listGalleryImages(undefined)).map((g) => ({
     id: g.id,
     filePath: g.filePath,
     microThumbPath: g.microThumbPath ?? undefined,

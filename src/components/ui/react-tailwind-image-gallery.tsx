@@ -79,7 +79,7 @@ export function ImageModal({ src, onClose }: ImageModalProps) {
       }}
       role="dialog"
       aria-modal="true"
-      aria-label="图片预览"
+      aria-label="Image Preview"
     >
       <div className="relative max-h-[90vh] max-w-[90vw]">
         <Image
@@ -94,7 +94,7 @@ export function ImageModal({ src, onClose }: ImageModalProps) {
       <button
         className="absolute top-5 right-5 text-4xl font-bold text-white transition-colors hover:text-gray-300"
         onClick={onClose}
-        aria-label="关闭预览"
+        aria-label="Close Preview"
       >
         &times;
       </button>

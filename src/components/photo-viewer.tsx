@@ -82,7 +82,7 @@ export function PhotoViewer({
   const previousSnapshotRef = useRef<{ id: string; src: string; alt: string } | null>({
     id: image.id,
     src: image.mediumPath || image.filePath,
-    alt: image.title || "未命名照片",
+    alt: image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo"),
   });
   const clampOffsetRef = useRef<
     ((nextOffset: { x: number; y: number }, s: number) => { x: number; y: number }) | null
@@ -140,7 +140,7 @@ export function PhotoViewer({
         direction,
         ts: Date.now(),
         fromSrc,
-        fromAlt: image.title || "未命名照片",
+        fromAlt: image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo"),
         fromId: image.id,
       };
       if (typeof window !== "undefined") {
@@ -348,7 +348,7 @@ export function PhotoViewer({
             storedSnapshot = {
               direction: parsed.direction,
               fromSrc: parsed.fromSrc || "",
-              fromAlt: parsed.fromAlt || image.title || "未命名照片",
+              fromAlt: parsed.fromAlt || image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo"),
               fromId: parsed.fromId,
             };
             if (!pending) {
@@ -501,7 +501,7 @@ export function PhotoViewer({
     previousSnapshotRef.current = {
       id: image.id,
       src: displaySrc,
-      alt: image.title || "未命名照片",
+      alt: image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo"),
     };
   }, [image.id, displaySrc, image.title]);
 
@@ -785,8 +785,8 @@ export function PhotoViewer({
           <Link
             href={localePath(locale, `/gallery/${visualAdjacentIds.current.prev}`)}
             className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
-            title="上一张"
-            aria-label="上一张"
+            title={locale === "zh" ? "上一张" : "Previous"}
+            aria-label={locale === "zh" ? "上一张" : "Previous"}
             onClick={() => markPendingDirection("prev")}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -806,8 +806,8 @@ export function PhotoViewer({
           <Link
             href={localePath(locale, `/gallery/${visualAdjacentIds.current.next}`)}
             className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
-            title="下一张"
-            aria-label="下一张"
+            title={locale === "zh" ? "下一张" : "Next"}
+            aria-label={locale === "zh" ? "下一张" : "Next"}
             onClick={() => markPendingDirection("next")}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -826,7 +826,7 @@ export function PhotoViewer({
               <LivePhotoPlayer
                 imageSrc={image.filePath}
                 videoSrc={image.livePhotoVideoPath}
-                alt={image.title || "未命名照片"}
+                alt={image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo")}
                 className="h-full w-full"
               />
             </div>
@@ -885,7 +885,7 @@ export function PhotoViewer({
                   >
                     <Image
                       src={displaySrc}
-                      alt={image.title || "未命名照片"}
+                      alt={image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo")}
                       fill
                       className="object-contain"
                       sizes="(max-width: 1024px) 100vw, 65vw"
@@ -905,7 +905,7 @@ export function PhotoViewer({
               )}
               {showHint && (
                 <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs text-zinc-600 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
-                  滚轮缩放 · 双击重置
+                  {locale === "zh" ? "滚轮缩放 · 双击重置" : "Wheel to zoom · Double click to reset"}
                 </div>
               )}
             </div>
@@ -936,7 +936,9 @@ export function PhotoViewer({
             </svg>
             <div>
               <div className="font-medium">
-                {`正在加载图片${formatProgress(originalState.loadedBytes, originalState.totalBytes)}`}
+                {locale === "zh"
+                  ? `正在加载图片${formatProgress(originalState.loadedBytes, originalState.totalBytes)}`
+                  : `Loading image${formatProgress(originalState.loadedBytes, originalState.totalBytes)}`}
               </div>
               <div className="text-[11px] text-white/70">
                 {formatBytes(originalState.loadedBytes)}
@@ -950,7 +952,7 @@ export function PhotoViewer({
 
         {/* Metadata panel - desktop only */}
         <aside className="hidden w-full overflow-y-auto border-l border-zinc-200 bg-white lg:block lg:max-w-[480px] lg:flex-none lg:basis-[380px] xl:basis-[420px] dark:border-zinc-800 dark:bg-[#0b0b0d]">
-          <PhotoMetadataPanel image={image} />
+          <PhotoMetadataPanel image={image} locale={locale} />
         </aside>
       </div>
 
