@@ -126,7 +126,7 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
 
   if (friends.length === 0) {
     return (
-      <Card variant="secondary" className="border border-dashed border-zinc-300 dark:border-zinc-800">
+      <Card variant="default" className="border border-dashed border-zinc-300 dark:border-zinc-800">
         <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
           <div className="text-4xl">👥</div>
           <div className="max-w-sm space-y-2">

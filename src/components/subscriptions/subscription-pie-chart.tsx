@@ -81,7 +81,7 @@ export function SubscriptionPieChart({ data, viewMode, locale }: SubscriptionPie
 
   if (data.length === 0) {
     return (
-      <Card variant="secondary" className="flex flex-col border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="flex flex-col border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="space-y-2 p-5">
           {title}
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -96,7 +96,7 @@ export function SubscriptionPieChart({ data, viewMode, locale }: SubscriptionPie
   }
 
   return (
-    <Card variant="secondary" className="flex flex-col border border-zinc-200/80 dark:border-zinc-800/80">
+    <Card variant="default" className="flex flex-col border border-zinc-200/80 dark:border-zinc-800/80">
       <CardContent className="space-y-2 p-5">
         {title}
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{subscriptionText}</p>

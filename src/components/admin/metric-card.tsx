@@ -15,7 +15,7 @@ type MetricCardProps = {
  */
 export function MetricCard({ label, value, meta, href, alert }: MetricCardProps) {
   const cardContent = (
-    <Card variant="secondary" className="min-h-[96px]">
+    <Card variant="default" className="min-h-[96px]">
       <CardContent className="flex flex-col gap-2 p-4 sm:p-5">
         <div className="flex items-start justify-between">
           <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{label}</span>

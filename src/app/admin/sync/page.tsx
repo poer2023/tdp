@@ -194,7 +194,7 @@ export default async function SyncDashboardPage() {
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {credentials.length === 0 ? (
-            <Card variant="secondary" className="col-span-full">
+            <Card variant="default" className="col-span-full">
             <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 {SKIP_DB ? "当前处于离线模式，无法加载凭据。" : "暂无配置的凭据"}
@@ -207,7 +207,7 @@ export default async function SyncDashboardPage() {
         ) : (
             credentials.map((cred) => (
               <Link key={cred.id} href={`/admin/credentials/${cred.id}`} className="block">
-                <Card variant="secondary" className="transition duration-150 hover:-translate-y-0.5">
+                <Card variant="default" className="transition duration-150 hover:-translate-y-0.5">
                   <CardContent className="flex flex-col gap-3 p-4">
                     <div className="flex items-center justify-between">
                       <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">

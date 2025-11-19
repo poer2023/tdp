@@ -127,7 +127,7 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
         </h1>
       </Surface>
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="space-y-6 p-5">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Metric label={t(locale, "credentialCreatedAt")} value={credential.createdAt} />
@@ -156,7 +156,7 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
         </CardContent>
       </Card>
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="space-y-6 p-5">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">

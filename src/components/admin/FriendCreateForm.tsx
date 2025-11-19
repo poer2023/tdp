@@ -35,7 +35,7 @@ export function FriendCreateForm() {
   }, [state.success]);
 
   return (
-    <Card variant="secondary">
+    <Card variant="default">
       <form ref={formRef} action={formAction} className="space-y-6 p-6">
         <Input
           id="name"

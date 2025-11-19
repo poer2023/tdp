@@ -101,7 +101,7 @@ export default function NewCredentialPage() {
         </h1>
       </Surface>
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="p-5">
           <CredentialForm action={createCredential} locale={locale} />
         </CardContent>

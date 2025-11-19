@@ -200,7 +200,7 @@ export function SyncStatusDashboard() {
 
   if (!data) {
     return (
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="p-8">
           <Alert status="warning" title="无法加载同步状态">
             请检查 API 响应或稍后重试。
@@ -213,7 +213,7 @@ export function SyncStatusDashboard() {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Quick Actions */}
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="space-y-4 p-5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -328,7 +328,7 @@ export function SyncStatusDashboard() {
       )}
 
       {/* Recent Sync Jobs */}
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="space-y-4 p-5">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>

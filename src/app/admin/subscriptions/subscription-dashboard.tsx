@@ -324,7 +324,7 @@ export default function SubscriptionDashboard({
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <SummaryCard label={translation("monthlySpend")} value={formatCNY(totals.monthly)} />
         <SummaryCard label={translation("annualSpend")} value={formatCNY(totals.annual)} />
-        <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
           <CardContent className="space-y-3 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
               {translation("markdownExport")}
@@ -341,7 +341,7 @@ export default function SubscriptionDashboard({
             </Button>
           </CardContent>
         </Card>
-        <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
           <CardContent className="space-y-2 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
               {translation("subscriptionManagement")}
@@ -356,7 +356,7 @@ export default function SubscriptionDashboard({
         </Card>
       </section>
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="space-y-4 p-5">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
@@ -442,7 +442,7 @@ export default function SubscriptionDashboard({
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+    <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
       <CardContent className="space-y-2 p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
           {label}

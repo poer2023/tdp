@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alex's Digital Garden</title>
+    
+    <!-- 1. 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- 3. 引入 FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 4. Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans SC', 'sans-serif'],
+                    },
+                    colors: {
+                        bgLight: '#F9FAFB',
+                        accentPurple: '#8B5CF6',
+                        accentPink: '#EC4899',
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.05)',
+                        'hover': '0 20px 50px -12px rgba(0,0,0,0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 5. 自定义 CSS 动画 -->
+    <style>
+        body {
+            background-color: #F3F4F6;
+            /* 背景网格点阵纹理 */
+            background-image: radial-gradient(#E5E7EB 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        
+        /* 卡片基础交互 */
+        .bento-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            backface-visibility: hidden;
+        }
+        .bento-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 20px 50px -12px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        /* 隐藏滚动条但保留功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 动画：闪光加载效果 */
+        @keyframes shimmer {
+            0% { opacity: 0.6; transform: scaleY(1); }
+            50% { opacity: 1; transform: scaleY(1.1); }
+            100% { opacity: 0.6; transform: scaleY(1); }
+        }
+
+        /* 动画：无限水平滚动 (用于订阅栏) */
+        @keyframes scroll-x {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } /* 移动一半，配合JS复制内容实现无缝 */
+        }
+        .animate-scroll {
+            display: flex;
+            width: max-content;
+            animation: scroll-x 20s linear infinite;
+        }
+        /* 鼠标悬停暂停滚动 */
+        .group:hover .animate-scroll {
+            animation-play-state: paused;
+        }
+
+        /* 动画：呼吸灯波纹 (用于服务器状态) */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(2.4); opacity: 0; }
+        }
+        .pulse-dot::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: inherit;
+            border-radius: 50%;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 font-sans antialiased py-12 px-4 sm:px-6 lg:px-8">
+
+    <div class="max-w-5xl mx-auto">
+        
+        <!-- Header: 个人简介 -->
+        <div class="mb-10 flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+            <div>
+                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-2">
+                    Hi, I'm <span class="text-transparent bg-clip-text bg-gradient-to-r from-accentPurple to-accentPink">Alex</span>.
+                </h1>
+                <p class="text-lg text-slate-500 font-medium max-w-lg">
+                    全栈开发者 / 独立游戏爱好者 / 赛博园丁。<br>
+                    欢迎来到我的数字切片。
+                </p>
+            </div>
+            <div class="flex gap-3">
+                <a href="#" class="p-3 bg-white rounded-full shadow-sm text-slate-400 hover:text-slate-900 hover:shadow-md transition-all"><i class="fa-brands fa-github text-xl"></i></a>
+                <a href="#" class="p-3 bg-white rounded-full shadow-sm text-slate-400 hover:text-blue-400 hover:shadow-md transition-all"><i class="fa-brands fa-twitter text-xl"></i></a>
+                <a href="#" class="p-3 bg-white rounded-full shadow-sm text-slate-400 hover:text-pink-500 hover:shadow-md transition-all"><i class="fa-solid fa-envelope text-xl"></i></a>
+            </div>
+        </div>
+
+        <!-- Bento Grid 主容器 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 auto-rows-[180px] gap-6">
+
+            <!-- 1. Mood (1x1) -->
+            <div class="bento-card md:col-span-1 md:row-span-1 bg-white rounded-3xl p-6 border border-slate-100 shadow-soft flex flex-col justify-between overflow-hidden relative group">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-yellow-100 rounded-full -mr-8 -mt-8 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+                <div>
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Current Mood</div>
+                    <div class="text-3xl">☕️ Focus</div>
+                </div>
+                <div class="mt-4 text-sm text-slate-500">"Deploying changes..."</div>
+            </div>
+
+            <!-- 2. GitHub Heatmap (2x1) -->
+            <div class="bento-card md:col-span-2 md:row-span-1 bg-white rounded-3xl p-6 border border-slate-100 shadow-soft relative overflow-hidden flex flex-col justify-between">
+                <div class="flex justify-between items-center relative z-10">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-brands fa-github text-2xl text-slate-800"></i>
+                        <span class="font-bold text-slate-700">Contribution</span>
+                    </div>
+                    <div class="text-xs font-mono bg-slate-100 px-2 py-1 rounded text-slate-500" id="gh-total">...</div>
+                </div>
+                <!-- 热力图容器 -->
+                <div class="relative w-full h-20 flex items-end gap-[4px] overflow-hidden" id="github-graph"></div>
+                <div class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent z-20"></div>
+            </div>
+
+            <!-- 3. Media List (1x2 Vertical) -->
+            <div class="bento-card md:col-span-1 md:row-span-2 bg-slate-900 text-white rounded-3xl p-6 shadow-soft relative overflow-hidden flex flex-col">
+                <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+                <div class="z-10 mb-4 flex justify-between items-center">
+                    <h3 class="font-bold text-lg"><i class="fa-solid fa-compact-disc mr-2 text-accentPink"></i>Media</h3>
+                </div>
+                <!-- 滚动列表 -->
+                <div class="flex-1 overflow-y-auto no-scrollbar space-y-4 z-10 pb-6" id="media-list"></div>
+                <div class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-slate-900 to-transparent z-20 pointer-events-none"></div>
+            </div>
+
+            <!-- 4. Steam Game (2x1) -->
+            <div class="bento-card md:col-span-2 md:row-span-1 bg-slate-100 rounded-3xl p-0 border border-slate-200 shadow-soft flex overflow-hidden relative group">
+                <!-- 左侧图片 -->
+                <div class="w-2/5 relative h-full bg-slate-300 overflow-hidden">
+                    <img id="game-bg" src="" class="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="Game Art">
+                    <div class="absolute inset-0 bg-indigo-900/30 group-hover:bg-transparent transition-colors"></div>
+                    <div class="absolute bottom-4 left-4 text-white z-10">
+                        <div class="text-[10px] uppercase opacity-90">Playing</div>
+                        <div class="font-bold text-md leading-tight shadow-black drop-shadow-md" id="game-name">Loading...</div>
+                    </div>
+                </div>
+                <!-- 右侧数据 -->
+                <div class="w-3/5 p-5 flex flex-col justify-between">
+                    <div class="flex justify-between items-start">
+                        <i class="fa-brands fa-steam text-2xl text-blue-500"></i>
+                        <span class="text-xs font-bold bg-white px-2 py-1 rounded shadow-sm text-blue-600" id="game-hours">0h</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs text-slate-600">
+                            <span>Progress</span>
+                            <span class="font-bold">84%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: 84%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Tech Stack (1x1) -->
+            <div class="bento-card md:col-span-1 md:row-span-1 bg-white rounded-3xl p-6 border border-slate-100 shadow-soft flex flex-col justify-center items-center text-center gap-2">
+                <div class="text-xs text-slate-400 mb-1 font-bold uppercase">Tech Stack</div>
+                <div class="flex flex-wrap justify-center gap-2" id="tech-tags">
+                    <!-- JS生成 -->
+                </div>
+            </div>
+
+            <!-- 6. Apple Health (1x1) -->
+            <div class="bento-card md:col-span-1 md:row-span-1 bg-white rounded-3xl p-5 border border-slate-100 shadow-soft flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full border-4 border-red-50 opacity-60"></div>
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-2 text-rose-500 font-bold text-sm">
+                        <i class="fa-solid fa-heart-pulse animate-pulse"></i> Health
+                    </div>
+                    <span class="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded">Today</span>
+                </div>
+                <div class="flex-1 flex flex-col justify-center">
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-black text-slate-800 tracking-tight" id="health-steps">0</span>
+                        <span class="text-xs text-slate-500 font-medium uppercase">Steps</span>
+                    </div>
+                    <div class="mt-3 flex items-center gap-2 bg-slate-50 p-2 rounded-lg">
+                        <i class="fa-solid fa-moon text-indigo-400 text-xs"></i>
+                        <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-indigo-400 rounded-full" style="width: 75%"></div>
+                        </div>
+                        <span class="text-xs font-bold text-slate-600" id="health-sleep">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Subscriptions (1x1) -->
+            <div class="bento-card md:col-span-1 md:row-span-1 bg-slate-900 rounded-3xl p-0 shadow-soft overflow-hidden relative flex flex-col justify-center group">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 z-10"></div>
+                <div class="text-center z-20 mb-3">
+                    <p class="text-[10px] text-slate-400 font-medium tracking-widest uppercase">Subscriptions</p>
+                    <p class="text-white font-bold text-lg">$<span id="sub-total">142</span><span class="text-xs font-normal text-slate-400"> /mo</span></p>
+                </div>
+                <!-- 滚动图标轨道 -->
+                <div class="relative w-full overflow-hidden z-0 opacity-60 group-hover:opacity-100 transition-opacity duration-500 grayscale group-hover:grayscale-0">
+                    <div class="flex gap-4 mb-2 animate-scroll" id="sub-row-1"></div>
+                </div>
+            </div>
+
+            <!-- 8. Server Status (2x1) -->
+            <div class="bento-card md:col-span-2 md:row-span-1 bg-white rounded-3xl p-6 border border-slate-100 shadow-soft flex flex-col justify-between">
+                <!-- 头部 -->
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 relative">
+                            <div class="w-2 h-2 bg-emerald-500 rounded-full relative z-10"></div>
+                            <div class="absolute inset-0 rounded-full bg-emerald-400 pulse-dot opacity-20"></div>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-slate-700">System Normal</div>
+                            <div class="text-[10px] text-slate-400">Uptime: 42d • Tokyo</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] font-mono text-slate-400">Latency</div>
+                        <div class="text-lg font-bold text-slate-800 font-mono" id="server-ping">--ms</div>
+                    </div>
+                </div>
+                <!-- 仪表盘 -->
+                <div class="grid grid-cols-2 gap-6 mt-2">
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-1 text-slate-500">
+                            <span>CPU Load</span>
+                            <span class="font-mono font-bold text-slate-700" id="cpu-val">--%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5">
+                            <div class="bg-slate-800 h-1.5 rounded-full transition-all duration-1000" style="width: 0%" id="cpu-bar"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-1 text-slate-500">
+                            <span>RAM Usage</span>
+                            <span class="font-mono font-bold text-slate-700" id="ram-val">--%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5">
+                            <div class="bg-slate-800 h-1.5 rounded-full transition-all duration-1000" style="width: 0%" id="ram-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-12 text-center text-slate-400 text-xs">
+            <p>&copy; 2025 Alex. Built with Bento Grid concept.</p>
+        </div>
+    </div>
+
+    <!-- 逻辑脚本 -->
+    <script>
+        // ==========================================
+        // 1. 模拟数据 (实际项目中请替换为 API 请求)
+        // ==========================================
+        const mockData = {
+            github: {
+                total: "1,234 Commits",
+                // 模拟最近的提交强度 (0-4)
+                contributions: Array.from({length: 40}, () => Math.floor(Math.random() * 5))
+            },
+            steam: {
+                playing: "Cyberpunk 2077",
+                hours: "142.5h",
+                bg: "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/1091500/header.jpg"
+            },
+            media: [
+                { type: 'book', title: 'The Three-Body Problem', author: 'Cixin Liu', rating: 5, color: 'text-blue-400' },
+                { type: 'movie', title: 'Oppenheimer', author: 'Nolan', rating: 5, color: 'text-red-400' },
+                { type: 'music', title: 'Random Access Memories', author: 'Daft Punk', rating: 5, color: 'text-purple-400' },
+                { type: 'game', title: 'Elden Ring', author: 'FromSoftware', rating: 5, color: 'text-yellow-400' },
+                { type: 'anime', title: 'Frieren: Beyond Journey', author: 'Madhouse', rating: 4, color: 'text-pink-400' },
+            ],
+            tech: ['React', 'Node.js', 'Python', 'Docker', 'Go', 'Tailwind'],
+            health: {
+                steps: 8432,
+                sleep: "7h 12m"
+            },
+            subscriptions: [
+                { icon: 'fa-brands fa-spotify', color: '#1DB954' },
+                { icon: 'fa-brands fa-youtube', color: '#FF0000' },
+                { icon: 'fa-brands fa-aws', color: '#FF9900' },
+                { icon: 'fa-solid fa-robot', color: '#10A37F' }, // ChatGPT
+                { icon: 'fa-brands fa-apple', color: '#A2AAAD' },
+                { icon: 'fa-brands fa-github', color: '#FFFFFF' },
+            ],
+            server: {
+                cpu: 12, ram: 42, ping: 24
+            }
+        };
+
+        // ==========================================
+        // 2. 渲染函数集合
+        // ==========================================
+
+        // 渲染 Github 柱状图
+        function renderGithub() {
+            const container = document.getElementById('github-graph');
+            document.getElementById('gh-total').innerText = mockData.github.total;
+
+            mockData.github.contributions.forEach((level, index) => {
+                const bar = document.createElement('div');
+                // 映射高度和颜色
+                let h = '20%'; let c = 'bg-slate-100';
+                if(level === 1) { h = '30%'; c = 'bg-green-200'; }
+                if(level === 2) { h = '50%'; c = 'bg-green-300'; }
+                if(level === 3) { h = '75%'; c = 'bg-green-400'; }
+                if(level === 4) { h = '100%'; c = 'bg-green-500'; }
+                
+                bar.className = `w-full rounded-t-sm ${c} transition-all duration-300`;
+                bar.style.height = h;
+                // 添加微动画
+                bar.style.animation = `shimmer 3s infinite`;
+                bar.style.animationDelay = `${index * 0.1}s`;
+                container.appendChild(bar);
+            });
+        }
+
+        // 渲染 Steam
+        function renderSteam() {
+            document.getElementById('game-name').innerText = mockData.steam.playing;
+            document.getElementById('game-hours').innerText = mockData.steam.hours;
+            document.getElementById('game-bg').src = mockData.steam.bg;
+        }
+
+        // 渲染 媒体列表
+        function renderMedia() {
+            const list = document.getElementById('media-list');
+            const icons = {
+                'book': 'fa-book', 'movie': 'fa-film', 'music': 'fa-music', 'game': 'fa-gamepad', 'anime': 'fa-tv'
+            };
+
+            mockData.media.forEach(item => {
+                const row = document.createElement('div');
+                row.className = "flex gap-3 items-center p-2 hover:bg-slate-800 rounded-lg transition-colors cursor-default group";
+                
+                let stars = '';
+                for(let i=0;i<5;i++) stars += `<i class="fa-solid fa-star text-[8px] ${i<item.rating ? 'text-yellow-500':'text-slate-700'}"></i>`;
+
+                row.innerHTML = `
+                    <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center flex-shrink-0 border border-slate-700 group-hover:border-slate-600">
+                        <i class="fa-solid ${icons[item.type] || 'fa-circle'} ${item.color}"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-xs font-bold text-slate-200 truncate">${item.title}</div>
+                        <div class="text-[10px] text-slate-500 truncate">${item.author}</div>
+                    </div>
+                    <div class="flex gap-0.5">${stars}</div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        // 渲染 Tech Stack
+        function renderTech() {
+            const container = document.getElementById('tech-tags');
+            mockData.tech.forEach(t => {
+                const tag = document.createElement('span');
+                tag.className = "px-2 py-1 bg-slate-50 text-slate-600 rounded-md text-[10px] font-bold border border-slate-100";
+                tag.innerText = t;
+                container.appendChild(tag);
+            });
+        }
+
+        // 渲染 Apple Health (带数字滚动)
+        function renderHealth() {
+            document.getElementById('health-sleep').innerText = mockData.health.sleep;
+            const stepsEl = document.getElementById('health-steps');
+            
+            let start = 0;
+            const end = mockData.health.steps;
+            const duration = 1500;
+            const startTime = performance.now();
+
+            const update = (now) => {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                // EaseOutQuart
+                const ease = 1 - Math.pow(1 - progress, 4);
+                
+                stepsEl.innerText = Math.floor(start + (end - start) * ease).toLocaleString();
+                if(progress < 1) requestAnimationFrame(update);
+            };
+            requestAnimationFrame(update);
+        }
+
+        // 渲染 订阅图标 (无限滚动)
+        function renderSubs() {
+            const container = document.getElementById('sub-row-1');
+            // 复制数组以确保滚动无缝填满容器
+            const items = [...mockData.subscriptions, ...mockData.subscriptions, ...mockData.subscriptions];
+            
+            items.forEach(sub => {
+                const div = document.createElement('div');
+                div.className = "w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 border border-slate-700";
+                div.innerHTML = `<i class="${sub.icon} text-lg" style="color:${sub.color}"></i>`;
+                container.appendChild(div);
+            });
+        }
+
+        // 渲染 服务器状态 (实时波动模拟)
+        function renderServer() {
+            const cpuBar = document.getElementById('cpu-bar');
+            const ramBar = document.getElementById('ram-bar');
+            const cpuVal = document.getElementById('cpu-val');
+            const ramVal = document.getElementById('ram-val');
+            const pingVal = document.getElementById('server-ping');
+            
+            // 初始值
+            let currentCpu = mockData.server.cpu;
+            let currentRam = mockData.server.ram;
+            let currentPing = mockData.server.ping;
+
+            // 更新视图函数
+            const updateView = () => {
+                cpuBar.style.width = `${currentCpu}%`;
+                cpuVal.innerText = `${currentCpu}%`;
+                ramBar.style.width = `${currentRam}%`;
+                ramVal.innerText = `${currentRam}%`;
+                pingVal.innerText = `${currentPing}ms`;
+
+                // 简单的颜色警告逻辑
+                if(currentCpu > 80) cpuBar.classList.replace('bg-slate-800', 'bg-red-500');
+                else cpuBar.classList.replace('bg-red-500', 'bg-slate-800');
+            };
+
+            updateView();
+
+            // 模拟波动 (每3秒)
+            setInterval(() => {
+                // 随机波动算法
+                currentCpu = Math.max(5, Math.min(95, currentCpu + Math.floor(Math.random()*10 - 4)));
+                currentRam = Math.max(10, Math.min(90, currentRam + Math.floor(Math.random()*6 - 2)));
+                currentPing = Math.max(10, Math.min(150, currentPing + Math.floor(Math.random()*20 - 10)));
+                updateView();
+            }, 3000);
+        }
+
+        // ==========================================
+        // 3. 初始化
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            renderGithub();
+            renderSteam();
+            renderMedia();
+            renderTech();
+            renderHealth();
+            renderSubs();
+            renderServer();
+        });
+
+    </script>
+</body>
+</html>

@@ -74,7 +74,7 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
   const triggeredValue = triggeredBy || ALL_OPTION;
 
   return (
-    <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+    <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
       <CardContent className="space-y-5 p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

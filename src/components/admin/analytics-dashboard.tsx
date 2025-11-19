@@ -112,7 +112,7 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
         />
       </section>
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="space-y-5 p-5">
           <div className="flex flex-col gap-1">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">
@@ -171,7 +171,7 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
 
 function StatCard({ title, value, subtitle }: { title: string; value: number; subtitle?: string }) {
   return (
-    <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+    <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
       <CardContent className="space-y-2 p-5">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{title}</p>
         <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">

@@ -36,7 +36,7 @@ type CredentialsContentProps = {
 export function CredentialsContent({ credentials, locale }: CredentialsContentProps) {
   if (credentials.length === 0) {
     return (
-      <Card variant="secondary">
+      <Card variant="default">
         <CardContent className="py-12 text-center">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">{t(locale, "noCredentials")}</p>
           <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">

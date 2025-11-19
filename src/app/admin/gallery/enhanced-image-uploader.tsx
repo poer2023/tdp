@@ -243,7 +243,7 @@ export const EnhancedImageUploader = React.forwardRef<HTMLDivElement, EnhancedIm
               type="button"
               variant="outline"
               size="icon"
-              className="h-10 w-10 rounded-full"
+              className="h-10 w-10 rounded-full pointer-events-none"
               disabled={disabled}
             >
               <Upload className="h-5 w-5" />

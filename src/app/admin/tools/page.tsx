@@ -42,7 +42,7 @@ export default function AdminToolsPage() {
         </div>
       </Surface>
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="flex flex-wrap gap-3 p-4">
           {tabs.map((tab) => (
             <Button
@@ -60,7 +60,7 @@ export default function AdminToolsPage() {
         {activeTab === "export" && <ExportClientShell />}
         {activeTab === "import" && <ImportClient />}
         {activeTab === "backup" && (
-          <Card variant="secondary" className="border border-dashed border-zinc-300 dark:border-zinc-800">
+          <Card variant="default" className="border border-dashed border-zinc-300 dark:border-zinc-800">
             <CardContent className="py-12 text-center">
               <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Backup Feature</h3>
               <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">备份功能开发中，敬请期待。</p>

@@ -34,7 +34,7 @@ export function AdminGalleryClient({ images, posts: _posts }: GalleryClientProps
         {images.length ? (
           <AdminGalleryGrid images={images} />
         ) : (
-          <Card variant="secondary" className="px-6 py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
+          <Card variant="default" className="px-6 py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
             相册还没有内容，尝试上传一张照片吧。
           </Card>
         )}

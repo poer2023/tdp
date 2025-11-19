@@ -570,7 +570,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                     准备上传 {imageCount} 张图片
                     {livePhotoCount > 0 && ` (包含 ${livePhotoCount} 组 Live Photo)`}
                   </div>
-                  <Button onClick={handleUpload} disabled={isUploading} size="default">
+                  <Button onPress={handleUpload} disabled={isUploading} size="default">
                     {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isUploading ? "上传中..." : "开始上传"}
                   </Button>

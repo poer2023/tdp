@@ -125,7 +125,7 @@ export function ExportClient() {
 
       {error && <Alert status="danger" description={error} />}
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardHeader>
           <CardTitle>日期范围</CardTitle>
           <CardDescription>留空表示不限制日期</CardDescription>
@@ -146,7 +146,7 @@ export function ExportClient() {
         </CardContent>
       </Card>
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardHeader>
           <CardTitle>状态</CardTitle>
           <CardDescription>不勾选表示导出所有状态</CardDescription>
@@ -167,7 +167,7 @@ export function ExportClient() {
         </CardContent>
       </Card>
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardHeader>
           <CardTitle>语言</CardTitle>
           <CardDescription>不勾选表示导出所有语言</CardDescription>

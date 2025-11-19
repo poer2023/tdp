@@ -130,7 +130,7 @@ export function ImportClient() {
 
       {error && <Alert status="danger" description={error} />}
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardHeader>
           <CardTitle>上传文件</CardTitle>
           <CardDescription>仅支持 ZIP 文件</CardDescription>
@@ -174,7 +174,7 @@ export function ImportClient() {
       </Card>
 
       {dryRunResult && (
-        <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
           <CardHeader>
             <CardTitle>预览结果</CardTitle>
             <CardDescription>确认无误后再应用更改</CardDescription>
@@ -249,7 +249,7 @@ export function ImportClient() {
         />
       )}
 
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardHeader>
           <CardTitle>导入格式</CardTitle>
           <CardDescription>遵循 docs/CONTENT_FORMAT.md 文档中的结构</CardDescription>

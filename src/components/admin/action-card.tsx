@@ -31,7 +31,7 @@ export function ActionCard({
   secondaryAction,
 }: ActionCardProps) {
   const cardContent = (
-    <Card variant="secondary" className="group h-[96px]">
+    <Card variant="default" className="group h-[96px]">
       <CardContent className="flex h-full items-center gap-4 p-5">
         {/* Icon */}
         <div className="flex-shrink-0 text-zinc-600 dark:text-zinc-400">{icon}</div>

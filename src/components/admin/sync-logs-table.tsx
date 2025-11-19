@@ -48,7 +48,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
 
   if (logs.length === 0) {
     return (
-      <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
         <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">暂无匹配的同步日志</p>
           <p className="text-xs text-zinc-400 dark:text-zinc-500">调整筛选条件后再试一次</p>

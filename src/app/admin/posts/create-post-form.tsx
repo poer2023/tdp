@@ -50,7 +50,7 @@ export function CreatePostForm() {
   }, [state, router]);
 
   return (
-    <Card variant="secondary">
+    <Card variant="default">
       <CardHeader>
         <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>

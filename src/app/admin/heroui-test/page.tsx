@@ -83,7 +83,7 @@ export default function HeroUITestPage() {
               </CardFooter>
             </Card>
 
-            <Card variant="secondary">
+            <Card variant="default">
               <CardHeader>
                 <CardTitle>次要卡片</CardTitle>
                 <CardDescription>variant=&quot;secondary&quot;</CardDescription>

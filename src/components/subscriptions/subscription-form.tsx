@@ -110,7 +110,7 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
   };
 
   return (
-    <Card variant="secondary" className="border border-zinc-200/80 dark:border-zinc-800/80">
+    <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
       <form onSubmit={handleSubmit} noValidate className="space-y-5 p-5">
         <div className="space-y-1">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-600 dark:text-blue-400">

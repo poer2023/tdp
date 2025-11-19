@@ -93,7 +93,7 @@ export function AdminNav({
     <Surface
       variant="flat"
       className={cn(
-        "fixed top-16 left-0 z-40 flex h-[calc(100vh-64px)] w-64 flex-col border-r border-zinc-100 bg-white/90 backdrop-blur dark:border-zinc-900 dark:bg-zinc-950/90",
+        "fixed top-16 left-0 z-40 flex h-[calc(100vh-64px)] w-64 flex-col bg-white/90 backdrop-blur dark:bg-zinc-950/90",
         mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         "transition-transform duration-200"
       )}
@@ -146,28 +146,6 @@ export function AdminNav({
             </ListBox>
           </div>
         ))}
-      </div>
-
-      {/* Footer - Fixed at bottom (no divider) */}
-      <div className="px-4 py-4 sm:px-6 sm:py-5">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-sm text-zinc-600 transition-colors duration-150 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-        >
-          <span>←</span>
-          <span>{t(locale, "backToSite")}</span>
-        </Link>
-        {/* Close button for mobile */}
-        <div className="mt-4 md:hidden">
-          <HeroButton
-            variant="light"
-            size="sm"
-            onPress={onClose}
-            className="w-full justify-center"
-          >
-            关闭
-          </HeroButton>
-        </div>
       </div>
     </Surface>
   );

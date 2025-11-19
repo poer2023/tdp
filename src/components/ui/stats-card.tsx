@@ -69,7 +69,7 @@ export function StatsCard({
   const barRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   return (
-    <Card variant="secondary" className={cn("relative overflow-hidden", className)}>
+    <Card variant="default" className={cn("relative overflow-hidden", className)}>
       <CardContent className="space-y-4 p-5">
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">

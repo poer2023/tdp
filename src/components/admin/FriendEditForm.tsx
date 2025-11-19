@@ -73,7 +73,7 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
 
   return (
     <div className="space-y-6">
-      <Card variant="secondary">
+      <Card variant="default">
         <form action={formAction} className="space-y-6 p-6">
           <Input
             id="name"
@@ -121,7 +121,7 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
         </form>
       </Card>
 
-      <Card variant="secondary" className="p-6">
+      <Card variant="default" className="p-6">
         <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">安全设置</h2>
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
           重置该朋友的访问密码并即时生成新密码。

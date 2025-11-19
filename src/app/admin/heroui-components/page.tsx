@@ -66,7 +66,7 @@ export default function HeroUIComponentsShowcase() {
       {/* 表单组件 */}
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">表单组件</h2>
-        <Card variant="secondary" className="p-6">
+        <Card variant="default" className="p-6">
           <div className="space-y-4">
             <Input
               label="用户名"
@@ -116,7 +116,7 @@ export default function HeroUIComponentsShowcase() {
       {/* 数据展示 - Table */}
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Table 组件</h2>
-        <Card variant="secondary">
+        <Card variant="default">
           <Table variant="striped" hoverable>
             <TableHead>
               <TableRow>
@@ -191,17 +191,17 @@ export default function HeroUIComponentsShowcase() {
             <Tabs.Tab id="tab3">选项卡 3</Tabs.Tab>
           </Tabs.List>
           <Tabs.Panel id="tab1">
-            <Card variant="secondary" className="p-6">
+            <Card variant="default" className="p-6">
               <p>选项卡 1 的内容</p>
             </Card>
           </Tabs.Panel>
           <Tabs.Panel id="tab2">
-            <Card variant="secondary" className="p-6">
+            <Card variant="default" className="p-6">
               <p>选项卡 2 的内容</p>
             </Card>
           </Tabs.Panel>
           <Tabs.Panel id="tab3">
-            <Card variant="secondary" className="p-6">
+            <Card variant="default" className="p-6">
               <p>选项卡 3 的内容</p>
             </Card>
           </Tabs.Panel>
@@ -289,7 +289,7 @@ export default function HeroUIComponentsShowcase() {
       {/* 加载状态演示 */}
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">加载状态演示</h2>
-        <Card variant="secondary" className="p-6">
+        <Card variant="default" className="p-6">
           <div className="space-y-4">
             <Button
               variant="primary"

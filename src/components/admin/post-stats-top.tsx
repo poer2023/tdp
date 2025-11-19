@@ -50,7 +50,7 @@ export function PostStatsTop({ locale = "en" }: PostStatsTopProps) {
 
   if (loading) {
     return (
-      <Card variant="secondary" className="flex min-h-[320px] flex-col">
+      <Card variant="default" className="flex min-h-[320px] flex-col">
         <CardContent>
           <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
             {t(locale, "topPosts")}
@@ -67,7 +67,7 @@ export function PostStatsTop({ locale = "en" }: PostStatsTopProps) {
 
   if (!data) {
     return (
-      <Card variant="secondary" className="flex min-h-[320px] flex-col">
+      <Card variant="default" className="flex min-h-[320px] flex-col">
         <CardContent>
           <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
             {t(locale, "topPosts")}
@@ -79,7 +79,7 @@ export function PostStatsTop({ locale = "en" }: PostStatsTopProps) {
   }
 
   return (
-    <Card variant="secondary" className="flex min-h-[320px] flex-col">
+    <Card variant="default" className="flex min-h-[320px] flex-col">
       <CardContent>
         <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
           {t(locale, "topPosts")}

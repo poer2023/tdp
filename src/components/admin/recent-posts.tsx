@@ -13,7 +13,7 @@ type RecentPostsProps = {
 
 export function RecentPosts({ posts, locale, isServiceDegraded = false }: RecentPostsProps) {
   return (
-    <Card variant="secondary" className="flex min-h-[320px] flex-col">
+    <Card variant="default" className="flex min-h-[320px] flex-col">
       <CardContent className="flex h-full flex-col gap-4">
         <h3 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
           {t(locale, "recentPosts")}
