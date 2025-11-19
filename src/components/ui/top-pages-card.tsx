@@ -6,13 +6,7 @@ import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -89,11 +83,9 @@ export function TopPagesCard({
     const pages = data[activePeriod] ?? [];
     if (pages.length === 0 || totalViews === 0) return [];
 
-    // Take top 8 pages and calculate their total views
     const topPages = pages.slice(0, 8);
     const topPagesTotal = topPages.reduce((sum, page) => sum + page.views, 0);
 
-    // Calculate percentage based on top pages total, not global total
     return topPages.map((page, index) => {
       const percent = topPagesTotal > 0 ? (page.views / topPagesTotal) * 100 : 0;
       return {
@@ -111,7 +103,6 @@ export function TopPagesCard({
           <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
             {isZh ? "页面访问" : "Page Views"}
           </h2>
-
           <Select
             value={activePeriod}
             onValueChange={(value) => setActivePeriod(value as PeriodOption)}
@@ -153,7 +144,6 @@ export function TopPagesCard({
               </div>
             )}
           </div>
-
           {delta !== null && Number.isFinite(delta) && (
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {delta >= 0 ? (isZh ? "↑ 较" : "↑ from ") : isZh ? "↓ 较" : "↓ from "}

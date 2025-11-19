@@ -6,6 +6,19 @@ import remarkGfm from "remark-gfm";
 import { PostStatus } from "@prisma/client";
 import type { PublicPost } from "@/lib/posts";
 import { updatePostAction, type PostFormState } from "../actions";
+import {
+  Input,
+  Textarea,
+  Select,
+  Button,
+  Alert,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Chip,
+} from "@/components/ui-heroui";
 
 const INITIAL_STATE: PostFormState = {
   status: "idle",
@@ -17,91 +30,72 @@ export function EditPostForm({ post }: { post: PublicPost }) {
   const [showPreview, setShowPreview] = useState(false);
 
   return (
-    <section className="rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">文章信息</h2>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            更新标题、摘要、标签、Markdown 正文与封面。
-          </p>
-        </div>
-        {state.status === "success" && state.message && (
-          <div className="flex items-center gap-3">
-            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-              {state.message}
-            </span>
-            {state.previewUrl && (
-              <a
-                href={state.previewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-800/60"
-              >
-                立即预览
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
-              </a>
-            )}
+    <Card variant="default">
+      <CardHeader>
+        <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <CardTitle>文章信息</CardTitle>
+            <CardDescription>更新标题、摘要、标签、Markdown 正文与封面。</CardDescription>
           </div>
+          {state.status === "success" && state.message && (
+            <div className="flex flex-wrap items-center gap-3">
+              <Chip status="success" size="sm">
+                {state.message}
+              </Chip>
+              {state.previewUrl && (
+                <Button asChild variant="secondary" size="sm">
+                  <a href={state.previewUrl} target="_blank" rel="noopener noreferrer">
+                    立即预览
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        {state.status === "error" && state.message && (
+          <Alert status="danger" title="保存失败" description={state.message} className="mb-4" />
         )}
-      </div>
 
-      {state.status === "error" && state.message && (
-        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/60 dark:text-red-200">
-          {state.message}
-        </p>
-      )}
-
-      <form action={formAction} className="mt-6 space-y-5">
-        <input type="hidden" name="id" value={post.id} />
+        <form action={formAction} className="space-y-5">
+          <input type="hidden" name="id" value={post.id} />
 
         <div className="grid gap-5 md:grid-cols-2">
           <Field label="标题" error={state.errors?.title}>
-            <input
+            <Input
               name="title"
               type="text"
               defaultValue={post.title}
-              required
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              isRequired
             />
           </Field>
 
           <Field label="简介" error={state.errors?.excerpt}>
-            <input
+            <Input
               name="excerpt"
               type="text"
               defaultValue={post.excerpt}
-              required
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              isRequired
             />
           </Field>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
           <Field label="标签">
-            <input
+            <Input
               name="tags"
               type="text"
               defaultValue={post.tags.join(",")}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
             />
           </Field>
 
           <Field label="状态">
-            <select
-              name="status"
-              defaultValue={post.status}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            >
-              <option value={PostStatus.DRAFT}>草稿</option>
-              <option value={PostStatus.PUBLISHED}>已发布</option>
-            </select>
+            <Select name="status" defaultSelectedKeys={[post.status]}>
+              <Select.Item id={PostStatus.DRAFT}>草稿</Select.Item>
+              <Select.Item id={PostStatus.PUBLISHED}>已发布</Select.Item>
+            </Select>
           </Field>
         </div>
 
@@ -123,23 +117,24 @@ export function EditPostForm({ post }: { post: PublicPost }) {
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <Field label="正文 (Markdown)" error={state.errors?.content}>
-                <textarea
+                <Textarea
                   name="content"
                   rows={14}
-                  required
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  isRequired
                   value={content}
                   onChange={(event) => setContent(event.target.value)}
                 />
               </Field>
             </div>
-            <button
+            <Button
               type="button"
-              onClick={() => setShowPreview((prev) => !prev)}
-              className="inline-flex items-center rounded-full border border-zinc-300 px-3 py-1 text-xs font-semibold whitespace-nowrap text-zinc-600 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              variant="secondary"
+              size="sm"
+              onPress={() => setShowPreview((prev) => !prev)}
+              className="whitespace-nowrap"
             >
               {showPreview ? "隐藏预览" : "预览 Markdown"}
-            </button>
+            </Button>
           </div>
 
           {showPreview && (
@@ -157,15 +152,12 @@ export function EditPostForm({ post }: { post: PublicPost }) {
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isPending ? "保存中…" : "保存修改"}
-        </button>
-      </form>
-    </section>
+          <Button type="submit" variant="primary" isDisabled={isPending}>
+            {isPending ? "保存中…" : "保存修改"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 

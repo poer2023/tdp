@@ -11,7 +11,6 @@
 
 import { RecentPosts } from "./recent-posts";
 import { RecentUploads } from "./recent-uploads";
-import { PostStatsTop } from "./post-stats-top";
 import { t, type AdminLocale } from "@/lib/admin-translations";
 import type { Prisma } from "@prisma/client";
 
@@ -41,14 +40,13 @@ export function DashboardActivity({
       <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
         {t(locale, "recentActivity")}
       </h2>
-      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
         <RecentPosts posts={recentPosts} locale={locale} isServiceDegraded={isServiceDegraded} />
         <RecentUploads
           images={recentUploads}
           locale={locale}
           isServiceDegraded={isServiceDegraded}
         />
-        <PostStatsTop locale={locale} />
       </div>
     </section>
   );

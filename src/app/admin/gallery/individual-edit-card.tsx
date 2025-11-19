@@ -3,18 +3,7 @@
 import * as React from "react";
 import { Video, Copy } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input, Label, Textarea, Select, Button, Chip } from "@/components/ui-heroui";
 
 import type { UploadFile } from "./enhanced-image-uploader";
 
@@ -61,10 +50,10 @@ export function IndividualEditCard({
           />
           {/* Live Photo 标识 */}
           {file.isLivePhoto && (
-            <Badge variant="secondary" className="absolute bottom-1 left-1 text-xs">
+            <Chip size="sm" className="absolute bottom-1 left-1 bg-black/70 text-white">
               <Video size={10} className="mr-1" />
               Live
-            </Badge>
+            </Chip>
           )}
         </div>
         <p className="mt-1 max-w-[96px] truncate text-xs text-zinc-500 dark:text-zinc-400">
@@ -99,17 +88,13 @@ export function IndividualEditCard({
             </Label>
             <Select
               value={metadata.category}
-              onValueChange={(value: GalleryCategory) => onMetadataChange({ category: value })}
-              disabled={disabled}
+              onChange={(value) => onMetadataChange({ category: value as GalleryCategory })}
+              isDisabled={disabled}
+              className="h-8 text-sm"
             >
-              <SelectTrigger id={`category-${file.id}`} className="h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ORIGINAL">原创</SelectItem>
-                <SelectItem value="REPOST">转发</SelectItem>
-                <SelectItem value="AI">AI 生成</SelectItem>
-              </SelectContent>
+              <Select.Item id="ORIGINAL">原创</Select.Item>
+              <Select.Item id="REPOST">转发</Select.Item>
+              <Select.Item id="AI">AI 生成</Select.Item>
             </Select>
           </div>
         </div>

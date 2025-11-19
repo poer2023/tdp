@@ -9,6 +9,7 @@ import { useState } from "react";
 import type { SyncJobLog, SyncJobStatus } from "@prisma/client";
 import { format } from "date-fns";
 import Image from "next/image";
+import { Button, Card, CardContent, Chip, Surface } from "@/components/ui-heroui";
 
 type MediaWatchItem = {
   id: string;
@@ -27,260 +28,249 @@ type SyncLogsTableProps = {
   logs: SyncJobLogWithItems[];
 };
 
+const STATUS_META: Record<
+  SyncJobStatus,
+  { label: string; color: "success" | "danger" | "primary" | "warning" | "default" }
+> = {
+  SUCCESS: { label: "成功", color: "success" },
+  FAILED: { label: "失败", color: "danger" },
+  RUNNING: { label: "运行中", color: "primary" },
+  PENDING: { label: "等待中", color: "warning" },
+  PARTIAL: { label: "部分完成", color: "warning" },
+};
+
 export function SyncLogsTable({ logs }: SyncLogsTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
-  const getStatusBadge = (status: SyncJobStatus) => {
-    const styles: Record<SyncJobStatus, string> = {
-      SUCCESS: "bg-green-100 text-green-800 dark:bg-green-950/20 dark:text-green-400",
-      FAILED: "bg-red-100 text-red-800 dark:bg-red-950/20 dark:text-red-400",
-      RUNNING: "bg-blue-100 text-blue-800 dark:bg-blue-950/20 dark:text-blue-400",
-      PENDING: "bg-yellow-100 text-yellow-800 dark:bg-yellow-950/20 dark:text-yellow-400",
-      PARTIAL: "bg-orange-100 text-orange-800 dark:bg-orange-950/20 dark:text-orange-400",
-    };
-
-    const labels: Record<SyncJobStatus, string> = {
-      SUCCESS: "✅ Success",
-      FAILED: "❌ Failed",
-      RUNNING: "🔄 Running",
-      PENDING: "⏳ Pending",
-      PARTIAL: "⚠️ Partial",
-    };
-
-    return (
-      <span
-        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${styles[status]}`}
-      >
-        {labels[status]}
-      </span>
-    );
-  };
-
   const toggleExpand = (id: string) => {
-    setExpandedRow(expandedRow === id ? null : id);
+    setExpandedRow((current) => (current === id ? null : id));
   };
+
+  if (logs.length === 0) {
+    return (
+      <Card variant="default" className="border border-zinc-200/80 dark:border-zinc-800/80">
+        <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">暂无匹配的同步日志</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">调整筛选条件后再试一次</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <div className="space-y-2">
-      {logs.length === 0 ? (
-        <div className="rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No logs found matching your filters
-          </p>
-        </div>
-      ) : (
-        logs.map((log) => (
-          <div
+    <div className="space-y-4">
+      {logs.map((log) => {
+        const status = STATUS_META[log.status];
+
+        return (
+          <Card
             key={log.id}
-            className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+            variant="secondary"
+            className="overflow-hidden border border-zinc-200/80 dark:border-zinc-800/80"
           >
-            {/* Main Row */}
-            <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-12">
-                {/* Platform & Status */}
-                <div className="md:col-span-3">
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <CardContent className="p-0">
+              <div className="grid gap-4 border-b border-zinc-200/60 p-4 text-sm dark:border-zinc-800/60 md:grid-cols-12">
+                <div className="space-y-2 md:col-span-3">
+                  <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                     {log.platform.toUpperCase()}
-                  </div>
-                  <div className="mt-1">{getStatusBadge(log.status)}</div>
+                  </p>
+                  <Chip size="sm" variant="flat" color={status.color} className="font-medium">
+                    {status.label}
+                  </Chip>
                 </div>
 
-                {/* Time & Duration */}
-                <div className="text-sm md:col-span-3">
-                  <div className="text-zinc-600 dark:text-zinc-400">
+                <div className="space-y-1 text-zinc-600 dark:text-zinc-400 md:col-span-3">
+                  <p>
+                    开始时间:{" "}
                     {log.startedAt
-                      ? format(new Date(log.startedAt), "MMM d, yyyy HH:mm:ss")
-                      : "Not started"}
-                  </div>
+                      ? format(new Date(log.startedAt), "yyyy-MM-dd HH:mm:ss")
+                      : "未开始"}
+                  </p>
                   {log.duration && (
-                    <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-500">
-                      Duration: {(log.duration / 1000).toFixed(1)}s
-                    </div>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-500">
+                      耗时 {(log.duration / 1000).toFixed(1)}s
+                    </p>
                   )}
                 </div>
 
-                {/* Items */}
-                <div className="text-sm md:col-span-2">
-                  <div className="text-zinc-600 dark:text-zinc-400">
-                    {log.itemsSuccess}/{log.itemsTotal} items
-                  </div>
+                <div className="space-y-1 text-zinc-600 dark:text-zinc-400 md:col-span-2">
+                  <p>
+                    数据量: {log.itemsSuccess}/{log.itemsTotal}
+                  </p>
                   {log.itemsFailed > 0 && (
-                    <div className="mt-0.5 text-xs text-red-600 dark:text-red-400">
-                      {log.itemsFailed} failed
-                    </div>
+                    <p className="text-xs text-red-500 dark:text-red-400">{log.itemsFailed} 失败</p>
                   )}
                 </div>
 
-                {/* Triggered By */}
-                <div className="text-sm text-zinc-600 md:col-span-2 dark:text-zinc-400">
-                  <span className="inline-flex items-center gap-1 rounded bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                    {log.triggeredBy}
-                  </span>
+                <div className="space-y-1 md:col-span-2">
+                  <Chip size="sm" variant="flat" className="font-medium capitalize">
+                    触发: {log.triggeredBy}
+                  </Chip>
+                  {log.jobType && (
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">类型: {log.jobType}</p>
+                  )}
                 </div>
 
-                {/* Expand Button */}
-                <div className="text-right md:col-span-2">
-                  <button
-                    onClick={() => toggleExpand(log.id)}
-                    className="text-sm text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
-                    {expandedRow === log.id ? "Hide Details" : "Show Details"}
-                  </button>
+                <div className="flex items-start justify-end md:col-span-2">
+                  <Button variant="light" size="sm" onPress={() => toggleExpand(log.id)}>
+                    {expandedRow === log.id ? "收起详情" : "查看详情"}
+                  </Button>
                 </div>
               </div>
-            </div>
 
-            {/* Expanded Details */}
-            {expandedRow === log.id && (
-              <div className="border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
-                <div className="grid gap-4 md:grid-cols-2">
-                  {/* Left Column */}
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
-                        Job Details
+              {expandedRow === log.id && (
+                <div className="space-y-4 bg-zinc-50/70 p-4 dark:bg-zinc-900/40">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Surface
+                      variant="flat"
+                      className="rounded-2xl border border-zinc-200/70 bg-white/90 p-4 dark:border-zinc-800/70 dark:bg-zinc-950/40"
+                    >
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        作业信息
                       </h4>
-                      <div className="mt-1 space-y-1 text-sm">
-                        <div>
-                          <span className="text-zinc-600 dark:text-zinc-400">Job ID:</span>{" "}
-                          <code className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                      <dl className="mt-3 space-y-2 text-xs text-zinc-600 dark:text-zinc-400">
+                        <div className="flex flex-wrap gap-2">
+                          <dt className="font-semibold text-zinc-500 dark:text-zinc-400">Job ID:</dt>
+                          <dd className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
                             {log.id}
-                          </code>
+                          </dd>
                         </div>
-                        {log.jobType && (
-                          <div>
-                            <span className="text-zinc-600 dark:text-zinc-400">Type:</span>{" "}
-                            <span className="text-zinc-900 dark:text-zinc-100">{log.jobType}</span>
-                          </div>
-                        )}
                         {log.credentialId && (
-                          <div>
-                            <span className="text-zinc-600 dark:text-zinc-400">Credential ID:</span>{" "}
-                            <code className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                          <div className="flex flex-wrap gap-2">
+                            <dt className="font-semibold text-zinc-500 dark:text-zinc-400">
+                              Credential:
+                            </dt>
+                            <dd className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
                               {log.credentialId}
-                            </code>
+                            </dd>
                           </div>
                         )}
-                      </div>
-                    </div>
+                      </dl>
 
-                    {log.message && (
-                      <div>
-                        <h4 className="text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
-                          Message
-                        </h4>
-                        <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
-                          {log.message}
+                      {log.message && (
+                        <div className="mt-4 space-y-1">
+                          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            消息
+                          </p>
+                          <p className="text-sm text-zinc-700 dark:text-zinc-300">{log.message}</p>
+                        </div>
+                      )}
+
+                      {log.metrics && (
+                        <div className="mt-4 space-y-1">
+                          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            Metrics
+                          </p>
+                          <pre className="rounded-xl bg-zinc-100/80 p-3 text-[11px] leading-relaxed text-zinc-800 dark:bg-zinc-900/60 dark:text-zinc-100">
+                            {JSON.stringify(log.metrics, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </Surface>
+
+                    <Surface
+                      variant="flat"
+                      className="rounded-2xl border border-zinc-200/70 bg-white/90 p-4 dark:border-zinc-800/70 dark:bg-zinc-950/40"
+                    >
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        错误信息
+                      </h4>
+
+                      {log.status === "FAILED" && log.message && (
+                        <p className="mt-2 text-sm text-red-600 dark:text-red-400">{log.message}</p>
+                      )}
+
+                      {log.errorStack && (
+                        <div className="mt-3 space-y-1">
+                          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            Stack Trace
+                          </p>
+                          <pre className="rounded-xl bg-red-50/80 p-3 text-[11px] leading-relaxed text-red-900 dark:bg-red-950/30 dark:text-red-300">
+                            {log.errorStack}
+                          </pre>
+                        </div>
+                      )}
+
+                      {log.errorDetails && (
+                        <div className="mt-3 space-y-1">
+                          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                            Error Details
+                          </p>
+                          <pre className="rounded-xl bg-red-50/80 p-3 text-[11px] leading-relaxed text-red-900 dark:bg-red-950/30 dark:text-red-300">
+                            {JSON.stringify(log.errorDetails, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+
+                      {!log.message && !log.errorStack && !log.errorDetails && (
+                        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          没有捕获到错误详情。
                         </p>
-                      </div>
-                    )}
-
-                    {log.metrics && (
-                      <div>
-                        <h4 className="text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
-                          Metrics
-                        </h4>
-                        <pre className="mt-1 overflow-x-auto rounded bg-zinc-100 p-2 text-xs text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
-                          {JSON.stringify(log.metrics, null, 2)}
-                        </pre>
-                      </div>
-                    )}
+                      )}
+                    </Surface>
                   </div>
 
-                  {/* Right Column */}
-                  <div className="space-y-3">
-                    {log.message && log.status === "FAILED" && (
-                      <div>
-                        <h4 className="text-xs font-semibold text-red-600 uppercase dark:text-red-400">
-                          Error
+                  {log.syncedItems && log.syncedItems.length > 0 && (
+                    <Surface
+                      variant="flat"
+                      className="rounded-2xl border border-zinc-200/70 bg-white/90 p-4 dark:border-zinc-800/70 dark:bg-zinc-950/40"
+                    >
+                      <div className="flex items-center justify-between text-sm">
+                        <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                          同步内容 ({log.syncedItems.length})
                         </h4>
-                        <p className="mt-1 text-sm text-red-700 dark:text-red-300">{log.message}</p>
                       </div>
-                    )}
-
-                    {log.errorStack && (
-                      <div>
-                        <h4 className="text-xs font-semibold text-red-600 uppercase dark:text-red-400">
-                          Stack Trace
-                        </h4>
-                        <pre className="mt-1 overflow-x-auto rounded bg-red-50 p-2 text-xs text-red-900 dark:bg-red-950/20 dark:text-red-300">
-                          {log.errorStack}
-                        </pre>
-                      </div>
-                    )}
-
-                    {log.errorDetails && (
-                      <div>
-                        <h4 className="text-xs font-semibold text-red-600 uppercase dark:text-red-400">
-                          Error Details
-                        </h4>
-                        <pre className="mt-1 overflow-x-auto rounded bg-red-50 p-2 text-xs text-red-900 dark:bg-red-950/20 dark:text-red-300">
-                          {JSON.stringify(log.errorDetails, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Synced Items Section */}
-                {log.syncedItems && log.syncedItems.length > 0 && (
-                  <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                    <h4 className="mb-3 text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
-                      Synced Content ({log.syncedItems.length} items)
-                    </h4>
-                    <div className="max-h-96 space-y-2 overflow-y-auto">
-                      {log.syncedItems.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex gap-3 rounded-lg border border-zinc-200 bg-white p-3 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800/50"
-                        >
-                          {/* Cover Image */}
-                          {item.cover && (
-                            <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded">
-                              <Image
-                                src={item.cover}
-                                alt={item.title}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                              />
-                            </div>
-                          )}
-
-                          {/* Content Info */}
-                          <div className="min-w-0 flex-1">
-                            <h5 className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                              {item.title}
-                            </h5>
-                            <div className="mt-1 flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
-                              <span>
-                                Watched: {format(new Date(item.watchedAt), "MMM d, yyyy HH:mm")}
-                              </span>
-                              {item.url && (
-                                <>
-                                  <span>·</span>
-                                  <a
-                                    href={item.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-                                  >
-                                    View
-                                  </a>
-                                </>
-                              )}
+                      <div className="mt-3 max-h-80 space-y-2 overflow-y-auto pr-1">
+                        {log.syncedItems.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex gap-3 rounded-2xl border border-zinc-200/70 bg-white/80 p-3 shadow-sm transition hover:-translate-y-0.5 hover:bg-white dark:border-zinc-800/70 dark:bg-zinc-900/40"
+                          >
+                            {item.cover && (
+                              <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-xl">
+                                <Image
+                                  src={item.cover}
+                                  alt={item.title}
+                                  fill
+                                  className="object-cover"
+                                  unoptimized
+                                />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                                {item.title}
+                              </p>
+                              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                                <span>
+                                  同步时间: {format(new Date(item.watchedAt), "yyyy-MM-dd HH:mm")}
+                                </span>
+                                {item.url && (
+                                  <>
+                                    <span>·</span>
+                                    <a
+                                      href={item.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                                    >
+                                      查看
+                                    </a>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        ))
-      )}
+                        ))}
+                      </div>
+                    </Surface>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

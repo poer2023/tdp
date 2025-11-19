@@ -18,22 +18,26 @@ const mockMetricsData = {
 
 describe("DashboardMetrics", () => {
   describe("normal state", () => {
-    it("should render posts metrics card", () => {
+    it("should render all four metrics cards", () => {
       render(<DashboardMetrics {...mockMetricsData} />);
 
+      // Posts card
       expect(screen.getByText("Posts")).toBeInTheDocument();
       expect(screen.getByText("42")).toBeInTheDocument();
-      expect(screen.getByText(/published 35/i)).toBeInTheDocument();
-      expect(screen.getByText(/drafts 7/i)).toBeInTheDocument();
-    });
+      expect(screen.getByText("7 Drafts")).toBeInTheDocument();
 
-    it("should render gallery metrics card", () => {
-      render(<DashboardMetrics {...mockMetricsData} />);
-
+      // Gallery card
       expect(screen.getByText("Gallery")).toBeInTheDocument();
       expect(screen.getByText("156")).toBeInTheDocument();
-      expect(screen.getByText(/live 23/i)).toBeInTheDocument();
-      expect(screen.getByText(/geotagged 89/i)).toBeInTheDocument();
+      expect(screen.getByText("23 Live Photo")).toBeInTheDocument();
+
+      // Published card
+      expect(screen.getByText("Published")).toBeInTheDocument();
+      expect(screen.getByText("35")).toBeInTheDocument();
+
+      // Geotagged card
+      expect(screen.getByText("Geotagged")).toBeInTheDocument();
+      expect(screen.getByText("89")).toBeInTheDocument();
     });
 
     it("should handle zero values", () => {
@@ -57,9 +61,11 @@ describe("DashboardMetrics", () => {
       render(<DashboardMetrics {...mockMetricsData} />);
 
       const links = screen.getAllByRole("link");
-      expect(links).toHaveLength(2);
+      expect(links).toHaveLength(4);
       expect(links[0]).toHaveAttribute("href", "/admin/posts");
       expect(links[1]).toHaveAttribute("href", "/admin/gallery");
+      expect(links[2]).toHaveAttribute("href", "/admin/posts");
+      expect(links[3]).toHaveAttribute("href", "/admin/gallery");
     });
   });
 
@@ -136,7 +142,7 @@ describe("DashboardMetrics", () => {
       const { container } = render(<DashboardMetrics {...mockMetricsData} />);
 
       const section = container.querySelector("section");
-      expect(section).toHaveClass("grid", "gap-6", "sm:grid-cols-2");
+      expect(section).toHaveClass("grid", "gap-4", "sm:grid-cols-2", "sm:gap-6", "lg:grid-cols-4");
     });
 
     it("should apply degradation styling in degraded state", () => {

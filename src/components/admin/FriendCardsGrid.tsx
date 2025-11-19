@@ -3,14 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ProfileCard } from "@/components/ui/profile-card";
-import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+import Image from "next/image";
 import { useConfirm } from "@/hooks/use-confirm";
-import { Edit2, KeyRound, Trash2 } from "lucide-react";
+import { Button, Card, CardContent, Avatar, Chip, Alert } from "@/components/ui-heroui";
+import { KeyRound, Trash2, Edit2 } from "lucide-react";
 
 type FriendCard = {
   id: string;
@@ -33,6 +29,7 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
   const [friends, setFriends] = useState<FriendCard[]>(initialFriends);
   const [resettingId, setResettingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const handleResetPassphrase = async (friendId: string) => {
     const confirmed = await confirm({
@@ -86,10 +83,11 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
       }
 
       setFriends((prev) => prev.filter((friend) => friend.id !== friendId));
+      setToast({ type: "success", message: "朋友已删除" });
       router.refresh();
     } catch (error) {
       console.error("删除朋友失败", error);
-      alert("删除失败，请稍后重试。");
+      setToast({ type: "error", message: "删除失败，请稍后重试。" });
     } finally {
       setDeletingId(null);
     }
@@ -116,74 +114,108 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
     return `${Math.floor(diffInDays / 365)}年前`;
   };
 
+  const renderCover = (friend: FriendCard) => {
+    const coverUrl = friend.cover || friend.avatar;
+    if (!coverUrl) {
+      return <div className="h-full w-full bg-gradient-to-r from-blue-500 to-indigo-500" />;
+    }
+    return (
+      <Image src={coverUrl} alt={friend.name} fill className="object-cover" sizes="(max-width:768px) 100vw, 33vw" unoptimized />
+    );
+  };
+
   if (friends.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-16 text-center dark:border-zinc-800 dark:bg-zinc-900/40">
-        <div className="mx-auto max-w-sm space-y-4">
+      <Card variant="default" className="border border-dashed border-zinc-300 dark:border-zinc-800">
+        <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
           <div className="text-4xl">👥</div>
-          <div>
-            <p className="text-base font-medium text-zinc-700 dark:text-zinc-300">
+          <div className="max-w-sm space-y-2">
+            <p className="text-base font-semibold text-zinc-800 dark:text-zinc-200">
               还没有创建朋友访问
             </p>
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
               创建朋友账号，让他们可以查看你的专属内容
             </p>
           </div>
-          <Link
-            href="/admin/friends/create"
-            className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
-          >
-            + 创建第一个朋友
-          </Link>
-        </div>
-      </div>
+          <Button color="primary" asChild>
+            <Link href="/admin/friends/create">+ 创建第一个朋友</Link>
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {friends.map((friend) => {
-        const isProcessing = resettingId === friend.id || deletingId === friend.id;
+    <div className="space-y-4">
+      {toast && (
+        <Alert
+          status={toast.type === "success" ? "success" : "danger"}
+          description={toast.message}
+        />
+      )}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {friends.map((friend) => {
+          const isProcessing = resettingId === friend.id || deletingId === friend.id;
+          return (
+            <Card
+              key={friend.id}
+              variant="secondary"
+              className="overflow-hidden border border-zinc-200/80 dark:border-zinc-800/80"
+            >
+              <div className="relative h-40 w-full overflow-hidden">
+                {renderCover(friend)}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-black/0" />
+              </div>
+              <CardContent className="space-y-4 p-4">
+                <div className="flex items-center gap-3">
+                  <Avatar src={friend.avatar ?? undefined} alt={friend.name} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+                      {friend.name}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                      <span>{formatDate(friend.createdAt)}</span>
+                      <Chip size="sm" variant="flat">
+                        {friend.momentCount} 个时刻
+                      </Chip>
+                    </div>
+                  </div>
+                </div>
 
-        return (
-          <ProfileCard
-            key={friend.id}
-            name={friend.name}
-            avatar={friend.avatar}
-            cover={friend.cover}
-            description={friend.description}
-            timestamp={formatDate(friend.createdAt)}
-            stats={`${friend.momentCount} 个时刻`}
-            actions={
-              <DropdownMenu>
-                <DropdownMenuItem
-                  icon={<Edit2 className="h-4 w-4" />}
-                  onClick={() => router.push(`/admin/friends/${friend.id}`)}
-                  disabled={isProcessing}
-                >
-                  编辑资料
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  icon={<KeyRound className="h-4 w-4" />}
-                  onClick={() => handleResetPassphrase(friend.id)}
-                  disabled={isProcessing}
-                >
-                  {resettingId === friend.id ? "重置中..." : "重置口令"}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  icon={<Trash2 className="h-4 w-4" />}
-                  destructive
-                  onClick={() => handleDelete(friend.id, friend.name)}
-                  disabled={isProcessing}
-                >
-                  {deletingId === friend.id ? "删除中..." : "删除朋友"}
-                </DropdownMenuItem>
-              </DropdownMenu>
-            }
-          />
-        );
-      })}
+                {friend.description && (
+                  <p className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    {friend.description}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="light" startContent={<Edit2 className="h-4 w-4" />}>
+                    <Link href={`/admin/friends/${friend.id}`}>编辑</Link>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="light"
+                    onPress={() => handleResetPassphrase(friend.id)}
+                    isDisabled={resettingId === friend.id || isProcessing}
+                    startContent={<KeyRound className="h-4 w-4" />}
+                  >
+                    {resettingId === friend.id ? "重置中..." : "重置口令"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="danger"
+                    onPress={() => handleDelete(friend.id, friend.name)}
+                    isDisabled={deletingId === friend.id || isProcessing}
+                    startContent={<Trash2 className="h-4 w-4" />}
+                  >
+                    {deletingId === friend.id ? "删除中..." : "删除"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }

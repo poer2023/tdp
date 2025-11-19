@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { AdminLocale } from "@/lib/admin-translations";
 import { t } from "@/lib/admin-translations";
+import { Button, Surface } from "@/components/ui-heroui";
 
 type TabItem = {
   labelKey: keyof typeof import("@/lib/admin-translations").adminTranslations.en;
@@ -168,7 +169,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
   return (
     <>
       {/* Bottom Tab Bar - visible only on mobile (<768px) */}
-      <nav className="border-border bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed right-0 bottom-0 left-0 z-50 border-t backdrop-blur md:hidden">
+      <Surface className="supports-[backdrop-filter]:bg-background/80 fixed right-0 bottom-0 left-0 z-50 border-t border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80 md:hidden">
         <div className="grid h-16 grid-cols-5 gap-1 px-2">
           {/* Primary tabs */}
           {primaryTabs.map((tab) => {
@@ -178,7 +179,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
                 key={tab.href}
                 href={tab.href}
                 className={`flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-lg transition-colors ${
-                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  active ? "text-primary" : "text-zinc-500 hover:text-zinc-900"
                 }`}
               >
                 <div className={active ? "text-primary" : ""}>{tab.icon}</div>
@@ -188,9 +189,11 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
           })}
 
           {/* More button */}
-          <button
-            onClick={() => setMoreOpen(true)}
-            className="text-muted-foreground hover:text-foreground flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-lg transition-colors"
+          <Button
+            variant="light"
+            size="sm"
+            onPress={() => setMoreOpen(true)}
+            className="flex min-h-[48px] flex-col items-center justify-center gap-1"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path
@@ -201,9 +204,9 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
               />
             </svg>
             <span className="text-[10px] font-medium">More</span>
-          </button>
+          </Button>
         </div>
-      </nav>
+      </Surface>
 
       {/* More Drawer */}
       {moreOpen && (
@@ -215,7 +218,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
           />
 
           {/* Drawer */}
-          <div className="border-border bg-background pb-safe fixed right-0 bottom-0 left-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-3xl border-t md:hidden">
+          <Surface className="pb-safe fixed right-0 bottom-0 left-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-3xl border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 md:hidden">
             {/* Handle */}
             <div className="flex justify-center py-3">
               <div className="bg-muted h-1 w-12 rounded-full" />
@@ -237,8 +240,8 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
                     onClick={() => setMoreOpen(false)}
                     className={`flex min-h-[48px] items-center gap-3 rounded-lg px-4 transition-colors ${
                       active
-                        ? "bg-accent text-accent-foreground"
-                        : "hover:bg-accent hover:text-accent-foreground"
+                        ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                        : "hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
                     }`}
                   >
                     {tab.icon}
@@ -250,14 +253,11 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
 
             {/* Close button */}
             <div className="border-border border-t p-4">
-              <button
-                onClick={() => setMoreOpen(false)}
-                className="border-border bg-background hover:bg-accent w-full rounded-lg border px-4 py-3 text-sm font-medium"
-              >
+              <Button onPress={() => setMoreOpen(false)} variant="light" className="w-full">
                 Close
-              </button>
+              </Button>
             </div>
-          </div>
+          </Surface>
         </>
       )}
     </>

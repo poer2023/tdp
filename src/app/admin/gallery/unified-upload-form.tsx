@@ -4,20 +4,20 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Input,
+  Label,
+  Textarea,
   Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Alert,
+} from "@/components/ui-heroui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
   EnhancedImageUploader,
@@ -446,22 +446,17 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                         <Label htmlFor="bulk-category">分类</Label>
                         <Select
                           value={bulkMetadata.category}
-                          onValueChange={(value: GalleryCategory) =>
+                          onChange={(value) =>
                             setBulkMetadata((prev) => ({
                               ...prev,
-                              category: value,
+                              category: value as GalleryCategory,
                             }))
                           }
-                          disabled={isUploading}
+                          isDisabled={isUploading}
                         >
-                          <SelectTrigger id="bulk-category">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ORIGINAL">原创</SelectItem>
-                            <SelectItem value="REPOST">转发</SelectItem>
-                            <SelectItem value="AI">AI 生成</SelectItem>
-                          </SelectContent>
+                          <Select.Item id="ORIGINAL">原创</Select.Item>
+                          <Select.Item id="REPOST">转发</Select.Item>
+                          <Select.Item id="AI">AI 生成</Select.Item>
                         </Select>
                       </div>
 
@@ -503,10 +498,10 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
 
                     {/* 提示信息 */}
                     <Alert>
-                      <AlertDescription className="text-xs">
+                      <div className="text-xs">
                         💡 <strong>自动功能</strong>：上传时将自动提取 EXIF 元数据（拍摄时间、GPS
                         坐标、相机信息等）并生成缩略图。
-                      </AlertDescription>
+                      </div>
                     </Alert>
                   </TabsContent>
 
@@ -549,10 +544,10 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
 
                     {/* 提示信息 */}
                     <Alert>
-                      <AlertDescription className="text-xs">
+                      <div className="text-xs">
                         💡 <strong>提示</strong>
                         ：可以为每张图片设置不同的元数据。使用&quot;复制到全部&quot;按钮快速应用某张图片的设置,或使用&quot;应用批量设置&quot;将批量编辑的内容作为起点。
-                      </AlertDescription>
+                      </div>
                     </Alert>
                   </TabsContent>
                 </Tabs>
@@ -561,10 +556,10 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
               {/* 上传消息 */}
               {uploadMessage && (
                 <Alert
-                  variant={uploadMessage.type === "error" ? "destructive" : "default"}
-                  className="mt-3"
+                  status={uploadMessage.type === "error" ? "danger" : "success"}
+                  className="mt-3 text-sm"
                 >
-                  <AlertDescription className="text-sm">{uploadMessage.text}</AlertDescription>
+                  {uploadMessage.text}
                 </Alert>
               )}
 
@@ -575,7 +570,7 @@ export function UnifiedUploadForm({ className }: UnifiedUploadFormProps) {
                     准备上传 {imageCount} 张图片
                     {livePhotoCount > 0 && ` (包含 ${livePhotoCount} 组 Live Photo)`}
                   </div>
-                  <Button onClick={handleUpload} disabled={isUploading} size="default">
+                  <Button onPress={handleUpload} disabled={isUploading} size="default">
                     {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isUploading ? "上传中..." : "开始上传"}
                   </Button>
