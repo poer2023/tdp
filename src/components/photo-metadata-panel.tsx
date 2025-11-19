@@ -13,19 +13,20 @@ const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), 
 
 type PhotoMetadataPanelProps = {
   image: GalleryImage;
+  locale?: "zh" | "en";
 };
 
 function formatFileSize(bytes: number | null | undefined): string {
-  if (!bytes) return "未知";
+  if (!bytes) return "Unknown";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(dateString: string | null | undefined): string {
-  if (!dateString) return "未知";
+function formatDate(dateString: string | null | undefined, locale: string = "zh"): string {
+  if (!dateString) return locale === "zh" ? "未知" : "Unknown";
   const date = new Date(dateString);
-  return date.toLocaleString("zh-CN", {
+  return date.toLocaleString(locale === "zh" ? "zh-CN" : "en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -34,16 +35,16 @@ function formatDate(dateString: string | null | undefined): string {
   });
 }
 
-export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
+export function PhotoMetadataPanel({ image, locale = "zh" }: PhotoMetadataPanelProps) {
   const hasLocation = image.latitude && image.longitude;
-  const fileName = image.filePath.split("/").pop() || "未知";
+  const fileName = image.filePath.split("/").pop() || (locale === "zh" ? "未知" : "Unknown");
 
   return (
     <div className="space-y-6 p-6">
       {/* Title and description */}
       <div className="space-y-2">
         <h1 className="text-2xl leading-tight font-semibold text-zinc-900 dark:text-zinc-100">
-          {image.title || "未命名照片"}
+          {image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo")}
         </h1>
         {image.description && (
           <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
@@ -55,7 +56,9 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
       {/* Location map */}
       {hasLocation && (
         <section className="space-y-3">
-          <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">位置信息</h2>
+          <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">
+            {locale === "zh" ? "位置信息" : "Location"}
+          </h2>
           <div className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
             <div className="h-[200px] w-full">
               <MapContainer
@@ -88,9 +91,11 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
 
       {/* File information */}
       <section className="space-y-3">
-        <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">文件信息</h2>
+        <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">
+          {locale === "zh" ? "文件信息" : "File Info"}
+        </h2>
         <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2 text-sm">
-          <dt className="text-zinc-500">文件名</dt>
+          <dt className="text-zinc-500">{locale === "zh" ? "文件名" : "Filename"}</dt>
           <dd
             className="line-clamp-2 font-mono text-xs break-all text-zinc-700 md:line-clamp-3 dark:text-zinc-300"
             title={fileName}
@@ -98,12 +103,12 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
             {fileName}
           </dd>
 
-          <dt className="text-zinc-500">文件大小</dt>
+          <dt className="text-zinc-500">{locale === "zh" ? "文件大小" : "Size"}</dt>
           <dd className="text-zinc-700 dark:text-zinc-300">{formatFileSize(image.fileSize)}</dd>
 
           {image.width && image.height && (
             <>
-              <dt className="text-zinc-500">分辨率</dt>
+              <dt className="text-zinc-500">{locale === "zh" ? "分辨率" : "Resolution"}</dt>
               <dd className="text-zinc-700 dark:text-zinc-300">
                 {image.width} × {image.height}
               </dd>
@@ -112,7 +117,7 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
 
           {image.mimeType && (
             <>
-              <dt className="text-zinc-500">格式</dt>
+              <dt className="text-zinc-500">{locale === "zh" ? "格式" : "Format"}</dt>
               <dd className="font-mono text-xs text-zinc-700 uppercase dark:text-zinc-300">
                 {image.mimeType.split("/")[1]}
               </dd>
@@ -123,16 +128,22 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
 
       {/* Temporal information */}
       <section className="space-y-3">
-        <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">时间信息</h2>
+        <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">
+          {locale === "zh" ? "时间信息" : "Time"}
+        </h2>
         <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2 text-sm">
           {image.capturedAt && (
             <>
-              <dt className="text-zinc-500">拍摄时间</dt>
-              <dd className="text-zinc-700 dark:text-zinc-300">{formatDate(image.capturedAt)}</dd>
+              <dt className="text-zinc-500">{locale === "zh" ? "拍摄时间" : "Captured"}</dt>
+              <dd className="text-zinc-700 dark:text-zinc-300">
+                {formatDate(image.capturedAt, locale)}
+              </dd>
             </>
           )}
-          <dt className="text-zinc-500">上传时间</dt>
-          <dd className="text-zinc-700 dark:text-zinc-300">{formatDate(image.createdAt)}</dd>
+          <dt className="text-zinc-500">{locale === "zh" ? "上传时间" : "Uploaded"}</dt>
+          <dd className="text-zinc-700 dark:text-zinc-300">
+            {formatDate(image.createdAt, locale)}
+          </dd>
         </dl>
       </section>
 
@@ -141,7 +152,9 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
         <section className="space-y-3">
           <h2 className="text-xs font-medium tracking-wider text-zinc-500 uppercase">Live Photo</h2>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            此照片包含动态视频内容，鼠标悬停在图片上可播放。
+            {locale === "zh"
+              ? "此照片包含动态视频内容，鼠标悬停在图片上可播放。"
+              : "This photo contains live video content, hover to play."}
           </p>
           <a
             href={image.livePhotoVideoPath}
@@ -156,7 +169,7 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            下载视频
+            {locale === "zh" ? "下载视频" : "Download Video"}
           </a>
         </section>
       )}
@@ -164,14 +177,22 @@ export function PhotoMetadataPanel({ image }: PhotoMetadataPanelProps) {
       {/* Technical note */}
       <footer className="border-t border-zinc-200 pt-4 text-xs text-zinc-600 dark:border-zinc-800">
         <p>
-          <span className="text-zinc-500 dark:text-zinc-600">元数据由 EXIF 自动提取</span>
+          <span className="text-zinc-500 dark:text-zinc-600">
+            {locale === "zh" ? "元数据由 EXIF 自动提取" : "Metadata extracted from EXIF"}
+          </span>
           {hasLocation && (
             <span className="text-zinc-500 dark:text-zinc-600">
-              ，地理位置通过 OpenStreetMap 逆地理编码服务获取
+              {locale === "zh"
+                ? "，地理位置通过 OpenStreetMap 逆地理编码服务获取"
+                : ", location via OpenStreetMap reverse geocoding"}
             </span>
           )}
           。
-          <span className="text-zinc-500 dark:text-zinc-600">存储方式：{image.storageType}。</span>
+          <span className="text-zinc-500 dark:text-zinc-600">
+            {locale === "zh"
+              ? `存储方式：${image.storageType}。`
+              : `Storage: ${image.storageType}.`}
+          </span>
         </p>
       </footer>
     </div>

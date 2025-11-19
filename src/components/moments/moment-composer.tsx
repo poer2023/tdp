@@ -89,12 +89,15 @@ function MomentComposerCore() {
 
   useEffect(() => {
     if (state.status === "success") {
+      console.log("✅ Moment created successfully:", state.id);
       startTransition(() => {
         setText("");
         setImages([]);
         setOpen(false);
       });
       formRef.current?.reset();
+    } else if (state.status === "error") {
+      console.error("❌ Moment creation error:", state.message);
     }
   }, [state]);
 

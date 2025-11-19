@@ -23,23 +23,21 @@ export function MomentTabs({ locale, currentPath }: MomentTabsProps) {
   ];
 
   return (
-    <div className="border-b border-zinc-200 dark:border-zinc-800">
-      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={`border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
-              tab.isActive
-                ? "border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400"
-                : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-300"
-            } `}
-            aria-current={tab.isActive ? "page" : undefined}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
-    </div>
+    <nav className="flex flex-wrap gap-2" aria-label="Tabs">
+      {tabs.map((tab) => (
+        <Link
+          key={tab.href}
+          href={tab.href}
+          className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 ${
+            tab.isActive
+              ? "bg-[#0F172A] text-white shadow-sm dark:bg-[#F8FAFC] dark:text-[#0F172A]"
+              : "border border-[#E5E7EB] bg-transparent text-[#94A3B8] hover:bg-[#E5E7EB] dark:border-[rgba(248,250,252,0.2)] dark:text-[#CBD5F5] dark:hover:bg-[rgba(248,250,252,0.1)]"
+          } focus-visible:outline-[#2563EB] dark:focus-visible:outline-[#93C5FD]`}
+          aria-current={tab.isActive ? "page" : undefined}
+        >
+          {tab.label}
+        </Link>
+      ))}
+    </nav>
   );
 }

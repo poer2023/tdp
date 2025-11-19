@@ -29,7 +29,7 @@ export function GalleryMasonry({ images, locale = "zh" }: Props) {
               className="group block overflow-hidden rounded-lg ring-1 ring-zinc-200 transition-shadow hover:shadow-sm dark:ring-zinc-800"
             >
               <Image
-                src={img.smallThumbPath || img.filePath}
+                src={img.mediumPath || img.smallThumbPath || img.filePath}
                 alt={img.title || (locale === "zh" ? "相册照片" : "Photo")}
                 width={w}
                 height={h}
