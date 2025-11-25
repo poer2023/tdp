@@ -755,7 +755,7 @@ export function PhotoViewer({
   }, [scale, clampOffset]);
 
   return (
-    <div className="fixed inset-0 z-[60] bg-white dark:bg-zinc-950" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[60] bg-white dark:bg-stone-950" role="dialog" aria-modal="true">
       {/* Minimal floating toolbar (no full-width header) */}
       <div className="fixed top-4 right-4 z-[62] flex items-center gap-2">
         {/* Theme Toggle */}
@@ -764,7 +764,7 @@ export function PhotoViewer({
         <Link
           ref={backButtonRef}
           href={localePath(locale, "/gallery")}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white/80 text-stone-700 shadow-sm backdrop-blur hover:bg-white dark:border-stone-800 dark:bg-stone-900/80 dark:text-stone-300"
           aria-label={locale === "zh" ? "返回相册页面" : "Back to Gallery"}
           title={locale === "zh" ? "返回相册" : "Back"}
         >
@@ -784,7 +784,7 @@ export function PhotoViewer({
         {visualAdjacentIds.current.prev && (
           <Link
             href={localePath(locale, `/gallery/${visualAdjacentIds.current.prev}`)}
-            className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
+            className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white/80 text-stone-700 shadow-sm backdrop-blur hover:bg-white dark:border-stone-800 dark:bg-stone-900/80 dark:text-stone-300"
             title={locale === "zh" ? "上一张" : "Previous"}
             aria-label={locale === "zh" ? "上一张" : "Previous"}
             onClick={() => markPendingDirection("prev")}
@@ -805,7 +805,7 @@ export function PhotoViewer({
         {visualAdjacentIds.current.next && (
           <Link
             href={localePath(locale, `/gallery/${visualAdjacentIds.current.next}`)}
-            className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/80 text-zinc-700 shadow-sm backdrop-blur hover:bg-white dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300"
+            className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white/80 text-stone-700 shadow-sm backdrop-blur hover:bg-white dark:border-stone-800 dark:bg-stone-900/80 dark:text-stone-300"
             title={locale === "zh" ? "下一张" : "Next"}
             aria-label={locale === "zh" ? "下一张" : "Next"}
             onClick={() => markPendingDirection("next")}
@@ -899,12 +899,12 @@ export function PhotoViewer({
                 </div>
               </div>
               {showZoomIndicator && (
-                <div className="pointer-events-none absolute top-4 right-4 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs font-medium text-zinc-700 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300">
+                <div className="pointer-events-none absolute top-4 right-4 rounded-full border border-stone-200 bg-white/80 px-3 py-1 text-xs font-medium text-stone-700 shadow-sm backdrop-blur dark:border-stone-800 dark:bg-stone-900/80 dark:text-stone-300">
                   {(scale * 100).toFixed(0)}%
                 </div>
               )}
               {showHint && (
-                <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-zinc-200 bg-white/80 px-3 py-1 text-xs text-zinc-600 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
+                <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full border border-stone-200 bg-white/80 px-3 py-1 text-xs text-stone-600 shadow-sm backdrop-blur dark:border-stone-800 dark:bg-stone-900/80 dark:text-stone-400">
                   {locale === "zh" ? "滚轮缩放 · 双击重置" : "Wheel to zoom · Double click to reset"}
                 </div>
               )}
@@ -951,14 +951,14 @@ export function PhotoViewer({
         )}
 
         {/* Metadata panel - desktop only */}
-        <aside className="hidden w-full overflow-y-auto border-l border-zinc-200 bg-white lg:block lg:max-w-[480px] lg:flex-none lg:basis-[380px] xl:basis-[420px] dark:border-zinc-800 dark:bg-[#0b0b0d]">
+        <aside className="hidden w-full overflow-y-auto border-l border-stone-200 bg-white lg:block lg:max-w-[480px] lg:flex-none lg:basis-[380px] xl:basis-[420px] dark:border-stone-800 dark:bg-[#0b0b0d]">
           <PhotoMetadataPanel image={image} locale={locale} />
         </aside>
       </div>
 
       {/* Bottom thumbnail strip - exclude right sidebar on desktop */}
       {Array.isArray(thumbnails) && thumbnails.length > 0 && (
-        <div className="pointer-events-auto fixed right-0 bottom-0 left-0 z-[61] border-t border-zinc-200 bg-white/75 backdrop-blur lg:right-[380px] xl:right-[420px] dark:border-zinc-800 dark:bg-zinc-900/60">
+        <div className="pointer-events-auto fixed right-0 bottom-0 left-0 z-[61] border-t border-stone-200 bg-white/75 backdrop-blur lg:right-[380px] xl:right-[420px] dark:border-stone-800 dark:bg-stone-900/60">
           <div className="px-4 py-3">
             <Thumbnails
               images={thumbnails}

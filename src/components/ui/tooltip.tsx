@@ -17,13 +17,13 @@ const TooltipContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out data-[state=open]:fade-in z-50 max-w-xs rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-lg dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100",
+        "data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out data-[state=open]:fade-in z-50 max-w-xs rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100",
         className
       )}
       {...props}
     >
       {props.children}
-      {showArrow && <TooltipPrimitive.Arrow className="fill-white dark:fill-zinc-900" />}
+      {showArrow && <TooltipPrimitive.Arrow className="fill-white dark:fill-stone-900" />}
     </TooltipPrimitive.Content>
   </TooltipPrimitive.Portal>
 ));

@@ -89,7 +89,7 @@ export function FriendManagementTable({ friends: initialFriends }: FriendManagem
 
   if (friends.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-12 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-400">
+      <div className="rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-6 py-12 text-center text-sm text-stone-500 dark:border-stone-800 dark:bg-stone-900/40 dark:text-stone-400">
         <p>还没有创建朋友访问。</p>
         <p className="mt-2">
           <Link href="/admin/friends/create" className="text-blue-600 hover:underline">
@@ -101,27 +101,27 @@ export function FriendManagementTable({ friends: initialFriends }: FriendManagem
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80">
-      <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
-        <thead className="bg-zinc-50 dark:bg-zinc-900/80">
+    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-950/80">
+      <table className="min-w-full divide-y divide-stone-200 dark:divide-stone-800">
+        <thead className="bg-stone-50 dark:bg-stone-900/80">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
               朋友
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
               Slug
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
               创建时间
             </th>
-            <th className="px-6 py-3 text-right text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+            <th className="px-6 py-3 text-right text-xs font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
               操作
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-200 bg-white dark:divide-zinc-800 dark:bg-transparent">
+        <tbody className="divide-y divide-stone-200 bg-white dark:divide-stone-800 dark:bg-transparent">
           {friends.map((friend) => (
-            <tr key={friend.id} className="transition hover:bg-zinc-50 dark:hover:bg-zinc-900/60">
+            <tr key={friend.id} className="transition hover:bg-stone-50 dark:hover:bg-stone-900/60">
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
                   {friend.avatar ? (
@@ -138,18 +138,18 @@ export function FriendManagementTable({ friends: initialFriends }: FriendManagem
                     </div>
                   )}
                   <div>
-                    <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    <div className="text-sm font-medium text-stone-900 dark:text-stone-100">
                       {friend.name}
                     </div>
                     {friend.description && (
-                      <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                      <div className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
                         {friend.description}
                       </div>
                     )}
                   </div>
                 </div>
               </td>
-              <td className="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">
+              <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-300">
                 {new Date(friend.createdAt).toLocaleDateString("zh-CN")}
               </td>
               <td className="px-6 py-4 text-right text-sm">

@@ -90,7 +90,7 @@ export function FriendMomentTimeline({
 
   if (moments.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-zinc-200/70 bg-white/60 px-6 py-12 text-center text-sm text-zinc-500 dark:border-zinc-800/60 dark:bg-zinc-900/60">
+      <div className="rounded-3xl border border-dashed border-stone-200/70 bg-white/60 px-6 py-12 text-center text-sm text-stone-500 dark:border-stone-800/60 dark:bg-stone-900/60">
         {locale === "zh" ? "还没有故事呢，稍后再来看看。" : "No stories yet. Come back soon."}
       </div>
     );
@@ -144,7 +144,7 @@ export function FriendMomentTimeline({
           </button>
         </div>
       ) : (
-        <p className="py-6 text-center text-xs text-zinc-400">
+        <p className="py-6 text-center text-xs text-stone-400">
           {locale === "zh" ? "已经到底了" : "You reached the end."}
         </p>
       )}

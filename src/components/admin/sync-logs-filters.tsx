@@ -50,19 +50,19 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
   const hasFilters = currentFilters.platform || currentFilters.status || currentFilters.triggeredBy;
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <h3 className="mb-4 text-sm font-semibold text-zinc-700 dark:text-zinc-300">Filter Logs</h3>
+    <div className="rounded-lg border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+      <h3 className="mb-4 text-sm font-semibold text-stone-700 dark:text-stone-300">Filter Logs</h3>
 
       <div className="grid gap-4 sm:grid-cols-3">
         {/* Platform Filter */}
         <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <label className="mb-1 block text-xs font-medium text-stone-600 dark:text-stone-400">
             Platform
           </label>
           <select
             value={platform}
             onChange={(e) => setPlatform(e.target.value)}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
           >
             <option value="">All Platforms</option>
             {platforms.map((p) => (
@@ -75,13 +75,13 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
 
         {/* Status Filter */}
         <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <label className="mb-1 block text-xs font-medium text-stone-600 dark:text-stone-400">
             Status
           </label>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
           >
             <option value="">All Status</option>
             {Object.values(SyncJobStatus).map((s) => (
@@ -94,13 +94,13 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
 
         {/* Triggered By Filter */}
         <div>
-          <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <label className="mb-1 block text-xs font-medium text-stone-600 dark:text-stone-400">
             Triggered By
           </label>
           <select
             value={triggeredBy}
             onChange={(e) => setTriggeredBy(e.target.value)}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100"
           >
             <option value="">All Sources</option>
             <option value="system">System</option>
@@ -121,7 +121,7 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
         {hasFilters && (
           <button
             onClick={handleReset}
-            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
           >
             Reset
           </button>
@@ -131,7 +131,7 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
       {/* Active Filters Display */}
       {hasFilters && (
         <div className="mt-4 flex flex-wrap gap-2">
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">Active filters:</span>
+          <span className="text-xs text-stone-500 dark:text-stone-400">Active filters:</span>
           {currentFilters.platform && (
             <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
               Platform: {currentFilters.platform.toUpperCase()}

@@ -39,48 +39,48 @@ export function RecentSyncJobs({ jobs }: RecentSyncJobsProps) {
   };
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
-        <thead className="bg-zinc-50 dark:bg-zinc-800/50">
+    <div className="overflow-x-auto rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
+      <table className="min-w-full divide-y divide-stone-200 dark:divide-stone-800">
+        <thead className="bg-stone-50 dark:bg-stone-800/50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-stone-500 uppercase dark:text-stone-400">
               Platform
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-stone-500 uppercase dark:text-stone-400">
               Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-stone-500 uppercase dark:text-stone-400">
               Duration
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-stone-500 uppercase dark:text-stone-400">
               Items
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-stone-500 uppercase dark:text-stone-400">
               Started
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+            <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-stone-500 uppercase dark:text-stone-400">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+        <tbody className="divide-y divide-stone-200 dark:divide-stone-800">
           {jobs.length === 0 ? (
             <tr>
-              <td colSpan={6} className="px-6 py-8 text-center text-sm text-zinc-500">
+              <td colSpan={6} className="px-6 py-8 text-center text-sm text-stone-500">
                 No sync jobs found
               </td>
             </tr>
           ) : (
             jobs.map((job) => (
-              <tr key={job.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-zinc-900 dark:text-zinc-100">
+              <tr key={job.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/50">
+                <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-stone-900 dark:text-stone-100">
                   {job.platform.toUpperCase()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(job.status)}</td>
-                <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+                <td className="px-6 py-4 text-sm whitespace-nowrap text-stone-500 dark:text-stone-400">
                   {job.duration ? `${(job.duration / 1000).toFixed(1)}s` : "-"}
                 </td>
-                <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+                <td className="px-6 py-4 text-sm whitespace-nowrap text-stone-500 dark:text-stone-400">
                   {job.itemsSuccess}/{job.itemsTotal}
                   {job.itemsFailed > 0 && (
                     <span className="ml-1 text-red-600 dark:text-red-400">
@@ -88,7 +88,7 @@ export function RecentSyncJobs({ jobs }: RecentSyncJobsProps) {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-sm whitespace-nowrap text-zinc-500 dark:text-zinc-400">
+                <td className="px-6 py-4 text-sm whitespace-nowrap text-stone-500 dark:text-stone-400">
                   {job.startedAt
                     ? formatDistanceToNow(new Date(job.startedAt), { addSuffix: true })
                     : "-"}

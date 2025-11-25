@@ -35,9 +35,9 @@ type CredentialsContentProps = {
 export function CredentialsContent({ credentials, locale }: CredentialsContentProps) {
   if (credentials.length === 0) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">{t(locale, "noCredentials")}</p>
-        <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+      <div className="rounded-lg border border-stone-200 bg-white p-12 text-center dark:border-stone-800 dark:bg-stone-900">
+        <p className="text-sm text-stone-500 dark:text-stone-400">{t(locale, "noCredentials")}</p>
+        <p className="mt-1 text-xs text-stone-400 dark:text-stone-500">
           {t(locale, "createFirstCredential")}
         </p>
       </div>
@@ -50,12 +50,12 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
         <Link
           key={credential.id}
           href={`/admin/credentials/${credential.id}`}
-          className="group block rounded-lg border border-zinc-200 bg-white p-4 transition-all hover:border-zinc-300 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+          className="group block rounded-lg border border-stone-200 bg-white p-4 transition-all hover:border-stone-300 hover:shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700"
         >
           {/* Platform & Status */}
           <div className="flex items-start justify-between">
             <div>
-              <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+              <span className="inline-flex items-center rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-700 dark:bg-stone-800 dark:text-stone-300">
                 {t(
                   locale,
                   credential.platform.toLowerCase() as
@@ -81,7 +81,7 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
 
           {/* Type */}
           <div className="mt-3">
-            <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-sm font-medium text-stone-900 dark:text-stone-100">
               {t(
                 locale,
                 credential.type === "API_KEY"
@@ -91,7 +91,7 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
                     : "oauthToken"
               )}
             </h3>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
               ID: {credential.id.slice(0, 12)}...
             </p>
           </div>
@@ -99,14 +99,14 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
           {/* Stats */}
           <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-zinc-500 dark:text-zinc-400">{t(locale, "usageCount")}</span>
-              <div className="mt-0.5 font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="text-stone-500 dark:text-stone-400">{t(locale, "usageCount")}</span>
+              <div className="mt-0.5 font-medium text-stone-900 dark:text-stone-100">
                 {credential.usageCount}
               </div>
             </div>
             <div>
-              <span className="text-zinc-500 dark:text-zinc-400">{t(locale, "failureCount")}</span>
-              <div className="mt-0.5 font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="text-stone-500 dark:text-stone-400">{t(locale, "failureCount")}</span>
+              <div className="mt-0.5 font-medium text-stone-900 dark:text-stone-100">
                 {credential.failureCount}
               </div>
             </div>
@@ -114,7 +114,7 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
 
           {/* Last Validated */}
           {credential.lastValidatedAt && (
-            <div className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="mt-3 text-xs text-stone-500 dark:text-stone-400">
               {t(locale, "lastValidated")}:{" "}
               {new Date(credential.lastValidatedAt).toLocaleDateString(
                 locale === "zh" ? "zh-CN" : "en-US",
@@ -129,13 +129,13 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
 
           {/* Auto Sync Status */}
           {credential.autoSync && (
-            <div className="mt-3 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+            <div className="mt-3 border-t border-stone-100 pt-3 dark:border-stone-800">
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
                   {t(locale, "autoSync")}
                 </span>
                 {credential.syncFrequency && (
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <span className="text-xs text-stone-500 dark:text-stone-400">
                     {t(
                       locale,
                       `syncFrequency${credential.syncFrequency
@@ -149,7 +149,7 @@ export function CredentialsContent({ credentials, locale }: CredentialsContentPr
                 )}
               </div>
               {credential.nextCheckAt && (
-                <div className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                <div className="mt-1.5 text-xs text-stone-500 dark:text-stone-400">
                   {t(locale, "nextSyncAt")}:{" "}
                   {new Date(credential.nextCheckAt).toLocaleString(
                     locale === "zh" ? "zh-CN" : "en-US",

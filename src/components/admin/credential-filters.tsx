@@ -42,7 +42,7 @@ export function CredentialFilters({ locale, params, platforms }: Props) {
   return (
     <div className="flex flex-wrap gap-3">
       <select
-        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
         value={params.platform ?? ""}
         onChange={(event) => updateQuery("platform", event.target.value)}
       >
@@ -55,7 +55,7 @@ export function CredentialFilters({ locale, params, platforms }: Props) {
       </select>
 
       <select
-        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
         value={params.type ?? ""}
         onChange={(event) => updateQuery("type", event.target.value)}
       >
@@ -66,7 +66,7 @@ export function CredentialFilters({ locale, params, platforms }: Props) {
       </select>
 
       <select
-        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900"
         value={params.status ?? ""}
         onChange={(event) => updateQuery("status", event.target.value)}
       >

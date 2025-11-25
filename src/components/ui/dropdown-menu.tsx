@@ -45,7 +45,7 @@ export function DropdownMenu({ children, trigger, align = "end" }: DropdownMenuP
         {/* 触发按钮 */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="relative inline-flex items-center justify-center rounded-lg p-2 text-gray-700 transition-colors hover:bg-gray-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          className="relative inline-flex items-center justify-center rounded-lg p-2 text-gray-700 transition-colors hover:bg-gray-100 dark:text-stone-300 dark:hover:bg-stone-800"
           aria-expanded={isOpen}
           aria-haspopup="true"
         >
@@ -56,7 +56,7 @@ export function DropdownMenu({ children, trigger, align = "end" }: DropdownMenuP
         {isOpen && (
           <div
             className={cn(
-              "absolute top-full z-[9999] mt-2 min-w-[12rem] overflow-hidden rounded-xl border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-2xl dark:shadow-black/80",
+              "absolute top-full z-[9999] mt-2 min-w-[12rem] overflow-hidden rounded-xl border border-stone-200 bg-white py-1 shadow-lg dark:border-stone-800 dark:bg-stone-900 dark:shadow-2xl dark:shadow-black/80",
               align === "end" ? "right-0" : "left-0"
             )}
           >
@@ -95,7 +95,7 @@ export function DropdownMenuItem({
         "flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors",
         destructive
           ? "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/50"
-          : "text-gray-700 hover:bg-gray-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+          : "text-gray-700 hover:bg-gray-100 dark:text-stone-300 dark:hover:bg-stone-800",
         className
       )}
       {...props}
@@ -107,5 +107,5 @@ export function DropdownMenuItem({
 }
 
 export function DropdownMenuSeparator() {
-  return <div className="my-1 h-px bg-zinc-200 dark:bg-zinc-800" />;
+  return <div className="my-1 h-px bg-stone-200 dark:bg-stone-800" />;
 }

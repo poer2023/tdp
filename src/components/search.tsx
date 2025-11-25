@@ -207,20 +207,20 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
       />
       {/* Drawer content */}
       <div
-        className={`absolute inset-x-0 top-0 flex flex-col bg-white shadow-2xl transition-transform duration-300 ease-out dark:bg-zinc-900 ${
+        className={`absolute inset-x-0 top-0 flex flex-col bg-white shadow-2xl transition-transform duration-300 ease-out dark:bg-stone-900 ${
           open ? "translate-y-0" : "-translate-y-full"
         }`}
         style={{ maxHeight: "85vh" }}
       >
         {/* Search input with close button */}
-        <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+        <div className="flex items-center gap-2 border-b border-stone-200 px-4 py-3 dark:border-stone-800">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
-            className="h-5 w-5 text-zinc-500"
+            className="h-5 w-5 text-stone-500"
           >
             <circle cx="11" cy="11" r="7"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -243,14 +243,14 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
             }
             aria-label={locale === "zh" ? "搜索输入框" : "Search input"}
             role="searchbox"
-            className="flex-1 bg-transparent text-base text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            className="flex-1 bg-transparent text-base text-stone-900 placeholder:text-stone-400 focus:outline-none focus-visible:outline-none dark:text-stone-100 dark:placeholder:text-stone-500"
           />
           {q && (
             <button
               type="button"
               onClick={() => setQ("")}
               aria-label={locale === "zh" ? "清空" : "Clear"}
-              className="rounded-full p-2 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="rounded-full p-2 text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -268,7 +268,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
             type="button"
             onClick={() => setOpen(false)}
             aria-label={locale === "zh" ? "关闭搜索" : "Close search"}
-            className="rounded-full p-2 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="rounded-full p-2 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800"
           >
             <svg
               viewBox="0 0 24 24"
@@ -286,7 +286,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
         <div className="flex-1 overflow-auto">
           {!q.trim() && searchHistory.length > 0 ? (
             <div className="py-2">
-              <div className="mb-1.5 px-4 pt-1 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+              <div className="mb-1.5 px-4 pt-1 text-[10px] font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                 🕒 {locale === "zh" ? "最近搜索" : "Recent Searches"}
               </div>
               <ul>
@@ -295,16 +295,16 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                     <button
                       type="button"
                       onClick={() => handleHistoryItemClick(item.query)}
-                      className="flex w-full items-center justify-between px-4 py-3 text-left text-base text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      className="flex w-full items-center justify-between px-4 py-3 text-left text-base text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                     >
                       <span className="flex items-center gap-2">
-                        <span className="text-zinc-400">⏱</span>
+                        <span className="text-stone-400">⏱</span>
                         <span>{item.query}</span>
                       </span>
                       <button
                         type="button"
                         onClick={(e) => handleRemoveHistory(item.query, e)}
-                        className="rounded p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-700"
+                        className="rounded p-1 text-stone-400 hover:bg-stone-200 hover:text-stone-600 dark:hover:bg-stone-700"
                         aria-label={locale === "zh" ? "删除" : "Remove"}
                       >
                         <svg
@@ -338,7 +338,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
               {/* Posts section */}
               {results.posts.length > 0 && (
                 <div className="mb-2">
-                  <div className="mb-1.5 px-4 pt-2 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+                  <div className="mb-1.5 px-4 pt-2 text-[10px] font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                     📝 {locale === "zh" ? "文章" : "Posts"} ({results.posts.length})
                   </div>
                   <ul>
@@ -346,19 +346,19 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                       <li key={post.id}>
                         <a
                           href={`/${locale}/posts/${post.slug}`}
-                          className="block px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          className="block px-4 py-3 text-sm text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                         >
-                          <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                          <div className="font-medium text-stone-900 dark:text-stone-100">
                             {post.title}
                           </div>
-                          <div className="line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400">
+                          <div className="line-clamp-1 text-xs text-stone-500 dark:text-stone-400">
                             {post.excerpt}
                           </div>
-                          <div className="mt-1.5 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-500">
+                          <div className="mt-1.5 flex items-center gap-2 text-xs text-stone-500 dark:text-stone-500">
                             <LanguageBadge locale={post.locale} />
                             {post.publishedAt && (
                               <>
-                                <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                                <span className="text-stone-300 dark:text-stone-700">·</span>
                                 <span className="flex items-center gap-1">
                                   <span>📅</span>
                                   {new Date(post.publishedAt).toLocaleDateString(
@@ -370,7 +370,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                             )}
                             {post.authorName && (
                               <>
-                                <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                                <span className="text-stone-300 dark:text-stone-700">·</span>
                                 <span className="flex items-center gap-1">
                                   <span>👤</span>
                                   {post.authorName}
@@ -388,7 +388,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
               {/* Images section */}
               {results.images.length > 0 && (
                 <div className="mb-2">
-                  <div className="mb-1.5 px-4 pt-2 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+                  <div className="mb-1.5 px-4 pt-2 text-[10px] font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                     🖼️ {locale === "zh" ? "图片" : "Images"} ({results.images.length})
                   </div>
                   <div className="grid grid-cols-3 gap-2 px-4">
@@ -396,7 +396,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                       <a
                         key={image.id}
                         href={`/gallery#${image.id}`}
-                        className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
+                        className="group relative aspect-square overflow-hidden rounded-lg bg-stone-100 dark:bg-stone-800"
                       >
                         {image.smallThumbPath && (
                           <Image
@@ -416,7 +416,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
               {/* Moments section */}
               {results.moments.length > 0 && (
                 <div className="mb-2">
-                  <div className="mb-1.5 px-4 pt-2 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+                  <div className="mb-1.5 px-4 pt-2 text-[10px] font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                     💬 {locale === "zh" ? "动态" : "Moments"} ({results.moments.length})
                   </div>
                   <ul>
@@ -424,18 +424,18 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                       <li key={moment.id}>
                         <a
                           href={`/moments${moment.slug ? `/${moment.slug}` : `#${moment.id}`}`}
-                          className="block px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          className="block px-4 py-3 text-sm text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                         >
-                          <div className="line-clamp-2 text-sm text-zinc-900 dark:text-zinc-100">
+                          <div className="line-clamp-2 text-sm text-stone-900 dark:text-stone-100">
                             {moment.content}
                           </div>
-                          <div className="mt-1 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          <div className="mt-1 flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
                             {moment.tags.length > 0 && (
                               <span className="flex items-center gap-1">
                                 🏷️ {moment.tags.slice(0, 2).join(", ")}
                               </span>
                             )}
-                            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                            <span className="text-stone-300 dark:text-stone-700">·</span>
                             <span>
                               {new Date(moment.createdAt).toLocaleDateString(
                                 locale === "zh" ? "zh-CN" : "en-US",
@@ -453,11 +453,11 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
           )}
         </div>
         {/* Footer button */}
-        <div className="border-t border-zinc-200 dark:border-zinc-800">
+        <div className="border-t border-stone-200 dark:border-stone-800">
           <button
             type="button"
             onClick={goToFullPage}
-            className="block w-full px-4 py-3 text-center text-sm font-medium text-blue-600 hover:bg-zinc-100 dark:text-blue-400 dark:hover:bg-zinc-800"
+            className="block w-full px-4 py-3 text-center text-sm font-medium text-blue-600 hover:bg-stone-100 dark:text-blue-400 dark:hover:bg-stone-800"
           >
             {locale === "zh" ? "查看全部结果" : "See all results"}
           </button>
@@ -478,7 +478,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
       }}
     >
       <div
-        className={`flex items-center gap-2 overflow-hidden rounded-xl border border-zinc-200 bg-white px-3 py-2 shadow-sm transition-all duration-200 ease-out dark:border-zinc-800 dark:bg-zinc-900 ${
+        className={`flex items-center gap-2 overflow-hidden rounded-xl border border-stone-200 bg-white px-3 py-2 shadow-sm transition-all duration-200 ease-out dark:border-stone-800 dark:bg-stone-900 ${
           open ? "opacity-100" : "opacity-0"
         }`}
         style={{ width: open ? anchor?.width || 0 : 0, maxWidth: "95vw" }}
@@ -489,7 +489,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className="h-4 w-4 text-zinc-500"
+          className="h-4 w-4 text-stone-500"
         >
           <circle cx="11" cy="11" r="7"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -513,14 +513,14 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
           aria-label={locale === "zh" ? "搜索输入框" : "Search input"}
           aria-describedby="search-hint"
           role="searchbox"
-          className="search-focus-reset w-full bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
+          className="search-focus-reset w-full bg-transparent text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus-visible:outline-none dark:text-stone-100 dark:placeholder:text-stone-500"
         />
         {q && (
           <button
             type="button"
             onClick={() => setQ("")}
             aria-label={locale === "zh" ? "清空" : "Clear"}
-            className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/20 dark:hover:bg-zinc-800 dark:focus-visible:ring-blue-400/15"
+            className="rounded p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/20 dark:hover:bg-stone-800 dark:focus-visible:ring-blue-400/15"
           >
             <svg
               viewBox="0 0 24 24"
@@ -540,13 +540,13 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
       {open ? (
         <div
           data-testid="search-dropdown"
-          className="mt-2 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
+          className="mt-2 overflow-hidden rounded-xl border border-stone-200 bg-white shadow-lg dark:border-stone-800 dark:bg-stone-900"
           style={{ width: anchor?.width || 320, maxWidth: "95vw" }}
         >
           {/* Search History - shown when input is empty */}
           {!q.trim() && searchHistory.length > 0 ? (
             <div className="py-2">
-              <div className="mb-1.5 px-3 pt-1 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+              <div className="mb-1.5 px-3 pt-1 text-[10px] font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                 🕒 {locale === "zh" ? "最近搜索" : "Recent Searches"}
               </div>
               <ul>
@@ -555,16 +555,16 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                     <button
                       type="button"
                       onClick={() => handleHistoryItemClick(item.query)}
-                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                     >
                       <span className="flex items-center gap-2">
-                        <span className="text-zinc-400">⏱</span>
+                        <span className="text-stone-400">⏱</span>
                         <span>{item.query}</span>
                       </span>
                       <button
                         type="button"
                         onClick={(e) => handleRemoveHistory(item.query, e)}
-                        className="rounded p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600 dark:hover:bg-zinc-700"
+                        className="rounded p-1 text-stone-400 hover:bg-stone-200 hover:text-stone-600 dark:hover:bg-stone-700"
                         aria-label={locale === "zh" ? "删除" : "Remove"}
                       >
                         <svg
@@ -598,7 +598,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
               {/* Posts section */}
               {results.posts.length > 0 && (
                 <div className="mb-2">
-                  <div className="mb-1.5 px-3 pt-2 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+                  <div className="mb-1.5 px-3 pt-2 text-[10px] font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                     📝 {locale === "zh" ? "文章" : "Posts"} ({results.posts.length})
                   </div>
                   <ul>
@@ -606,19 +606,19 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                       <li key={post.id}>
                         <a
                           href={`/${locale}/posts/${post.slug}`}
-                          className="block px-3 py-2.5 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          className="block px-3 py-2.5 text-sm text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                         >
-                          <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                          <div className="font-medium text-stone-900 dark:text-stone-100">
                             {post.title}
                           </div>
-                          <div className="line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400">
+                          <div className="line-clamp-1 text-xs text-stone-500 dark:text-stone-400">
                             {post.excerpt}
                           </div>
-                          <div className="mt-1.5 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-500">
+                          <div className="mt-1.5 flex items-center gap-2 text-xs text-stone-500 dark:text-stone-500">
                             <LanguageBadge locale={post.locale} />
                             {post.publishedAt && (
                               <>
-                                <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                                <span className="text-stone-300 dark:text-stone-700">·</span>
                                 <span className="flex items-center gap-1">
                                   <span>📅</span>
                                   {new Date(post.publishedAt).toLocaleDateString(
@@ -630,7 +630,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                             )}
                             {post.authorName && (
                               <>
-                                <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                                <span className="text-stone-300 dark:text-stone-700">·</span>
                                 <span className="flex items-center gap-1">
                                   <span>👤</span>
                                   {post.authorName}
@@ -648,7 +648,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
               {/* Images section */}
               {results.images.length > 0 && (
                 <div className="mb-2">
-                  <div className="mb-1.5 px-3 pt-2 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+                  <div className="mb-1.5 px-3 pt-2 text-[10px] font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                     🖼️ {locale === "zh" ? "图片" : "Images"} ({results.images.length})
                   </div>
                   <div className="grid grid-cols-3 gap-2 px-3">
@@ -656,7 +656,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                       <a
                         key={image.id}
                         href={`/gallery#${image.id}`}
-                        className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
+                        className="group relative aspect-square overflow-hidden rounded-lg bg-stone-100 dark:bg-stone-800"
                       >
                         {image.smallThumbPath && (
                           <Image
@@ -676,7 +676,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
               {/* Moments section */}
               {results.moments.length > 0 && (
                 <div className="mb-2">
-                  <div className="mb-1.5 px-3 pt-2 text-[10px] font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+                  <div className="mb-1.5 px-3 pt-2 text-[10px] font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                     💬 {locale === "zh" ? "动态" : "Moments"} ({results.moments.length})
                   </div>
                   <ul>
@@ -684,18 +684,18 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                       <li key={moment.id}>
                         <a
                           href={`/moments${moment.slug ? `/${moment.slug}` : `#${moment.id}`}`}
-                          className="block px-3 py-2.5 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          className="block px-3 py-2.5 text-sm text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                         >
-                          <div className="line-clamp-2 text-sm text-zinc-900 dark:text-zinc-100">
+                          <div className="line-clamp-2 text-sm text-stone-900 dark:text-stone-100">
                             {moment.content}
                           </div>
-                          <div className="mt-1 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          <div className="mt-1 flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
                             {moment.tags.length > 0 && (
                               <span className="flex items-center gap-1">
                                 🏷️ {moment.tags.slice(0, 2).join(", ")}
                               </span>
                             )}
-                            <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                            <span className="text-stone-300 dark:text-stone-700">·</span>
                             <span>
                               {new Date(moment.createdAt).toLocaleDateString(
                                 locale === "zh" ? "zh-CN" : "en-US",
@@ -714,7 +714,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
           <button
             type="button"
             onClick={goToFullPage}
-            className="block w-full border-t border-zinc-200 px-3 py-2 text-left text-xs text-zinc-500 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            className="block w-full border-t border-stone-200 px-3 py-2 text-left text-xs text-stone-500 hover:bg-stone-100 dark:border-stone-800 dark:text-stone-400 dark:hover:bg-stone-800"
           >
             {locale === "zh" ? "查看全部结果" : "See all results"}
           </button>
@@ -737,7 +737,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
           aria-expanded={open}
           aria-controls="search-dropdown"
           onClick={() => setOpen((v) => !v)}
-          className={`group flex items-center gap-2 rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-300 hover:text-zinc-900 focus:outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/20 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-300 dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/20 ${
+          className={`group flex items-center gap-2 rounded-full border border-stone-200 text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900 focus:outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/20 dark:border-stone-800 dark:text-stone-400 dark:hover:border-stone-300 dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/20 ${
             size === "sm" ? "h-7 w-7 lg:w-auto lg:px-3" : "h-9 w-9 lg:w-auto lg:px-4"
           }`}
         >
@@ -757,7 +757,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
           <span className="hidden text-sm font-medium lg:inline">
             {locale === "zh" ? "搜索" : "Search"}
           </span>
-          <kbd className="hidden rounded border border-zinc-300 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 lg:inline dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400">
+          <kbd className="hidden rounded border border-stone-300 bg-stone-100 px-1.5 py-0.5 font-mono text-[10px] text-stone-500 lg:inline dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400">
             ⌘K
           </kbd>
         </button>

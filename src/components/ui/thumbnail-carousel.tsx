@@ -167,7 +167,7 @@ export function ThumbnailCarousel({
       <div className="flex flex-col gap-3">
         {/* Main Carousel */}
         <div
-          className="relative overflow-hidden rounded-lg bg-gray-100 dark:bg-zinc-800"
+          className="relative overflow-hidden rounded-lg bg-gray-100 dark:bg-stone-800"
           ref={containerRef}
         >
           <motion.div
@@ -236,7 +236,7 @@ export function ThumbnailCarousel({
               ${
                 index === 0
                   ? "opacity-40 cursor-not-allowed"
-                  : "bg-white dark:bg-zinc-700 hover:scale-110 hover:opacity-100 opacity-70"
+                  : "bg-white dark:bg-stone-700 hover:scale-110 hover:opacity-100 opacity-70"
               }`}
           >
             <svg
@@ -268,7 +268,7 @@ export function ThumbnailCarousel({
               ${
                 index === images.length - 1
                   ? "opacity-40 cursor-not-allowed"
-                  : "bg-white dark:bg-zinc-700 hover:scale-110 hover:opacity-100 opacity-70"
+                  : "bg-white dark:bg-stone-700 hover:scale-110 hover:opacity-100 opacity-70"
               }`}
           >
             <svg

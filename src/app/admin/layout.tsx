@@ -15,13 +15,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // Only ADMIN users can access admin pages
   if (session.user?.role !== "ADMIN") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+      <div className="flex min-h-screen items-center justify-center bg-stone-50 dark:bg-stone-950">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">403</h1>
-          <p className="mt-2 text-zinc-600 dark:text-zinc-400">{t(locale, "forbidden")}</p>
+          <h1 className="text-4xl font-bold text-stone-900 dark:text-stone-100">403</h1>
+          <p className="mt-2 text-stone-600 dark:text-stone-400">{t(locale, "forbidden")}</p>
           <Link
             href="/"
-            className="mt-4 inline-block text-blue-600 hover:underline dark:text-blue-400"
+            className="mt-4 inline-block text-sage-600 hover:underline dark:text-sage-400"
           >
             {t(locale, "returnToHome")}
           </Link>

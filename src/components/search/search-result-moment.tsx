@@ -18,7 +18,7 @@ export function SearchResultMoment({ moment, query, locale, onSelect }: Props) {
     <Link
       href={`/${locale}/m/${moment.slug || moment.id}`}
       onClick={onSelect}
-      className="group block rounded-lg px-4 py-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+      className="group block rounded-lg px-4 py-3 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800/50"
     >
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 pt-1">
@@ -27,20 +27,20 @@ export function SearchResultMoment({ moment, query, locale, onSelect }: Props) {
           </div>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-zinc-900 dark:text-zinc-100">
+          <p className="text-sm text-stone-900 dark:text-stone-100">
             <HighlightText text={preview} query={query} />
           </p>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-500">
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-stone-500 dark:text-stone-500">
             {moment.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 <span>🏷️</span>
                 {moment.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">
+                  <span key={tag} className="rounded-full bg-stone-100 px-2 py-0.5 dark:bg-stone-800">
                     #{tag}
                   </span>
                 ))}
                 {moment.tags.length > 3 && (
-                  <span className="text-zinc-400">+{moment.tags.length - 3}</span>
+                  <span className="text-stone-400">+{moment.tags.length - 3}</span>
                 )}
               </div>
             )}
@@ -55,7 +55,7 @@ export function SearchResultMoment({ moment, query, locale, onSelect }: Props) {
         </div>
         <div className="flex-shrink-0 pt-1">
           <svg
-            className="h-5 w-5 text-zinc-400 opacity-0 transition-opacity group-hover:opacity-100"
+            className="h-5 w-5 text-stone-400 opacity-0 transition-opacity group-hover:opacity-100"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"

@@ -196,8 +196,8 @@ describe("LanguageSwitcher", () => {
       "gap-3",
       "rounded-lg",
       "border",
-      "border-zinc-200",
-      "bg-zinc-50"
+      "border-stone-200",
+      "bg-stone-50"
     );
   });
 

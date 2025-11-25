@@ -118,7 +118,7 @@ export function AuthHeader() {
           aria-expanded={isMenuOpen}
           aria-label="User menu"
           data-state={isMenuOpen ? "open" : "closed"}
-          className="flex items-center gap-1.5 rounded-full border border-zinc-200 p-0.5 pr-2 transition-colors hover:border-zinc-300 focus:ring-2 focus:ring-zinc-400 focus:outline-none dark:border-zinc-800 dark:hover:border-zinc-700"
+          className="flex items-center gap-1.5 rounded-full border border-stone-200 p-0.5 pr-2 transition-colors hover:border-stone-300 focus:ring-2 focus:ring-stone-400 focus:outline-none dark:border-stone-800 dark:hover:border-stone-700"
         >
           {showAvatarImage ? (
             <Image
@@ -135,17 +135,17 @@ export function AuthHeader() {
             />
           ) : (
             <div
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-stone-200 text-xs font-medium text-stone-700 dark:bg-stone-800 dark:text-stone-300"
               data-testid="user-avatar"
             >
               {user?.name?.charAt(0).toUpperCase() || "U"}
             </div>
           )}
-          <span className="hidden text-sm font-medium text-zinc-700 md:inline dark:text-zinc-300">
+          <span className="hidden text-sm font-medium text-stone-700 md:inline dark:text-stone-300">
             {user?.name || "User"}
           </span>
           <svg
-            className={`h-3.5 w-3.5 text-zinc-500 transition-transform ${isMenuOpen ? "rotate-180" : ""}`}
+            className={`h-3.5 w-3.5 text-stone-500 transition-transform ${isMenuOpen ? "rotate-180" : ""}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -160,13 +160,13 @@ export function AuthHeader() {
             role="menu"
             aria-orientation="vertical"
             onKeyDown={handleMenuKeyDown}
-            className="absolute left-0 mt-2 w-48 rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
+            className="absolute left-0 mt-2 w-48 rounded-lg border border-stone-200 bg-white py-1 shadow-lg dark:border-stone-800 dark:bg-stone-900"
           >
             <Link
               href="/admin"
               role="menuitem"
               onClick={() => setIsMenuOpen(false)}
-              className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 focus:bg-zinc-100 focus:outline-none dark:text-zinc-300 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800"
+              className="block px-4 py-2 text-sm text-stone-700 hover:bg-stone-100 focus:bg-stone-100 focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
             >
               Dashboard
             </Link>
@@ -176,7 +176,7 @@ export function AuthHeader() {
                 setIsMenuOpen(false);
                 signOut({ callbackUrl: window.location.pathname });
               }}
-              className="w-full px-4 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-100 focus:bg-zinc-100 focus:outline-none dark:text-zinc-300 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800"
+              className="w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-100 focus:bg-stone-100 focus:outline-none dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:bg-stone-800"
             >
               Sign out
             </button>
@@ -196,7 +196,7 @@ export function AuthHeader() {
         const callbackUrl = `${pathname}${search}${hash}`;
         router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       }}
-      className="flex items-center gap-1.5 rounded-md border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-50 focus:ring-2 focus:ring-zinc-400 focus:outline-none md:text-sm dark:border-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
+      className="flex items-center gap-1.5 rounded-md border border-stone-200 px-2.5 py-1 text-xs font-medium text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-50 focus:ring-2 focus:ring-stone-400 focus:outline-none md:text-sm dark:border-stone-800 dark:text-stone-300 dark:hover:border-stone-700 dark:hover:bg-stone-900"
     >
       Sign in
     </button>

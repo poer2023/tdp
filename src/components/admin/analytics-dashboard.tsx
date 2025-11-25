@@ -78,14 +78,14 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
       </div>
 
       <section className="grid gap-6 md:grid-cols-2">
-        <div className="flex h-full flex-col rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+        <div className="flex h-full flex-col rounded-3xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+          <h2 className="mb-4 text-lg font-semibold text-stone-900 dark:text-stone-50">
             {t(locale, "trendChart")}
           </h2>
           {overview.chartData.length > 0 ? (
             <TrendLineChart data={overview.chartData} locale={locale} />
           ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="py-8 text-center text-sm text-stone-500 dark:text-stone-400">
               {t(locale, "noDataYet")}
             </p>
           )}
@@ -101,8 +101,8 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
         />
       </section>
 
-      <section className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+      <section className="rounded-3xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+        <h2 className="mb-4 text-lg font-semibold text-stone-900 dark:text-stone-50">
           {t(locale, "languageDistribution")}
         </h2>
         <div className="space-y-4">
@@ -117,12 +117,12 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
               return (
                 <div key={entry.locale ?? "unknown"} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">{langName}</span>
-                    <span className="font-medium text-zinc-900 dark:text-zinc-50">
+                    <span className="font-medium text-stone-700 dark:text-stone-300">{langName}</span>
+                    <span className="font-medium text-stone-900 dark:text-stone-50">
                       {entry.count.toLocaleString()}
                     </span>
                   </div>
-                  <div className="relative h-8 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                  <div className="relative h-8 overflow-hidden rounded-lg bg-stone-100 dark:bg-stone-800">
                     <div
                       className={`flex h-full items-center justify-center transition-all ${
                         color === "blue" ? "bg-blue-500" : "bg-green-500"
@@ -134,7 +134,7 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
                       )}
                     </div>
                     {percentage <= 15 && (
-                      <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      <span className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium text-stone-500 dark:text-stone-400">
                         {percentage}%
                       </span>
                     )}
@@ -143,7 +143,7 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
               );
             })
           ) : (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="py-8 text-center text-sm text-stone-500 dark:text-stone-400">
               {t(locale, "noDataYet")}
             </p>
           )}
@@ -155,12 +155,12 @@ export function AnalyticsDashboard({ locale, overview }: AnalyticsDashboardProps
 
 function StatCard({ title, value, subtitle }: { title: string; value: number; subtitle?: string }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">{title}</p>
-      <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+    <div className="rounded-3xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+      <p className="text-sm text-stone-500 dark:text-stone-400">{title}</p>
+      <p className="mt-2 text-3xl font-bold text-stone-900 dark:text-stone-50">
         {value.toLocaleString()}
       </p>
-      {subtitle && <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>}
+      {subtitle && <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">{subtitle}</p>}
     </div>
   );
 }

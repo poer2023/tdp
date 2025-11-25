@@ -34,10 +34,10 @@ export function ModuleErrorFallback({
   onRetry,
 }: ModuleErrorFallbackProps) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-lg border border-stone-200 bg-white p-8 dark:border-stone-800 dark:bg-stone-900">
       <div className="mx-auto max-w-md text-center">
         <svg
-          className="mx-auto h-12 w-12 text-zinc-400 dark:text-zinc-600"
+          className="mx-auto h-12 w-12 text-stone-400 dark:text-stone-600"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -49,13 +49,13 @@ export function ModuleErrorFallback({
             d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
           />
         </svg>
-        <h3 className="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">{title}</h3>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{message}</p>
+        <h3 className="mt-4 text-sm font-medium text-stone-900 dark:text-stone-100">{title}</h3>
+        <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">{message}</p>
 
         {showRetry && onRetry && (
           <button
             onClick={onRetry}
-            className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-800 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -94,15 +94,15 @@ export function ModuleLoadingSkeleton({ rows = 3 }: { rows?: number }) {
   );
 
   return (
-    <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="space-y-4 rounded-lg border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
       {placeholderWidths.map((widths, i) => (
         <div key={i} className="animate-pulse">
           <div
-            className="h-4 rounded bg-zinc-200 dark:bg-zinc-800"
+            className="h-4 rounded bg-stone-200 dark:bg-stone-800"
             style={{ width: `${widths.primary}%` }}
           />
           <div
-            className="mt-2 h-3 rounded bg-zinc-100 dark:bg-zinc-900"
+            className="mt-2 h-3 rounded bg-stone-100 dark:bg-stone-900"
             style={{ width: `${widths.secondary}%` }}
           />
         </div>

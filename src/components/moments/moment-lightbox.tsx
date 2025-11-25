@@ -105,8 +105,8 @@ export function MomentLightbox() {
       >
         {isTextMode ? (
           /* 文字内容显示 */
-          <div className="max-h-[85vh] max-w-[800px] overflow-y-auto rounded-lg bg-white/95 p-8 shadow-2xl backdrop-blur-sm dark:bg-zinc-900/95 md:p-12">
-            <p className="whitespace-pre-wrap text-lg leading-relaxed text-zinc-800 dark:text-zinc-200 md:text-xl">
+          <div className="max-h-[85vh] max-w-[800px] overflow-y-auto rounded-lg bg-white/95 p-8 shadow-2xl backdrop-blur-sm dark:bg-stone-900/95 md:p-12">
+            <p className="whitespace-pre-wrap text-lg leading-relaxed text-stone-800 dark:text-stone-200 md:text-xl">
               {textContent}
             </p>
           </div>

@@ -108,7 +108,7 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
           layout
           transition={{ duration: 1.5, type: "spring" }}
           whileHover={{ scale: 1.05 }}
-          className="relative h-full w-full cursor-pointer overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800"
+          className="relative h-full w-full cursor-pointer overflow-hidden rounded-md bg-stone-100 dark:bg-stone-800"
           onClick={() => (window.location.href = item.href)}
           style={{
             backgroundImage: `url(${item.image})`,
@@ -160,7 +160,7 @@ function ShuffleGrid({ activities, galleryPhotos, statistics, locale }: ShuffleG
               ? Array.from({ length: 12 }).map((_, i) => (
                   <div
                     key={`skeleton-${i}`}
-                    className="h-full w-full animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800"
+                    className="h-full w-full animate-pulse rounded-md bg-stone-100 dark:bg-stone-800"
                   />
                 ))
               : squares.map((sq) => sq)}

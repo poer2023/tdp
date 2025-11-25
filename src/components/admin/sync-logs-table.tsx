@@ -63,8 +63,8 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
   return (
     <div className="space-y-2">
       {logs.length === 0 ? (
-        <div className="rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="rounded-lg border border-stone-200 bg-white p-12 text-center dark:border-stone-800 dark:bg-stone-900">
+          <p className="text-sm text-stone-500 dark:text-stone-400">
             No logs found matching your filters
           </p>
         </div>
@@ -72,14 +72,14 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
         logs.map((log) => (
           <div
             key={log.id}
-            className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+            className="rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900"
           >
             {/* Main Row */}
-            <div className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+            <div className="p-4 hover:bg-stone-50 dark:hover:bg-stone-800/50">
               <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-12">
                 {/* Platform & Status */}
                 <div className="md:col-span-3">
-                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <div className="text-sm font-medium text-stone-900 dark:text-stone-100">
                     {log.platform.toUpperCase()}
                   </div>
                   <div className="mt-1">{getStatusBadge(log.status)}</div>
@@ -87,13 +87,13 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
 
                 {/* Time & Duration */}
                 <div className="text-sm md:col-span-3">
-                  <div className="text-zinc-600 dark:text-zinc-400">
+                  <div className="text-stone-600 dark:text-stone-400">
                     {log.startedAt
                       ? format(new Date(log.startedAt), "MMM d, yyyy HH:mm:ss")
                       : "Not started"}
                   </div>
                   {log.duration && (
-                    <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-500">
+                    <div className="mt-0.5 text-xs text-stone-500 dark:text-stone-500">
                       Duration: {(log.duration / 1000).toFixed(1)}s
                     </div>
                   )}
@@ -101,7 +101,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
 
                 {/* Items */}
                 <div className="text-sm md:col-span-2">
-                  <div className="text-zinc-600 dark:text-zinc-400">
+                  <div className="text-stone-600 dark:text-stone-400">
                     {log.itemsSuccess}/{log.itemsTotal} items
                   </div>
                   {log.itemsFailed > 0 && (
@@ -112,8 +112,8 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                 </div>
 
                 {/* Triggered By */}
-                <div className="text-sm text-zinc-600 md:col-span-2 dark:text-zinc-400">
-                  <span className="inline-flex items-center gap-1 rounded bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                <div className="text-sm text-stone-600 md:col-span-2 dark:text-stone-400">
+                  <span className="inline-flex items-center gap-1 rounded bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-700 dark:bg-stone-800 dark:text-stone-300">
                     {log.triggeredBy}
                   </span>
                 </div>
@@ -132,31 +132,31 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
 
             {/* Expanded Details */}
             {expandedRow === log.id && (
-              <div className="border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
+              <div className="border-t border-stone-200 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-800/50">
                 <div className="grid gap-4 md:grid-cols-2">
                   {/* Left Column */}
                   <div className="space-y-3">
                     <div>
-                      <h4 className="text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
+                      <h4 className="text-xs font-semibold text-stone-500 uppercase dark:text-stone-400">
                         Job Details
                       </h4>
                       <div className="mt-1 space-y-1 text-sm">
                         <div>
-                          <span className="text-zinc-600 dark:text-zinc-400">Job ID:</span>{" "}
-                          <code className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                          <span className="text-stone-600 dark:text-stone-400">Job ID:</span>{" "}
+                          <code className="font-mono text-xs text-stone-900 dark:text-stone-100">
                             {log.id}
                           </code>
                         </div>
                         {log.jobType && (
                           <div>
-                            <span className="text-zinc-600 dark:text-zinc-400">Type:</span>{" "}
-                            <span className="text-zinc-900 dark:text-zinc-100">{log.jobType}</span>
+                            <span className="text-stone-600 dark:text-stone-400">Type:</span>{" "}
+                            <span className="text-stone-900 dark:text-stone-100">{log.jobType}</span>
                           </div>
                         )}
                         {log.credentialId && (
                           <div>
-                            <span className="text-zinc-600 dark:text-zinc-400">Credential ID:</span>{" "}
-                            <code className="font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                            <span className="text-stone-600 dark:text-stone-400">Credential ID:</span>{" "}
+                            <code className="font-mono text-xs text-stone-900 dark:text-stone-100">
                               {log.credentialId}
                             </code>
                           </div>
@@ -166,10 +166,10 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
 
                     {log.message && (
                       <div>
-                        <h4 className="text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
+                        <h4 className="text-xs font-semibold text-stone-500 uppercase dark:text-stone-400">
                           Message
                         </h4>
-                        <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
+                        <p className="mt-1 text-sm text-stone-700 dark:text-stone-300">
                           {log.message}
                         </p>
                       </div>
@@ -177,10 +177,10 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
 
                     {log.metrics && (
                       <div>
-                        <h4 className="text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
+                        <h4 className="text-xs font-semibold text-stone-500 uppercase dark:text-stone-400">
                           Metrics
                         </h4>
-                        <pre className="mt-1 overflow-x-auto rounded bg-zinc-100 p-2 text-xs text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+                        <pre className="mt-1 overflow-x-auto rounded bg-stone-100 p-2 text-xs text-stone-900 dark:bg-stone-900 dark:text-stone-100">
                           {JSON.stringify(log.metrics, null, 2)}
                         </pre>
                       </div>
@@ -224,15 +224,15 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
 
                 {/* Synced Items Section */}
                 {log.syncedItems && log.syncedItems.length > 0 && (
-                  <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                    <h4 className="mb-3 text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
+                  <div className="mt-4 border-t border-stone-200 pt-4 dark:border-stone-700">
+                    <h4 className="mb-3 text-xs font-semibold text-stone-500 uppercase dark:text-stone-400">
                       Synced Content ({log.syncedItems.length} items)
                     </h4>
                     <div className="max-h-96 space-y-2 overflow-y-auto">
                       {log.syncedItems.map((item) => (
                         <div
                           key={item.id}
-                          className="flex gap-3 rounded-lg border border-zinc-200 bg-white p-3 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800/50"
+                          className="flex gap-3 rounded-lg border border-stone-200 bg-white p-3 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:hover:bg-stone-800/50"
                         >
                           {/* Cover Image */}
                           {item.cover && (
@@ -249,10 +249,10 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
 
                           {/* Content Info */}
                           <div className="min-w-0 flex-1">
-                            <h5 className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                            <h5 className="truncate text-sm font-medium text-stone-900 dark:text-stone-100">
                               {item.title}
                             </h5>
-                            <div className="mt-1 flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+                            <div className="mt-1 flex items-center gap-3 text-xs text-stone-500 dark:text-stone-400">
                               <span>
                                 Watched: {format(new Date(item.watchedAt), "MMM d, yyyy HH:mm")}
                               </span>

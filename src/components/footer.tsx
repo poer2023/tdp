@@ -35,20 +35,20 @@ export function Footer() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                  className="text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
                 >
                   {link.label}
                 </Link>
               ))}
             </nav>
-            <span className="text-zinc-400 dark:text-zinc-600">·</span>
-            <p className="text-zinc-600 dark:text-zinc-400">
+            <span className="text-stone-400 dark:text-stone-600">·</span>
+            <p className="text-stone-600 dark:text-stone-400">
               © {currentYear} Hao · {locale === "zh" ? "用" : "Built with"} ❤️
             </p>
           </div>
 
           {/* Line 2: Tech Stack */}
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">
+          <p className="text-xs text-stone-500 dark:text-stone-500">
             Next.js 15 · React 19 · Tailwind CSS 4
           </p>
         </div>

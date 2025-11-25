@@ -128,7 +128,7 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
         className={`flex items-center gap-2 rounded-lg border px-4 py-2 transition-all ${
           displayState.isLiked
             ? "border-red-300 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
-            : "border-zinc-200 bg-white text-zinc-700 hover:border-red-300 hover:bg-red-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-red-800 dark:hover:bg-red-950"
+            : "border-stone-200 bg-white text-stone-700 hover:border-red-300 hover:bg-red-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-red-800 dark:hover:bg-red-950"
         } ${isPending || isInitialLoading ? "cursor-wait opacity-50" : ""} ${displayState.isLiked ? "cursor-not-allowed" : "cursor-pointer"}`}
         aria-label={displayState.isLiked ? "Already liked" : "Like this post"}
         aria-live="polite"

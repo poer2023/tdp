@@ -24,7 +24,7 @@ export function MomentMasonry({
 }: MomentMasonryProps) {
   if (!moments || moments.length === 0) {
     return (
-      <div className="py-20 text-center text-zinc-500 dark:text-zinc-400">
+      <div className="py-20 text-center text-stone-500 dark:text-stone-400">
         <p className="text-lg">
           {locale === "zh" ? "暂无动态" : "No moments yet"}
         </p>
