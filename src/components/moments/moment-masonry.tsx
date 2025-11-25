@@ -53,11 +53,11 @@ export function MomentMasonry({
         ))}
       </div>
 
-      {/* Floating row (last 2 cards with offset) - desktop only */}
+      {/* Floating row (last 2 cards with responsive offset) */}
       {hasFloatingRow && floatingMoments.length === 2 && (
-        <div className="columns-2 gap-3 sm:columns-3 sm:gap-[18px] lg:columns-5 lg:gap-6">
-          {/* Second-to-last card: offset left */}
-          <div className="mb-4 hidden break-inside-avoid md:block lg:mb-7 lg:-translate-x-[50px] lg:translate-y-10">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-[18px] lg:mt-0 lg:grid-cols-5 lg:gap-6">
+          {/* Second-to-last card: responsive offset */}
+          <div className="break-inside-avoid md:translate-y-6 lg:-translate-x-12 lg:translate-y-10">
             <MomentMasonryCard
               moment={floatingMoments[0]!}
               locale={locale}
@@ -66,26 +66,8 @@ export function MomentMasonry({
             />
           </div>
 
-          {/* Last card: offset right */}
-          <div className="mb-4 hidden break-inside-avoid md:block lg:mb-7 lg:translate-x-[50px] lg:translate-y-10">
-            <MomentMasonryCard
-              moment={floatingMoments[1]!}
-              locale={locale}
-              onDelete={onDelete}
-              isAdmin={isAdmin}
-            />
-          </div>
-
-          {/* Mobile fallback: show without offset on small screens */}
-          <div className="mb-4 block break-inside-avoid md:hidden">
-            <MomentMasonryCard
-              moment={floatingMoments[0]!}
-              locale={locale}
-              onDelete={onDelete}
-              isAdmin={isAdmin}
-            />
-          </div>
-          <div className="mb-4 block break-inside-avoid md:hidden">
+          {/* Last card: responsive offset */}
+          <div className="break-inside-avoid md:translate-y-6 lg:translate-x-12 lg:translate-y-10">
             <MomentMasonryCard
               moment={floatingMoments[1]!}
               locale={locale}

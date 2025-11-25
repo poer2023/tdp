@@ -1,63 +1,38 @@
 "use client";
 
-import { startTransition, useEffect, useState } from "react";
-import type { MomentImage } from "@/lib/moments";
+import { useEffect, useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useLightbox } from "@/contexts/lightbox-context";
 
+/**
+ * Lightbox 组件 - 全屏图片和文字预览
+ *
+ * 使用 Context API 而非自定义事件，提供更好的类型安全和依赖追踪
+ */
 export function MomentLightbox() {
-  const [open, setOpen] = useState(false);
-  const [images, setImages] = useState<MomentImage[]>([]);
-  const [idx, setIdx] = useState(0);
-  const [textContent, setTextContent] = useState<string | null>(null);
+  const { isOpen, images, currentIndex, textContent, closeLightbox } = useLightbox();
+  const [idx, setIdx] = useState(currentIndex);
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
-  // Listen for custom event to open lightbox
+  // Sync internal index with context
   useEffect(() => {
-    const handleOpen = (e: Event) => {
-      const customEvent = e as CustomEvent<{ images: MomentImage[]; initialIndex: number }>;
-      const { images: newImages, initialIndex } = customEvent.detail;
+    setIdx(currentIndex);
+  }, [currentIndex]);
 
-      if (newImages && newImages.length >= 1) {
-        startTransition(() => {
-          setImages(newImages);
-          setIdx(Math.min(initialIndex, newImages.length - 1));
-          setTextContent(null); // Clear text mode
-          setLoadedImages(new Set()); // Reset loaded images
-          setOpen(true);
-        });
-      }
-    };
-
-    window.addEventListener('open-moment-lightbox', handleOpen);
-    return () => window.removeEventListener('open-moment-lightbox', handleOpen);
-  }, []);
-
-  // Listen for text lightbox event
+  // Reset loaded images when opening new lightbox
   useEffect(() => {
-    const handleTextOpen = (e: Event) => {
-      const customEvent = e as CustomEvent<{ text: string }>;
-      const { text } = customEvent.detail;
-
-      if (text) {
-        startTransition(() => {
-          setTextContent(text);
-          setImages([]); // Clear image mode
-          setOpen(true);
-        });
-      }
-    };
-
-    window.addEventListener('open-text-lightbox', handleTextOpen);
-    return () => window.removeEventListener('open-text-lightbox', handleTextOpen);
-  }, []);
+    if (isOpen) {
+      setLoadedImages(new Set());
+    }
+  }, [isOpen]);
 
   // 键盘导航
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setOpen(false);
+        closeLightbox();
       } else if (e.key === "ArrowLeft" && images.length > 1) {
         setIdx((i) => (i - 1 + images.length) % images.length);
       } else if (e.key === "ArrowRight" && images.length > 1) {
@@ -67,10 +42,10 @@ export function MomentLightbox() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, images.length]);
+  }, [isOpen, images.length, closeLightbox]);
 
   // Check if lightbox should be open (either images or text)
-  if (!open || (images.length < 1 && !textContent)) return null;
+  if (!isOpen || (images.length < 1 && !textContent)) return null;
 
   const isTextMode = !!textContent;
   const cur = images[idx];
@@ -81,14 +56,14 @@ export function MomentLightbox() {
   return (
     <div
       className="fixed inset-0 z-[90] bg-black/85 backdrop-blur-sm"
-      onClick={() => setOpen(false)}
+      onClick={closeLightbox}
     >
       {/* 关闭按钮 - 44px minimum touch target */}
       <button
-        className="absolute top-5 right-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+        className="absolute right-5 top-5 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
         onClick={(e) => {
           e.stopPropagation();
-          setOpen(false);
+          closeLightbox();
         }}
         aria-label="Close"
       >
@@ -98,7 +73,7 @@ export function MomentLightbox() {
       {/* 左箭头 - 仅多图时显示 */}
       {!isTextMode && !isSingleImage && (
         <button
-          className="absolute top-1/2 left-5 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+          className="absolute left-5 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
           onClick={(e) => {
             e.stopPropagation();
             prev();
@@ -112,7 +87,7 @@ export function MomentLightbox() {
       {/* 右箭头 - 仅多图时显示 */}
       {!isTextMode && !isSingleImage && (
         <button
-          className="absolute top-1/2 right-5 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+          className="absolute right-5 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
           onClick={(e) => {
             e.stopPropagation();
             next();
