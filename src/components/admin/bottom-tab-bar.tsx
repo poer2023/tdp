@@ -179,8 +179,8 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
                 href={tab.href}
                 className={`flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl transition-colors ${
                   active
-                    ? "text-sage-500"
-                    : "text-stone-400 hover:text-white"
+                    ? "text-sage-300 font-bold"
+                    : "text-white/90 hover:text-white"
                 }`}
               >
                 <div>{tab.icon}</div>
@@ -192,7 +192,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
           {/* More button */}
           <button
             onClick={() => setMoreOpen(true)}
-            className="flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl text-stone-400 transition-colors hover:text-white"
+            className="flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl text-white/90 transition-colors hover:text-white"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path
@@ -239,10 +239,10 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
                     key={tab.href}
                     href={tab.href}
                     onClick={() => setMoreOpen(false)}
-                    className={`flex min-h-[48px] items-center gap-3 rounded-xl px-4 transition-colors ${
+                    className={`relative flex min-h-[48px] items-center gap-3 rounded-xl px-4 transition-colors ${
                       active
-                        ? "bg-sage-600 text-white"
-                        : "text-stone-300 hover:bg-stone-800 hover:text-white"
+                        ? "bg-sage-500 text-white font-bold shadow-md"
+                        : "text-stone-200 hover:bg-stone-800 hover:text-white"
                     }`}
                   >
                     {tab.icon}

@@ -36,6 +36,22 @@ function toGalleryItem(image: GalleryImage, locale: string): LuminaGalleryItem {
     location: image.locationName || undefined,
     width: image.width || undefined,
     height: image.height || undefined,
+    // Extended fields for enhanced lightbox
+    mediumPath: image.mediumPath || undefined,
+    smallThumbPath: image.smallThumbPath || undefined,
+    microThumbPath: image.microThumbPath || undefined,
+    fileSize: image.fileSize || undefined,
+    mimeType: image.mimeType || undefined,
+    capturedAt: image.capturedAt || undefined,
+    createdAt: image.createdAt,
+    latitude: image.latitude || undefined,
+    longitude: image.longitude || undefined,
+    city: image.city || undefined,
+    country: image.country || undefined,
+    locationName: image.locationName || undefined,
+    isLivePhoto: image.isLivePhoto || undefined,
+    livePhotoVideoPath: image.livePhotoVideoPath || undefined,
+    storageType: image.storageType || undefined,
     // Note: EXIF data not available in current schema
     exif: undefined,
   };
