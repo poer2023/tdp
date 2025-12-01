@@ -8,17 +8,18 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  name          String?
-  email         String?        @unique
-  emailVerified DateTime?
-  image         String?
-  role          UserRole       @default(AUTHOR)
-  accounts      Account[]
-  moments       Moment[]
-  posts         Post[]
-  sessions      Session[]
-  subscriptions Subscription[]
+  id             String          @id @default(cuid())
+  name           String?
+  email          String?         @unique
+  emailVerified  DateTime?
+  image          String?
+  role           UserRole        @default(AUTHOR)
+  accounts       Account[]
+  moments        Moment[]
+  posts          Post[]
+  sessions       Session[]
+  subscriptions  Subscription[]
+  momentComments MomentComment[]
 }
 
 model Account {
@@ -174,12 +175,26 @@ model Moment {
   replyTo          Moment?          @relation("MomentThread", fields: [replyToId], references: [id])
   replies          Moment[]         @relation("MomentThread")
   friend           Friend?          @relation("FriendPrivateMoments", fields: [friendId], references: [id])
+  comments         MomentComment[]
 
   @@index([createdAt, visibility, lang])
   @@index([status])
   @@index([content(ops: raw("gin_trgm_ops"))], map: "idx_moment_content_trgm", type: Gin)
   @@index([friendVisibility, friendId])
   @@index([happenedAt])
+}
+
+model MomentComment {
+  id        String   @id @default(cuid())
+  momentId  String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  moment Moment @relation(fields: [momentId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([momentId, createdAt])
 }
 
 model Friend {
