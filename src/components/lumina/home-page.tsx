@@ -4,7 +4,7 @@ import React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { LuminaHero } from "./hero";
 import { LuminaFeed } from "./feed";
-import type { FeedItem, FeedPost, FeedMoment } from "./feed";
+import type { FeedItem, FeedPost } from "./feed";
 import { ProfileWidget, CompactStatusWidget } from "./side-widgets";
 import { getLocaleFromPathname } from "@/lib/i18n";
 
@@ -41,9 +41,9 @@ export function LuminaHomePage({ feedItems, heroImages, profileData }: LuminaHom
     router.push(`/${locale}/posts/${post.slug}`);
   };
 
-  const handleMomentClick = (moment: FeedMoment) => {
-    // Navigate to moment detail page
-    router.push(`/${locale}/m/${moment.id}`);
+  const handleMomentLike = (id: string) => {
+    // TODO: Implement like API call
+    console.log("Like moment:", id);
   };
 
   return (
@@ -59,7 +59,7 @@ export function LuminaHomePage({ feedItems, heroImages, profileData }: LuminaHom
             <LuminaFeed
               initialItems={feedItems}
               onPostClick={handlePostClick}
-              onMomentClick={handleMomentClick}
+              onMomentLike={handleMomentLike}
             />
           </div>
 

@@ -131,7 +131,7 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
           </div>
           <Link
             href="/admin/friends/create"
-            className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
+            className="inline-flex items-center rounded-xl bg-stone-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-stone-800 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
           >
             + 创建第一个朋友
           </Link>

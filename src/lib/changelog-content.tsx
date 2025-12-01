@@ -250,10 +250,10 @@ export function generateTimelineData(entries: ChangelogEntry[]) {
     content: (
       <div key={`${entry.version}-${entry.date}`}>
         <div className="mb-4">
-          <h4 className="mb-1 text-lg font-semibold text-neutral-900 md:text-xl dark:text-neutral-100">
+          <h4 className="mb-1 text-lg font-semibold text-stone-900 md:text-xl dark:text-stone-100">
             {entry.version} - {entry.title}
           </h4>
-          <p className="mb-6 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
+          <p className="mb-6 text-xs font-normal text-stone-800 md:text-sm dark:text-stone-200">
             {entry.description}
           </p>
         </div>
@@ -262,7 +262,7 @@ export function generateTimelineData(entries: ChangelogEntry[]) {
           {entry.changes.map((change) => (
             <div
               key={change}
-              className="flex items-center gap-2 text-xs text-neutral-700 md:text-sm dark:text-neutral-300"
+              className="flex items-center gap-2 text-xs text-stone-700 md:text-sm dark:text-stone-300"
             >
               {change}
             </div>

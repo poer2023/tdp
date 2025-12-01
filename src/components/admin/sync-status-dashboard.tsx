@@ -146,7 +146,7 @@ export function SyncStatusDashboard() {
           <button
             onClick={() => triggerSync("bilibili")}
             disabled={!!syncing}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg bg-stone-900 px-4 py-2 text-white transition hover:bg-stone-800 disabled:opacity-50 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
           >
             {syncing === "bilibili" && <RefreshCw className="h-4 w-4 animate-spin" />}
             Sync Bilibili
@@ -192,7 +192,7 @@ export function SyncStatusDashboard() {
         </div>
         <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
           <div className="text-sm text-stone-500">Recently Added (24h)</div>
-          <div className="mt-2 text-3xl font-bold text-blue-600">
+          <div className="mt-2 text-3xl font-bold text-sage-600">
             {data.mediaStats.recentlyAdded}
           </div>
         </div>

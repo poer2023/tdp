@@ -151,11 +151,11 @@ export function ImageUploadField({
           type="button"
           onClick={handleButtonClick}
           disabled={isUploading}
-          className="flex h-32 w-32 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-stone-300 transition-colors hover:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-700 dark:hover:border-blue-500"
+          className="flex h-32 w-32 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-stone-300 transition-colors hover:border-stone-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-700 dark:hover:border-stone-500"
         >
           {isUploading ? (
             <>
-              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              <Loader2 className="h-6 w-6 animate-spin text-stone-600" />
               <span className="text-xs text-stone-500">上传中...</span>
             </>
           ) : (

@@ -95,34 +95,34 @@ export default function SearchPage() {
     <Container width="standard" padding="px-4 py-6 sm:px-6 sm:py-8 md:py-10">
       {/* Breadcrumbs */}
       <nav
-        className="mb-4 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400"
+        className="mb-4 flex items-center gap-2 text-sm text-stone-600 dark:text-stone-400"
         aria-label={isZh ? "面包屑导航" : "Breadcrumb navigation"}
       >
-        <Link href={`/${locale}`} className="hover:text-zinc-900 dark:hover:text-zinc-100">
+        <Link href={`/${locale}`} className="hover:text-stone-900 dark:hover:text-stone-100">
           {isZh ? "首页" : "Home"}
         </Link>
         <span aria-hidden="true">/</span>
-        <span className="text-zinc-900 dark:text-zinc-100" aria-current="page">
+        <span className="text-stone-900 dark:text-stone-100" aria-current="page">
           {isZh ? "搜索" : "Search"}
         </span>
       </nav>
 
       {/* Header with inline search */}
       <header className="mb-6 sm:mb-8">
-        <h1 className="mb-4 text-2xl font-bold text-zinc-900 sm:text-3xl dark:text-zinc-100">
+        <h1 className="mb-4 text-2xl font-bold text-stone-900 sm:text-3xl dark:text-stone-100">
           {isZh ? "搜索" : "Search"}
         </h1>
 
         {/* Inline search input */}
         <div className="relative" role="search">
-          <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-3 shadow-sm dark:border-stone-800 dark:bg-stone-900">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              className="h-5 w-5 text-zinc-500"
+              className="h-5 w-5 text-stone-500"
             >
               <circle cx="11" cy="11" r="7"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -134,7 +134,7 @@ export default function SearchPage() {
               placeholder={isZh ? "搜索文章、图片、动态..." : "Search posts, images, moments..."}
               aria-label={isZh ? "搜索输入框" : "Search input"}
               role="searchbox"
-              className="flex-1 bg-transparent text-base text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
+              className="flex-1 bg-transparent text-base text-stone-900 placeholder:text-stone-400 focus:outline-none focus-visible:outline-none dark:text-stone-100 dark:placeholder:text-stone-500"
               autoFocus
             />
             {query && (
@@ -142,7 +142,7 @@ export default function SearchPage() {
                 type="button"
                 onClick={() => handleSearch("")}
                 aria-label={isZh ? "清空搜索" : "Clear search"}
-                className="rounded p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800"
+                className="rounded p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:hover:bg-stone-800"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -161,7 +161,7 @@ export default function SearchPage() {
 
         {/* Result count */}
         {query && (
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">
             {loading
               ? isZh
                 ? "搜索中..."
@@ -194,10 +194,10 @@ export default function SearchPage() {
             {/* Posts section */}
             {results.posts.length > 0 && (
               <section>
-                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-stone-900 dark:text-stone-100">
                   <span>📝</span>
                   <span>{isZh ? "文章" : "Posts"}</span>
-                  <span className="text-sm font-normal text-zinc-500">
+                  <span className="text-sm font-normal text-stone-500">
                     ({results.posts.length})
                   </span>
                 </h2>
@@ -205,20 +205,20 @@ export default function SearchPage() {
                   {results.posts.map((post) => (
                     <article
                       key={post.id}
-                      className="border-b border-zinc-200 pb-6 last:border-0 dark:border-zinc-800"
+                      className="border-b border-stone-200 pb-6 last:border-0 dark:border-stone-800"
                     >
                       <Link href={`/${locale}/posts/${post.slug}`} className="group block">
-                        <h3 className="text-xl font-semibold text-zinc-900 group-hover:text-blue-600 dark:text-zinc-100 dark:group-hover:text-blue-400">
+                        <h3 className="text-xl font-semibold text-stone-900 group-hover:text-blue-600 dark:text-stone-100 dark:group-hover:text-blue-400">
                           {post.title}
                         </h3>
-                        <p className="mt-2 line-clamp-2 text-zinc-600 dark:text-zinc-400">
+                        <p className="mt-2 line-clamp-2 text-stone-600 dark:text-stone-400">
                           {post.excerpt}
                         </p>
-                        <div className="mt-3 flex items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+                        <div className="mt-3 flex items-center gap-3 text-sm text-stone-500 dark:text-stone-400">
                           <LanguageBadge locale={post.locale} />
                           {post.publishedAt && (
                             <>
-                              <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                              <span className="text-stone-300 dark:text-stone-700">·</span>
                               <span className="flex items-center gap-1">
                                 <span>📅</span>
                                 <time dateTime={post.publishedAt}>
@@ -232,7 +232,7 @@ export default function SearchPage() {
                           )}
                           {post.authorName && (
                             <>
-                              <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                              <span className="text-stone-300 dark:text-stone-700">·</span>
                               <span className="flex items-center gap-1">
                                 <span>👤</span>
                                 <span>{post.authorName}</span>
@@ -250,10 +250,10 @@ export default function SearchPage() {
             {/* Images section */}
             {results.images.length > 0 && (
               <section>
-                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-stone-900 dark:text-stone-100">
                   <span>🖼️</span>
                   <span>{isZh ? "图片" : "Images"}</span>
-                  <span className="text-sm font-normal text-zinc-500">
+                  <span className="text-sm font-normal text-stone-500">
                     ({results.images.length})
                   </span>
                 </h2>
@@ -262,7 +262,7 @@ export default function SearchPage() {
                     <a
                       key={image.id}
                       href={`/gallery#${image.id}`}
-                      className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800"
+                      className="group relative aspect-square overflow-hidden rounded-lg bg-stone-100 dark:bg-stone-800"
                     >
                       {image.smallThumbPath && (
                         <Image
@@ -282,10 +282,10 @@ export default function SearchPage() {
             {/* Moments section */}
             {results.moments.length > 0 && (
               <section>
-                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-stone-900 dark:text-stone-100">
                   <span>💬</span>
                   <span>{isZh ? "动态" : "Moments"}</span>
-                  <span className="text-sm font-normal text-zinc-500">
+                  <span className="text-sm font-normal text-stone-500">
                     ({results.moments.length})
                   </span>
                 </h2>
@@ -293,20 +293,20 @@ export default function SearchPage() {
                   {results.moments.map((moment) => (
                     <article
                       key={moment.id}
-                      className="rounded-lg border border-zinc-200 p-4 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                      className="rounded-lg border border-stone-200 p-4 hover:bg-stone-50 dark:border-stone-800 dark:hover:bg-stone-900"
                     >
                       <a
                         href={`/moments${moment.slug ? `/${moment.slug}` : `#${moment.id}`}`}
                         className="block"
                       >
-                        <p className="text-zinc-900 dark:text-zinc-100">{moment.content}</p>
-                        <div className="mt-2 flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                        <p className="text-stone-900 dark:text-stone-100">{moment.content}</p>
+                        <div className="mt-2 flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
                           {moment.tags.length > 0 && (
                             <span className="flex items-center gap-1">
                               🏷️ {moment.tags.slice(0, 3).join(", ")}
                             </span>
                           )}
-                          <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                          <span className="text-stone-300 dark:text-stone-700">·</span>
                           <span>
                             {new Date(moment.createdAt).toLocaleDateString(
                               isZh ? "zh-CN" : "en-US",
@@ -326,8 +326,8 @@ export default function SearchPage() {
 
       {/* Empty state when no query */}
       {!query.trim() && !loading && (
-        <div className="py-12 text-center text-zinc-500 dark:text-zinc-400">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-zinc-100 text-4xl dark:bg-zinc-800">
+        <div className="py-12 text-center text-stone-500 dark:text-stone-400">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-stone-100 text-4xl dark:bg-stone-800">
             🔍
           </div>
           <p className="text-lg font-medium">

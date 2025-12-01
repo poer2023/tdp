@@ -62,26 +62,26 @@ export function MediaFilters({
         };
 
   return (
-    <div className="mb-6 flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 sm:flex-row sm:items-center dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="mb-6 flex flex-col gap-4 rounded-xl border border-stone-200 bg-white p-4 sm:flex-row sm:items-center dark:border-stone-800 dark:bg-stone-900">
       {/* Search Input */}
       <div className="relative flex-1">
-        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-stone-400" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={t.search}
-          className="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-4 pl-10 text-sm text-neutral-900 placeholder-neutral-400 transition-colors focus:border-neutral-400 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500 dark:focus:border-neutral-600"
+          className="w-full rounded-lg border border-stone-200 bg-white py-2 pr-4 pl-10 text-sm text-stone-900 placeholder-stone-400 transition-colors focus:border-stone-400 focus:outline-none dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:placeholder-stone-500 dark:focus:border-stone-600"
         />
       </div>
 
       {/* Date Range Select */}
       <div className="flex items-center gap-2">
-        <Calendar className="h-4 w-4 text-neutral-400" />
+        <Calendar className="h-4 w-4 text-stone-400" />
         <select
           value={dateRange}
           onChange={(e) => onDateRangeChange(e.target.value as MediaApiParams["dateRange"])}
-          className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 transition-colors focus:border-neutral-400 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-600"
+          className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 transition-colors focus:border-stone-400 focus:outline-none dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:focus:border-stone-600"
         >
           <option value="all">{t.dateRanges.all}</option>
           <option value="thisWeek">{t.dateRanges.thisWeek}</option>
@@ -93,11 +93,11 @@ export function MediaFilters({
       {/* Completion Filter (Bilibili only) */}
       {platform === "bilibili" && (
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-neutral-400" />
+          <CheckCircle2 className="h-4 w-4 text-stone-400" />
           <select
             value={completion}
             onChange={(e) => onCompletionChange(e.target.value as MediaApiParams["completion"])}
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 transition-colors focus:border-neutral-400 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:border-neutral-600"
+            className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 transition-colors focus:border-stone-400 focus:outline-none dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:focus:border-stone-600"
           >
             <option value="all">{t.completionOptions.all}</option>
             <option value="completed">{t.completionOptions.completed}</option>

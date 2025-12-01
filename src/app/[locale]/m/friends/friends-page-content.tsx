@@ -52,12 +52,12 @@ export function FriendsPageContent({
       {/* 内容区域 */}
       {!friend ? (
         // 未认证：显示认证表单
-        <div className="mx-auto max-w-md rounded-3xl border border-zinc-200/70 bg-white/80 p-8 shadow-sm backdrop-blur dark:border-zinc-800/60 dark:bg-zinc-900/80">
+        <div className="mx-auto max-w-md rounded-3xl border border-stone-200/70 bg-white/80 p-8 shadow-sm backdrop-blur dark:border-stone-800/60 dark:bg-stone-900/80">
           <div className="space-y-3 text-center sm:space-y-4">
-            <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
+            <h1 className="text-3xl font-semibold text-stone-900 dark:text-stone-50">
               {copy[locale].heading}
             </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">{copy[locale].description}</p>
+            <p className="text-sm text-stone-500 dark:text-stone-400">{copy[locale].description}</p>
           </div>
           <FriendAuthForm locale={locale} />
         </div>

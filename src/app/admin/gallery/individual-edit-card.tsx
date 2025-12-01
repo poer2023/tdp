@@ -49,10 +49,10 @@ export function IndividualEditCard({
   disabled = false,
 }: IndividualEditCardProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 md:flex-row md:items-start dark:border-zinc-800">
+    <div className="flex flex-col gap-4 rounded-lg border border-stone-200 p-4 md:flex-row md:items-start dark:border-stone-800">
       {/* 左侧: 图片预览 */}
       <div className="flex-shrink-0">
-        <div className="relative h-24 w-24 overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-900">
+        <div className="relative h-24 w-24 overflow-hidden rounded-md bg-stone-100 dark:bg-stone-900">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={file.preview}
@@ -67,7 +67,7 @@ export function IndividualEditCard({
             </Badge>
           )}
         </div>
-        <p className="mt-1 max-w-[96px] truncate text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 max-w-[96px] truncate text-xs text-stone-500 dark:text-stone-400">
           {file.file.name}
         </p>
       </div>

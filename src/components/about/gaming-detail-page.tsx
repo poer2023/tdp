@@ -71,12 +71,12 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
         <div className="mb-8">
           <Link
             href={`/${locale}/about/live`}
-            className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
           >
             <ArrowLeft className="h-4 w-4" />
             {t.backToDashboard}
           </Link>
-          <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+          <h1 className="mt-4 text-3xl font-bold text-stone-900 sm:text-4xl dark:text-stone-100">
             🎮 {t.title}
           </h1>
         </div>
@@ -136,12 +136,12 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
       <div className="mb-8">
         <Link
           href={`/${locale}/about/live`}
-          className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+          className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
         >
           <ArrowLeft className="h-4 w-4" />
           {t.backToDashboard}
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+        <h1 className="mt-4 text-3xl font-bold text-stone-900 sm:text-4xl dark:text-stone-100">
           🎮 {t.title}
         </h1>
       </div>
@@ -149,7 +149,7 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
       {/* Steam Profile */}
       {data.profile && (
         <section className="mb-8">
-          <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="overflow-hidden rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
             <div className="flex items-center gap-4 p-6">
               <div className="relative h-20 w-20 flex-shrink-0">
                 <Image
@@ -160,10 +160,10 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
                 />
               </div>
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100">
                   {data.profile.personaName}
                 </h2>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                <p className="text-sm text-stone-600 dark:text-stone-400">
                   Steam ID: {data.profile.steamId}
                 </p>
                 <a
@@ -183,7 +183,7 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
 
       {/* Statistics */}
       <section className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className="mb-4 text-xl font-semibold text-stone-900 dark:text-stone-100">
           {t.stats}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -210,14 +210,14 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
 
       {/* Currently Playing */}
       <section className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className="mb-4 text-xl font-semibold text-stone-900 dark:text-stone-100">
           {t.currentlyPlaying}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {data.currentlyPlaying.map((game) => (
             <div
               key={game.gameId}
-              className="overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
+              className="overflow-hidden rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900"
             >
               {game.cover && (
                 <div className="relative aspect-video">
@@ -227,18 +227,18 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
               <div className="p-4">
                 <div className="mb-2 flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
+                    <h3 className="font-semibold text-stone-900 dark:text-stone-100">
                       {game.gameName}
                     </h3>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="text-sm text-stone-500 dark:text-stone-400">
                       {game.platform.toUpperCase()}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                    <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
                       {getUniqueLabel(formatPlaytime(game.playtime))}
                     </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    <p className="text-xs text-stone-500 dark:text-stone-400">
                       {formatTimestamp(game.lastPlayed)}
                     </p>
                   </div>
@@ -246,8 +246,8 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
                 {game.progress !== undefined && (
                   <div className="mb-2">
                     <div className="mb-1 flex items-center justify-between text-xs">
-                      <span className="text-neutral-600 dark:text-neutral-400">{t.progress}</span>
-                      <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                      <span className="text-stone-600 dark:text-stone-400">{t.progress}</span>
+                      <span className="font-medium text-stone-900 dark:text-stone-100">
                         {game.progress}%
                       </span>
                     </div>
@@ -271,7 +271,7 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
                   }
 
                   return (
-                    <div className="text-xs text-neutral-600 dark:text-neutral-400">
+                    <div className="text-xs text-stone-600 dark:text-stone-400">
                       <span aria-hidden="true">🏆 </span>
                       <span>{achievementsLabel}</span>
                     </div>
@@ -285,29 +285,29 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
 
       {/* Platforms */}
       <section className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className="mb-4 text-xl font-semibold text-stone-900 dark:text-stone-100">
           {t.platforms}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {data.stats.platforms.map((platform) => (
             <div
               key={platform.id}
-              className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+              className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
             >
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
                     <Gamepad2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                  <h3 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
                     {platform.name}
                   </h3>
                 </div>
-                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-300">
                   {getUniqueLabel(`${platform.activeGames} ${t.games}`)}
                 </span>
               </div>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              <p className="text-sm text-stone-500 dark:text-stone-400">
                 {locale === "zh" ? "正在游玩的游戏数量" : "Active games on this platform"}
               </p>
             </div>
@@ -317,30 +317,30 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
 
       {/* Recent Sessions */}
       <section className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className="mb-4 text-xl font-semibold text-stone-900 dark:text-stone-100">
           {t.recentSessions}
         </h2>
         <div className="space-y-2">
           {data.recentSessions.map((session, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900"
+              className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-4 py-3 dark:border-stone-800 dark:bg-stone-900"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
                   <Gamepad2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                  <p className="font-medium text-stone-900 dark:text-stone-100">
                     {session.gameName.split("").join("\u200b")}
                   </p>
-                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  <p className="text-sm text-stone-500 dark:text-stone-400">
                     {formatSessionDate(session.date)}
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                <p className="font-medium text-stone-900 dark:text-stone-100">
                   {formatSessionDuration(session.duration)}
                 </p>
               </div>
@@ -351,10 +351,10 @@ export function GamingDetailPage({ locale }: GamingDetailPageProps) {
 
       {/* Playtime Heatmap */}
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className="mb-4 text-xl font-semibold text-stone-900 dark:text-stone-100">
           {t.playtimeHeatmap}
         </h2>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
           <ActivityHeatmap data={data.playtimeHeatmap} colorScheme="blue" />
         </div>
       </section>

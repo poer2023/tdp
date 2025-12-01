@@ -109,7 +109,7 @@ export function AdminNav({
                       onClick={onClose}
                       className={`group flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-150 ${
                         isActive
-                          ? "bg-emerald-600 text-white"
+                          ? "bg-sage-600 text-white"
                           : "text-stone-400 hover:bg-stone-800 hover:text-stone-200"
                       }`}
                     >

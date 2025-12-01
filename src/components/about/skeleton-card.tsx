@@ -1,13 +1,13 @@
 export function SkeletonCard({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900 ${className}`}
+      className={`animate-pulse rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900 ${className}`}
     >
-      <div className="mb-4 h-12 w-12 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
+      <div className="mb-4 h-12 w-12 rounded-lg bg-stone-200 dark:bg-stone-800" />
       <div className="space-y-3">
-        <div className="h-4 w-24 rounded bg-neutral-200 dark:bg-neutral-800" />
-        <div className="h-8 w-32 rounded bg-neutral-200 dark:bg-neutral-800" />
-        <div className="h-4 w-40 rounded bg-neutral-200 dark:bg-neutral-800" />
+        <div className="h-4 w-24 rounded bg-stone-200 dark:bg-stone-800" />
+        <div className="h-8 w-32 rounded bg-stone-200 dark:bg-stone-800" />
+        <div className="h-4 w-40 rounded bg-stone-200 dark:bg-stone-800" />
       </div>
     </div>
   );

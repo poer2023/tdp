@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Loader2, ArrowDown } from "lucide-react";
 import { LuminaPostCard } from "./post-card";
 import { LuminaMomentCard } from "./moment-card";
+import { LuminaMomentDetail } from "./moment-detail";
 import { getLocaleFromPathname } from "@/lib/i18n";
 
 export type FeedFilter = "All" | "Articles" | "Moments";
@@ -39,14 +40,17 @@ export type FeedItem = FeedPost | FeedMoment;
 interface LuminaFeedProps {
   initialItems: FeedItem[];
   onPostClick?: (post: FeedPost) => void;
-  onMomentClick?: (moment: FeedMoment) => void;
+  onMomentLike?: (id: string) => void;
 }
 
 const ITEMS_PER_PAGE = 12;
 
-export function LuminaFeed({ initialItems, onPostClick, onMomentClick }: LuminaFeedProps) {
+export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFeedProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
+
+  // Modal state for moment detail
+  const [selectedMoment, setSelectedMoment] = useState<FeedMoment | null>(null);
 
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
@@ -103,8 +107,18 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentClick }: LuminaF
   }, [feedFilter]);
 
   return (
-    <div className="w-full">
-      {/* Sticky Filter Bar */}
+    <>
+      {/* Moment Detail Modal */}
+      {selectedMoment && (
+        <LuminaMomentDetail
+          moment={selectedMoment}
+          onClose={() => setSelectedMoment(null)}
+          onLike={onMomentLike}
+        />
+      )}
+
+      <div className="w-full">
+        {/* Sticky Filter Bar */}
       <div className="sticky top-16 z-30 -mx-4 mb-8 bg-stone-50/95 px-4 py-4 backdrop-blur-sm transition-colors md:mx-0 md:px-0 dark:bg-stone-950/95">
         <div className="flex items-center justify-between">
           {/* Filter Pills */}
@@ -158,7 +172,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentClick }: LuminaF
                   tags: item.tags,
                   likes: item.likes,
                 }}
-                onClick={() => onMomentClick?.(item)}
+                onClick={() => setSelectedMoment(item)}
               />
             )}
           </React.Fragment>
@@ -188,7 +202,8 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentClick }: LuminaF
           </button>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 

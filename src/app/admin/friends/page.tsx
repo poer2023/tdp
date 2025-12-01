@@ -35,14 +35,14 @@ export default async function FriendsManagementPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">朋友管理</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-50">朋友管理</h1>
+          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
             管理朋友故事访问和专属内容。
           </p>
         </div>
         <Link
           href="/admin/friends/create"
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+          className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
         >
           + 创建朋友
         </Link>

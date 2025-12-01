@@ -179,7 +179,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
                 href={tab.href}
                 className={`flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl transition-colors ${
                   active
-                    ? "text-emerald-500"
+                    ? "text-sage-500"
                     : "text-stone-400 hover:text-white"
                 }`}
               >
@@ -241,7 +241,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
                     onClick={() => setMoreOpen(false)}
                     className={`flex min-h-[48px] items-center gap-3 rounded-xl px-4 transition-colors ${
                       active
-                        ? "bg-emerald-600 text-white"
+                        ? "bg-sage-600 text-white"
                         : "text-stone-300 hover:bg-stone-800 hover:text-white"
                     }`}
                   >

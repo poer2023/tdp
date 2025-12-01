@@ -112,39 +112,39 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
     <div className="space-y-6 sm:space-y-8">
       {/* Page Header */}
       <header>
-        <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-          <Link href="/admin/credentials" className="hover:text-zinc-900 dark:hover:text-zinc-100">
+        <div className="flex items-center gap-2 text-sm text-stone-600 dark:text-stone-400">
+          <Link href="/admin/credentials" className="hover:text-stone-900 dark:hover:text-stone-100">
             {t(locale, "credentials")}
           </Link>
           <span>/</span>
-          <span className="text-zinc-900 dark:text-zinc-100">{t(locale, "editCredential")}</span>
+          <span className="text-stone-900 dark:text-stone-100">{t(locale, "editCredential")}</span>
         </div>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
           {t(locale, "editCredential")}
         </h1>
       </header>
 
       {/* Credential Info */}
-      <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-lg border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
         <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs text-stone-500 dark:text-stone-400">
               {t(locale, "credentialCreatedAt")}
             </span>
-            <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <div className="mt-1 text-sm font-medium text-stone-900 dark:text-stone-100">
               {new Date(credential.createdAt).toLocaleString()}
             </div>
           </div>
           <div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs text-stone-500 dark:text-stone-400">
               {t(locale, "credentialUpdatedAt")}
             </span>
-            <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <div className="mt-1 text-sm font-medium text-stone-900 dark:text-stone-100">
               {new Date(credential.updatedAt).toLocaleString()}
             </div>
           </div>
           <div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs text-stone-500 dark:text-stone-400">
               {t(locale, "credentialStatus")}
             </span>
             <div className="mt-1">
@@ -160,27 +160,27 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
             </div>
           </div>
           <div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs text-stone-500 dark:text-stone-400">
               {t(locale, "usageCount")}
             </span>
-            <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <div className="mt-1 text-sm font-medium text-stone-900 dark:text-stone-100">
               {credential.usageCount}
             </div>
           </div>
           <div>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs text-stone-500 dark:text-stone-400">
               {t(locale, "failureCount")}
             </span>
-            <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <div className="mt-1 text-sm font-medium text-stone-900 dark:text-stone-100">
               {credential.failureCount}
             </div>
           </div>
           {credential.lastValidatedAt && (
             <div>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs text-stone-500 dark:text-stone-400">
                 {t(locale, "lastValidated")}
               </span>
-              <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+              <div className="mt-1 text-sm font-medium text-stone-900 dark:text-stone-100">
                 {new Date(credential.lastValidatedAt).toLocaleString()}
               </div>
             </div>
@@ -191,11 +191,11 @@ export default async function EditCredentialPage({ params }: { params: Promise<{
       </div>
 
       {/* Actions Section */}
-      <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+      <div className="rounded-lg border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+        <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
           {locale === "zh" ? "操作" : "Actions"}
         </h2>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
           {locale === "zh"
             ? "验证凭据有效性或触发数据同步"
             : "Validate credential or trigger data sync"}

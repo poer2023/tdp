@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, startTransition } from "react";
+import React, { useState, useEffect, useRef, startTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, Moon, Sun, Languages } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, Moon, Sun, Languages } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
 import { useTheme } from "next-themes";
@@ -24,11 +24,13 @@ const NAV_LINKS: NavLink[] = [
 
 export function LuminaHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Detect current locale from pathname
   const locale = getLocaleFromPathname(pathname) ?? "en";
@@ -40,8 +42,22 @@ export function LuminaHeader() {
 
   // Close mobile menu on route change
   useEffect(() => {
-    startTransition(() => setIsMobileMenuOpen(false));
+    startTransition(() => {
+      setIsMobileMenuOpen(false);
+      setIsUserMenuOpen(false);
+    });
   }, [pathname]);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Helper to determine if a link is active based on current path
   const isActive = (path: string) => {
@@ -145,25 +161,63 @@ export function LuminaHeader() {
             </div>
 
             {session ? (
-              <div className="flex items-center gap-4">
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="flex items-center gap-2 rounded-full bg-stone-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-stone-700 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-300"
-                  >
-                    <LayoutDashboard size={14} /> {t("Admin")}
-                  </Link>
-                )}
-                <div className="flex items-center gap-2 text-stone-600 dark:text-stone-300">
-                  <UserIcon size={16} />
-                  <span className="text-sm font-medium">{session.user?.name || session.user?.email}</span>
-                </div>
+              <div className="relative" ref={userMenuRef}>
+                {/* User Avatar Button */}
                 <button
-                  onClick={() => signOut()}
-                  className="text-stone-400 transition-colors hover:text-rose-500"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-300 dark:bg-stone-700 dark:text-stone-200 dark:hover:bg-stone-600"
                 >
-                  <LogOut size={16} />
+                  {session.user?.image ? (
+                    <img
+                      src={session.user.image}
+                      alt="avatar"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    (session.user?.name ?? session.user?.email ?? "U")[0]?.toUpperCase() ?? "U"
+                  )}
                 </button>
+
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-stone-200 bg-white py-1 shadow-lg dark:border-stone-700 dark:bg-stone-900">
+                    {/* User Info */}
+                    <div className="border-b border-stone-100 px-4 py-3 dark:border-stone-800">
+                      <p className="truncate text-sm font-medium text-stone-900 dark:text-stone-100">
+                        {session.user?.name || session.user?.email}
+                      </p>
+                      {session.user?.name && session.user?.email && (
+                        <p className="truncate text-xs text-stone-500 dark:text-stone-400">
+                          {session.user.email}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Admin Link */}
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+                      >
+                        <LayoutDashboard size={16} />
+                        {t("Admin")}
+                      </Link>
+                    )}
+
+                    {/* Logout */}
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        signOut();
+                      }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/20"
+                    >
+                      <LogOut size={16} />
+                      {t("Logout")}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <Link
@@ -178,8 +232,16 @@ export function LuminaHeader() {
           {/* Mobile Menu Button */}
           <div className="flex items-center gap-4 md:hidden">
             {session && (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-200 text-sm font-bold text-stone-800 dark:bg-stone-800 dark:text-stone-100">
-                {(session.user?.name ?? session.user?.email ?? "U")[0]?.toUpperCase() ?? "U"}
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-800 dark:bg-stone-800 dark:text-stone-100">
+                {session.user?.image ? (
+                  <img
+                    src={session.user.image}
+                    alt="avatar"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  (session.user?.name ?? session.user?.email ?? "U")[0]?.toUpperCase() ?? "U"
+                )}
               </div>
             )}
             <button

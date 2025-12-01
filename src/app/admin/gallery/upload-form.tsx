@@ -19,11 +19,11 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
   }, [state]);
 
   return (
-    <section className="rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-zinc-800/70 dark:bg-zinc-900/70">
+    <section className="rounded-3xl border border-stone-200/70 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-stone-800/70 dark:bg-stone-900/70">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">上传照片</h2>
-          <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-50">上传照片</h2>
+          <p className="text-xs leading-relaxed text-stone-500 dark:text-stone-400">
             自动提取 EXIF 元数据和 GPS 坐标。HEIC 格式将自动转换为 JPEG。Live Photo
             需同时选择图片和视频文件（同名配对）。
           </p>
@@ -48,7 +48,7 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
               name="title"
               type="text"
               placeholder="为照片添加一个标题"
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
             />
           </Field>
 
@@ -57,7 +57,7 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
               name="description"
               rows={3}
               placeholder="记录照片背后的故事"
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
             />
           </Field>
 
@@ -65,7 +65,7 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
             <select
               name="category"
               defaultValue="REPOST"
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
             >
               <option value="REPOST">转发</option>
               <option value="ORIGINAL">拍照</option>
@@ -77,7 +77,7 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
             <select
               name="postId"
               defaultValue=""
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
             >
               <option value="">不关联文章</option>
               {posts.map((post) => (
@@ -97,9 +97,9 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
               required
               accept="image/*,video/quicktime,video/mp4"
               multiple
-              className="w-full text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border file:border-zinc-300 file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-zinc-900 file:transition-all hover:file:bg-zinc-50 dark:text-zinc-300 dark:file:border-zinc-700 dark:file:bg-zinc-900 dark:file:text-zinc-100"
+              className="w-full text-sm text-stone-600 file:mr-4 file:rounded-lg file:border file:border-stone-300 file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-stone-900 file:transition-all hover:file:bg-stone-50 dark:text-stone-300 dark:file:border-stone-700 dark:file:bg-stone-900 dark:file:text-stone-100"
             />
-            <p className="mt-1.5 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1.5 text-xs leading-relaxed text-stone-500 dark:text-stone-400">
               支持 JPG/PNG/WebP/HEIC 图片格式。HEIC 将自动转换为 JPEG。
               <br />
               <strong>Live Photo 上传</strong>：需同时选择图片和视频（文件名相同，如 IMG_1234.HEIC +
@@ -110,7 +110,7 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex items-center justify-center rounded-lg border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="inline-flex items-center justify-center rounded-lg border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-50 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
           >
             {isPending ? "处理中…" : "上传照片"}
           </button>
@@ -131,7 +131,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1">
-      <label className="block text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+      <label className="block text-xs font-semibold tracking-[0.2em] text-stone-500 uppercase dark:text-stone-400">
         {label}
         {required ? <span className="ml-1 text-red-500">*</span> : null}
       </label>

@@ -217,7 +217,7 @@ export function SubscriptionExpandableCard({
               <div className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
                 <Link
                   href={`/admin/subscriptions/${subscription.id}`}
-                  className="inline-flex flex-1 items-center justify-center rounded-lg border border-blue-500 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-950/40"
+                  className="inline-flex flex-1 items-center justify-center rounded-lg bg-stone-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
                 >
                   {translate(locale, "editSubscription")}
                 </Link>

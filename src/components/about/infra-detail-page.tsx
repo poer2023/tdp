@@ -94,12 +94,12 @@ export function InfraDetailPage({ locale }: InfraDetailPageProps) {
           <div>
             <Link
               href={`/${locale}/about/live`}
-              className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+              className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
             >
               <ArrowLeft className="h-4 w-4" />
               {t.backToDashboard}
             </Link>
-            <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+            <h1 className="mt-4 text-3xl font-bold text-stone-900 sm:text-4xl dark:text-stone-100">
               🖥️ {t.title}
             </h1>
           </div>
@@ -110,7 +110,7 @@ export function InfraDetailPage({ locale }: InfraDetailPageProps) {
               href={uptimeKumaUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
+              className="inline-flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800"
             >
               {locale === "zh" ? "管理监控" : "Manage Monitors"}
               <ExternalLink className="h-4 w-4" />
@@ -125,14 +125,14 @@ export function InfraDetailPage({ locale }: InfraDetailPageProps) {
           <SkeletonGrid count={4} />
         </div>
       ) : !data ? (
-        <div className="rounded-xl border border-neutral-200 bg-white p-12 text-center dark:border-neutral-800 dark:bg-neutral-900">
-          <p className="text-neutral-600 dark:text-neutral-400">{t.noData}</p>
+        <div className="rounded-xl border border-stone-200 bg-white p-12 text-center dark:border-stone-800 dark:bg-stone-900">
+          <p className="text-stone-600 dark:text-stone-400">{t.noData}</p>
         </div>
       ) : (
         <div className="space-y-12">
           {/* Servers Overview */}
           <section>
-            <h2 className="mb-6 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+            <h2 className="mb-6 text-xl font-semibold text-stone-900 dark:text-stone-100">
               {t.serversOverview}
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -144,7 +144,7 @@ export function InfraDetailPage({ locale }: InfraDetailPageProps) {
 
           {/* Self-Hosted Services */}
           <section>
-            <h2 className="mb-6 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+            <h2 className="mb-6 text-xl font-semibold text-stone-900 dark:text-stone-100">
               {t.selfHostedServices}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -156,11 +156,11 @@ export function InfraDetailPage({ locale }: InfraDetailPageProps) {
 
           {/* Network Traffic */}
           <section>
-            <h2 className="mb-6 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+            <h2 className="mb-6 text-xl font-semibold text-stone-900 dark:text-stone-100">
               {t.networkTraffic}
             </h2>
-            <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-              <div className="mb-4 flex items-center gap-2 text-sm text-neutral-500">
+            <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+              <div className="mb-4 flex items-center gap-2 text-sm text-stone-500">
                 <Activity className="h-4 w-4" />
                 <span>{t.last24Hours}</span>
               </div>
@@ -187,14 +187,14 @@ export function InfraDetailPage({ locale }: InfraDetailPageProps) {
                     );
                   })}
                 </div>
-                <div className="flex items-center justify-between text-xs text-neutral-500">
+                <div className="flex items-center justify-between text-xs text-stone-500">
                   <span>24h ago</span>
                   <span>Now</span>
                 </div>
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-blue-500" />
-                    <span className="text-neutral-600 dark:text-neutral-400">Total Traffic</span>
+                    <span className="text-stone-600 dark:text-stone-400">Total Traffic</span>
                   </div>
                 </div>
               </div>
@@ -203,24 +203,24 @@ export function InfraDetailPage({ locale }: InfraDetailPageProps) {
 
           {/* Recent Events */}
           <section>
-            <h2 className="mb-6 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+            <h2 className="mb-6 text-xl font-semibold text-stone-900 dark:text-stone-100">
               {t.recentEvents}
             </h2>
-            <div className="space-y-2 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="space-y-2 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
               {data.events.length === 0 ? (
-                <p className="py-8 text-center text-sm text-neutral-500">{t.noData}</p>
+                <p className="py-8 text-center text-sm text-stone-500">{t.noData}</p>
               ) : (
                 data.events.map((event, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                    className="flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800"
                   >
                     <span className="text-lg">{eventIcons[event.type]}</span>
                     <div className="flex-1">
-                      <p className="text-sm text-neutral-900 dark:text-neutral-100">
+                      <p className="text-sm text-stone-900 dark:text-stone-100">
                         {event.message}
                       </p>
-                      <p className="mt-1 text-xs text-neutral-500">
+                      <p className="mt-1 text-xs text-stone-500">
                         {formatTimestamp(event.timestamp)}
                       </p>
                     </div>

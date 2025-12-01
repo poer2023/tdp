@@ -91,7 +91,7 @@ export function ImageCropModal({
               type="button"
               onClick={handleConfirm}
               disabled={isProcessing}
-              className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl bg-stone-900 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
             >
               {isProcessing ? "处理中..." : "确认裁剪"}
             </button>
@@ -105,7 +105,7 @@ export function ImageCropModal({
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: #3b82f6;
+          background: #78716c;
           cursor: pointer;
         }
 
@@ -113,7 +113,7 @@ export function ImageCropModal({
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: #3b82f6;
+          background: #78716c;
           cursor: pointer;
           border: none;
         }

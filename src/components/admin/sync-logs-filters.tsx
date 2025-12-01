@@ -114,7 +114,7 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
       <div className="mt-4 flex gap-3">
         <button
           onClick={handleFilter}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
         >
           Apply Filters
         </button>
@@ -133,17 +133,17 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="text-xs text-stone-500 dark:text-stone-400">Active filters:</span>
           {currentFilters.platform && (
-            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
+            <span className="inline-flex items-center gap-1 rounded bg-stone-100 px-2 py-1 text-xs font-medium text-stone-800 dark:bg-stone-950/20 dark:text-stone-400">
               Platform: {currentFilters.platform.toUpperCase()}
             </span>
           )}
           {currentFilters.status && (
-            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
+            <span className="inline-flex items-center gap-1 rounded bg-stone-100 px-2 py-1 text-xs font-medium text-stone-800 dark:bg-stone-950/20 dark:text-stone-400">
               Status: {currentFilters.status}
             </span>
           )}
           {currentFilters.triggeredBy && (
-            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-950/20 dark:text-blue-400">
+            <span className="inline-flex items-center gap-1 rounded bg-stone-100 px-2 py-1 text-xs font-medium text-stone-800 dark:bg-stone-950/20 dark:text-stone-400">
               Triggered By: {currentFilters.triggeredBy}
             </span>
           )}

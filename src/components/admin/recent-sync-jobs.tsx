@@ -96,7 +96,7 @@ export function RecentSyncJobs({ jobs }: RecentSyncJobsProps) {
                 <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                   <Link
                     href={`/admin/sync/logs?jobId=${job.id}`}
-                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                    className="text-sage-600 hover:text-sage-900 dark:text-sage-400 dark:hover:text-sage-300"
                   >
                     View Details
                   </Link>

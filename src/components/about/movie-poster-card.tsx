@@ -30,11 +30,11 @@ export function MoviePosterCard({ item }: MoviePosterCardProps) {
 
   return (
     <CardWrapper
-      className="group relative block overflow-hidden rounded-xl bg-neutral-100 transition-transform hover:scale-[1.02] dark:bg-neutral-900"
+      className="group relative block overflow-hidden rounded-xl bg-stone-100 transition-transform hover:scale-[1.02] dark:bg-stone-900"
       {...wrapperProps}
     >
       {/* Poster */}
-      <div className="relative aspect-[2/3] overflow-hidden bg-neutral-200 dark:bg-neutral-800">
+      <div className="relative aspect-[2/3] overflow-hidden bg-stone-200 dark:bg-stone-800">
         {item.poster ? (
           <Image
             src={item.poster}
@@ -55,7 +55,7 @@ export function MoviePosterCard({ item }: MoviePosterCardProps) {
       <div className="absolute right-0 bottom-0 left-0 translate-y-6 p-4 transition-transform group-hover:translate-y-0">
         <h3 className="mb-2 font-semibold text-white drop-shadow-lg">{item.title}</h3>
 
-        <div className="flex items-center gap-3 text-sm text-neutral-300">
+        <div className="flex items-center gap-3 text-sm text-stone-300">
           {/* Rating */}
           {item.rating && (
             <div className="flex items-center gap-1">
@@ -77,14 +77,14 @@ export function MoviePosterCard({ item }: MoviePosterCardProps) {
         {/* Series progress */}
         {item.type === "series" && item.progress !== undefined && (
           <div className="mt-2">
-            <div className="flex items-center gap-2 text-xs text-neutral-300">
+            <div className="flex items-center gap-2 text-xs text-stone-300">
               <TrendingUp className="h-3 w-3" />
               <span>
                 S{item.season?.toString().padStart(2, "0")}E
                 {item.episode?.toString().padStart(2, "0")} • {item.progress}%
               </span>
             </div>
-            <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-neutral-700">
+            <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-stone-700">
               <div
                 className="h-full bg-blue-500 transition-all"
                 style={{ width: `${item.progress}%` }}

@@ -82,7 +82,7 @@ export function TrendLineChart({ data, locale }: { data: TrendLineEntry[]; local
             y2={padding.top + chartHeight * (1 - ratio)}
             stroke="currentColor"
             strokeOpacity="0.1"
-            className="text-zinc-300 dark:text-zinc-700"
+            className="text-stone-300 dark:text-stone-700"
           />
         ))}
 
@@ -131,7 +131,7 @@ export function TrendLineChart({ data, locale }: { data: TrendLineEntry[]; local
               x={x}
               y={height - 5}
               textAnchor="middle"
-              className="fill-zinc-500 text-[10px] dark:fill-zinc-400"
+              className="fill-stone-500 text-[10px] dark:fill-stone-400"
             >
               {d.date.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
                 month: "2-digit",
@@ -146,7 +146,7 @@ export function TrendLineChart({ data, locale }: { data: TrendLineEntry[]; local
           x={padding.left - 10}
           y={padding.top}
           textAnchor="end"
-          className="fill-zinc-500 text-[10px] dark:fill-zinc-400"
+          className="fill-stone-500 text-[10px] dark:fill-stone-400"
         >
           {maxViews}
         </text>
@@ -154,7 +154,7 @@ export function TrendLineChart({ data, locale }: { data: TrendLineEntry[]; local
           x={padding.left - 10}
           y={padding.top + chartHeight}
           textAnchor="end"
-          className="fill-zinc-500 text-[10px] dark:fill-zinc-400"
+          className="fill-stone-500 text-[10px] dark:fill-stone-400"
         >
           0
         </text>
@@ -193,13 +193,13 @@ export function TrendLineChart({ data, locale }: { data: TrendLineEntry[]; local
       <div className="flex items-center justify-center gap-6 text-sm">
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-full bg-blue-500" />
-          <span className="text-zinc-600 dark:text-zinc-400">
+          <span className="text-stone-600 dark:text-stone-400">
             PV ({normalizedData.reduce((sum, d) => sum + d.totalViews, 0).toLocaleString()})
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full border-2 border-blue-500 bg-white dark:bg-zinc-900" />
-          <span className="text-zinc-600 dark:text-zinc-400">
+          <div className="h-3 w-3 rounded-full border-2 border-blue-500 bg-white dark:bg-stone-900" />
+          <span className="text-stone-600 dark:text-stone-400">
             UV ({normalizedData.reduce((sum, d) => sum + d.uniqueVisitors, 0).toLocaleString()})
           </span>
         </div>

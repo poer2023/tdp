@@ -34,7 +34,7 @@ function SaveButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+      className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
     >
       {pending ? "保存中..." : "保存修改"}
     </button>
@@ -89,7 +89,7 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
             name="name"
             defaultValue={friend.name}
             required
-            className="mt-2 w-full rounded-xl border border-stone-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+            className="mt-2 w-full rounded-xl border border-stone-200 px-4 py-2 text-sm shadow-sm focus:border-stone-500 focus:ring-2 focus:ring-stone-100 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
           />
         </div>
 
@@ -124,7 +124,7 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
             rows={3}
             defaultValue={friend.description ?? ""}
             placeholder="我们之间的回忆..."
-            className="mt-2 w-full rounded-xl border border-stone-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+            className="mt-2 w-full rounded-xl border border-stone-200 px-4 py-2 text-sm shadow-sm focus:border-stone-500 focus:ring-2 focus:ring-stone-100 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
           />
         </div>
 

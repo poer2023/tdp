@@ -52,7 +52,7 @@ export function ConfirmDialog({
                 className={`inline-flex h-10 items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-white transition focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                   variant === "danger"
                     ? "bg-red-600 hover:bg-red-700 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700"
-                    : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700"
+                    : "bg-stone-900 hover:bg-stone-800 focus:ring-stone-500 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
                 }`}
               >
                 {confirmText}

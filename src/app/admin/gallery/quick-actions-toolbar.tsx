@@ -35,11 +35,11 @@ export function QuickActionsToolbar({
   imageCount,
 }: QuickActionsToolbarProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-800 dark:bg-stone-900/50">
       {/* 左侧: 提示信息 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">快捷操作</span>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">共 {imageCount} 张图片</span>
+        <span className="text-sm font-medium text-stone-700 dark:text-stone-300">快捷操作</span>
+        <span className="text-xs text-stone-500 dark:text-stone-400">共 {imageCount} 张图片</span>
       </div>
 
       {/* 右侧: 操作按钮 */}

@@ -122,7 +122,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                 <div className="text-right md:col-span-2">
                   <button
                     onClick={() => toggleExpand(log.id)}
-                    className="text-sm text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                    className="text-sm text-sage-600 hover:text-sage-900 dark:text-sage-400 dark:hover:text-sage-300"
                   >
                     {expandedRow === log.id ? "Hide Details" : "Show Details"}
                   </button>
@@ -263,7 +263,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                                     href={item.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                    className="text-sage-600 hover:text-sage-800 hover:underline dark:text-sage-400 dark:hover:text-sage-300"
                                   >
                                     View
                                   </a>

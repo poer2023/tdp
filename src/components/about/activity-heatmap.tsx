@@ -50,7 +50,7 @@ export function ActivityHeatmap({
 
   // Get color intensity based on value
   const getColor = (value: number) => {
-    if (value === 0) return "bg-neutral-100 dark:bg-neutral-800";
+    if (value === 0) return "bg-stone-100 dark:bg-stone-800";
     const intensity = Math.ceil((value / safeMax) * 4);
 
     const colors = {
@@ -122,7 +122,7 @@ export function ActivityHeatmap({
                 return (
                   <div
                     key={dayIdx}
-                    className={`h-3 w-3 rounded-sm transition-all hover:ring-2 hover:ring-neutral-400 ${getColor(value)}`}
+                    className={`h-3 w-3 rounded-sm transition-all hover:ring-2 hover:ring-stone-400 ${getColor(value)}`}
                     onMouseEnter={() => setHoveredCell({ date: dateStr, value })}
                     onMouseLeave={() => setHoveredCell(null)}
                     title={`${formatDate(date)}: ${value}`}
@@ -136,22 +136,22 @@ export function ActivityHeatmap({
 
       {/* Tooltip */}
       {hoveredCell && (
-        <div className="absolute top-full left-0 z-10 mt-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
-          <p className="font-medium text-neutral-900 dark:text-neutral-100">
+        <div className="absolute top-full left-0 z-10 mt-2 rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm shadow-lg dark:border-stone-800 dark:bg-stone-900">
+          <p className="font-medium text-stone-900 dark:text-stone-100">
             {hoveredCell.value} {hoveredCell.value === 1 ? "contribution" : "contributions"}
           </p>
-          <p className="text-neutral-500">{formatDate(new Date(hoveredCell.date))}</p>
+          <p className="text-stone-500">{formatDate(new Date(hoveredCell.date))}</p>
         </div>
       )}
 
       {/* Legend */}
-      <div className="mt-4 flex items-center gap-2 text-xs text-neutral-500">
+      <div className="mt-4 flex items-center gap-2 text-xs text-stone-500">
         <span>Less</span>
         {[0, 1, 2, 3, 4].map((level) => (
           <div
             key={level}
             className={`h-3 w-3 rounded-sm ${
-              level === 0 ? "bg-neutral-100 dark:bg-neutral-800" : getColor((safeMax / 4) * level)
+              level === 0 ? "bg-stone-100 dark:bg-stone-800" : getColor((safeMax / 4) * level)
             }`}
           />
         ))}

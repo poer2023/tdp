@@ -88,12 +88,12 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
         <div className="mb-8">
           <Link
             href={`/${locale}/about/live`}
-            className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
           >
             <ArrowLeft className="h-4 w-4" />
             {t.backToDashboard}
           </Link>
-          <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+          <h1 className="mt-4 text-3xl font-bold text-stone-900 sm:text-4xl dark:text-stone-100">
             💰 {t.title}
           </h1>
         </div>
@@ -124,12 +124,12 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
       <div className="mb-8">
         <Link
           href={`/${locale}/about/live`}
-          className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+          className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
         >
           <ArrowLeft className="h-4 w-4" />
           {t.backToDashboard}
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+        <h1 className="mt-4 text-3xl font-bold text-stone-900 sm:text-4xl dark:text-stone-100">
           💰 {t.title}
         </h1>
       </div>
@@ -146,10 +146,10 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Monthly Trend */}
         <section className="lg:col-span-2">
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
             <div className="mb-4 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
-              <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+              <TrendingUp className="h-5 w-5 text-stone-600 dark:text-stone-400" />
+              <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">
                 {t.monthlyTrend}
               </h2>
             </div>
@@ -162,7 +162,7 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
                       style={{ height: `${(value / maxTrend) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  <span className="text-xs text-stone-500 dark:text-stone-400">
                     {t.months[idx]}
                   </span>
                 </div>
@@ -173,10 +173,10 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
 
         {/* Category Distribution */}
         <section>
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
             <div className="mb-4 flex items-center gap-2">
-              <PieChart className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
-              <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+              <PieChart className="h-5 w-5 text-stone-600 dark:text-stone-400" />
+              <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">
                 {t.categoryDistribution}
               </h2>
             </div>
@@ -188,7 +188,7 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
                   "bg-yellow-500",
                   "bg-purple-500",
                   "bg-pink-500",
-                  "bg-neutral-500",
+                  "bg-stone-500",
                 ];
                 const color = colors[idx % colors.length];
 
@@ -197,15 +197,15 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
                     <div className="mb-2 flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <div className={`h-3 w-3 rounded-full ${color}`} />
-                        <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                        <span className="font-medium text-stone-900 dark:text-stone-100">
                           {category.name}
                         </span>
                       </div>
-                      <span className="font-medium text-neutral-600 dark:text-neutral-400">
+                      <span className="font-medium text-stone-600 dark:text-stone-400">
                         {category.percentage}%
                       </span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
                       <div
                         className={`h-full ${color} transition-all`}
                         style={{ width: `${category.percentage}%` }}
@@ -220,10 +220,10 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
 
         {/* Subscriptions */}
         <section>
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
             <div className="mb-4 flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
-              <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+              <CreditCard className="h-5 w-5 text-stone-600 dark:text-stone-400" />
+              <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">
                 {t.subscriptions}
               </h2>
             </div>
@@ -231,18 +231,18 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
               {data.subscriptions.map((sub) => (
                 <div
                   key={sub.name}
-                  className="flex items-center justify-between rounded-lg border border-neutral-200 p-3 dark:border-neutral-800"
+                  className="flex items-center justify-between rounded-lg border border-stone-200 p-3 dark:border-stone-800"
                 >
                   <div>
-                    <p className="font-medium text-neutral-900 dark:text-neutral-100">{sub.name}</p>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">{sub.category}</p>
+                    <p className="font-medium text-stone-900 dark:text-stone-100">{sub.name}</p>
+                    <p className="text-sm text-stone-500 dark:text-stone-400">{sub.category}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                    <p className="font-medium text-stone-900 dark:text-stone-100">
                       {sub.amount}
                     </p>
                     {sub.renewalDate && (
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      <p className="text-xs text-stone-500 dark:text-stone-400">
                         {formatDate(sub.renewalDate)}
                       </p>
                     )}
@@ -255,10 +255,10 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
 
         {/* Insights */}
         <section className="lg:col-span-2">
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
             <div className="mb-4 flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
-              <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+              <Lightbulb className="h-5 w-5 text-stone-600 dark:text-stone-400" />
+              <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">
                 {t.insights}
               </h2>
             </div>
@@ -266,9 +266,9 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
               {data.insights.map((insight, idx) => (
                 <div
                   key={idx}
-                  className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/50"
+                  className="rounded-lg border border-stone-200 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-800/50"
                 >
-                  <p className="text-sm text-neutral-700 dark:text-neutral-300">{insight}</p>
+                  <p className="text-sm text-stone-700 dark:text-stone-300">{insight}</p>
                 </div>
               ))}
             </div>

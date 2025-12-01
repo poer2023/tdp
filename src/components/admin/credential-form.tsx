@@ -135,7 +135,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
             className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
           >
             <div className="flex items-center gap-2">
-              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <Info className="h-5 w-5 text-sage-600 dark:text-sage-400" />
               <span className="font-medium text-stone-900 dark:text-stone-100">
                 {locale === "zh" ? "如何获取凭据？" : "How to get credentials?"}
               </span>

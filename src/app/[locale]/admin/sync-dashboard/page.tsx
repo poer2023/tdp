@@ -25,10 +25,10 @@ export default async function SyncDashboardPage({ params }: PageProps) {
     <div className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:px-12 md:py-16">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+        <h1 className="text-3xl font-bold text-stone-900 sm:text-4xl dark:text-stone-100">
           📊 Media Sync Dashboard
         </h1>
-        <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+        <p className="mt-2 text-stone-600 dark:text-stone-400">
           Monitor sync jobs, trigger manual syncs, and view media statistics
         </p>
       </div>

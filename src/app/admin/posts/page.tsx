@@ -15,8 +15,8 @@ const SKIP_DB = process.env.E2E_SKIP_DB === "1" || process.env.E2E_SKIP_DB === "
 
 const PostsSkeleton = () => (
   <div className="space-y-10">
-    <div className="h-32 animate-pulse rounded-3xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40" />
-    <div className="h-96 animate-pulse rounded-3xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40" />
+    <div className="h-32 animate-pulse rounded-xl border border-stone-200 bg-stone-100 dark:border-stone-800 dark:bg-stone-900/40" />
+    <div className="h-96 animate-pulse rounded-xl border border-stone-200 bg-stone-100 dark:border-stone-800 dark:bg-stone-900/40" />
   </div>
 );
 
@@ -26,11 +26,11 @@ async function PostsListContent() {
   return (
     <div className="space-y-10">
       <header className="space-y-3">
-        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Posts</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Posts</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
           文章管理
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-stone-500 dark:text-stone-400">
           新建、发布和维护博客文章，支持 Markdown 与封面上传。
         </p>
       </header>
@@ -44,13 +44,13 @@ async function PostsListContent() {
       ) : (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">文章列表</h2>
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">共 {posts.length} 篇</span>
+            <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-50">文章列表</h2>
+            <span className="text-sm text-stone-500 dark:text-stone-400">共 {posts.length} 篇</span>
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-zinc-200/70 bg-white/80 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
+          <div className="overflow-hidden rounded-xl border border-stone-200/70 bg-white/80 shadow-sm dark:border-stone-800/70 dark:bg-stone-900/70">
             <table className="min-w-full text-left text-sm">
-              <thead className="bg-zinc-100/80 text-xs tracking-[0.2em] text-zinc-500 uppercase dark:bg-zinc-800/60 dark:text-zinc-400">
+              <thead className="bg-stone-100/80 text-xs tracking-[0.2em] text-stone-500 uppercase dark:bg-stone-800/60 dark:text-stone-400">
                 <tr>
                   <th className="px-6 py-4">文章</th>
                   <th className="px-6 py-4">状态</th>
@@ -60,10 +60,10 @@ async function PostsListContent() {
               </thead>
               <tbody>
                 {posts.map((post) => (
-                  <tr key={post.id} className="border-t border-zinc-200/60 dark:border-zinc-800/60">
+                  <tr key={post.id} className="border-t border-stone-200/60 dark:border-stone-800/60">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="relative h-16 w-24 overflow-hidden rounded-xl bg-zinc-200 dark:bg-zinc-800">
+                        <div className="relative h-16 w-24 overflow-hidden rounded-xl bg-stone-200 dark:bg-stone-800">
                           <Image
                             src={post.coverImagePath ?? "/images/placeholder-cover.svg"}
                             alt="封面"
@@ -73,17 +73,17 @@ async function PostsListContent() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <p className="font-medium text-zinc-900 dark:text-zinc-50">
+                          <p className="font-medium text-stone-900 dark:text-stone-50">
                             {post.title}
                           </p>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400">{post.excerpt}</p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">{post.excerpt}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <StatusBadge status={post.status} />
                     </td>
-                    <td className="px-6 py-4 text-sm text-zinc-500 dark:text-zinc-400">
+                    <td className="px-6 py-4 text-sm text-stone-500 dark:text-stone-400">
                       {post.publishedAt
                         ? new Intl.DateTimeFormat("zh-CN", {
                             year: "numeric",
@@ -96,7 +96,7 @@ async function PostsListContent() {
                       <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
                         <Link
                           href={`/admin/posts/${post.id}`}
-                          className="rounded-full border border-zinc-300 px-3 py-1 transition hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                          className="rounded-full border border-stone-300 px-3 py-1 transition hover:bg-stone-100 dark:border-stone-700 dark:hover:bg-stone-800"
                         >
                           编辑
                         </Link>
@@ -151,8 +151,8 @@ function StatusBadge({ status }: { status: PostStatus }) {
   }
 
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-600 dark:bg-zinc-800/70 dark:text-zinc-300">
-      <span className="h-2 w-2 rounded-full bg-zinc-400" aria-hidden /> 草稿
+    <span className="inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600 dark:bg-stone-800/70 dark:text-stone-300">
+      <span className="h-2 w-2 rounded-full bg-stone-400" aria-hidden /> 草稿
     </span>
   );
 }
@@ -162,14 +162,14 @@ export default async function AdminPostsPage() {
     return (
       <div className="space-y-6">
         <header className="space-y-3">
-          <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Posts</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+          <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Posts</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
             文章管理
           </h1>
         </header>
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+        <section className="rounded-xl border border-stone-200 bg-white p-6 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
           已禁用文章管理功能。请在环境变量中设置
-          <code className="mx-2 rounded bg-zinc-100 px-1 py-0.5 text-xs text-zinc-700">
+          <code className="mx-2 rounded bg-stone-100 px-1 py-0.5 text-xs text-stone-700">
             FEATURE_ADMIN_POSTS=on
           </code>
           后重新部署启用。

@@ -151,11 +151,11 @@ export default async function LocalizedPostPage({ params }: PageProps) {
 
       {/* Header */}
       <header className="mb-8 sm:mb-10 md:mb-12">
-        <h1 className="text-4xl leading-tight font-bold text-zinc-900 md:text-5xl dark:text-zinc-100">
+        <h1 className="text-4xl leading-tight font-bold text-stone-900 md:text-5xl dark:text-stone-100">
           {post.title}
         </h1>
 
-        <div className="mt-6 flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="mt-6 flex items-center gap-4 text-sm text-stone-600 dark:text-stone-400">
           {post.author?.name && <span>{post.author.name}</span>}
           {post.publishedAt && (
             <time dateTime={post.publishedAt.toISOString()}>
@@ -185,7 +185,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
       </div>
 
-        <footer className="mt-8 flex items-center justify-between border-t border-zinc-200 pt-6 sm:mt-12 sm:pt-8 md:mt-16 dark:border-zinc-800">
+        <footer className="mt-8 flex items-center justify-between border-t border-stone-200 pt-6 sm:mt-12 sm:pt-8 md:mt-16 dark:border-stone-800">
           <Link href={`/${l}/posts`} className="text-blue-600 hover:underline dark:text-blue-400">
             {l === "zh" ? "← 返回文章列表" : "← Back to posts"}
           </Link>

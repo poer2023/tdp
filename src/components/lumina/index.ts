@@ -6,6 +6,7 @@ export { LuminaHero } from "./hero";
 // Card Components
 export { LuminaPostCard } from "./post-card";
 export { LuminaMomentCard } from "./moment-card";
+export { LuminaMomentDetail } from "./moment-detail";
 export { LuminaShareCard } from "./share-card";
 
 // Widgets

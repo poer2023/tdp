@@ -95,14 +95,14 @@ export default async function SyncDashboardPage() {
     return (
       <div className="space-y-6">
         <header className="space-y-3">
-          <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">Sync</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+          <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Sync</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
             同步仪表板
           </h1>
         </header>
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+        <section className="rounded-xl border border-stone-200 bg-white p-6 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
           同步功能已被禁用。请将{" "}
-          <code className="mx-1 rounded bg-zinc-100 px-1 py-0.5 text-xs text-zinc-700">
+          <code className="mx-1 rounded bg-stone-100 px-1 py-0.5 text-xs text-stone-700">
             FEATURE_ADMIN_SYNC
           </code>{" "}
           设置为 on 并重新部署以启用此页面。
@@ -128,16 +128,16 @@ export default async function SyncDashboardPage() {
       {/* Page Header */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
             同步仪表板
           </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
             管理数据同步任务和平台连接状态
           </p>
         </div>
         <Link
           href="/admin/credentials"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-800 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path
@@ -169,16 +169,16 @@ export default async function SyncDashboardPage() {
 
       {/* Platform Status Cards */}
       <div>
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">平台状态</h2>
+        <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">平台状态</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {credentials.length === 0 ? (
-            <div className="col-span-full rounded-lg border border-zinc-200 bg-white p-12 text-center dark:border-zinc-800 dark:bg-zinc-900">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="col-span-full rounded-xl border border-stone-200 bg-white p-12 text-center dark:border-stone-800 dark:bg-stone-900">
+              <p className="text-sm text-stone-500 dark:text-stone-400">
                 {SKIP_DB ? "当前处于离线模式，无法加载凭据。" : "暂无配置的凭据"}
               </p>
               <Link
                 href="/admin/credentials/new"
-                className="mt-4 inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                className="mt-4 inline-flex items-center gap-2 text-sm text-sage-600 hover:text-sage-800 dark:text-sage-400"
               >
                 添加第一个凭据 →
               </Link>
@@ -188,10 +188,10 @@ export default async function SyncDashboardPage() {
               <Link
                 key={cred.id}
                 href={`/admin/credentials/${cred.id}`}
-                className="group block rounded-lg border border-zinc-200 bg-white p-4 transition-all hover:border-zinc-300 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                className="group block rounded-xl border border-stone-200 bg-white p-4 transition-all hover:border-stone-300 hover:shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-zinc-500 uppercase dark:text-zinc-400">
+                  <span className="text-xs font-medium text-stone-500 uppercase dark:text-stone-400">
                     {cred.platform}
                   </span>
                   <span
@@ -201,10 +201,10 @@ export default async function SyncDashboardPage() {
                   />
                 </div>
                 <div className="mt-2">
-                  <div className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+                  <div className="text-2xl font-semibold text-stone-900 dark:text-stone-100">
                     {cred.usageCount}
                   </div>
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">次同步</div>
+                  <div className="text-xs text-stone-500 dark:text-stone-400">次同步</div>
                 </div>
                 {cred.failureCount > 0 && (
                   <div className="mt-2 text-xs text-red-600 dark:text-red-400">
@@ -212,7 +212,7 @@ export default async function SyncDashboardPage() {
                   </div>
                 )}
                 {cred.lastUsedAt && (
-                  <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="mt-2 text-xs text-stone-500 dark:text-stone-400">
                     上次: {new Date(cred.lastUsedAt).toLocaleDateString()}
                   </div>
                 )}
@@ -225,10 +225,10 @@ export default async function SyncDashboardPage() {
       {/* Recent Sync Jobs */}
       <div>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">最近同步</h2>
+          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">最近同步</h2>
           <Link
             href="/admin/sync/logs"
-            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+            className="text-sm text-sage-600 hover:text-sage-800 dark:text-sage-400"
           >
             查看全部 →
           </Link>
