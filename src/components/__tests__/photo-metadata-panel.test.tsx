@@ -193,7 +193,7 @@ describe("PhotoMetadataPanel", () => {
 
     render(<PhotoMetadataPanel image={imageWithoutSize} />);
 
-    expect(screen.getByText("未知")).toBeInTheDocument();
+    expect(screen.getByText("Unknown")).toBeInTheDocument();
   });
 
   it("should display image dimensions", () => {

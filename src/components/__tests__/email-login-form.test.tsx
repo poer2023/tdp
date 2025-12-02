@@ -44,8 +44,8 @@ describe("EmailLoginForm", () => {
 
     render(<EmailLoginForm callbackUrl="/admin" />);
 
-    fireEvent.change(screen.getByLabelText("邮箱地址"), { target: { value: "test@example.com" } });
-    fireEvent.click(screen.getByRole("button", { name: "发送验证码" }));
+    fireEvent.change(screen.getByLabelText("Email address"), { target: { value: "test@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send verification code" }));
 
     await waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
@@ -57,8 +57,8 @@ describe("EmailLoginForm", () => {
       })
     );
 
-    await screen.findByLabelText("输入验证码");
-    expect(screen.getByText("验证码已发送，请查收邮箱。")).toBeInTheDocument();
+    await screen.findByLabelText("Verification code");
+    expect(screen.getByText("Verification code sent. Please check your inbox.")).toBeInTheDocument();
   });
 
   it("shows error message when sending verification code fails", async () => {
@@ -66,8 +66,8 @@ describe("EmailLoginForm", () => {
 
     render(<EmailLoginForm callbackUrl="/admin" />);
 
-    fireEvent.change(screen.getByLabelText("邮箱地址"), { target: { value: "test@example.com" } });
-    fireEvent.click(screen.getByRole("button", { name: "发送验证码" }));
+    fireEvent.change(screen.getByLabelText("Email address"), { target: { value: "test@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send verification code" }));
 
     await screen.findByText("自定义错误");
     expect(replaceMock).not.toHaveBeenCalled();
@@ -84,12 +84,12 @@ describe("EmailLoginForm", () => {
 
     render(<EmailLoginForm callbackUrl="/admin/dashboard" />);
 
-    fireEvent.change(screen.getByLabelText("邮箱地址"), { target: { value: "test@example.com" } });
-    fireEvent.click(screen.getByRole("button", { name: "发送验证码" }));
-    await screen.findByLabelText("输入验证码");
+    fireEvent.change(screen.getByLabelText("Email address"), { target: { value: "test@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send verification code" }));
+    await screen.findByLabelText("Verification code");
 
-    fireEvent.change(screen.getByLabelText("输入验证码"), { target: { value: "123456" } });
-    fireEvent.click(screen.getByRole("button", { name: "验证并登录" }));
+    fireEvent.change(screen.getByLabelText("Verification code"), { target: { value: "123456" } });
+    fireEvent.click(screen.getByRole("button", { name: "Verify and sign in" }));
 
     await waitFor(() => expect(signInMock).toHaveBeenCalled());
 
@@ -101,7 +101,7 @@ describe("EmailLoginForm", () => {
     });
     expect(replaceMock).toHaveBeenCalledWith("/admin/dashboard");
     expect(refreshMock).toHaveBeenCalled();
-    expect(screen.getByText("登录成功，正在跳转...")).toBeInTheDocument();
+    expect(screen.getByText("Success! Redirecting...")).toBeInTheDocument();
   });
 
   it("shows error when verification fails", async () => {
@@ -115,14 +115,14 @@ describe("EmailLoginForm", () => {
 
     render(<EmailLoginForm callbackUrl="/admin" />);
 
-    fireEvent.change(screen.getByLabelText("邮箱地址"), { target: { value: "test@example.com" } });
-    fireEvent.click(screen.getByRole("button", { name: "发送验证码" }));
-    await screen.findByLabelText("输入验证码");
+    fireEvent.change(screen.getByLabelText("Email address"), { target: { value: "test@example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: "Send verification code" }));
+    await screen.findByLabelText("Verification code");
 
-    fireEvent.change(screen.getByLabelText("输入验证码"), { target: { value: "654321" } });
-    fireEvent.click(screen.getByRole("button", { name: "验证并登录" }));
+    fireEvent.change(screen.getByLabelText("Verification code"), { target: { value: "654321" } });
+    fireEvent.click(screen.getByRole("button", { name: "Verify and sign in" }));
 
-    await screen.findByText("验证码错误或已过期，请重新输入");
+    await screen.findByText("Invalid or expired code. Please try again.");
     expect(replaceMock).not.toHaveBeenCalled();
   });
 });
