@@ -8,6 +8,7 @@ import { PostLocale, PostStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { generateBlogPostingSchema, generateAlternateLinks } from "@/lib/seo";
 import { LikeButton } from "@/components/like-button";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { cache } from "react";
 import { Container } from "@/components/ui/container";
 import { LuminaHeader, LuminaFooter } from "@/components/lumina";
@@ -171,6 +172,15 @@ export default async function LocalizedPostPage({ params }: PageProps) {
                 </time>
               )}
               {post.tags && <span className="text-blue-600 dark:text-blue-400">{post.tags}</span>}
+            </div>
+
+            {/* Language Switcher */}
+            <div className="mt-6">
+              <LanguageSwitcher
+                currentLocale={postLocale}
+                currentSlug={post.slug}
+                groupId={post.groupId}
+              />
             </div>
           </header>
 
