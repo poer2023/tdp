@@ -86,20 +86,20 @@ export default function NewCredentialPage() {
     <div className="space-y-6 sm:space-y-8">
       {/* Page Header */}
       <header>
-        <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-          <Link href="/admin/credentials" className="hover:text-zinc-900 dark:hover:text-zinc-100">
+        <div className="flex items-center gap-2 text-sm text-stone-600 dark:text-stone-400">
+          <Link href="/admin/credentials" className="hover:text-stone-900 dark:hover:text-stone-100">
             {t(locale, "credentials")}
           </Link>
           <span>/</span>
-          <span className="text-zinc-900 dark:text-zinc-100">{t(locale, "addCredential")}</span>
+          <span className="text-stone-900 dark:text-stone-100">{t(locale, "addCredential")}</span>
         </div>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
           {t(locale, "addCredential")}
         </h1>
       </header>
 
       {/* Form */}
-      <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-lg border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
         <CredentialForm action={createCredential} locale={locale} />
       </div>
     </div>

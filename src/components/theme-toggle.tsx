@@ -48,7 +48,7 @@ export function ThemeToggle({ size = "md" }: { size?: "sm" | "md" } = {}) {
       aria-pressed={theme === "dark"}
       title={label}
       data-testid="theme-toggle"
-      className={`inline-flex items-center justify-center rounded-full border border-zinc-300 bg-white/80 text-zinc-700 transition hover:bg-zinc-50 dark:border-[#2C2C2E] dark:bg-[#1C1C1E] dark:text-zinc-300 dark:hover:bg-[#2C2C2E] ${
+      className={`inline-flex items-center justify-center rounded-full border border-stone-300 bg-white/80 text-stone-700 transition hover:bg-stone-50 dark:border-[#2C2C2E] dark:bg-[#1C1C1E] dark:text-stone-300 dark:hover:bg-[#2C2C2E] ${
         size === "sm" ? "h-7 w-7" : "h-9 w-9"
       }`}
     >

@@ -36,8 +36,8 @@ export function GalleryMap({ images, locale = "zh" }: GalleryMapProps) {
 
   if (!imagesWithLocation.length) {
     return (
-      <div className="rounded-lg border border-dashed border-zinc-300 px-6 py-16 text-center dark:border-zinc-700">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+      <div className="rounded-lg border border-dashed border-stone-300 px-6 py-16 text-center dark:border-stone-700">
+        <p className="text-sm text-stone-500 dark:text-stone-400">
           {locale === "zh" ? "暂无带位置信息的照片" : "No photos with location data"}
         </p>
       </div>
@@ -53,7 +53,7 @@ export function GalleryMap({ images, locale = "zh" }: GalleryMapProps) {
   ];
 
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200 shadow-sm dark:border-zinc-800">
+    <div className="overflow-hidden rounded-lg border border-stone-200 shadow-sm dark:border-stone-800">
       <MapContainer
         center={center}
         zoom={10}
@@ -73,7 +73,7 @@ export function GalleryMap({ images, locale = "zh" }: GalleryMapProps) {
             <Popup maxWidth={280} className="gallery-map-popup">
               <article className="space-y-3">
                 {/* 预览图 */}
-                <div className="relative aspect-video overflow-hidden rounded bg-zinc-100">
+                <div className="relative aspect-video overflow-hidden rounded bg-stone-100">
                   <Image
                     src={image.filePath}
                     alt={image.title || "照片"}
@@ -90,18 +90,18 @@ export function GalleryMap({ images, locale = "zh" }: GalleryMapProps) {
 
                 {/* 标题与描述 */}
                 <div className="space-y-1">
-                  <h4 className="text-sm leading-tight font-semibold text-zinc-900">
+                  <h4 className="text-sm leading-tight font-semibold text-stone-900">
                     {image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo")}
                   </h4>
                   {image.description && (
-                    <p className="line-clamp-2 text-xs leading-relaxed text-zinc-600">
+                    <p className="line-clamp-2 text-xs leading-relaxed text-stone-600">
                       {image.description}
                     </p>
                   )}
                 </div>
 
                 {/* 元信息 */}
-                <div className="space-y-1 border-t border-zinc-200 pt-2 text-xs text-zinc-500">
+                <div className="space-y-1 border-t border-stone-200 pt-2 text-xs text-stone-500">
                   {image.locationName && (
                     <div className="flex items-start gap-1.5">
                       <svg
@@ -145,7 +145,7 @@ export function GalleryMap({ images, locale = "zh" }: GalleryMapProps) {
                 {/* 返回相册链接 */}
                 <Link
                   href={localePath(locale, `/gallery/${image.id}`)}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-zinc-900 underline underline-offset-2 transition-colors hover:text-zinc-600"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-stone-900 underline underline-offset-2 transition-colors hover:text-stone-600"
                 >
                   {locale === "zh" ? "查看详情" : "View Details"}
                   <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

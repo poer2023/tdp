@@ -36,13 +36,13 @@ export function ActivityFeedItem({ item }: ActivityFeedItemProps) {
   };
 
   const content = (
-    <div className="flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900">
-      <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800">
-        <Icon className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+    <div className="flex items-start gap-3 rounded-lg p-3 transition-colors hover:bg-stone-50 dark:hover:bg-stone-900">
+      <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-stone-100 dark:bg-stone-800">
+        <Icon className="h-4 w-4 text-stone-600 dark:text-stone-400" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-neutral-900 dark:text-neutral-100">{item.description}</p>
-        <p className="mt-1 text-xs text-neutral-500">{formatTimestamp(item.timestamp)}</p>
+        <p className="text-sm text-stone-900 dark:text-stone-100">{item.description}</p>
+        <p className="mt-1 text-xs text-stone-500">{formatTimestamp(item.timestamp)}</p>
       </div>
     </div>
   );

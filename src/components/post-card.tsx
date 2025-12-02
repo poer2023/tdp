@@ -20,8 +20,8 @@ export function PostCard({ post, locale = "zh" }: PostCardProps) {
       : "Draft";
 
   return (
-    <article className="group overflow-hidden border border-zinc-200 bg-white transition dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="relative aspect-[16/9] overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+    <article className="group overflow-hidden border border-stone-200 bg-white transition dark:border-stone-800 dark:bg-stone-900">
+      <div className="relative aspect-[16/9] overflow-hidden bg-stone-100 dark:bg-stone-800">
         <Image
           src={cover}
           alt={post.title}
@@ -31,14 +31,14 @@ export function PostCard({ post, locale = "zh" }: PostCardProps) {
         />
       </div>
       <div className="flex flex-col gap-6 p-8">
-        <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500 dark:text-stone-400">
           <time dateTime={post.publishedAt ?? ""}>{formatted}</time>
           {post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag) => (
                 <span
                   key={`${post.id}-${tag}`}
-                  className="font-medium text-zinc-700 dark:text-zinc-300"
+                  className="font-medium text-stone-700 dark:text-stone-300"
                 >
                   #{tag}
                 </span>
@@ -46,15 +46,15 @@ export function PostCard({ post, locale = "zh" }: PostCardProps) {
             </div>
           )}
         </div>
-        <h3 className="text-xl leading-snug font-semibold text-zinc-900 dark:text-zinc-50">
+        <h3 className="text-xl leading-snug font-semibold text-stone-900 dark:text-stone-50">
           <Link href={`/${locale}/posts/${encodeURIComponent(post.slug)}`}>{post.title}</Link>
         </h3>
-        <p className="line-clamp-3 text-base leading-loose text-zinc-600 dark:text-zinc-400">
+        <p className="line-clamp-3 text-base leading-loose text-stone-600 dark:text-stone-400">
           {post.excerpt}
         </p>
         <Link
           href={`/${locale}/posts/${encodeURIComponent(post.slug)}`}
-          className="text-sm font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600 dark:text-zinc-100"
+          className="text-sm font-medium text-stone-900 underline underline-offset-4 hover:text-stone-600 dark:text-stone-100"
         >
           {locale === "zh" ? "阅读全文" : "Read more"}
         </Link>

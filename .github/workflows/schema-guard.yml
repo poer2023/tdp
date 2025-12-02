@@ -120,9 +120,84 @@ jobs:
 
           echo "✅ Prisma 版本一致: $PRISMA_CLI"
 
+  validate-migration-files:
+    name: Validate Migration Files
+    runs-on: ubuntu-latest
+    needs: check-missing-migrations
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check migration file naming convention
+        run: |
+          echo "🔍 Validating migration file naming conventions..."
+          INVALID_MIGRATIONS=""
+
+          for dir in prisma/migrations/*/; do
+            dirname=$(basename "$dir")
+            # Skip _current if exists
+            if [ "$dirname" = "_current" ]; then
+              continue
+            fi
+
+            # Check format: YYYYMMDDHHMMSS_description
+            if ! echo "$dirname" | grep -qE '^[0-9]{14}_[a-z0-9_]+$'; then
+              INVALID_MIGRATIONS="$INVALID_MIGRATIONS\n  - $dirname"
+            fi
+
+            # Verify migration.sql exists
+            if [ ! -f "${dir}migration.sql" ]; then
+              echo "❌ Missing migration.sql in $dirname"
+              exit 1
+            fi
+          done
+
+          if [ -n "$INVALID_MIGRATIONS" ]; then
+            echo "⚠️ Migration folders with non-standard naming:"
+            echo -e "$INVALID_MIGRATIONS"
+            echo "Expected format: YYYYMMDDHHMMSS_description (e.g., 20251201120000_add_users)"
+          else
+            echo "✅ All migration files follow naming conventions"
+          fi
+
+      - name: Check for destructive operations
+        run: |
+          echo "🔍 Checking for potentially destructive SQL operations..."
+          WARNINGS=""
+
+          for file in prisma/migrations/*/migration.sql; do
+            if [ -f "$file" ]; then
+              # Check for DROP operations
+              if grep -iE 'DROP\s+(TABLE|COLUMN|INDEX|CONSTRAINT)' "$file" > /dev/null 2>&1; then
+                WARNINGS="$WARNINGS\n  ⚠️  $file contains DROP operations"
+              fi
+
+              # Check for TRUNCATE
+              if grep -iE 'TRUNCATE' "$file" > /dev/null 2>&1; then
+                WARNINGS="$WARNINGS\n  ⚠️  $file contains TRUNCATE operations"
+              fi
+
+              # Check for data modification
+              if grep -iE 'DELETE\s+FROM|UPDATE\s+.*\s+SET' "$file" > /dev/null 2>&1; then
+                WARNINGS="$WARNINGS\n  ⚠️  $file contains data modification operations"
+              fi
+            fi
+          done
+
+          if [ -n "$WARNINGS" ]; then
+            echo "⚠️ Destructive operations detected (review required):"
+            echo -e "$WARNINGS"
+            echo ""
+            echo "::warning::Review these migrations carefully before deploying to production"
+          else
+            echo "✅ No destructive operations detected in migrations"
+          fi
+
   analyze-migration-changes:
     name: Analyze Migration Changes
     runs-on: ubuntu-latest
+    needs: validate-migration-files
     if: github.event_name == 'pull_request'
 
     steps:

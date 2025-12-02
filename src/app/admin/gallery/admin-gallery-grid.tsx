@@ -57,7 +57,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
         {!selectMode ? (
           <button
             onClick={() => setSelectMode(true)}
-            className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-900"
           >
             进入选择模式
           </button>
@@ -65,20 +65,20 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
           <>
             <button
               onClick={() => toggleAll(true)}
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-900"
             >
               全选
             </button>
             <button
               onClick={() => toggleAll(false)}
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-900"
             >
               取消全选
             </button>
             <button
               onClick={() => setOpen(true)}
               disabled={selectedIds.length === 0}
-              className="rounded-lg border border-zinc-900 bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-50 dark:bg-zinc-50 dark:text-zinc-900"
+              className="admin-primary-btn admin-primary-btn--sm"
             >
               批量编辑（{selectedIds.length}）
             </button>
@@ -122,7 +122,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
               <button
                 type="submit"
                 disabled={selectedIds.length === 0 || pending}
-                className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-900"
               >
                 清空位置
               </button>
@@ -132,7 +132,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                 setSelectMode(false);
                 setSelected({});
               }}
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-900"
             >
               退出
             </button>
@@ -156,17 +156,17 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
         {images.map((image, index) => (
           <figure
             key={image.id}
-            className="group relative overflow-hidden rounded-3xl border border-zinc-200/70 bg-white/80 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-zinc-800/70 dark:bg-zinc-900/70"
+            className="group relative overflow-hidden rounded-3xl border border-stone-200/70 bg-white/80 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-stone-800/70 dark:bg-stone-900/70"
           >
             {selectMode && (
-              <label className="absolute top-3 left-3 z-10 inline-flex items-center gap-2 rounded-full bg-white/90 px-2 py-1 text-xs shadow-sm ring-1 ring-zinc-200 backdrop-blur dark:bg-zinc-900/80 dark:ring-zinc-700">
+              <label className="absolute top-3 left-3 z-10 inline-flex items-center gap-2 rounded-full bg-white/90 px-2 py-1 text-xs shadow-sm ring-1 ring-stone-200 backdrop-blur dark:bg-stone-900/80 dark:ring-stone-700">
                 <input
                   type="checkbox"
-                  className="h-3.5 w-3.5 accent-zinc-900 dark:accent-zinc-100"
+                  className="h-3.5 w-3.5 accent-stone-900 dark:accent-stone-100"
                   checked={!!selected[image.id]}
                   onChange={() => toggle(image.id)}
                 />
-                <span className="text-zinc-700 dark:text-zinc-300">选择</span>
+                <span className="text-stone-700 dark:text-stone-300">选择</span>
               </label>
             )}
 
@@ -181,7 +181,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
               />
             </div>
             <figcaption className="space-y-2 px-4 py-3 text-sm">
-              <p className="font-semibold text-zinc-900 dark:text-zinc-50">
+              <p className="font-semibold text-stone-900 dark:text-stone-50">
                 {image.title ?? "未命名照片"}
               </p>
             </figcaption>
@@ -198,14 +198,14 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
               fd.set("ids", JSON.stringify(selectedIds));
               return formAction(fd);
             }}
-            className="absolute top-0 right-0 h-full w-full max-w-md overflow-y-auto border-l border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
+            className="absolute top-0 right-0 h-full w-full max-w-md overflow-y-auto border-l border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900"
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">批量编辑</h3>
+              <h3 className="text-lg font-semibold text-stone-900 dark:text-stone-50">批量编辑</h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+                className="text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
               >
                 关闭
               </button>
@@ -217,9 +217,9 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                   name="title.set"
                   type="text"
                   placeholder="设置为..."
-                  className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                 />
-                <label className="inline-flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                <label className="inline-flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400">
                   <input name="title.clear" type="checkbox" className="h-3.5 w-3.5" /> 清空
                 </label>
               </div>
@@ -231,9 +231,9 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                   name="description.set"
                   rows={3}
                   placeholder="设置为..."
-                  className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                 />
-                <label className="inline-flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                <label className="inline-flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400">
                   <input name="description.clear" type="checkbox" className="h-3.5 w-3.5" /> 清空
                 </label>
               </div>
@@ -245,9 +245,9 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                   name="postId.set"
                   type="text"
                   placeholder="设置为..."
-                  className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                 />
-                <label className="inline-flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                <label className="inline-flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400">
                   <input name="postId.clear" type="checkbox" className="h-3.5 w-3.5" /> 清空
                 </label>
               </div>
@@ -258,9 +258,9 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                 <input
                   name="capturedAt.set"
                   type="datetime-local"
-                  className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className="flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                 />
-                <label className="inline-flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                <label className="inline-flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400">
                   <input name="capturedAt.clear" type="checkbox" className="h-3.5 w-3.5" /> 清空
                 </label>
               </div>
@@ -274,35 +274,35 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                     type="number"
                     step="any"
                     placeholder="纬度"
-                    className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                    className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                   />
                   <input
                     name="location.set.longitude"
                     type="number"
                     step="any"
                     placeholder="经度"
-                    className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                    className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                   />
                 </div>
                 <input
                   name="location.set.city"
                   type="text"
                   placeholder="城市"
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                 />
                 <input
                   name="location.set.country"
                   type="text"
                   placeholder="国家"
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                 />
                 <input
                   name="location.set.locationName"
                   type="text"
                   placeholder="位置名称"
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                 />
-                <label className="mt-1 inline-flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                <label className="mt-1 inline-flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400">
                   <input name="location.clear" type="checkbox" className="h-3.5 w-3.5" />{" "}
                   清空全部位置字段
                 </label>
@@ -419,14 +419,14 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                     { once: true }
                   );
                 }}
-                className="rounded-lg border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-50 dark:bg-zinc-50 dark:text-zinc-900"
+                className="admin-primary-btn"
               >
                 应用修改
               </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                className="text-sm text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
               >
                 取消
               </button>
@@ -441,7 +441,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
-      <label className="block text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+      <label className="block text-xs font-semibold tracking-[0.2em] text-stone-500 uppercase dark:text-stone-400">
         {label}
       </label>
       {children}

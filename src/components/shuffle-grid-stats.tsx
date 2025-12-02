@@ -12,9 +12,9 @@ type StatCardProps = {
 
 function StatCard({ label, count }: StatCardProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">{count}</div>
-      <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{label}</div>
+    <div className="flex flex-col items-center justify-center rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+      <div className="text-3xl font-semibold text-stone-900 dark:text-stone-50">{count}</div>
+      <div className="mt-1 text-sm text-stone-600 dark:text-stone-400">{label}</div>
     </div>
   );
 }
@@ -31,10 +31,10 @@ export function ShuffleGridStats({ statistics, locale }: ShuffleGridStatsProps) 
   return (
     <div className="space-y-6 sm:space-y-8">
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold text-zinc-900 sm:text-5xl md:text-6xl dark:text-zinc-50">
+        <h1 className="text-4xl font-bold text-stone-900 sm:text-5xl md:text-6xl dark:text-stone-50">
           {labels.title}
         </h1>
-        <p className="text-base text-zinc-600 md:text-lg dark:text-zinc-400">{labels.subtitle}</p>
+        <p className="text-base text-stone-600 md:text-lg dark:text-stone-400">{labels.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-3 gap-3 sm:gap-4">

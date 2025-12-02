@@ -222,12 +222,12 @@ export function MediaDetailPage({ locale }: MediaDetailPageProps) {
       <div className="mb-8">
         <Link
           href={`/${locale}/about/live`}
-          className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+          className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
         >
           <ArrowLeft className="h-4 w-4" />
           {t.backToDashboard}
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+        <h1 className="mt-4 text-3xl font-bold text-stone-900 sm:text-4xl dark:text-stone-100">
           🎬 {t.title}
         </h1>
       </div>
@@ -238,14 +238,14 @@ export function MediaDetailPage({ locale }: MediaDetailPageProps) {
           <SkeletonGrid count={5} />
         </div>
       ) : !data ? (
-        <div className="rounded-xl border border-neutral-200 bg-white p-12 text-center dark:border-neutral-800 dark:bg-neutral-900">
-          <p className="text-neutral-600 dark:text-neutral-400">{t.noData}</p>
+        <div className="rounded-xl border border-stone-200 bg-white p-12 text-center dark:border-stone-800 dark:bg-stone-900">
+          <p className="text-stone-600 dark:text-stone-400">{t.noData}</p>
         </div>
       ) : (
         <div className="space-y-12">
           {/* Stats Overview */}
           <section>
-            <h2 className="mb-6 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+            <h2 className="mb-6 text-xl font-semibold text-stone-900 dark:text-stone-100">
               {t.statsOverview}
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -274,26 +274,26 @@ export function MediaDetailPage({ locale }: MediaDetailPageProps) {
 
             {/* Platform Stats */}
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-                <div className="mb-2 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+              <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+                <div className="mb-2 text-sm font-medium text-stone-600 dark:text-stone-400">
                   📺 {t.bilibili}
                 </div>
-                <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                <div className="text-2xl font-bold text-stone-900 dark:text-stone-100">
                   {data.platformStats.bilibili.total}
                 </div>
-                <div className="mt-1 text-xs text-neutral-500">
+                <div className="mt-1 text-xs text-stone-500">
                   {data.platformStats.bilibili.movies} {t.movies},{" "}
                   {data.platformStats.bilibili.series} {t.series}
                 </div>
               </div>
-              <div className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
-                <div className="mb-2 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+              <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+                <div className="mb-2 text-sm font-medium text-stone-600 dark:text-stone-400">
                   🎞️ {t.douban}
                 </div>
-                <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                <div className="text-2xl font-bold text-stone-900 dark:text-stone-100">
                   {data.platformStats.douban.total}
                 </div>
-                <div className="mt-1 text-xs text-neutral-500">
+                <div className="mt-1 text-xs text-stone-500">
                   {data.platformStats.douban.movies} {t.movies}, {data.platformStats.douban.series}{" "}
                   {t.series}
                 </div>
@@ -304,18 +304,18 @@ export function MediaDetailPage({ locale }: MediaDetailPageProps) {
           {/* Currently Watching Series */}
           {data.currentlyWatching.length > 0 && (
             <section>
-              <h2 className="mb-6 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+              <h2 className="mb-6 text-xl font-semibold text-stone-900 dark:text-stone-100">
                 📺 {t.currentlyWatching}
               </h2>
-              <div className="space-y-4 rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+              <div className="space-y-4 rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
                 {data.currentlyWatching.map((item) => (
                   <div key={item.id} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
+                        <h3 className="font-semibold text-stone-900 dark:text-stone-100">
                           {item.title}
                         </h3>
-                        <p className="text-sm text-neutral-500">
+                        <p className="text-sm text-stone-500">
                           {item.platform === "bilibili" ? "📺 B站" : "🎞️ 豆瓣"}
                           {item.season && item.episode && (
                             <>
@@ -326,7 +326,7 @@ export function MediaDetailPage({ locale }: MediaDetailPageProps) {
                           )}
                         </p>
                       </div>
-                      <span className="text-sm text-neutral-500">{t.continue}</span>
+                      <span className="text-sm text-stone-500">{t.continue}</span>
                     </div>
                     <ProgressBar progress={item.progress || 0} showPercentage color="purple" />
                   </div>
@@ -352,8 +352,8 @@ export function MediaDetailPage({ locale }: MediaDetailPageProps) {
                     onClick={() => setPlatform(tab.value)}
                     className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                       platform === tab.value
-                        ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                        ? "bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900"
+                        : "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-stone-700"
                     }`}
                   >
                     {tab.label}
@@ -375,17 +375,17 @@ export function MediaDetailPage({ locale }: MediaDetailPageProps) {
             />
 
             {/* Title with item count */}
-            <h2 className="mb-6 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+            <h2 className="mb-6 text-xl font-semibold text-stone-900 dark:text-stone-100">
               🎞️ {t.recentlyWatched}
-              <span className="ml-2 text-sm font-normal text-neutral-500">
+              <span className="ml-2 text-sm font-normal text-stone-500">
                 ({data.pagination.totalItems} {t.items})
               </span>
             </h2>
 
             {/* Items Grid */}
             {allItems.length === 0 ? (
-              <div className="rounded-xl border border-neutral-200 bg-white p-12 text-center dark:border-neutral-800 dark:bg-neutral-900">
-                <p className="text-neutral-600 dark:text-neutral-400">{t.noResults}</p>
+              <div className="rounded-xl border border-stone-200 bg-white p-12 text-center dark:border-stone-800 dark:bg-stone-900">
+                <p className="text-stone-600 dark:text-stone-400">{t.noResults}</p>
               </div>
             ) : (
               <>
@@ -398,14 +398,14 @@ export function MediaDetailPage({ locale }: MediaDetailPageProps) {
                 {/* Loading More Indicator */}
                 <div ref={loadMoreRef} className="mt-8 flex justify-center">
                   {loadingMore ? (
-                    <div className="flex items-center gap-2 text-neutral-500">
+                    <div className="flex items-center gap-2 text-stone-500">
                       <Loader2 className="h-5 w-5 animate-spin" />
                       <span>{t.loadingMore}</span>
                     </div>
                   ) : hasMore ? (
                     <div className="h-4" /> // Placeholder for observer
                   ) : (
-                    <p className="text-sm text-neutral-500">{t.allLoaded}</p>
+                    <p className="text-sm text-stone-500">{t.allLoaded}</p>
                   )}
                 </div>
               </>

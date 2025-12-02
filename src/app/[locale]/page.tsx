@@ -1,19 +1,17 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getRecentActivities } from "@/lib/posts";
+import { auth } from "@/auth";
+import { listPublishedPosts } from "@/lib/posts";
+import { listMoments } from "@/lib/moments";
 import { listGalleryImages } from "@/lib/gallery";
-import { getSiteStatistics } from "@/lib/statistics";
-import { GalleryGrid } from "@/components/gallery-grid";
-import { ShuffleGrid } from "@/components/shuffle-grid";
-import { MomentStrip } from "@/components/moments/moment-strip";
-import { localePath } from "@/lib/locale-path";
-import { Container } from "@/components/ui/container";
+import { LuminaHomePage } from "@/components/lumina";
+import { LuminaHeader, LuminaFooter } from "@/components/lumina";
+import type { FeedItem, FeedPost, FeedMoment } from "@/components/lumina";
+import { getLuminaProfile } from "@/lib/lumina-profile";
 
 // Incremental Static Regeneration for localized homepage
-// Next.js 16 段配置需为编译期常量
-export const runtime = "nodejs"; // Ensure Prisma runs in Node.js runtime
-export const revalidate = 300; // Increased from 60s to 300s (5 minutes) to reduce database load
-export const dynamicParams = false; // Only allow 'en' and 'zh'
+export const runtime = "nodejs";
+export const revalidate = 300;
+export const dynamicParams = false;
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -27,119 +25,96 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     notFound();
   }
 
-  const l = locale === "zh" ? "zh" : "en";
+  const session = await auth();
+  const viewerId = session?.user?.id ?? null;
 
   // Fetch data for homepage
-  const [gallery, activities, statistics] = await Promise.all([
-    listGalleryImages(12),
-    getRecentActivities(10),
-    getSiteStatistics(),
+  const [posts, moments, galleryImages] = await Promise.all([
+    listPublishedPosts(),
+    listMoments({ limit: 20, visibility: "PUBLIC", viewerId }),
+    listGalleryImages(16),
   ]);
-  const recentPosts = activities
-    .filter(
-      (activity): activity is (typeof activities)[number] & { slug: string } =>
-        activity.type === "post" && Boolean(activity.slug)
-    )
-    .slice(0, 3);
+
+  // Transform posts to FeedPost format
+  const feedPosts: FeedPost[] = posts.map((post) => {
+    const dateObj = post.publishedAt ? new Date(post.publishedAt) : new Date(post.createdAt);
+    const dateStr = dateObj.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+
+    // Calculate read time (rough estimate: 200 words per minute)
+    const wordCount = post.content.split(/\s+/).length;
+    const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
+    return {
+      id: post.id,
+      type: "article" as const,
+      title: post.title,
+      excerpt: post.excerpt,
+      category: post.tags?.[0] || (locale === "zh" ? "文章" : "Article"),
+      date: dateStr,
+      readTime: locale === "zh" ? `${readTime} 分钟` : `${readTime} min read`,
+      imageUrl: post.coverImagePath || undefined,
+      tags: post.tags || [],
+      likes: post.viewCount || 0,
+      slug: post.slug,
+      sortKey: dateObj.getTime(),
+    };
+  });
+
+  // Transform moments to FeedMoment format
+  const feedMoments: FeedMoment[] = moments.map((moment) => {
+    const createdAt = new Date(moment.createdAt);
+    const dateStr = createdAt.toLocaleDateString(
+      locale === "zh" ? "zh-CN" : "en-US",
+      {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }
+    );
+
+    return {
+      id: moment.id,
+      type: "moment" as const,
+      content: moment.content,
+      images: moment.images?.map((img) => img.url) || [],
+      date: dateStr,
+      tags: moment.tags || [],
+      likes: moment.likeCount ?? 0,
+      liked: Boolean(moment.likedByViewer),
+      sortKey: createdAt.getTime(),
+    };
+  });
+
+  // Combine and sort by timestamp (newest first)
+  const feedItems: FeedItem[] = [...feedPosts, ...feedMoments].sort(
+    (a, b) => (b.sortKey ?? 0) - (a.sortKey ?? 0)
+  );
+
+  // Get hero images from gallery
+  const heroImages =
+    galleryImages.length > 0
+      ? galleryImages.map((img) => img.smallThumbPath || img.filePath)
+      : undefined;
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Container width="wide" className="space-y-16 sm:space-y-20 md:space-y-28" padding="px-4 py-8 sm:px-6 sm:py-12 md:px-12 md:py-16">
-        <ShuffleGrid
-          activities={activities}
-          galleryPhotos={gallery}
-          statistics={statistics}
-          locale={l}
+    <>
+      <LuminaHeader />
+      <main>
+        <LuminaHomePage
+          feedItems={feedItems}
+          heroImages={heroImages}
+          profileData={getLuminaProfile(locale === "zh" ? "zh" : "en")}
         />
-        <section className="space-y-6 sm:space-y-8" id="posts">
-          <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-1.5 sm:space-y-2">
-              <h2 className="text-3xl font-semibold text-zinc-900 sm:text-4xl dark:text-zinc-50">
-                {l === "zh" ? "最新文章" : "Latest Posts"}
-              </h2>
-              <p className="text-base leading-relaxed text-zinc-600 sm:text-lg sm:leading-loose dark:text-zinc-400">
-                {l === "zh"
-                  ? "精选文章与长文，涵盖技术、创意与生活记录。"
-                  : "Curated writing across craft, travel, and daily life."}
-              </p>
-            </div>
-            <Link
-              href={localePath(l, "/posts")}
-              className="text-sm font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600 dark:text-zinc-100"
-            >
-              {l === "zh" ? "查看全部文章" : "View all posts"}
-            </Link>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-            {recentPosts.length > 0 ? (
-              recentPosts.map((post) => (
-                <Link
-                  key={post.id}
-                  href={localePath(l, `/posts/${post.slug}`)}
-                  className="group rounded-2xl border border-zinc-200 bg-white p-6 transition hover:-translate-y-1 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
-                >
-                  <article className="space-y-3">
-                    <p className="text-xs tracking-[0.3em] text-zinc-400 uppercase">
-                      {l === "zh" ? "精选" : "Featured"}
-                    </p>
-                    <h3 className="text-lg font-semibold text-zinc-900 group-hover:text-zinc-700 dark:text-zinc-50 dark:group-hover:text-zinc-200">
-                      {post.title}
-                    </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                      {new Date(post.date).toLocaleDateString(l === "zh" ? "zh-CN" : "en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </article>
-                </Link>
-              ))
-            ) : (
-              <div className="col-span-full rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                {l === "zh" ? "暂无文章，敬请期待。" : "No posts published yet — check back soon!"}
-              </div>
-            )}
-          </div>
-        </section>
-
-        <MomentStrip locale={l} />
-      </Container>
-
-      <section
-        className="w-full bg-zinc-100/60 py-8 sm:py-12 md:py-14 dark:bg-zinc-900/40"
-        id="gallery"
-      >
-        <Container width="wide" className="space-y-6 sm:space-y-8" padding="px-4 sm:px-6 md:px-12">
-          <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-1.5 sm:space-y-2">
-              <h2 className="text-3xl font-semibold text-zinc-900 sm:text-4xl dark:text-zinc-50">
-                {l === "zh" ? "灵感相册" : "Photo Gallery"}
-              </h2>
-              <p className="text-base leading-relaxed text-zinc-600 sm:text-lg sm:leading-loose dark:text-zinc-400">
-                {l === "zh"
-                  ? "用照片记录每一次创作的瞬间与旅程"
-                  : "Capturing moments and journeys through photography"}
-              </p>
-            </div>
-            <Link
-              href={localePath(l, "/gallery")}
-              className="text-sm font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600 dark:text-zinc-100"
-            >
-              {l === "zh" ? "查看相册" : "View gallery"}
-            </Link>
-          </div>
-
-          <GalleryGrid images={gallery} locale={l} />
-        </Container>
-      </section>
-    </div>
+      </main>
+      <LuminaFooter />
+    </>
   );
 }
 
 export function generateStaticParams() {
-  // Generate both locales for [locale] route
-  // /zh served directly, /en served via middleware rewrite (hidden from URL)
   return [{ locale: "en" }, { locale: "zh" }];
 }

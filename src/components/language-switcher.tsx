@@ -44,9 +44,9 @@ export async function LanguageSwitcher({
       : `/zh/posts/${alternatePost.slug}`;
 
   return (
-    <div className="language-switcher flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="language-switcher flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 dark:border-stone-800 dark:bg-stone-900">
       <svg
-        className="h-5 w-5 text-zinc-500 dark:text-zinc-400"
+        className="h-5 w-5 text-stone-500 dark:text-stone-400"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -60,10 +60,10 @@ export async function LanguageSwitcher({
       </svg>
 
       <div className="flex flex-1 items-center gap-2">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
           {currentLanguage}
         </span>
-        <span className="text-zinc-400 dark:text-zinc-600">•</span>
+        <span className="text-stone-400 dark:text-stone-600">•</span>
         <a
           href={alternateUrl}
           className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"

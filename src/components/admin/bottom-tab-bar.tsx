@@ -168,7 +168,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
   return (
     <>
       {/* Bottom Tab Bar - visible only on mobile (<768px) */}
-      <nav className="border-border bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed right-0 bottom-0 left-0 z-50 border-t backdrop-blur md:hidden">
+      <nav className="fixed right-0 bottom-0 left-0 z-50 border-t border-stone-800 bg-stone-950/95 text-stone-50 backdrop-blur supports-[backdrop-filter]:bg-stone-950/80 md:hidden">
         <div className="grid h-16 grid-cols-5 gap-1 px-2">
           {/* Primary tabs */}
           {primaryTabs.map((tab) => {
@@ -177,11 +177,13 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-lg transition-colors ${
-                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                className={`flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl transition-colors ${
+                  active
+                    ? "text-sage-300 font-bold"
+                    : "text-stone-100 hover:text-white"
                 }`}
               >
-                <div className={active ? "text-primary" : ""}>{tab.icon}</div>
+                <div>{tab.icon}</div>
                 <span className="text-[10px] font-medium">{t(locale, tab.labelKey)}</span>
               </Link>
             );
@@ -190,7 +192,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
           {/* More button */}
           <button
             onClick={() => setMoreOpen(true)}
-            className="text-muted-foreground hover:text-foreground flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-lg transition-colors"
+            className="flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl text-stone-100 transition-colors hover:text-white"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path
@@ -215,15 +217,17 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
           />
 
           {/* Drawer */}
-          <div className="border-border bg-background pb-safe fixed right-0 bottom-0 left-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-3xl border-t md:hidden">
+          <div className="pb-safe fixed right-0 bottom-0 left-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-3xl border-t border-stone-800 bg-stone-950 md:hidden">
             {/* Handle */}
             <div className="flex justify-center py-3">
-              <div className="bg-muted h-1 w-12 rounded-full" />
+              <div className="h-1 w-12 rounded-full bg-stone-700" />
             </div>
 
             {/* Header */}
-            <div className="border-border border-b px-6 pb-4">
-              <h2 className="text-lg font-semibold">{t(locale, "operations")}</h2>
+            <div className="border-b border-stone-800 px-6 pb-4">
+              <h2 className="text-lg font-semibold text-white">
+                {t(locale, "operations")}
+              </h2>
             </div>
 
             {/* Secondary items */}
@@ -235,10 +239,10 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
                     key={tab.href}
                     href={tab.href}
                     onClick={() => setMoreOpen(false)}
-                    className={`flex min-h-[48px] items-center gap-3 rounded-lg px-4 transition-colors ${
+                    className={`relative flex min-h-[48px] items-center gap-3 rounded-xl px-4 transition-colors ${
                       active
-                        ? "bg-accent text-accent-foreground"
-                        : "hover:bg-accent hover:text-accent-foreground"
+                        ? "bg-sage-500 text-white font-bold shadow-md"
+                        : "text-stone-200 hover:bg-stone-800 hover:text-white"
                     }`}
                   >
                     {tab.icon}
@@ -249,10 +253,10 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
             </div>
 
             {/* Close button */}
-            <div className="border-border border-t p-4">
+            <div className="border-t border-stone-800 p-4">
               <button
                 onClick={() => setMoreOpen(false)}
-                className="border-border bg-background hover:bg-accent w-full rounded-lg border px-4 py-3 text-sm font-medium"
+                className="w-full rounded-xl border border-stone-700 bg-stone-900 px-4 py-3 text-sm font-medium text-stone-300 hover:bg-stone-800 hover:text-white"
               >
                 Close
               </button>

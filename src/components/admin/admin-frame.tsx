@@ -30,7 +30,7 @@ export function AdminFrame({ locale, children }: AdminFrameProps) {
   }, []);
 
   return (
-    <div className="fixed top-16 right-0 bottom-0 left-0 overflow-hidden bg-white dark:bg-zinc-950">
+    <div className="fixed inset-0 overflow-hidden bg-stone-950">
       {/* Sidebar */}
       <AdminNav locale={locale} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
 
@@ -38,7 +38,7 @@ export function AdminFrame({ locale, children }: AdminFrameProps) {
       {mobileOpen && (
         <button
           aria-label="Close navigation"
-          className="fixed inset-0 top-16 z-30 bg-black/30 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -47,7 +47,7 @@ export function AdminFrame({ locale, children }: AdminFrameProps) {
       <button
         type="button"
         aria-label="Open navigation"
-        className="fixed top-[72px] left-4 z-40 inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white/90 text-zinc-700 shadow-sm backdrop-blur transition hover:bg-white md:hidden dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-300"
+        className="fixed top-4 left-4 z-40 inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 bg-white/90 text-stone-700 shadow-sm backdrop-blur transition hover:bg-white md:hidden dark:border-stone-800 dark:bg-stone-900/90 dark:text-stone-300"
         onClick={() => setMobileOpen(true)}
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -62,9 +62,9 @@ export function AdminFrame({ locale, children }: AdminFrameProps) {
 
       {/* Main content */}
       <div className="h-full md:ml-64">
-        {/* Fixed Gray Card Background - Full Height, 5px edge gap to viewport */}
+        {/* Fixed Card Background - Full Height, 5px edge gap to viewport */}
         <div className="h-full overflow-hidden p-[5px]">
-          <div className="h-full rounded-2xl bg-zinc-50 shadow-sm dark:bg-zinc-900">
+          <div className="h-full rounded-2xl bg-stone-50 shadow-sm dark:bg-stone-900">
             {/* Scrolling Content Container Inside Card */}
             <div className="admin-scroll h-full overflow-y-auto overscroll-contain px-4 py-4 pb-20 sm:px-6 sm:py-6 md:px-8 md:py-8 md:pb-8">
               <div className="mx-auto max-w-[1200px]">{children}</div>

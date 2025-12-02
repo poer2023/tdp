@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { createMoment, type MomentImage } from "@/lib/moments";
 import { getStorageProvider } from "@/lib/storage";
 import { assertRateLimit } from "@/lib/rate-limit";
+import prisma from "@/lib/prisma";
 import sharp from "sharp";
 
 export type CreateMomentState =
@@ -16,7 +17,37 @@ export async function createMomentAction(
   formData: FormData
 ): Promise<CreateMomentState> {
   const session = await auth();
+
+  // Debug logging for session
+  console.log("🔍 Session debug:", {
+    hasSession: !!session,
+    hasUser: !!session?.user,
+    userId: session?.user?.id,
+    userIdType: typeof session?.user?.id,
+    userEmail: session?.user?.email,
+  });
+
   if (!session?.user?.id) return { status: "error", message: "未登录" };
+
+  // Verify user exists in database before proceeding
+  const userExists = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, email: true },
+  });
+
+  console.log("🔍 DB User check:", {
+    sessionUserId: session.user.id,
+    dbUser: userExists,
+    userExists: !!userExists,
+  });
+
+  if (!userExists) {
+    console.error("❌ Session user ID not found in database:", session.user.id);
+    return {
+      status: "error",
+      message: "会话已过期，请重新登录",
+    };
+  }
 
   // Basic rate limits
   try {
@@ -109,8 +140,13 @@ export async function createMomentAction(
       location,
     });
     return { status: "success", id };
-  } catch (_e) {
-    return { status: "error", message: "发布失败" };
+  } catch (error) {
+    console.error("❌ Moment creation failed:", error);
+    console.error("Stack trace:", error instanceof Error ? error.stack : "No stack available");
+    return {
+      status: "error",
+      message: error instanceof Error ? error.message : "发布失败"
+    };
   }
 }
 

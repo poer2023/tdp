@@ -24,13 +24,13 @@ export function ProgressBar({
     <div className={className}>
       {label && (
         <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="text-neutral-600 dark:text-neutral-400">{label}</span>
+          <span className="text-stone-600 dark:text-stone-400">{label}</span>
           {showPercentage && (
-            <span className="font-medium text-neutral-900 dark:text-neutral-100">{progress}%</span>
+            <span className="font-medium text-stone-900 dark:text-stone-100">{progress}%</span>
           )}
         </div>
       )}
-      <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800">
         <div
           className={`h-full transition-all duration-500 ease-out ${colorClasses[color]}`}
           style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}

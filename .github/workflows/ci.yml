@@ -86,11 +86,26 @@ jobs:
         if: steps.tests-node-cache.outputs.cache-hit != 'true'
         run: npm ci
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Check migration status
+        run: |
+          echo "==> Checking migration status..."
+          npx prisma migrate status || true
+
       - name: Apply database migrations
         run: npx prisma migrate deploy
 
-      - name: Generate Prisma Client
-        run: npx prisma generate
+      - name: Verify migration status
+        run: |
+          STATUS=$(npx prisma migrate status 2>&1)
+          echo "$STATUS"
+          if echo "$STATUS" | grep -q "have not yet been applied"; then
+            echo "❌ Pending migrations detected after deploy!"
+            exit 1
+          fi
+          echo "✅ Database schema is up to date"
 
       - name: Run unit tests
         run: npm run test:run
@@ -150,11 +165,21 @@ jobs:
         if: steps.e2e-node-cache.outputs.cache-hit != 'true'
         run: npm ci
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       - name: Apply database migrations
         run: npx prisma migrate deploy
 
-      - name: Generate Prisma Client
-        run: npx prisma generate
+      - name: Verify migration status
+        run: |
+          STATUS=$(npx prisma migrate status 2>&1)
+          echo "$STATUS"
+          if echo "$STATUS" | grep -q "have not yet been applied"; then
+            echo "❌ Pending migrations detected after deploy!"
+            exit 1
+          fi
+          echo "✅ Database schema is up to date"
 
       - name: Seed E2E data
         run: npm run test:e2e:seed

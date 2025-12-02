@@ -62,13 +62,13 @@ export function SyncTrendsChart({ trendData }: SyncTrendsChartProps) {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+      <h2 className="text-sm font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
         Sync Trends (Last 30 Days)
       </h2>
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-lg border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
         {aggregatedData.length === 0 ? (
-          <p className="py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="py-12 text-center text-sm text-stone-500 dark:text-stone-400">
             No trend data available
           </p>
         ) : (
@@ -76,15 +76,15 @@ export function SyncTrendsChart({ trendData }: SyncTrendsChartProps) {
             <AreaChart data={aggregatedData}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                className="stroke-zinc-200 dark:stroke-zinc-700"
+                className="stroke-stone-200 dark:stroke-stone-700"
               />
               <XAxis
                 dataKey="dateDisplay"
-                className="text-xs text-zinc-500 dark:text-zinc-400"
+                className="text-xs text-stone-500 dark:text-stone-400"
                 tick={{ fill: "currentColor" }}
               />
               <YAxis
-                className="text-xs text-zinc-500 dark:text-zinc-400"
+                className="text-xs text-stone-500 dark:text-stone-400"
                 tick={{ fill: "currentColor" }}
               />
               <Tooltip

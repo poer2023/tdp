@@ -34,7 +34,7 @@ export default async function ChangelogPage({ params }: PageProps) {
         <h2 className="mb-4 max-w-4xl text-lg text-black md:text-4xl dark:text-white">
           {data.pageTitle}
         </h2>
-        <p className="max-w-sm text-sm text-neutral-700 md:text-base dark:text-neutral-300">
+        <p className="max-w-sm text-sm text-stone-700 md:text-base dark:text-stone-300">
           {data.pageSubtitle}
         </p>
       </Container>

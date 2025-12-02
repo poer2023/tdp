@@ -3,14 +3,9 @@ import localFont from "next/font/local";
 import { headers, cookies } from "next/headers";
 import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
-import { AuthHeader } from "@/components/auth-header";
-import { MainNav } from "@/components/main-nav";
-import { Footer } from "@/components/footer";
+import { ThemeProvider } from "@/components/theme-provider";
 import { MomentComposerBottomSheet } from "@/components/moments/moment-composer";
-import { GlobalLanguageSwitcher } from "@/components/global-language-switcher";
 import { GlobalSearchProvider } from "@/components/global-search-provider";
-import { CommandPaletteTrigger } from "@/components/command-palette-trigger";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
 import { HtmlLangSync } from "@/components/html-lang-sync";
 import { auth } from "@/auth";
@@ -172,9 +167,9 @@ export default async function RootLayout({
   const isAdminRoute = pathname.startsWith("/admin");
 
   return (
-    <html lang={htmlLang}>
+    <html lang={htmlLang} suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col overflow-x-hidden bg-white text-zinc-900 antialiased dark:bg-[#1C1C1E] dark:text-zinc-100`}
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col overflow-x-hidden bg-white text-stone-900 antialiased dark:bg-[#1C1C1E] dark:text-stone-100`}
       >
         {/* Early theme applier to avoid FOUC */}
         <script
@@ -185,52 +180,28 @@ export default async function RootLayout({
         />
         {/* Keep <html lang> consistent on client navigations */}
         <HtmlLangSync />
-        <SessionProvider session={session}>
-          <ConfirmProvider>
-            <GlobalSearchProvider>
-              {/* Skip to content link for accessibility */}
-              <a
-                href="#main-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              >
-                Skip to content
-              </a>
+        <ThemeProvider>
+          <SessionProvider session={session}>
+            <ConfirmProvider>
+              <GlobalSearchProvider>
+                {/* Skip to content link for accessibility */}
+                <a
+                  href="#main-content"
+                  className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                >
+                  Skip to content
+                </a>
 
-              <header className="relative z-50">
-                <div className="sticky top-0 bg-white/80 backdrop-blur-sm dark:bg-zinc-950/80">
-                  <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-3.5">
-                    {/* Left cluster: brand + links + search */}
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <MainNav />
-                      <div className="hidden sm:block">
-                        <CommandPaletteTrigger size="sm" />
-                      </div>
-                    </div>
-                    {/* Right cluster: compact controls */}
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <ThemeToggle size="sm" />
-                      <GlobalLanguageSwitcher />
-                      {/* Mobile search fallback */}
-                      <div className="sm:hidden">
-                        <CommandPaletteTrigger size="sm" />
-                      </div>
-                      <AuthHeader />
-                    </div>
-                  </div>
-                </div>
-              </header>
+                <main id="main-content" className="flex-1">
+                  {children}
+                </main>
 
-              <main id="main-content" className="flex-1">
-                {children}
-              </main>
-
-              {/* Global mobile composer FAB (hidden on admin) */}
-              {!isAdminRoute && <MomentComposerBottomSheet />}
-
-              {!isAdminRoute && <Footer />}
-            </GlobalSearchProvider>
-          </ConfirmProvider>
-        </SessionProvider>
+                {/* Global mobile composer FAB (hidden on admin) */}
+                {!isAdminRoute && <MomentComposerBottomSheet />}
+              </GlobalSearchProvider>
+            </ConfirmProvider>
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

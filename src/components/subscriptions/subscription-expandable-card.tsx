@@ -133,7 +133,7 @@ export function SubscriptionExpandableCard({
             <h3 className="text-lg leading-none font-semibold tracking-tight">
               {subscription.name}
             </h3>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-stone-500 dark:text-stone-400">
               {subscription.endDate
                 ? `${translate(locale, "endDate")}: ${subscription.endDate.slice(0, 10)}`
                 : translate(locale, "noEndDate")}
@@ -145,7 +145,7 @@ export function SubscriptionExpandableCard({
         {subscription.endDate && (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-500 dark:text-zinc-400">
+              <span className="text-stone-500 dark:text-stone-400">
                 {translate(locale, "progress")}
               </span>
               <span className="font-medium">{progress}%</span>
@@ -156,13 +156,13 @@ export function SubscriptionExpandableCard({
 
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-stone-500 dark:text-stone-400">
               {translate(locale, "monthlyView")}
             </p>
             <p className="font-semibold">{formatCNY(monthlyValue)}</p>
           </div>
           <div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-stone-500 dark:text-stone-400">
               {translate(locale, "annualView")}
             </p>
             <p className="font-semibold">{formatCNY(annualValue)}</p>
@@ -180,9 +180,9 @@ export function SubscriptionExpandableCard({
             className="overflow-hidden"
           >
             <CardContent ref={contentRef} className="space-y-3 pt-0">
-              <div className="space-y-2 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-900/50">
+              <div className="space-y-2 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm dark:border-stone-800 dark:bg-stone-900/50">
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-600 dark:text-zinc-400">
+                  <span className="text-stone-600 dark:text-stone-400">
                     {translate(locale, "originalAmount")}
                   </span>
                   <span className="font-medium">
@@ -190,13 +190,13 @@ export function SubscriptionExpandableCard({
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-600 dark:text-zinc-400">
+                  <span className="text-stone-600 dark:text-stone-400">
                     {translate(locale, "convertedAmount")}
                   </span>
                   <span className="font-medium">{formatCNY(subscription.amountCNY)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-600 dark:text-zinc-400">
+                  <span className="text-stone-600 dark:text-stone-400">
                     {translate(locale, "startDate")}
                   </span>
                   <span className="font-medium">{subscription.startDate.slice(0, 10)}</span>
@@ -204,11 +204,11 @@ export function SubscriptionExpandableCard({
               </div>
 
               {subscription.notes && (
-                <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
-                  <p className="text-xs font-semibold text-zinc-500 uppercase dark:text-zinc-400">
+                <div className="rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-800 dark:bg-stone-900/50">
+                  <p className="text-xs font-semibold text-stone-500 uppercase dark:text-stone-400">
                     {translate(locale, "notes")}
                   </p>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+                  <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">
                     {subscription.notes}
                   </p>
                 </div>
@@ -217,7 +217,7 @@ export function SubscriptionExpandableCard({
               <div className="flex items-center gap-2 pt-2" onClick={(e) => e.stopPropagation()}>
                 <Link
                   href={`/admin/subscriptions/${subscription.id}`}
-                  className="inline-flex flex-1 items-center justify-center rounded-lg border border-blue-500 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-950/40"
+                  className="inline-flex flex-1 items-center justify-center rounded-lg bg-stone-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
                 >
                   {translate(locale, "editSubscription")}
                 </Link>

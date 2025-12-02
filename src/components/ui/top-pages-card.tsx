@@ -108,7 +108,7 @@ export function TopPagesCard({
     <Card className={cn("flex h-full flex-col gap-4", className)}>
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+          <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-50">
             {isZh ? "页面访问" : "Page Views"}
           </h2>
 
@@ -132,7 +132,7 @@ export function TopPagesCard({
       <CardContent className="flex flex-col gap-5">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-3xl font-semibold text-zinc-900 tabular-nums dark:text-zinc-50">
+            <span className="text-3xl font-semibold text-stone-900 tabular-nums dark:text-stone-50">
               {totalViews.toLocaleString()}
             </span>
             {delta !== null && Number.isFinite(delta) && (
@@ -155,7 +155,7 @@ export function TopPagesCard({
           </div>
 
           {delta !== null && Number.isFinite(delta) && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-stone-500 dark:text-stone-400">
               {delta >= 0 ? (isZh ? "↑ 较" : "↑ from ") : isZh ? "↓ 较" : "↓ from "}
               {isZh
                 ? activePeriod === "7d"
@@ -167,7 +167,7 @@ export function TopPagesCard({
         </div>
 
         {formattedRange.from && formattedRange.to && (
-          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
             <span>{formattedRange.from}</span>
             <span>{formattedRange.to}</span>
           </div>
@@ -176,18 +176,18 @@ export function TopPagesCard({
         <Separator />
 
         {stackedData.length === 0 ? (
-          <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="py-8 text-center text-sm text-stone-500 dark:text-stone-400">
             {isZh ? "暂无足够数据。" : "Not enough data yet."}
           </p>
         ) : (
           <TooltipProvider delayDuration={0}>
-            <div className="flex h-10 w-full gap-1 overflow-visible rounded-lg bg-zinc-100 dark:bg-zinc-800/60">
+            <div className="flex h-10 w-full gap-1 overflow-visible rounded-lg bg-stone-100 dark:bg-stone-800/60">
               {stackedData.map((item, index) => (
                 <Tooltip key={`${item.path}-${activePeriod}-${index}`}>
                   <TooltipTrigger asChild>
                     <div
                       className={cn(
-                        "h-full cursor-pointer rounded-md transition-all hover:-translate-y-1 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-zinc-900",
+                        "h-full cursor-pointer rounded-md transition-all hover:-translate-y-1 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-stone-900",
                         item.colorClass
                       )}
                       style={{ width: `${Math.max(item.percent, 1)}%`, minWidth: "32px" }}

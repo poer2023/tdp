@@ -44,7 +44,7 @@ export function FriendHeader({ friend, locale }: FriendHeaderProps) {
   };
 
   return (
-    <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm backdrop-blur sm:flex-row sm:items-center dark:border-zinc-800/60 dark:bg-zinc-900/80">
+    <div className="flex flex-col items-start justify-between gap-4 rounded-3xl border border-stone-200/70 bg-white/80 p-6 shadow-sm backdrop-blur sm:flex-row sm:items-center dark:border-stone-800/60 dark:bg-stone-900/80">
       <div className="flex items-center gap-4">
         {friend.avatar ? (
           <Image
@@ -60,12 +60,12 @@ export function FriendHeader({ friend, locale }: FriendHeaderProps) {
           </div>
         )}
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-50">
             {friend.name}
             {text.titleSuffix}
           </h1>
           {friend.description && (
-            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{friend.description}</p>
+            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">{friend.description}</p>
           )}
         </div>
       </div>
@@ -73,7 +73,7 @@ export function FriendHeader({ friend, locale }: FriendHeaderProps) {
         type="button"
         onClick={handleLogout}
         disabled={loading}
-        className="self-stretch rounded-2xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900"
+        className="self-stretch rounded-2xl border border-stone-200 bg-white px-5 py-2.5 text-sm font-medium text-stone-600 transition hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-300 dark:hover:bg-stone-900"
       >
         {text.logout}
       </button>

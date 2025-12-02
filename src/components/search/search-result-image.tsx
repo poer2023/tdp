@@ -21,10 +21,10 @@ export function SearchResultImage({ image, query, locale, onSelect }: Props) {
     <Link
       href={`/${locale}/gallery/${image.id}`}
       onClick={onSelect}
-      className="group block overflow-hidden rounded-lg border border-zinc-200 bg-white transition-all hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900"
+      className="group block overflow-hidden rounded-lg border border-stone-200 bg-white transition-all hover:shadow-md dark:border-stone-800 dark:bg-stone-900"
     >
       {/* Image thumbnail */}
-      <div className="relative aspect-square w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+      <div className="relative aspect-square w-full overflow-hidden bg-stone-100 dark:bg-stone-800">
         {thumbUrl !== "/placeholder.png" ? (
           <Image
             src={thumbUrl}
@@ -41,12 +41,12 @@ export function SearchResultImage({ image, query, locale, onSelect }: Props) {
       {/* Info */}
       <div className="p-3">
         {image.title && (
-          <h3 className="line-clamp-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <h3 className="line-clamp-2 text-sm font-medium text-stone-900 dark:text-stone-100">
             <HighlightText text={image.title} query={query} />
           </h3>
         )}
         {location && (
-          <p className="mt-1 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400">
             <span>📍</span>
             <span className="truncate">
               <HighlightText text={location} query={query} />
@@ -54,7 +54,7 @@ export function SearchResultImage({ image, query, locale, onSelect }: Props) {
           </p>
         )}
         {image.category && (
-          <span className="mt-2 inline-block rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+          <span className="mt-2 inline-block rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 dark:bg-stone-800 dark:text-stone-400">
             {image.category === "ORIGINAL" && "原创"}
             {image.category === "REPOST" && "转载"}
             {image.category === "AI" && "AI"}

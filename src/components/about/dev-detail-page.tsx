@@ -73,12 +73,12 @@ export function DevDetailPage({ locale }: DevDetailPageProps) {
         <div className="mb-8">
           <Link
             href={`/${locale}/about/live`}
-            className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
           >
             <ArrowLeft className="h-4 w-4" />
             {t.backToDashboard}
           </Link>
-          <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+          <h1 className="mt-4 text-3xl font-bold text-stone-900 sm:text-4xl dark:text-stone-100">
             💻 {t.title}
           </h1>
         </div>
@@ -115,19 +115,19 @@ export function DevDetailPage({ locale }: DevDetailPageProps) {
       <div className="mb-8">
         <Link
           href={`/${locale}/about/live`}
-          className="inline-flex items-center gap-2 text-sm text-neutral-600 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+          className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
         >
           <ArrowLeft className="h-4 w-4" />
           {t.backToDashboard}
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-neutral-100">
+        <h1 className="mt-4 text-3xl font-bold text-stone-900 sm:text-4xl dark:text-stone-100">
           💻 {t.title}
         </h1>
       </div>
 
       {/* Statistics */}
       <section className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className="mb-4 text-xl font-semibold text-stone-900 dark:text-stone-100">
           {t.stats}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -160,17 +160,17 @@ export function DevDetailPage({ locale }: DevDetailPageProps) {
 
       {/* Contribution Heatmap */}
       <section className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className="mb-4 text-xl font-semibold text-stone-900 dark:text-stone-100">
           {t.contributionHeatmap}
         </h2>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
           <ActivityHeatmap data={data.contributionHeatmap} colorScheme="green" />
         </div>
       </section>
 
       {/* Active Repositories */}
       <section className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className="mb-4 text-xl font-semibold text-stone-900 dark:text-stone-100">
           {t.activeRepos}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -180,14 +180,14 @@ export function DevDetailPage({ locale }: DevDetailPageProps) {
             return (
               <div
                 key={repo.fullName}
-                className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
               >
                 <div className="mb-3 flex items-start justify-between">
                   <div>
-                    <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
+                    <h3 className="font-semibold text-stone-900 dark:text-stone-100">
                       {repo.name}
                     </h3>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    <p className="text-sm text-stone-500 dark:text-stone-400">
                       {repo.fullName}
                     </p>
                   </div>
@@ -195,10 +195,10 @@ export function DevDetailPage({ locale }: DevDetailPageProps) {
                     {badgeLabel}
                   </span>
                 </div>
-                <div className="mb-2 text-sm text-neutral-600 dark:text-neutral-400">
+                <div className="mb-2 text-sm text-stone-600 dark:text-stone-400">
                   <span className="font-medium">{repo.commitsThisMonth}</span> {t.commitsThisMonth}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
                   <GitCommit className="h-3 w-3" />
                   <span className="flex-1 truncate">{repo.lastCommit.message}</span>
                   <span className="shrink-0">{formatTimestamp(repo.lastCommit.date)}</span>
@@ -212,13 +212,13 @@ export function DevDetailPage({ locale }: DevDetailPageProps) {
       {/* Programming Languages */}
       {data.languages && (
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+          <h2 className="mb-4 text-xl font-semibold text-stone-900 dark:text-stone-100">
             {t.languages}
           </h2>
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+          <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
             <div className="space-y-4">
               {data.languages.map((lang, idx) => {
-                const colors = ["bg-blue-500", "bg-yellow-500", "bg-green-500", "bg-neutral-500"];
+                const colors = ["bg-blue-500", "bg-yellow-500", "bg-green-500", "bg-stone-500"];
                 const color = colors[idx % colors.length];
 
                 return (
@@ -226,16 +226,16 @@ export function DevDetailPage({ locale }: DevDetailPageProps) {
                     <div className="mb-2 flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <div className={`h-3 w-3 rounded-full ${color}`} />
-                        <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                        <span className="font-medium text-stone-900 dark:text-stone-100">
                           {lang.name}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-neutral-600 dark:text-neutral-400">
+                      <div className="flex items-center gap-3 text-stone-600 dark:text-stone-400">
                         <span>{lang.hours.toFixed(1)}h</span>
                         <span className="font-medium">{lang.percentage}%</span>
                       </div>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
                       <div
                         className={`h-full ${color} transition-all`}
                         style={{ width: `${lang.percentage}%` }}

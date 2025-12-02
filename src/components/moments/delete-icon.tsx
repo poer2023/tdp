@@ -27,7 +27,7 @@ export function DeleteIcon({ id }: { id: string }) {
         type="button"
         onClick={onClick}
         aria-label="删除"
-        className="rounded-full bg-white/80 p-1 text-zinc-600 shadow hover:bg-white dark:bg-zinc-900/80 dark:text-zinc-300"
+        className="rounded-full bg-white/80 p-1 text-stone-600 shadow hover:bg-white dark:bg-stone-900/80 dark:text-stone-300"
       >
         <svg
           viewBox="0 0 24 24"

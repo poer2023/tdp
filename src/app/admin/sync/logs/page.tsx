@@ -368,10 +368,10 @@ export default async function SyncLogsPage({
     <div className="space-y-6 sm:space-y-8">
       {/* Page Header */}
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
           Sync Logs
         </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
           View detailed sync job logs with filtering and search
         </p>
       </header>
@@ -389,7 +389,7 @@ export default async function SyncLogsPage({
 
       {/* Summary Stats */}
       {!jobId && (
-        <div className="flex gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="flex gap-4 text-sm text-stone-600 dark:text-stone-400">
           <span>
             Showing {(page - 1) * limit + 1}-{Math.min(page * limit, totalCount)} of {totalCount}{" "}
             logs
@@ -421,15 +421,15 @@ export default async function SyncLogsPage({
             }
             className={`rounded-lg border px-4 py-2 text-sm font-medium ${
               hasPrevPage
-                ? "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                : "cursor-not-allowed border-zinc-200 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-600"
+                ? "border-stone-300 bg-white text-stone-900 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-800"
+                : "cursor-not-allowed border-stone-200 bg-stone-100 text-stone-400 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-600"
             }`}
             aria-disabled={!hasPrevPage}
           >
             Previous
           </a>
 
-          <span className="text-sm text-zinc-600 dark:text-zinc-400">
+          <span className="text-sm text-stone-600 dark:text-stone-400">
             Page {page} of {totalPages}
           </span>
 
@@ -447,8 +447,8 @@ export default async function SyncLogsPage({
             }
             className={`rounded-lg border px-4 py-2 text-sm font-medium ${
               hasNextPage
-                ? "border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
-                : "cursor-not-allowed border-zinc-200 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-600"
+                ? "border-stone-300 bg-white text-stone-900 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-800"
+                : "cursor-not-allowed border-stone-200 bg-stone-100 text-stone-400 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-600"
             }`}
             aria-disabled={!hasNextPage}
           >

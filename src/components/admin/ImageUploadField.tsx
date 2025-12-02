@@ -120,12 +120,12 @@ export function ImageUploadField({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">{label}</label>
+      <label className="block text-sm font-medium text-stone-700 dark:text-stone-300">{label}</label>
 
       {/* 预览区域 */}
       {value ? (
         <div className="group relative inline-block">
-          <div className="relative h-32 w-32 overflow-hidden rounded-2xl border-2 border-zinc-200 dark:border-zinc-700">
+          <div className="relative h-32 w-32 overflow-hidden rounded-2xl border-2 border-stone-200 dark:border-stone-700">
             <Image src={value} alt={label} fill className="object-cover" unoptimized />
           </div>
           {/* 删除按钮 */}
@@ -151,17 +151,17 @@ export function ImageUploadField({
           type="button"
           onClick={handleButtonClick}
           disabled={isUploading}
-          className="flex h-32 w-32 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-zinc-300 transition-colors hover:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:hover:border-blue-500"
+          className="flex h-32 w-32 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-stone-300 transition-colors hover:border-stone-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-700 dark:hover:border-stone-500"
         >
           {isUploading ? (
             <>
-              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-              <span className="text-xs text-zinc-500">上传中...</span>
+              <Loader2 className="h-6 w-6 animate-spin text-stone-600" />
+              <span className="text-xs text-stone-500">上传中...</span>
             </>
           ) : (
             <>
-              <Upload className="h-6 w-6 text-zinc-400" />
-              <span className="text-xs text-zinc-500">选择图片</span>
+              <Upload className="h-6 w-6 text-stone-400" />
+              <span className="text-xs text-stone-500">选择图片</span>
             </>
           )}
         </button>
@@ -180,7 +180,7 @@ export function ImageUploadField({
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {/* 提示文本 */}
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="text-xs text-stone-500 dark:text-stone-400">
         支持 JPG、PNG、WebP 格式，最大 {Math.round(maxSize / 1024 / 1024)}MB
       </p>
 

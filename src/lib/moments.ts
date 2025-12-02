@@ -24,6 +24,9 @@ export type MomentListItem = {
   tags: string[];
   lang: string;
   authorId: string;
+  likeCount: number;
+  commentsCount?: number;
+  likedByViewer?: boolean;
 };
 
 export async function listMoments(options?: {
@@ -33,6 +36,7 @@ export async function listMoments(options?: {
   lang?: string | null;
   tag?: string | null;
   q?: string | null;
+  viewerId?: string | null;
 }): Promise<MomentListItem[]> {
   const limit = options?.limit ?? 20;
   const cursor = options?.cursor ?? null;
@@ -58,28 +62,52 @@ export async function listMoments(options?: {
     }
   }
 
+  const select: Prisma.MomentSelect = {
+    id: true,
+    slug: true,
+    content: true,
+    images: true,
+    createdAt: true,
+    visibility: true,
+    location: true,
+    tags: true,
+    lang: true,
+    authorId: true,
+    likeStats: { select: { likeCount: true } },
+    comments: { select: { id: true } },
+  };
+
+  if (options?.viewerId) {
+    // Get viewer's like state via likes relation
+    (select as Prisma.MomentSelect & { likes: unknown }).likes = {
+      where: { userId: options.viewerId },
+      select: { id: true },
+    };
+  }
+
   const items = await prisma.moment.findMany({
     where,
     take: limit,
     ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
     orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      slug: true,
-      content: true,
-      images: true,
-      createdAt: true,
-      visibility: true,
-      location: true,
-      tags: true,
-      lang: true,
-      authorId: true,
-    },
+    select,
   });
-  return items.map((m) => ({
-    ...m,
-    images: (m.images as MomentImage[] | null) ?? [],
-  }));
+  return items.map((m) => {
+    const mWithExtras = m as typeof m & {
+      likes?: { id: string }[];
+      likeStats?: { likeCount: number };
+      comments?: { id: string }[];
+    };
+    return {
+      ...m,
+      images: (m.images as MomentImage[] | null) ?? [],
+      likeCount: mWithExtras.likeStats?.likeCount ?? 0,
+      commentsCount: mWithExtras.comments?.length ?? 0,
+      likedByViewer: options?.viewerId && Array.isArray(mWithExtras.likes)
+        ? mWithExtras.likes.length > 0
+        : false,
+    };
+  });
 }
 
 export async function getMomentByIdOrSlug(idOrSlug: string) {

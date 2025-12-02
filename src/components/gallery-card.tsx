@@ -24,9 +24,9 @@ export function GalleryCard({ image, locale = "zh", index = 0 }: GalleryCardProp
 
   return (
     <Link href={`/${locale}/gallery/${image.id}`} className="block">
-      <article className="group relative overflow-hidden rounded-lg border border-zinc-200 bg-white transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <article className="group relative overflow-hidden rounded-lg border border-stone-200 bg-white transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm dark:border-stone-800 dark:bg-stone-900">
         {/* 图片区域 */}
-        <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+        <div className="relative aspect-square overflow-hidden bg-stone-100 dark:bg-stone-800">
           {image.isLivePhoto && image.livePhotoVideoPath ? (
             <LivePhotoPlayer
               imageSrc={image.filePath}
@@ -35,7 +35,7 @@ export function GalleryCard({ image, locale = "zh", index = 0 }: GalleryCardProp
             />
           ) : (
             <Image
-              src={image.filePath}
+              src={image.mediumPath || image.smallThumbPath || image.filePath}
               alt={image.title || "相册照片"}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -51,19 +51,19 @@ export function GalleryCard({ image, locale = "zh", index = 0 }: GalleryCardProp
         {/* 元数据区域 - 编辑部式信息层级 */}
         <div className="space-y-2 p-4 sm:p-5">
           {/* 标题 */}
-          <h3 className="text-sm leading-snug font-semibold text-zinc-900 sm:text-base dark:text-zinc-50">
-            {image.title || "未命名照片"}
+          <h3 className="text-sm leading-snug font-semibold text-stone-900 sm:text-base dark:text-stone-50">
+            {image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo")}
           </h3>
 
           {/* 描述 */}
           {image.description && (
-            <p className="line-clamp-2 text-xs leading-relaxed text-zinc-600 sm:text-sm dark:text-zinc-400">
+            <p className="line-clamp-2 text-xs leading-relaxed text-stone-600 sm:text-sm dark:text-stone-400">
               {image.description}
             </p>
           )}
 
           {/* 元信息 - 可追溯的证据链 */}
-          <div className="space-y-1 border-t border-zinc-100 pt-2.5 text-xs text-zinc-500 sm:pt-3 dark:border-zinc-800 dark:text-zinc-400">
+          <div className="space-y-1 border-t border-stone-100 pt-2.5 text-xs text-stone-500 sm:pt-3 dark:border-stone-800 dark:text-stone-400">
             {/* 地理位置 */}
             {hasLocation && (
               <div className="flex items-start gap-1.5">
@@ -89,7 +89,7 @@ export function GalleryCard({ image, locale = "zh", index = 0 }: GalleryCardProp
                 <span className="leading-tight">
                   {image.city && image.country
                     ? `${image.city}, ${image.country}`
-                    : image.locationName || "位置信息"}
+                    : image.locationName || (locale === "zh" ? "位置信息" : "Location Info")}
                 </span>
               </div>
             )}

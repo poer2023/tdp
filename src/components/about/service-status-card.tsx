@@ -29,7 +29,7 @@ export function ServiceStatusCard({ service }: ServiceStatusCardProps) {
   const config = statusConfig[service.status];
 
   return (
-    <div className="group rounded-lg border border-neutral-200 bg-white p-4 transition-all hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="group rounded-lg border border-stone-200 bg-white p-4 transition-all hover:shadow-md dark:border-stone-800 dark:bg-stone-900">
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3">
           <Circle
@@ -37,7 +37,7 @@ export function ServiceStatusCard({ service }: ServiceStatusCardProps) {
           />
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
+              <h4 className="font-medium text-stone-900 dark:text-stone-100">
                 {service.displayName}
               </h4>
               {service.url && (
@@ -48,15 +48,15 @@ export function ServiceStatusCard({ service }: ServiceStatusCardProps) {
                   className="opacity-0 transition-opacity group-hover:opacity-100"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <ExternalLink className="h-3 w-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300" />
+                  <ExternalLink className="h-3 w-3 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300" />
                 </a>
               )}
             </div>
-            <p className="text-sm text-neutral-500">
+            <p className="text-sm text-stone-500">
               {service.server} • Uptime: {service.uptime}d
             </p>
             {service.metadata && Object.keys(service.metadata).length > 0 && (
-              <div className="mt-2 flex gap-2 text-xs text-neutral-600 dark:text-neutral-400">
+              <div className="mt-2 flex gap-2 text-xs text-stone-600 dark:text-stone-400">
                 {Object.entries(service.metadata).map(([key, value]) => (
                   <span key={key}>
                     {key}: {value}

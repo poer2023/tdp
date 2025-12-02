@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { Container } from "@/components/ui/container";
 import { BackButton } from "@/components/moments/back-button";
-import { MomentLightbox } from "@/components/moments/moment-lightbox";
 import { MomentCard } from "@/components/moments/moment-card";
 
 export const revalidate = 0;
@@ -25,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocalizedMomentDetailPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
-  const sp = (await searchParams) || {};
+  const _sp = (await searchParams) || {};
   const l = locale === "zh" ? "zh" : "en";
 
   const m = await getMomentByIdOrSlug(id);
@@ -43,24 +42,6 @@ export default async function LocalizedMomentDetailPage({ params, searchParams }
       <div className="mb-3 sm:mb-4">
         <BackButton />
       </div>
-      <MomentLightbox
-        images={(m.images as unknown as MomentImage[]) ?? []}
-        initialIndex={Number.isFinite(Number(sp.image)) ? Number(sp.image) : 0}
-      />
-      {Array.isArray(m.images) && (m.images as unknown as MomentImage[]).length > 1 && (
-        <div className="mb-3 grid grid-cols-4 gap-2 sm:mb-4 sm:grid-cols-6">
-          {(m.images as MomentImage[]).map((im, i) => (
-            <a key={i} href={`?image=${i}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={im.previewUrl || im.url}
-                alt={im.alt || ""}
-                className="h-16 w-full rounded object-cover"
-              />
-            </a>
-          ))}
-        </div>
-      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

@@ -97,7 +97,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
       <div>
         <label
           htmlFor="platform"
-          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="block text-sm font-medium text-stone-700 dark:text-stone-300"
         >
           {t(locale, "credentialPlatform")}
         </label>
@@ -112,7 +112,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
             setShowInstructions(false);
           }}
           disabled={!!credential} // Disable platform change when editing
-          className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+          className="mt-2 block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm focus:border-stone-900 focus:ring-1 focus:ring-stone-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-700 dark:bg-stone-900 dark:focus:border-stone-50 dark:focus:ring-stone-50"
         >
           <option value="" disabled>
             {t(locale, "selectPlatform")}
@@ -128,28 +128,28 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
 
       {/* Instructions Panel - Show after platform selection */}
       {selectedPlatform && platformConfig && (
-        <div className="rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
+        <div className="rounded-lg border border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900/50">
           <button
             type="button"
             onClick={() => setShowInstructions(!showInstructions)}
-            className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
           >
             <div className="flex items-center gap-2">
-              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <Info className="h-5 w-5 text-sage-600 dark:text-sage-400" />
+              <span className="font-medium text-stone-900 dark:text-stone-100">
                 {locale === "zh" ? "如何获取凭据？" : "How to get credentials?"}
               </span>
             </div>
             {showInstructions ? (
-              <ChevronUp className="h-5 w-5 text-zinc-500" />
+              <ChevronUp className="h-5 w-5 text-stone-500" />
             ) : (
-              <ChevronDown className="h-5 w-5 text-zinc-500" />
+              <ChevronDown className="h-5 w-5 text-stone-500" />
             )}
           </button>
 
           {showInstructions && (
-            <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
-              <ol className="list-decimal space-y-2 pl-5 text-sm text-zinc-700 dark:text-zinc-300">
+            <div className="border-t border-stone-200 p-4 dark:border-stone-800">
+              <ol className="list-decimal space-y-2 pl-5 text-sm text-stone-700 dark:text-stone-300">
                 {platformConfig.instructions[locale].map((instruction, index) => (
                   <li key={index} className="pl-2">
                     {instruction}
@@ -168,7 +168,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
             <div key={field.name}>
               <label
                 htmlFor={field.name}
-                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                className="block text-sm font-medium text-stone-700 dark:text-stone-300"
               >
                 {field.label[locale]}
                 {field.required && <span className="ml-1 text-red-500">*</span>}
@@ -182,7 +182,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
                   value={formValues[field.name] || ""}
                   onChange={(e) => setFormValues({ ...formValues, [field.name]: e.target.value })}
                   placeholder={field.placeholder?.[locale]}
-                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 font-mono text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+                  className="mt-2 block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 font-mono text-sm focus:border-stone-900 focus:ring-1 focus:ring-stone-900 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:focus:border-stone-50 dark:focus:ring-stone-50"
                 />
               ) : field.type === "password" ? (
                 <div className="relative">
@@ -194,12 +194,12 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
                     value={formValues[field.name] || ""}
                     onChange={(e) => setFormValues({ ...formValues, [field.name]: e.target.value })}
                     placeholder={field.placeholder?.[locale]}
-                    className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 pr-10 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+                    className="mt-2 block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 pr-10 text-sm focus:border-stone-900 focus:ring-1 focus:ring-stone-900 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:focus:border-stone-50 dark:focus:ring-stone-50"
                   />
                   <button
                     type="button"
                     onClick={() => togglePasswordVisibility(field.name)}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
                   >
                     {passwordVisibility[field.name] ? (
                       <EyeOff className="h-4 w-4" />
@@ -217,11 +217,11 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
                   value={formValues[field.name] || ""}
                   onChange={(e) => setFormValues({ ...formValues, [field.name]: e.target.value })}
                   placeholder={field.placeholder?.[locale]}
-                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+                  className="mt-2 block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm focus:border-stone-900 focus:ring-1 focus:ring-stone-900 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:focus:border-stone-50 dark:focus:ring-stone-50"
                 />
               )}
               {field.helperText && (
-                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
                   {field.helperText[locale]}
                 </p>
               )}
@@ -232,11 +232,11 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
 
       {/* Auto Sync Settings */}
       {selectedPlatform && platformConfig && (
-        <div className="border-t border-zinc-200 pt-6 dark:border-zinc-800">
-          <h3 className="mb-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        <div className="border-t border-stone-200 pt-6 dark:border-stone-800">
+          <h3 className="mb-4 text-sm font-medium text-stone-900 dark:text-stone-100">
             {t(locale, "autoSyncSettings")}
           </h3>
-          <p className="mb-4 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mb-4 text-xs text-stone-500 dark:text-stone-400">
             {t(locale, "autoSyncDescription")}
           </p>
 
@@ -247,9 +247,9 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
               id="autoSyncEnabled"
               checked={autoSyncEnabled}
               onChange={(e) => setAutoSyncEnabled(e.target.checked)}
-              className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:ring-zinc-50"
+              className="h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-900 dark:border-stone-700 dark:bg-stone-900 dark:focus:ring-stone-50"
             />
-            <label htmlFor="autoSyncEnabled" className="text-sm text-zinc-700 dark:text-zinc-300">
+            <label htmlFor="autoSyncEnabled" className="text-sm text-stone-700 dark:text-stone-300">
               {t(locale, "enableAutoSync")}
             </label>
           </div>
@@ -259,7 +259,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
             <div>
               <label
                 htmlFor="syncFrequency"
-                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                className="block text-sm font-medium text-stone-700 dark:text-stone-300"
               >
                 {t(locale, "syncFrequency")}
               </label>
@@ -267,7 +267,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
                 id="syncFrequency"
                 value={syncFrequency}
                 onChange={(e) => setSyncFrequency(e.target.value)}
-                className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-zinc-50 dark:focus:ring-zinc-50"
+                className="mt-2 block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm focus:border-stone-900 focus:ring-1 focus:ring-stone-900 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:focus:border-stone-50 dark:focus:ring-stone-50"
               >
                 <option value="daily">{t(locale, "syncFrequencyDaily")}</option>
                 <option value="twice_daily">{t(locale, "syncFrequencyTwiceDaily")}</option>
@@ -287,14 +287,14 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
         <button
           type="submit"
           disabled={!selectedPlatform}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className="admin-primary-btn"
         >
           {t(locale, "saveChanges")}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-900"
         >
           {t(locale, "cancel")}
         </button>

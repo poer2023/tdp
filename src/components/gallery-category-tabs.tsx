@@ -24,7 +24,7 @@ const categories: CategoryTab[] = [
 export function GalleryCategoryTabs({ locale, currentCategory }: Props) {
   return (
     <nav
-      className="flex items-center gap-6 border-b border-zinc-200 pb-3 dark:border-zinc-800"
+      className="flex items-center gap-6 border-b border-stone-200 pb-3 dark:border-stone-800"
       role="navigation"
       aria-label={locale === "zh" ? "相册分类" : "Gallery categories"}
     >
@@ -41,8 +41,8 @@ export function GalleryCategoryTabs({ locale, currentCategory }: Props) {
             href={href}
             className={`text-sm font-medium transition-colors ${
               isActive
-                ? "text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-4 dark:text-zinc-50"
-                : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+                ? "text-stone-900 underline decoration-stone-400 decoration-2 underline-offset-4 dark:text-stone-50"
+                : "text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-50"
             }`}
             aria-current={isActive ? "page" : undefined}
           >

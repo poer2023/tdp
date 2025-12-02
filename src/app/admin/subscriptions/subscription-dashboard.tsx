@@ -299,60 +299,60 @@ export default function SubscriptionDashboard({
   return (
     <div className="space-y-6 pb-16">
       <header className="space-y-2">
-        <p className="text-sm tracking-[0.3em] text-zinc-400 uppercase">
+        <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">
           {translation("subscriptions")}
         </p>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
           {translation("subscriptionOverview")}
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-stone-500 dark:text-stone-400">
           {translation("subscriptionDescription")}
         </p>
       </header>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{translation("monthlySpend")}</p>
-          <p className="mt-2 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+        <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+          <p className="text-sm text-stone-500 dark:text-stone-400">{translation("monthlySpend")}</p>
+          <p className="mt-2 text-2xl font-bold text-stone-900 dark:text-stone-50">
             {formatCNY(totals.monthly)}
           </p>
         </div>
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">{translation("annualSpend")}</p>
-          <p className="mt-2 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+        <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+          <p className="text-sm text-stone-500 dark:text-stone-400">{translation("annualSpend")}</p>
+          <p className="mt-2 text-2xl font-bold text-stone-900 dark:text-stone-50">
             {formatCNY(totals.annual)}
           </p>
         </div>
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+          <p className="text-sm text-stone-500 dark:text-stone-400">
             {translation("markdownExport")}
           </p>
           <button
             type="button"
             onClick={handleExport}
             disabled={isExporting || items.length === 0}
-            className="mt-3 inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-400"
+            className="admin-primary-btn"
           >
             {isExporting ? `${translation("markdownExport")}...` : translation("downloadMarkdown")}
           </button>
-          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
             {translation("markdownExportDescription")}
           </p>
         </div>
       </section>
 
-      <section className="flex items-center justify-between rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <section className="flex items-center justify-between rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-50">
             {translation("subscriptionManagement")}
           </h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-stone-500 dark:text-stone-400">
             {translation("createNewSubscription")}
           </p>
         </div>
         <Link
           href="/admin/subscriptions/new"
-          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500"
+          className="admin-primary-btn"
         >
           {translation("addSubscription")}
         </Link>
@@ -361,10 +361,10 @@ export default function SubscriptionDashboard({
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-50">
               {translation("subscriptionList")}
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-stone-500 dark:text-stone-400">
               {translation("filterByCycle")}
             </p>
           </div>
@@ -376,7 +376,7 @@ export default function SubscriptionDashboard({
                   event.target.value === "ALL" ? "ALL" : (event.target.value as BillingCycle)
                 )
               }
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
+              className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm focus:border-stone-500 focus:ring-2 focus:ring-stone-200 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:focus:border-stone-500"
             >
               <option value="ALL">All</option>
               {billingCycleOptions.map((option) => (
@@ -386,14 +386,14 @@ export default function SubscriptionDashboard({
               ))}
             </select>
 
-            <div className="flex items-center gap-2 rounded-full border border-zinc-300 bg-white p-1 dark:border-zinc-700 dark:bg-zinc-900">
+            <div className="flex items-center gap-2 rounded-full border border-stone-300 bg-white p-1 dark:border-stone-700 dark:bg-stone-900">
               <button
                 type="button"
                 onClick={() => setViewMode("MONTHLY")}
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
                   viewMode === "MONTHLY"
-                    ? "bg-blue-600 text-white"
-                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                    ? "bg-sage-600 text-white dark:bg-sage-400 dark:text-stone-950"
+                    : "text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
                 }`}
               >
                 {translation("monthlyView")}
@@ -403,8 +403,8 @@ export default function SubscriptionDashboard({
                 onClick={() => setViewMode("ANNUAL")}
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
                   viewMode === "ANNUAL"
-                    ? "bg-blue-600 text-white"
-                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                    ? "bg-sage-600 text-white dark:bg-sage-400 dark:text-stone-950"
+                    : "text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
                 }`}
               >
                 {translation("annualView")}
@@ -422,16 +422,16 @@ export default function SubscriptionDashboard({
             valuePrefix="¥"
             description={translation("trendDescription")}
             chartData={statsChartData}
-            defaultBarColor="bg-zinc-200 dark:bg-zinc-700"
-            highlightedBarColor="bg-blue-500"
+            defaultBarColor="bg-stone-200 dark:bg-stone-700"
+            highlightedBarColor="bg-stone-600"
           />
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-3">
         {filteredItems.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-zinc-300 bg-white p-6 text-center dark:border-zinc-700 dark:bg-zinc-900">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="rounded-xl border border-dashed border-stone-300 bg-white p-6 text-center dark:border-stone-700 dark:bg-stone-900">
+            <p className="text-sm text-stone-500 dark:text-stone-400">
               {translation("createFirstSubscription")}
             </p>
           </div>

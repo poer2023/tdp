@@ -28,7 +28,7 @@ export function HighlightText({ text, query }: { text: string; query: string }) 
         i % 2 === 1 ? (
           <mark
             key={i}
-            className="bg-yellow-200/70 text-zinc-900 dark:bg-yellow-800/50 dark:text-zinc-100"
+            className="bg-yellow-200/70 text-stone-900 dark:bg-yellow-800/50 dark:text-stone-100"
           >
             {part}
           </mark>

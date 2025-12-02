@@ -32,11 +32,11 @@ export function MomentCard({
   });
 
   return (
-    <article className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="mb-2 flex items-center gap-2 text-xs text-zinc-500">
+    <article className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <div className="mb-2 flex items-center gap-2 text-xs text-stone-500">
         <span>{formattedDate}</span>
         {visibility !== "PUBLIC" && (
-          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] dark:bg-zinc-800">
+          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] dark:bg-stone-800">
             {visibility === "UNLISTED"
               ? locale === "zh"
                 ? "未收录"
@@ -47,7 +47,7 @@ export function MomentCard({
           </span>
         )}
       </div>
-      <div className="text-[15px] leading-relaxed whitespace-pre-wrap text-zinc-900 dark:text-zinc-100">
+      <div className="text-[15px] leading-relaxed whitespace-pre-wrap text-stone-900 dark:text-stone-100">
         {content}
       </div>
       {images && images.length > 0 && (
@@ -56,10 +56,10 @@ export function MomentCard({
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-1 text-[11px] text-zinc-500">
+      <div className="mt-3 flex flex-wrap items-center gap-1 text-[11px] text-stone-500">
         {locationName && <span>📍 {locationName}</span>}
         {tags.slice(0, 5).map((t) => (
-          <span key={t} className="rounded bg-zinc-100 px-1.5 py-0.5 dark:bg-zinc-800">
+          <span key={t} className="rounded bg-stone-100 px-1.5 py-0.5 dark:bg-stone-800">
             #{t}
           </span>
         ))}

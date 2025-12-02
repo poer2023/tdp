@@ -60,7 +60,7 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
         <div
           ref={ref}
           className={cn(
-            "profile-card-hover rounded-3xl bg-white shadow-lg dark:bg-zinc-900 dark:shadow-2xl dark:shadow-black/80",
+            "profile-card-hover rounded-3xl bg-white shadow-lg dark:bg-stone-900 dark:shadow-2xl dark:shadow-black/80",
             className
           )}
           {...props}
@@ -83,7 +83,7 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
           {/* 信息栏 */}
           <div className="flex items-center justify-between p-4">
             <div className="flex min-w-0 flex-1 items-center gap-3">
-              <div className="profile-card-avatar-scale relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-2 ring-gray-200 dark:ring-zinc-700">
+              <div className="profile-card-avatar-scale relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-2 ring-gray-200 dark:ring-stone-700">
                 <Image
                   src={avatarUrl}
                   alt={name}
@@ -94,8 +94,8 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
                 />
               </div>
               <div className="profile-card-translate min-w-0 flex-1">
-                <div className="truncate text-sm text-gray-700 dark:text-zinc-200">{name}</div>
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-zinc-500">
+                <div className="truncate text-sm text-gray-700 dark:text-stone-200">{name}</div>
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-stone-500">
                   {timestamp && <span>{timestamp}</span>}
                   {stats && (
                     <>
@@ -112,7 +112,7 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
           {/* 描述区域（可选） */}
           {description && (
             <div className="px-4 pt-0 pb-4">
-              <p className="line-clamp-2 text-sm text-gray-600 dark:text-zinc-400">{description}</p>
+              <p className="line-clamp-2 text-sm text-gray-600 dark:text-stone-400">{description}</p>
             </div>
           )}
         </div>

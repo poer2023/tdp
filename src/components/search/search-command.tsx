@@ -167,9 +167,9 @@ export function SearchCommand({ open, onOpenChange }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search input */}
-        <div className="flex items-center border-b border-zinc-200 px-4 dark:border-zinc-800">
+        <div className="flex items-center border-b border-stone-200 px-4 dark:border-stone-800">
           <svg
-            className="h-5 w-5 flex-shrink-0 text-zinc-400"
+            className="h-5 w-5 flex-shrink-0 text-stone-400"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -184,11 +184,11 @@ export function SearchCommand({ open, onOpenChange }: Props) {
             placeholder={
               locale === "zh" ? "搜索文章、图片、动态..." : "Search posts, images, moments..."
             }
-            className="search-focus-reset flex h-14 w-full rounded-md bg-transparent px-4 py-4 text-base text-zinc-900 placeholder:text-zinc-400 focus:ring-0 focus:outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            className="search-focus-reset flex h-14 w-full rounded-md bg-transparent px-4 py-4 text-base text-stone-900 placeholder:text-stone-400 focus:ring-0 focus:outline-none dark:text-stone-100 dark:placeholder:text-stone-500"
           />
           {loading && (
             <div className="flex-shrink-0" role="status" aria-label="Loading">
-              <svg className="h-4 w-4 animate-spin text-zinc-400" fill="none" viewBox="0 0 24 24">
+              <svg className="h-4 w-4 animate-spin text-stone-400" fill="none" viewBox="0 0 24 24">
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -209,13 +209,13 @@ export function SearchCommand({ open, onOpenChange }: Props) {
 
         {/* Tabs */}
         {query.trim() && totalCount > 0 && (
-          <div className="flex gap-1 border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
+          <div className="flex gap-1 border-b border-stone-200 px-4 py-2 dark:border-stone-800">
             <button
               onClick={() => setActiveTab("all")}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                 activeTab === "all"
-                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                  : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                  ? "bg-stone-900 text-white dark:bg-white dark:text-stone-900"
+                  : "text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
               }`}
             >
               {locale === "zh" ? "全部" : "All"} ({totalCount})
@@ -225,8 +225,8 @@ export function SearchCommand({ open, onOpenChange }: Props) {
                 onClick={() => setActiveTab("posts")}
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   activeTab === "posts"
-                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                    ? "bg-stone-900 text-white dark:bg-white dark:text-stone-900"
+                    : "text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
                 }`}
               >
                 📝 {locale === "zh" ? "文章" : "Posts"} ({postCount})
@@ -237,8 +237,8 @@ export function SearchCommand({ open, onOpenChange }: Props) {
                 onClick={() => setActiveTab("images")}
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   activeTab === "images"
-                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                    ? "bg-stone-900 text-white dark:bg-white dark:text-stone-900"
+                    : "text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
                 }`}
               >
                 🖼️ {locale === "zh" ? "图片" : "Images"} ({imageCount})
@@ -249,8 +249,8 @@ export function SearchCommand({ open, onOpenChange }: Props) {
                 onClick={() => setActiveTab("moments")}
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                   activeTab === "moments"
-                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                    : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                    ? "bg-stone-900 text-white dark:bg-white dark:text-stone-900"
+                    : "text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
                 }`}
               >
                 💬 {locale === "zh" ? "动态" : "Moments"} ({momentCount})
@@ -262,17 +262,17 @@ export function SearchCommand({ open, onOpenChange }: Props) {
         {/* Results */}
         <Command.List className="max-h-[60vh] overflow-y-auto p-2">
           {loading && !query.trim() && (
-            <div className="py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="py-12 text-center text-sm text-stone-500 dark:text-stone-400">
               {locale === "zh" ? "搜索中..." : "Searching..."}
             </div>
           )}
 
           {!loading && query.trim() && totalCount === 0 && (
-            <Command.Empty className="py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
-              <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+            <Command.Empty className="py-12 text-center text-sm text-stone-500 dark:text-stone-400">
+              <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-stone-100 dark:bg-stone-800">
                 🔍
               </div>
-              <p className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-base font-medium text-stone-900 dark:text-stone-100">
                 {locale === "zh" ? "未找到结果" : "No results found"}
               </p>
               <p className="mt-1 text-sm">
@@ -286,7 +286,7 @@ export function SearchCommand({ open, onOpenChange }: Props) {
           {/* Posts section */}
           {filteredPosts.length > 0 && (
             <div className="mb-4">
-              <div className="mb-2 px-2 text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+              <div className="mb-2 px-2 text-xs font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                 📝 {locale === "zh" ? "文章" : "Posts"} ({filteredPosts.length})
               </div>
               <div className="space-y-1">
@@ -306,7 +306,7 @@ export function SearchCommand({ open, onOpenChange }: Props) {
           {/* Images section */}
           {filteredImages.length > 0 && (
             <div className="mb-4">
-              <div className="mb-2 px-2 text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+              <div className="mb-2 px-2 text-xs font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                 🖼️ {locale === "zh" ? "图片" : "Images"} ({filteredImages.length})
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -326,7 +326,7 @@ export function SearchCommand({ open, onOpenChange }: Props) {
           {/* Moments section */}
           {filteredMoments.length > 0 && (
             <div className="mb-4">
-              <div className="mb-2 px-2 text-xs font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+              <div className="mb-2 px-2 text-xs font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
                 💬 {locale === "zh" ? "动态" : "Moments"} ({filteredMoments.length})
               </div>
               <div className="space-y-1">
@@ -345,29 +345,29 @@ export function SearchCommand({ open, onOpenChange }: Props) {
         </Command.List>
 
         {/* Footer hints */}
-        <div className="flex items-center justify-between border-t border-zinc-200 px-4 py-3 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+        <div className="flex items-center justify-between border-t border-stone-200 px-4 py-3 text-xs text-stone-500 dark:border-stone-800 dark:text-stone-400">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
-              <kbd className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-zinc-800">
+              <kbd className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-stone-800">
                 ↑↓
               </kbd>
               {locale === "zh" ? "导航" : "Navigate"}
             </span>
             <span className="flex items-center gap-1.5">
-              <kbd className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-zinc-800">
+              <kbd className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-stone-800">
                 ↵
               </kbd>
               {locale === "zh" ? "选择" : "Select"}
             </span>
             <span className="flex items-center gap-1.5">
-              <kbd className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-zinc-800">
+              <kbd className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[10px] dark:bg-stone-800">
                 Esc
               </kbd>
               {locale === "zh" ? "关闭" : "Close"}
             </span>
           </div>
           <span className="hidden text-[10px] sm:block">
-            <kbd className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono dark:bg-zinc-800">⌘K</kbd>{" "}
+            <kbd className="rounded bg-stone-100 px-1.5 py-0.5 font-mono dark:bg-stone-800">⌘K</kbd>{" "}
             {locale === "zh" ? "打开搜索" : "Open search"}
           </span>
         </div>

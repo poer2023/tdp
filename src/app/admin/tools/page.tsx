@@ -27,12 +27,16 @@ export default function AdminToolsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Tools</h1>
-        <p className="text-muted-foreground">数据导入、导出和备份工具</p>
+        <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">
+          Tools
+        </h1>
+        <p className="text-sm text-stone-500 dark:text-stone-400">
+          数据导入、导出和备份工具
+        </p>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-border border-b">
+      <div className="border-b border-stone-200 dark:border-stone-800">
         <nav className="flex space-x-8" aria-label="Tabs">
           {tabs.map((tab) => (
             <button
@@ -40,8 +44,8 @@ export default function AdminToolsPage() {
               onClick={() => handleTabChange(tab.id)}
               className={`border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.id
-                  ? "border-primary text-foreground"
-                  : "text-muted-foreground hover:border-border hover:text-foreground border-transparent"
+                  ? "border-stone-900 text-stone-900 dark:border-stone-100 dark:text-stone-100"
+                  : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700 dark:text-stone-400 dark:hover:border-stone-700 dark:hover:text-stone-300"
               } `}
               aria-current={activeTab === tab.id ? "page" : undefined}
             >
@@ -56,9 +60,13 @@ export default function AdminToolsPage() {
         {activeTab === "export" && <ExportClientShell />}
         {activeTab === "import" && <ImportClient />}
         {activeTab === "backup" && (
-          <div className="border-border bg-muted/50 rounded-lg border p-8 text-center">
-            <h3 className="text-lg font-semibold">Backup Feature</h3>
-            <p className="text-muted-foreground mt-2 text-sm">备份功能开发中,敬请期待</p>
+          <div className="rounded-xl border border-stone-200 bg-stone-50 p-8 text-center dark:border-stone-800 dark:bg-stone-900/50">
+            <h3 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
+              Backup Feature
+            </h3>
+            <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
+              备份功能开发中,敬请期待
+            </p>
           </div>
         )}
       </div>

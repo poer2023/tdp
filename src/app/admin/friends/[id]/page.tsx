@@ -36,8 +36,8 @@ export default async function FriendEditPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">编辑朋友</h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-50">编辑朋友</h1>
+        <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
           更新朋友信息或重置访问密码。
         </p>
       </div>

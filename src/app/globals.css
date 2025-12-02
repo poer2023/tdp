@@ -1,9 +1,16 @@
+/* Google Fonts for Lumina Design - must be first */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+/* Enable dark mode via .dark class selector (Tailwind v4) */
+/* Using :where() for lower specificity so dark:* utilities work correctly */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff; /* 纯白底色 */
-  --foreground: #111111;
+  --background: #fafaf9; /* stone-50 */
+  --foreground: #292524; /* stone-800 */
 
   /* 搜索组件焦点样式 */
   --search-focus-ring: 0 0 0 2px rgba(59, 130, 246, 0.2);
@@ -15,40 +22,90 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Outfit', var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: 'Lora', Georgia, serif;
   --font-mono: var(--font-geist-mono);
+
+  /* Sage 颜色系统 - Lumina 主色 */
+  --color-sage-50: #f2fcf5;
+  --color-sage-100: #e1f7e6;
+  --color-sage-200: #c4efce;
+  --color-sage-300: #96e2a8;
+  --color-sage-400: #6bcf82;
+  --color-sage-500: #5c9c6d;
+  --color-sage-600: #457a53;
+  --color-sage-700: #3a6245;
+  --color-sage-800: #314f39;
+  --color-sage-900: #143820;
+  --color-sage-950: #0a1f11;
+
+  /* Stone 颜色系统 - Lumina 中性色 */
+  --color-stone-50: #fafaf9;
+  --color-stone-100: #f5f5f4;
+  --color-stone-200: #e7e5e4;
+  --color-stone-300: #d6d3d1;
+  --color-stone-400: #a8a29e;
+  --color-stone-500: #78716c;
+  --color-stone-600: #57534e;
+  --color-stone-700: #44403c;
+  --color-stone-800: #292524;
+  --color-stone-900: #1c1917;
+  --color-stone-950: #0c0a09;
+
+  /* Moments 卡片设计令牌 */
+  --radius-card: 24px;
+  --radius-card-inner: 18px;
+  --radius-button: 9999px;
+
+  /* Moments 阴影系统 */
+  --shadow-card: 0 25px 50px rgba(15, 23, 42, 0.08);
+  --shadow-card-hover: 0 35px 70px rgba(15, 23, 42, 0.12);
+  --shadow-card-dark: 0 25px 50px rgba(0, 0, 0, 0.35);
+  --shadow-card-hover-dark: 0 35px 70px rgba(0, 0, 0, 0.45);
+
+  /* Moments 颜色 */
+  --color-card-bg: #ffffff;
+  --color-card-bg-dark: #111827;
+  --color-text-card-bg: #f7f8fb;
+  --color-text-card-bg-dark: #1e2433;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* iOS-style深色背景 */
-    --background: #1c1c1e;
-    --foreground: #f4f4f5;
+    /* Lumina 深色背景 - stone-950 */
+    --background: #0c0a09;
+    --foreground: #f5f5f4;
   }
 }
 
 /* Support .dark class for manual theme switching */
 html.dark {
-  --background: #1c1c1e;
-  --foreground: #f4f4f5;
+  --background: #0c0a09;
+  --foreground: #f5f5f4;
 }
 
 body {
   margin: 0;
-  background-color: #ffffff;
+  background-color: #fafaf9; /* stone-50 */
   color: var(--foreground);
-  font-family:
-    var(--font-sans),
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: 'Outfit', var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 html.dark body {
-  background-color: #1c1c1e;
-  color: #f4f4f5;
+  background-color: #0c0a09; /* stone-950 */
+  color: #f5f5f4; /* stone-100 */
+}
+
+/* Lumina selection styles */
+::selection {
+  background-color: var(--color-sage-100);
+  color: var(--color-sage-900);
+}
+
+html.dark ::selection {
+  background-color: var(--color-sage-900);
+  color: var(--color-sage-200);
 }
 
 a {
@@ -198,6 +255,38 @@ select:focus-visible {
   color: var(--ios-label) !important;
 }
 
+/* Stone color overrides for iOS-style dark mode */
+.dark .bg-stone-50 {
+  background-color: var(--ios-bg) !important;
+}
+.dark .bg-stone-100 {
+  background-color: var(--ios-elev-1) !important;
+}
+.dark .bg-stone-200 {
+  background-color: var(--ios-elev-2) !important;
+}
+.dark .text-stone-900 {
+  color: var(--ios-label) !important;
+}
+.dark .text-stone-800 {
+  color: var(--ios-label) !important;
+}
+.dark .text-stone-700 {
+  color: var(--ios-secondary-label) !important;
+}
+.dark .text-stone-600 {
+  color: var(--ios-secondary-label) !important;
+}
+.dark .text-stone-500 {
+  color: var(--ios-tertiary-label) !important;
+}
+.dark .border-stone-200 {
+  border-color: var(--ios-elev-1) !important;
+}
+.dark .border-stone-300 {
+  border-color: var(--ios-elev-2) !important;
+}
+
 /* Inform UA for form controls, scrollbars, etc. */
 html {
   color-scheme: light;
@@ -225,4 +314,105 @@ html.dark {
 }
 .admin-scroll::-webkit-scrollbar-track {
   background: transparent; /* no track divider */
+}
+
+/* Lumina Custom Scrollbar - Global */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e7e5e4; /* stone-200 */
+  border-radius: 4px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #44403c; /* stone-700 */
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d6d3d1; /* stone-300 */
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #57534e; /* stone-600 */
+}
+
+/* Lumina Animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-from-bottom {
+  from { transform: translateY(1rem); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-in {
+  animation: fade-in 0.7s ease-out, slide-in-from-bottom 0.7s ease-out;
+}
+
+/* Utility: font-serif for Lora */
+.font-serif {
+  font-family: 'Lora', Georgia, serif;
+}
+
+/* Admin primary button - consistent contrast across admin */
+.admin-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.1;
+  background-color: #5c9c6d; /* sage-600 */
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(12, 10, 9, 0.14);
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease,
+    transform 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.admin-primary-btn:hover {
+  background-color: #457a53; /* sage-700 */
+}
+
+.admin-primary-btn:focus-visible {
+  outline: 2px solid #c4efce; /* sage-200 */
+  outline-offset: 2px;
+}
+
+.admin-primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.admin-primary-btn--sm {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8125rem;
+}
+
+html.dark .admin-primary-btn {
+  background-color: #f5f5f4; /* stone-100 */
+  color: #0c0a09; /* stone-950 */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+html.dark .admin-primary-btn:hover {
+  background-color: #e7e5e4; /* stone-200 */
+}
+
+html.dark .admin-primary-btn:focus-visible {
+  outline: 2px solid #a8a29e; /* stone-400 */
+  outline-offset: 2px;
+}
+
+html.dark .admin-primary-btn:disabled {
+  background-color: #e7e5e4;
+  color: #57534e;
+  opacity: 0.65;
 }

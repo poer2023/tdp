@@ -78,7 +78,7 @@ export function FriendAuthForm({ locale }: FriendAuthFormProps) {
       <div className="space-y-2">
         <label
           htmlFor="friend-passphrase"
-          className="block text-sm font-medium text-zinc-700 dark:text-zinc-200"
+          className="block text-sm font-medium text-stone-700 dark:text-stone-200"
         >
           {copy.passphraseLabel}
         </label>
@@ -91,9 +91,9 @@ export function FriendAuthForm({ locale }: FriendAuthFormProps) {
           placeholder="••••••••••••"
           required
           disabled={loading}
-          className="w-full rounded-2xl border border-zinc-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="w-full rounded-2xl border border-stone-200 px-4 py-2.5 text-sm shadow-sm transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
         />
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">{copy.passphraseHint}</p>
+        <p className="text-xs text-stone-500 dark:text-stone-400">{copy.passphraseHint}</p>
       </div>
 
       <button

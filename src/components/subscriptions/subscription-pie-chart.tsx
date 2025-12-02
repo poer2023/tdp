@@ -84,7 +84,7 @@ export function SubscriptionPieChart({ data, viewMode, locale }: SubscriptionPie
           <CardDescription>{translate(locale, "noSubscriptions")}</CardDescription>
         </CardHeader>
         <CardContent className="flex-1 pb-0">
-          <div className="flex h-64 items-center justify-center text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="flex h-64 items-center justify-center text-sm text-stone-500 dark:text-stone-400">
             {translate(locale, "noSubscriptions")}
           </div>
         </CardContent>

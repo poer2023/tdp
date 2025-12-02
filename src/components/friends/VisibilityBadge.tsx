@@ -26,7 +26,7 @@ const visibilityCopy = {
       en: "Private",
       zh: "私密",
     },
-    className: "bg-zinc-100 text-zinc-700 border-zinc-200",
+    className: "bg-stone-100 text-stone-700 border-stone-200",
   },
 } as const;
 

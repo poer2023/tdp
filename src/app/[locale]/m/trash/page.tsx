@@ -15,7 +15,7 @@ export default async function LocalizedMomentsTrashPage({ params }: Props) {
   if (!session?.user?.id) {
     return (
       <Container width="narrow" padding="px-6 py-10">
-        <div className="text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="text-sm text-stone-600 dark:text-stone-400">
           {l === "zh" ? "请登录以查看回收站。" : "Please sign in to view trash."}
         </div>
       </Container>
@@ -29,16 +29,16 @@ export default async function LocalizedMomentsTrashPage({ params }: Props) {
   });
   return (
     <Container width="narrow" padding="px-6 py-10">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
+      <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-100">
         {l === "zh" ? "回收站" : "Trash"}
       </h1>
       <ul className="mt-6 space-y-3">
         {items.map((m) => (
           <li
             key={m.id}
-            className="rounded border border-zinc-200 p-3 text-sm dark:border-zinc-800"
+            className="rounded border border-stone-200 p-3 text-sm dark:border-stone-800"
           >
-            <div className="mb-2 line-clamp-2 text-zinc-800 dark:text-zinc-200">{m.content}</div>
+            <div className="mb-2 line-clamp-2 text-stone-800 dark:text-stone-200">{m.content}</div>
             <div className="flex items-center justify-end gap-3 text-xs">
               <form action={restoreMomentAction}>
                 <input type="hidden" name="id" value={m.id} />

@@ -151,7 +151,7 @@ describe("AuthHeader", () => {
 
     const { container } = render(<AuthHeader />);
 
-    const defaultAvatar = container.querySelector(".bg-zinc-200");
+    const defaultAvatar = container.querySelector(".bg-stone-200");
     expect(defaultAvatar).toBeInTheDocument();
     expect(defaultAvatar?.textContent).toBe("J");
   });
@@ -400,7 +400,7 @@ describe("AuthHeader", () => {
 
     expect(screen.getByText("User")).toBeInTheDocument();
 
-    const defaultAvatar = container.querySelector(".bg-zinc-200");
+    const defaultAvatar = container.querySelector(".bg-stone-200");
     expect(defaultAvatar?.textContent).toBe("U");
   });
 

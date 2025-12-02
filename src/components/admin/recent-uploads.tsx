@@ -12,8 +12,8 @@ type RecentUploadsProps = {
 
 export function RecentUploads({ images, locale, isServiceDegraded = false }: RecentUploadsProps) {
   return (
-    <div className="flex min-h-[320px] flex-col rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-      <h3 className="mb-4 text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+    <div className="flex min-h-[320px] flex-col rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-950">
+      <h3 className="mb-4 text-sm font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
         {t(locale, "recentUploads")}
       </h3>
 
@@ -35,19 +35,19 @@ export function RecentUploads({ images, locale, isServiceDegraded = false }: Rec
           <p className="text-sm text-amber-600 dark:text-amber-500">
             {t(locale, "serviceTemporarilyUnavailable")}
           </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             {t(locale, "galleryDataInaccessible")}
           </p>
         </div>
       ) : images.length === 0 ? (
-        <p className="text-sm text-zinc-500 dark:text-zinc-500">{t(locale, "noUploadsYet")}</p>
+        <p className="text-sm text-stone-500 dark:text-stone-500">{t(locale, "noUploadsYet")}</p>
       ) : (
         <div className="grid grid-cols-3 gap-2">
           {images.map((image) => (
             <Link
               key={image.id}
               href={localePath(locale, `/gallery/${image.id}`)}
-              className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900"
+              className="group relative aspect-square overflow-hidden rounded-xl bg-stone-100 dark:bg-stone-900"
             >
               <Image
                 src={image.smallThumbPath ?? image.mediumPath ?? image.filePath}
@@ -69,7 +69,7 @@ export function RecentUploads({ images, locale, isServiceDegraded = false }: Rec
 
       <Link
         href="/admin/gallery"
-        className="mt-4 block text-center text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-100"
+        className="mt-4 block text-center text-xs font-medium text-stone-500 transition-colors hover:text-stone-900 dark:text-stone-500 dark:hover:text-stone-100"
       >
         View all →
       </Link>

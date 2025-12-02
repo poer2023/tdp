@@ -118,20 +118,20 @@ export function FriendCardsGrid({ friends: initialFriends }: FriendCardsGridProp
 
   if (friends.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-16 text-center dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="rounded-3xl border border-dashed border-stone-300 bg-stone-50 px-6 py-16 text-center dark:border-stone-800 dark:bg-stone-900/40">
         <div className="mx-auto max-w-sm space-y-4">
           <div className="text-4xl">👥</div>
           <div>
-            <p className="text-base font-medium text-zinc-700 dark:text-zinc-300">
+            <p className="text-base font-medium text-stone-700 dark:text-stone-300">
               还没有创建朋友访问
             </p>
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
               创建朋友账号，让他们可以查看你的专属内容
             </p>
           </div>
           <Link
             href="/admin/friends/create"
-            className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
+            className="admin-primary-btn"
           >
             + 创建第一个朋友
           </Link>

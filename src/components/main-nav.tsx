@@ -99,7 +99,7 @@ export function MainNav() {
       // Render dropdown menu for items with subitems
       return (
         <NavigationMenuItem key={link.label}>
-          <NavigationMenuTrigger className="text-sm leading-6 text-zinc-600 transition-colors hover:text-zinc-900 data-[state=open]:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 dark:data-[state=open]:text-zinc-100">
+          <NavigationMenuTrigger className="text-sm leading-6 text-stone-600 transition-colors hover:text-stone-900 data-[state=open]:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 dark:data-[state=open]:text-stone-100">
             {link.label}
           </NavigationMenuTrigger>
           <NavigationMenuContent>
@@ -112,15 +112,15 @@ export function MainNav() {
                       <Link
                         href={subItem.href}
                         className={cn(
-                          "flex gap-4 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
-                          isActive && "bg-zinc-100 dark:bg-zinc-800"
+                          "flex gap-4 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none hover:bg-stone-100 hover:text-stone-900 dark:hover:bg-stone-800 dark:hover:text-stone-100",
+                          isActive && "bg-stone-100 dark:bg-stone-800"
                         )}
                       >
                         {subItem.icon}
                         <div>
                           <div className="text-sm font-semibold">{subItem.label}</div>
                           {subItem.description && (
-                            <p className="text-sm leading-snug text-zinc-600 dark:text-zinc-400">
+                            <p className="text-sm leading-snug text-stone-600 dark:text-stone-400">
                               {subItem.description}
                             </p>
                           )}
@@ -148,8 +148,8 @@ export function MainNav() {
         className={cn(
           "text-sm leading-6 transition-colors",
           isActive
-            ? "font-medium text-zinc-900 dark:text-zinc-100"
-            : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            ? "font-medium text-stone-900 dark:text-stone-100"
+            : "text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
         )}
         aria-current={isActive ? "page" : undefined}
       >
@@ -163,7 +163,7 @@ export function MainNav() {
       // Render accordion for items with subitems
       return (
         <AccordionItem key={link.label} value={link.label} className="border-b-0">
-          <AccordionTrigger className="py-0 font-semibold text-zinc-700 hover:no-underline dark:text-zinc-200">
+          <AccordionTrigger className="py-0 font-semibold text-stone-700 hover:no-underline dark:text-stone-200">
             {link.label}
           </AccordionTrigger>
           <AccordionContent className="mt-2">
@@ -174,18 +174,18 @@ export function MainNav() {
                   key={subItem.href}
                   href={subItem.href}
                   className={cn(
-                    "flex gap-4 rounded-md p-3 leading-none transition-colors outline-none select-none hover:bg-zinc-100 dark:hover:bg-zinc-800",
-                    isActive && "bg-zinc-100 dark:bg-zinc-800"
+                    "flex gap-4 rounded-md p-3 leading-none transition-colors outline-none select-none hover:bg-stone-100 dark:hover:bg-stone-800",
+                    isActive && "bg-stone-100 dark:bg-stone-800"
                   )}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {subItem.icon}
                   <div>
-                    <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    <div className="text-sm font-semibold text-stone-900 dark:text-stone-100">
                       {subItem.label}
                     </div>
                     {subItem.description && (
-                      <p className="text-sm leading-snug text-zinc-600 dark:text-zinc-400">
+                      <p className="text-sm leading-snug text-stone-600 dark:text-stone-400">
                         {subItem.description}
                       </p>
                     )}
@@ -210,8 +210,8 @@ export function MainNav() {
         className={cn(
           "rounded-lg px-4 py-3 text-base font-medium transition-all",
           isActive
-            ? "bg-zinc-900 text-white shadow-sm dark:bg-white dark:text-zinc-900"
-            : "text-zinc-700 hover:bg-zinc-100/70 hover:text-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100"
+            ? "bg-stone-900 text-white shadow-sm dark:bg-white dark:text-stone-900"
+            : "text-stone-700 hover:bg-stone-100/70 hover:text-stone-900 dark:text-stone-200 dark:hover:bg-stone-800/70 dark:hover:text-stone-100"
         )}
         aria-current={isActive ? "page" : undefined}
         onClick={() => setMobileMenuOpen(false)}
@@ -225,7 +225,7 @@ export function MainNav() {
     <nav className="flex items-center gap-6" role="navigation" aria-label="Main navigation">
       <Link
         href={locale === "zh" ? "/zh" : "/en"}
-        className="text-lg font-semibold text-zinc-900 dark:text-zinc-100"
+        className="text-lg font-semibold text-stone-900 dark:text-stone-100"
         aria-label="Home"
       >
         ZHI
@@ -246,7 +246,7 @@ export function MainNav() {
           <SheetTrigger asChild>
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
               aria-label={locale === "zh" ? "打开菜单" : "Open menu"}
             >
               <Menu className="h-6 w-6" />

@@ -112,14 +112,14 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="space-y-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+      className="space-y-4 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-50">
             {isEditing ? translation("editSubscription") : translation("addSubscription")}
           </h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-stone-500 dark:text-stone-400">
             {translation("subscriptionManagement")}
           </p>
         </div>
@@ -133,7 +133,7 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-1">
-          <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+          <span className="text-xs font-semibold tracking-wide text-stone-500 uppercase dark:text-stone-400">
             {translation("subscriptionName")}
           </span>
           <input
@@ -141,13 +141,13 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
             name="name"
             value={form.name}
             onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:focus:border-blue-500"
             placeholder="Netflix, GitHub, Adobe..."
           />
         </label>
 
         <label className="space-y-1">
-          <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+          <span className="text-xs font-semibold tracking-wide text-stone-500 uppercase dark:text-stone-400">
             {translation("billingCycle")}
           </span>
           <select
@@ -159,7 +159,7 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
                 billingCycle: event.target.value as BillingCycle,
               }))
             }
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:focus:border-blue-500"
           >
             {billingCycleOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -170,14 +170,14 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
         </label>
 
         <label className="space-y-1">
-          <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+          <span className="text-xs font-semibold tracking-wide text-stone-500 uppercase dark:text-stone-400">
             {translation("currency")}
           </span>
           <select
             name="currency"
             value={form.currency}
             onChange={(event) => setForm((prev) => ({ ...prev, currency: event.target.value }))}
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:focus:border-blue-500"
           >
             {SUPPORTED_CURRENCIES.map((currency) => (
               <option key={currency} value={currency}>
@@ -188,7 +188,7 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
         </label>
 
         <label className="space-y-1">
-          <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+          <span className="text-xs font-semibold tracking-wide text-stone-500 uppercase dark:text-stone-400">
             {translation("originalAmount")}
           </span>
           <input
@@ -197,13 +197,13 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
             inputMode="decimal"
             value={form.amount}
             onChange={(event) => setForm((prev) => ({ ...prev, amount: event.target.value }))}
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:focus:border-blue-500"
             placeholder="0.00"
           />
         </label>
 
         <label className="space-y-1">
-          <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+          <span className="text-xs font-semibold tracking-wide text-stone-500 uppercase dark:text-stone-400">
             {translation("startDate")}
           </span>
           <input
@@ -212,12 +212,12 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
             name="startDate"
             value={form.startDate}
             onChange={(event) => setForm((prev) => ({ ...prev, startDate: event.target.value }))}
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:focus:border-blue-500"
           />
         </label>
 
         <label className="space-y-1">
-          <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+          <span className="text-xs font-semibold tracking-wide text-stone-500 uppercase dark:text-stone-400">
             {translation("endDate")}
           </span>
           <input
@@ -225,20 +225,20 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
             name="endDate"
             value={form.endDate}
             onChange={(event) => setForm((prev) => ({ ...prev, endDate: event.target.value }))}
-            className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:focus:border-blue-500"
           />
         </label>
       </div>
 
       <label className="block space-y-1">
-        <span className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+        <span className="text-xs font-semibold tracking-wide text-stone-500 uppercase dark:text-stone-400">
           {translation("notes")}
         </span>
         <textarea
           name="notes"
           value={form.notes}
           onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))}
-          className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-blue-500"
+          className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:focus:border-blue-500"
           rows={3}
           placeholder="Remarks, renewal reminders, account info..."
         />
@@ -255,7 +255,7 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
         <button
           type="button"
           onClick={handleCancel}
-          className="inline-flex items-center justify-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          className="inline-flex items-center justify-center rounded-lg border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
         >
           {translation("cancel")}
         </button>

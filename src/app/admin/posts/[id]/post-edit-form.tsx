@@ -17,11 +17,11 @@ export function EditPostForm({ post }: { post: PublicPost }) {
   const [showPreview, setShowPreview] = useState(false);
 
   return (
-    <section className="rounded-3xl border border-zinc-200/70 bg-white/80 p-6 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
+    <section className="rounded-3xl border border-stone-200/70 bg-white/80 p-6 shadow-sm dark:border-stone-800/70 dark:bg-stone-900/70">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">文章信息</h2>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-50">文章信息</h2>
+          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
             更新标题、摘要、标签、Markdown 正文与封面。
           </p>
         </div>
@@ -68,7 +68,7 @@ export function EditPostForm({ post }: { post: PublicPost }) {
               type="text"
               defaultValue={post.title}
               required
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
             />
           </Field>
 
@@ -78,7 +78,7 @@ export function EditPostForm({ post }: { post: PublicPost }) {
               type="text"
               defaultValue={post.excerpt}
               required
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
             />
           </Field>
         </div>
@@ -89,7 +89,7 @@ export function EditPostForm({ post }: { post: PublicPost }) {
               name="tags"
               type="text"
               defaultValue={post.tags.join(",")}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
             />
           </Field>
 
@@ -97,7 +97,7 @@ export function EditPostForm({ post }: { post: PublicPost }) {
             <select
               name="status"
               defaultValue={post.status}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
             >
               <option value={PostStatus.DRAFT}>草稿</option>
               <option value={PostStatus.PUBLISHED}>已发布</option>
@@ -110,10 +110,10 @@ export function EditPostForm({ post }: { post: PublicPost }) {
             name="cover"
             type="file"
             accept="image/*"
-            className="w-full text-sm text-zinc-600 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-600 hover:file:bg-blue-100 dark:text-zinc-300"
+            className="w-full text-sm text-stone-600 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-600 hover:file:bg-blue-100 dark:text-stone-300"
           />
           {post.coverImagePath && (
-            <label className="mt-2 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+            <label className="mt-2 flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
               <input type="checkbox" name="removeCover" className="h-3 w-3" /> 删除现有封面
             </label>
           )}
@@ -127,7 +127,7 @@ export function EditPostForm({ post }: { post: PublicPost }) {
                   name="content"
                   rows={14}
                   required
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                   value={content}
                   onChange={(event) => setContent(event.target.value)}
                 />
@@ -136,20 +136,20 @@ export function EditPostForm({ post }: { post: PublicPost }) {
             <button
               type="button"
               onClick={() => setShowPreview((prev) => !prev)}
-              className="inline-flex items-center rounded-full border border-zinc-300 px-3 py-1 text-xs font-semibold whitespace-nowrap text-zinc-600 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="inline-flex items-center rounded-full border border-stone-300 px-3 py-1 text-xs font-semibold whitespace-nowrap text-stone-600 transition hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
             >
               {showPreview ? "隐藏预览" : "预览 Markdown"}
             </button>
           </div>
 
           {showPreview && (
-            <div className="rounded-2xl border border-dashed border-zinc-300 bg-white/70 p-4 text-sm shadow-sm dark:border-zinc-700 dark:bg-zinc-900/70">
+            <div className="rounded-2xl border border-dashed border-stone-300 bg-white/70 p-4 text-sm shadow-sm dark:border-stone-700 dark:bg-stone-900/70">
               {content ? (
                 <div className="prose prose-sm prose-zinc dark:prose-invert max-w-none">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                 </div>
               ) : (
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-stone-500 dark:text-stone-400">
                   预览区域会显示 Markdown 渲染效果。
                 </p>
               )}
@@ -180,7 +180,7 @@ function Field({
 }) {
   return (
     <div className="space-y-2">
-      <label className="block text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+      <label className="block text-xs font-semibold tracking-[0.2em] text-stone-500 uppercase dark:text-stone-400">
         {label}
       </label>
       {children}

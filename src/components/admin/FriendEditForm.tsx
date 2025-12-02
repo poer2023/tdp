@@ -34,7 +34,7 @@ function SaveButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+      className="admin-primary-btn"
     >
       {pending ? "保存中..." : "保存修改"}
     </button>
@@ -78,10 +78,10 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
     <div className="space-y-6">
       <form
         action={formAction}
-        className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80"
+        className="space-y-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-950/80"
       >
         <div>
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="name">
+          <label className="text-sm font-medium text-stone-700 dark:text-stone-200" htmlFor="name">
             昵称
           </label>
           <input
@@ -89,7 +89,7 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
             name="name"
             defaultValue={friend.name}
             required
-            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="mt-2 w-full rounded-xl border border-stone-200 px-4 py-2 text-sm shadow-sm focus:border-stone-500 focus:ring-2 focus:ring-stone-100 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
           />
         </div>
 
@@ -113,7 +113,7 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
 
         <div>
           <label
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-200"
+            className="text-sm font-medium text-stone-700 dark:text-stone-200"
             htmlFor="description"
           >
             关系描述
@@ -124,7 +124,7 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
             rows={3}
             defaultValue={friend.description ?? ""}
             placeholder="我们之间的回忆..."
-            className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="mt-2 w-full rounded-xl border border-stone-200 px-4 py-2 text-sm shadow-sm focus:border-stone-500 focus:ring-2 focus:ring-stone-100 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
           />
         </div>
 
@@ -138,16 +138,16 @@ export function FriendEditForm({ friend }: FriendEditFormProps) {
           <SaveButton />
           <Link
             href="/admin/friends"
-            className="rounded-xl border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-900"
           >
             返回列表
           </Link>
         </div>
       </form>
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80">
-        <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">安全设置</h2>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-950/80">
+        <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-200">安全设置</h2>
+        <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
           重置该朋友的访问密码并即时生成新密码。
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

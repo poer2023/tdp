@@ -38,7 +38,7 @@ export function DashboardActivity({
 }: DashboardActivityProps) {
   return (
     <section className="space-y-4">
-      <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+      <h2 className="text-sm font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
         {t(locale, "recentActivity")}
       </h2>
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">

@@ -38,7 +38,7 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
     try {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        setError("请输入有效的邮箱地址");
+        setError("Please enter a valid email address");
         return;
       }
 
@@ -51,17 +51,17 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
       const data = (await response.json().catch(() => null)) as { error?: string } | null;
 
       if (!response.ok) {
-        setError(data?.error ?? "发送验证码失败，请稍后重试");
+        setError(data?.error ?? "Failed to send code. Please try again.");
         return;
       }
 
       setStep("code");
       setCode("");
       setCountdown(60);
-      setStatus("验证码已发送，请查收邮箱。");
+      setStatus("Verification code sent. Please check your inbox.");
     } catch (err) {
       console.error("Send code error:", err);
-      setError("发送验证码失败，请稍后重试");
+      setError("Failed to send code. Please try again.");
     } finally {
       setIsSending(false);
     }
@@ -85,15 +85,15 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
       const data = (await response.json().catch(() => null)) as { error?: string } | null;
 
       if (!response.ok) {
-        setError(data?.error ?? "重新发送失败，请稍后重试");
+        setError(data?.error ?? "Failed to resend. Please try again.");
         return;
       }
 
       setCountdown(60);
-      setStatus("验证码已重新发送，请注意查收。");
+      setStatus("Code resent. Please check your inbox.");
     } catch (err) {
       console.error("Resend code error:", err);
-      setError("重新发送失败，请稍后重试");
+      setError("Failed to resend. Please try again.");
     } finally {
       setIsSending(false);
     }
@@ -108,7 +108,7 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
     try {
       const trimmedCode = code.trim();
       if (!trimmedCode) {
-        setError("请输入验证码");
+        setError("Please enter the verification code");
         return;
       }
 
@@ -120,22 +120,22 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
       });
 
       if (!result) {
-        setError("验证失败，请稍后重试");
+        setError("Verification failed. Please try again.");
         return;
       }
 
       if (result.error || result.ok === false) {
-        setError("验证码错误或已过期，请重新输入");
+        setError("Invalid or expired code. Please try again.");
         return;
       }
 
-      setStatus("登录成功，正在跳转...");
+      setStatus("Success! Redirecting...");
       const redirectUrl = result.url ?? callbackUrl;
       router.replace(redirectUrl);
       router.refresh();
     } catch (err) {
       console.error("Verify code error:", err);
-      setError("验证失败，请稍后重试");
+      setError("Verification failed. Please try again.");
     } finally {
       setIsVerifying(false);
     }
@@ -156,9 +156,9 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
           <div>
             <label
               htmlFor="email"
-              className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="mb-2 block text-sm font-medium text-stone-700 dark:text-stone-300"
             >
-              邮箱地址
+              Email address
             </label>
             <input
               id="email"
@@ -166,22 +166,22 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="your@email.com"
-              className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500"
+              className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:border-stone-500 focus:ring-2 focus:ring-stone-500/20 focus:outline-none dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100 dark:placeholder-stone-500"
               required
               disabled={isSending}
               autoComplete="email"
-              aria-label="邮箱地址"
+              aria-label="Email address"
             />
           </div>
 
           {error ? (
-            <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400">
+            <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:bg-rose-900/20 dark:text-rose-400">
               {error}
             </div>
           ) : null}
 
           {status ? (
-            <div className="rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+            <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">
               {status}
             </div>
           ) : null}
@@ -189,7 +189,7 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
           <button
             type="submit"
             disabled={isSending || !email}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
           >
             {isSending ? (
               <>
@@ -213,53 +213,53 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                发送中...
+                Sending...
               </>
             ) : (
-              "发送验证码"
+              "Send verification code"
             )}
           </button>
 
-          <div className="text-center text-xs text-zinc-500 dark:text-zinc-400">
-            我们将向您的邮箱发送一次性验证码和登录链接
+          <div className="text-center text-xs text-stone-500 dark:text-stone-400">
+            We&apos;ll send a one-time code to your email
           </div>
         </form>
       ) : (
         <div className="space-y-4">
-          <div className="rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-            <p className="mb-1 font-medium">✉️ 验证邮件已发送至</p>
-            <p className="font-mono">{email}</p>
+          <div className="rounded-xl bg-stone-100 px-4 py-3 text-sm text-stone-700 dark:bg-stone-700 dark:text-stone-300">
+            <p className="mb-1 font-medium">✉️ Verification email sent to</p>
+            <p className="font-mono text-xs">{email}</p>
           </div>
 
           <form onSubmit={handleVerifyCode} className="space-y-4">
             <div>
               <label
                 htmlFor="verification-code"
-                className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                className="mb-2 block text-sm font-medium text-stone-700 dark:text-stone-300"
               >
-                输入验证码
+                Verification code
               </label>
               <input
                 id="verification-code"
                 value={code}
                 onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
-                placeholder="请输入 6 位验证码"
-                className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500"
+                placeholder="Enter 6-digit code"
+                className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:border-stone-500 focus:ring-2 focus:ring-stone-500/20 focus:outline-none dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100 dark:placeholder-stone-500"
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 maxLength={6}
-                aria-label="验证码"
+                aria-label="Verification code"
               />
             </div>
 
             {error ? (
-              <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400">
+              <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:bg-rose-900/20 dark:text-rose-400">
                 {error}
               </div>
             ) : null}
 
             {status ? (
-              <div className="rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+              <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400">
                 {status}
               </div>
             ) : null}
@@ -267,7 +267,7 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
             <button
               type="submit"
               disabled={isVerifying || code.trim().length < 6}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
             >
               {isVerifying ? (
                 <>
@@ -291,34 +291,34 @@ export function EmailLoginForm({ callbackUrl }: EmailLoginFormProps) {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  验证中...
+                  Verifying...
                 </>
               ) : (
-                "验证并登录"
+                "Verify and sign in"
               )}
             </button>
           </form>
 
-          <div className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-            <p>验证码有效期为 10 分钟。</p>
-            <p>如果未收到邮件，请检查垃圾箱或稍后重试。</p>
+          <div className="space-y-2 text-sm text-stone-500 dark:text-stone-400">
+            <p>Code expires in 10 minutes.</p>
+            <p>If you don&apos;t see the email, check your spam folder.</p>
           </div>
 
           <div className="flex gap-2">
             <button
               type="button"
               onClick={handleBackToEmail}
-              className="flex-1 rounded-full border border-zinc-300 bg-white px-5 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+              className="flex-1 rounded-full border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
             >
-              返回
+              Back
             </button>
             <button
               type="button"
               onClick={handleResendCode}
               disabled={countdown > 0 || isSending}
-              className="flex-1 rounded-full bg-zinc-100 px-5 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+              className="flex-1 rounded-full bg-stone-100 px-5 py-2.5 text-sm font-semibold text-stone-700 transition hover:bg-stone-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-700 dark:text-stone-300 dark:hover:bg-stone-600"
             >
-              {countdown > 0 ? `重新发送 (${countdown}s)` : "重新发送"}
+              {countdown > 0 ? `Resend (${countdown}s)` : "Resend code"}
             </button>
           </div>
         </div>

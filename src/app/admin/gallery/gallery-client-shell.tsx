@@ -24,9 +24,9 @@ export function AdminGalleryClientShell(props: AdminGalleryClientShellProps) {
 function GallerySkeleton() {
   return (
     <div className="space-y-10">
-      <div className="h-32 animate-pulse rounded-3xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40" />
-      <div className="h-72 animate-pulse rounded-3xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40" />
-      <div className="h-[500px] animate-pulse rounded-3xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/40" />
+      <div className="h-32 animate-pulse rounded-3xl border border-stone-200 bg-stone-100 dark:border-stone-800 dark:bg-stone-900/40" />
+      <div className="h-72 animate-pulse rounded-3xl border border-stone-200 bg-stone-100 dark:border-stone-800 dark:bg-stone-900/40" />
+      <div className="h-[500px] animate-pulse rounded-3xl border border-stone-200 bg-stone-100 dark:border-stone-800 dark:bg-stone-900/40" />
     </div>
   );
 }

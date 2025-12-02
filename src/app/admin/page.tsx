@@ -156,10 +156,10 @@ export default async function AdminHomePage() {
     <div className="space-y-6 sm:space-y-8 md:space-y-10">
       {/* Page Header */}
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
           {t(locale, "overview")}
         </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
           {t(locale, "contentDashboard")}
         </p>
       </header>
@@ -180,17 +180,17 @@ export default async function AdminHomePage() {
           </Suspense>
         </AdminErrorBoundary>
       ) : (
-        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+        <div className="rounded-xl border border-stone-200 bg-stone-50 p-6 text-center text-sm text-stone-500 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">
           统计功能已禁用
         </div>
       )}
 
-      {/* Quick Actions Grid - Responsive: 1 col mobile, 2 col tablet, 3 col desktop */}
+      {/* Quick Actions List - Lumina style single column */}
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
+        <h2 className="text-sm font-semibold tracking-wider text-stone-500 uppercase dark:text-stone-400">
           {t(locale, "quickActions")}
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        <div className="grid gap-3">
           <ActionCard
             icon={
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -296,7 +296,7 @@ export default async function AdminHomePage() {
           </Suspense>
         </AdminErrorBoundary>
       ) : (
-        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+        <div className="rounded-xl border border-stone-200 bg-stone-50 p-6 text-center text-sm text-stone-500 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">
           活动记录功能已禁用
         </div>
       )}

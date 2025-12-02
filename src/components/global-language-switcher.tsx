@@ -30,11 +30,11 @@ export function GlobalLanguageSwitcher() {
   return (
     <Link
       href={alternateUrl}
-      className="flex items-center gap-1 rounded-md border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-50 focus:ring-2 focus:ring-zinc-400 focus:outline-none md:text-sm dark:border-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:bg-zinc-900"
+      className="flex items-center gap-1 rounded-md border border-stone-200 px-2.5 py-1 text-xs font-medium text-stone-700 transition-colors hover:border-stone-300 hover:bg-stone-50 focus:ring-2 focus:ring-stone-400 focus:outline-none md:text-sm dark:border-stone-800 dark:text-stone-300 dark:hover:border-stone-700 dark:hover:bg-stone-900"
       aria-label={`Switch to ${alternateLocale === "zh" ? "Chinese" : "English"}`}
     >
       <svg
-        className="h-4 w-4 text-zinc-500 dark:text-zinc-400"
+        className="h-4 w-4 text-stone-500 dark:text-stone-400"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"

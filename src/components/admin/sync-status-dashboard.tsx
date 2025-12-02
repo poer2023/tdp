@@ -126,27 +126,27 @@ export function SyncStatusDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <RefreshCw className="h-8 w-8 animate-spin text-neutral-400" />
+        <RefreshCw className="h-8 w-8 animate-spin text-stone-400" />
       </div>
     );
   }
 
   if (!data) {
-    return <div className="p-12 text-center text-neutral-500">Failed to load sync status</div>;
+    return <div className="p-12 text-center text-stone-500">Failed to load sync status</div>;
   }
 
   return (
     <div className="space-y-8">
       {/* Quick Actions */}
-      <section className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-        <h2 className="mb-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+      <section className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+        <h2 className="mb-4 text-lg font-semibold text-stone-900 dark:text-stone-100">
           Manual Sync
         </h2>
         <div className="flex gap-3">
           <button
             onClick={() => triggerSync("bilibili")}
             disabled={!!syncing}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50"
+            className="admin-primary-btn"
           >
             {syncing === "bilibili" && <RefreshCw className="h-4 w-4 animate-spin" />}
             Sync Bilibili
@@ -154,7 +154,7 @@ export function SyncStatusDashboard() {
           <button
             onClick={() => triggerSync("douban")}
             disabled={!!syncing}
-            className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white transition hover:bg-green-700 disabled:opacity-50"
+            className="admin-primary-btn"
           >
             {syncing === "douban" && <RefreshCw className="h-4 w-4 animate-spin" />}
             Sync Douban
@@ -172,83 +172,83 @@ export function SyncStatusDashboard() {
 
       {/* Stats Overview */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="text-sm text-neutral-500">Total Syncs</div>
-          <div className="mt-2 text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+        <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+          <div className="text-sm text-stone-500">Total Syncs</div>
+          <div className="mt-2 text-3xl font-bold text-stone-900 dark:text-stone-100">
             {data.stats.total}
           </div>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="text-sm text-neutral-500">Success Rate</div>
+        <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+          <div className="text-sm text-stone-500">Success Rate</div>
           <div className="mt-2 text-3xl font-bold text-green-600">
             {data.stats.total > 0 ? Math.round((data.stats.success / data.stats.total) * 100) : 0}%
           </div>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="text-sm text-neutral-500">Total Media Items</div>
-          <div className="mt-2 text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+        <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+          <div className="text-sm text-stone-500">Total Media Items</div>
+          <div className="mt-2 text-3xl font-bold text-stone-900 dark:text-stone-100">
             {data.mediaStats.totalItems}
           </div>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-          <div className="text-sm text-neutral-500">Recently Added (24h)</div>
-          <div className="mt-2 text-3xl font-bold text-blue-600">
+        <div className="rounded-xl border border-stone-200 bg-white p-6 dark:border-stone-800 dark:bg-stone-900">
+          <div className="text-sm text-stone-500">Recently Added (24h)</div>
+          <div className="mt-2 text-3xl font-bold text-sage-600">
             {data.mediaStats.recentlyAdded}
           </div>
         </div>
       </section>
 
       {/* Recent Sync Jobs */}
-      <section className="rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="border-b border-neutral-200 p-6 dark:border-neutral-800">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+      <section className="rounded-xl border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
+        <div className="border-b border-stone-200 p-6 dark:border-stone-800">
+          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">
             Recent Sync Jobs
           </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-neutral-50 dark:bg-neutral-800/50">
+            <thead className="bg-stone-50 dark:bg-stone-800/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
                   Platform
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
                   Started At
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
                   Duration
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
                   Items
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
                   Triggered By
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+            <tbody className="divide-y divide-stone-200 dark:divide-stone-800">
               {data.recentJobs.slice(0, 10).map((job) => (
-                <tr key={job.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                <tr key={job.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/50">
                   <td className="px-6 py-4">{getStatusIcon(job.status)}</td>
-                  <td className="px-6 py-4 font-medium text-neutral-900 dark:text-neutral-100">
+                  <td className="px-6 py-4 font-medium text-stone-900 dark:text-stone-100">
                     {job.platform}
                   </td>
-                  <td className="px-6 py-4 text-sm text-neutral-500">
+                  <td className="px-6 py-4 text-sm text-stone-500">
                     {formatDate(job.startedAt)}
                   </td>
-                  <td className="px-6 py-4 text-sm text-neutral-500">
+                  <td className="px-6 py-4 text-sm text-stone-500">
                     {formatDuration(job.duration)}
                   </td>
-                  <td className="px-6 py-4 text-sm text-neutral-500">
+                  <td className="px-6 py-4 text-sm text-stone-500">
                     {job.itemsSuccess}/{job.itemsTotal}
                     {job.itemsFailed > 0 && (
                       <span className="ml-1 text-red-500">({job.itemsFailed} failed)</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm text-neutral-500">{job.triggeredBy}</td>
+                  <td className="px-6 py-4 text-sm text-stone-500">{job.triggeredBy}</td>
                 </tr>
               ))}
             </tbody>

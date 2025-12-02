@@ -14,7 +14,7 @@ export function CommandPaletteTrigger({ size = "md" }: CommandPaletteTriggerProp
       type="button"
       onClick={() => setOpen(true)}
       aria-label="Search"
-      className={`flex items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-300 hover:text-zinc-900 focus:ring-0 focus:outline-none dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-300 ${
+      className={`flex items-center justify-center rounded-full border border-stone-200 text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900 focus:ring-0 focus:outline-none dark:border-stone-800 dark:text-stone-400 dark:hover:border-stone-300 ${
         size === "sm" ? "h-7 w-7" : "h-9 w-9"
       }`}
     >

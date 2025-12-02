@@ -89,12 +89,15 @@ function MomentComposerCore() {
 
   useEffect(() => {
     if (state.status === "success") {
+      console.log("✅ Moment created successfully:", state.id);
       startTransition(() => {
         setText("");
         setImages([]);
         setOpen(false);
       });
       formRef.current?.reset();
+    } else if (state.status === "error") {
+      console.error("❌ Moment creation error:", state.message);
     }
   }, [state]);
 
@@ -104,7 +107,7 @@ function MomentComposerCore() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed right-5 bottom-5 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg md:hidden"
+        className="fixed right-5 bottom-5 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg md:hidden"
         aria-label="Add moment"
       >
         +
@@ -121,22 +124,22 @@ function MomentComposerCore() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">新建瞬间</h3>
+              <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100">新建瞬间</h3>
               <button
                 onClick={close}
-                className="rounded p-1 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="rounded p-1 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800"
                 aria-label="关闭"
               >
                 ×
               </button>
             </div>
             {status !== "authenticated" ? (
-              <div className="py-10 text-center text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="py-10 text-center text-sm text-stone-600 dark:text-stone-400">
                 请先登录后再发布瞬间。
                 <div className="mt-4">
                   <Link
                     href="/login"
-                    className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900"
+                    className="rounded-lg bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white dark:bg-stone-100 dark:text-stone-900"
                   >
                     前往登录
                   </Link>
@@ -170,7 +173,7 @@ function MomentComposerCore() {
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder="此刻…"
-                  className="h-28 w-full resize-none rounded-lg border border-zinc-300 bg-white p-2 text-sm outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-900"
+                  className="h-28 w-full resize-none rounded-lg border border-stone-300 bg-white p-2 text-sm outline-none focus:border-blue-500 dark:border-stone-700 dark:bg-stone-900"
                 />
                 {/* Images preview grid */}
                 {images.length > 0 && (
@@ -228,7 +231,7 @@ function MomentComposerCore() {
                 )}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium hover:bg-stone-50 dark:border-stone-700 dark:hover:bg-stone-800">
                       <input
                         type="file"
                         name="images"
@@ -249,7 +252,7 @@ function MomentComposerCore() {
                     </label>
                     <select
                       name="visibility"
-                      className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+                      className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs dark:border-stone-700 dark:bg-stone-900"
                     >
                       <option value="PUBLIC">公开</option>
                       <option value="UNLISTED">未收录</option>
@@ -259,7 +262,7 @@ function MomentComposerCore() {
                   <button
                     type="submit"
                     disabled={pending || (!text && images.length === 0)}
-                    className="inline-flex items-center rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+                    className="inline-flex items-center rounded-lg bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900"
                   >
                     {pending ? "发布中…" : "发布"}
                   </button>
@@ -269,17 +272,17 @@ function MomentComposerCore() {
                   <input
                     name="tags"
                     placeholder="标签（逗号分隔，最多5个）"
-                    className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+                    className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs dark:border-stone-700 dark:bg-stone-900"
                   />
                   <input
                     name="locationName"
                     placeholder="地点（可选）"
-                    className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+                    className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs dark:border-stone-700 dark:bg-stone-900"
                   />
                   <input
                     type="datetime-local"
                     name="scheduledAt"
-                    className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+                    className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs dark:border-stone-700 dark:bg-stone-900"
                   />
                 </div>
                 {state.status === "error" && (

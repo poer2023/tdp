@@ -19,13 +19,13 @@ export default async function AdminEditPostPage({ params }: { params: { id: stri
           >
             ← 返回列表
           </Link>
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
             编辑文章
           </h1>
         </header>
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+        <section className="rounded-3xl border border-stone-200 bg-white p-6 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
           文章管理功能已禁用。请启用
-          <code className="mx-1 rounded bg-zinc-100 px-1 py-0.5 text-xs text-zinc-700">
+          <code className="mx-1 rounded bg-stone-100 px-1 py-0.5 text-xs text-stone-700">
             FEATURE_ADMIN_POSTS
           </code>
           后再尝试编辑。
@@ -49,10 +49,10 @@ export default async function AdminEditPostPage({ params }: { params: { id: stri
         >
           ← 返回列表
         </Link>
-        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
           编辑文章
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-stone-500 dark:text-stone-400">
           更新 Markdown 内容、封面与发布状态。
         </p>
       </header>
@@ -60,14 +60,14 @@ export default async function AdminEditPostPage({ params }: { params: { id: stri
       <div className="grid gap-8 md:grid-cols-[1.3fr_0.7fr]">
         <EditPostForm post={post} />
         <aside className="space-y-6">
-          <div className="rounded-3xl border border-zinc-200/70 bg-white/80 p-4 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
-            <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+          <div className="rounded-3xl border border-stone-200/70 bg-white/80 p-4 shadow-sm dark:border-stone-800/70 dark:bg-stone-900/70">
+            <h2 className="text-sm font-semibold tracking-[0.2em] text-stone-500 uppercase dark:text-stone-400">
               当前状态
             </h2>
             <div className="mt-4">
               <StatusBadge status={post.status} />
             </div>
-            <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-3 text-xs text-stone-500 dark:text-stone-400">
               {post.publishedAt
                 ? `发布于 ${new Intl.DateTimeFormat("zh-CN", {
                     year: "numeric",
@@ -78,11 +78,11 @@ export default async function AdminEditPostPage({ params }: { params: { id: stri
             </p>
           </div>
 
-          <div className="rounded-3xl border border-zinc-200/70 bg-white/80 p-4 shadow-sm dark:border-zinc-800/70 dark:bg-zinc-900/70">
-            <h2 className="text-sm font-semibold tracking-[0.2em] text-zinc-500 uppercase dark:text-zinc-400">
+          <div className="rounded-3xl border border-stone-200/70 bg-white/80 p-4 shadow-sm dark:border-stone-800/70 dark:bg-stone-900/70">
+            <h2 className="text-sm font-semibold tracking-[0.2em] text-stone-500 uppercase dark:text-stone-400">
               封面预览
             </h2>
-            <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60">
+            <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200/60 dark:border-stone-800/60">
               <Image
                 src={post.coverImagePath ?? "/images/placeholder-cover.svg"}
                 alt={post.title}
@@ -108,8 +108,8 @@ function StatusBadge({ status }: { status: PostStatus }) {
   }
 
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-600 dark:bg-zinc-800/70 dark:text-zinc-300">
-      <span className="h-2 w-2 rounded-full bg-zinc-400" aria-hidden /> 草稿
+    <span className="inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-600 dark:bg-stone-800/70 dark:text-stone-300">
+      <span className="h-2 w-2 rounded-full bg-stone-400" aria-hidden /> 草稿
     </span>
   );
 }

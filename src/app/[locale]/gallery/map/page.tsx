@@ -19,13 +19,13 @@ export default async function LocalizedGalleryMapPage({ params }: PageProps) {
     <div className="mx-auto max-w-[1200px] space-y-8 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-12 md:px-8 md:py-16">
       {/* Header */}
       <header className="max-w-3xl space-y-2.5 sm:space-y-3">
-        <p className="text-xs font-medium tracking-[0.2em] text-zinc-400 uppercase">
+        <p className="text-xs font-medium tracking-[0.2em] text-stone-400 uppercase">
           Gallery / Map View
         </p>
-        <h1 className="text-3xl leading-tight font-bold text-zinc-900 sm:text-4xl md:text-5xl dark:text-zinc-50">
+        <h1 className="text-3xl leading-tight font-bold text-stone-900 sm:text-4xl md:text-5xl dark:text-stone-50">
           {l === "zh" ? "地图视图" : "Map View"}
         </h1>
-        <p className="text-sm leading-relaxed text-zinc-600 sm:text-base dark:text-zinc-400">
+        <p className="text-sm leading-relaxed text-stone-600 sm:text-base dark:text-stone-400">
           {l === "zh"
             ? "基于 EXIF GPS 数据的地理位置可视化。坐标信息通过 OpenStreetMap 逆地理编码服务转换为可读地址。点击标记查看照片详情。"
             : "Geographic visualization based on EXIF GPS data. Coordinates are converted to readable addresses via OpenStreetMap reverse geocoding service. Click markers to view photo details."}
@@ -33,19 +33,19 @@ export default async function LocalizedGalleryMapPage({ params }: PageProps) {
       </header>
 
       {/* Navigation */}
-      <nav className="flex items-center gap-6 border-b border-zinc-200 pb-3 dark:border-zinc-800">
+      <nav className="flex items-center gap-6 border-b border-stone-200 pb-3 dark:border-stone-800">
         <Link
           href={`/${l}/gallery`}
-          className="text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+          className="text-sm font-medium text-stone-500 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-50"
         >
           {l === "zh" ? "全部照片" : "All Photos"}
         </Link>
         <Link
           href={`/${l}/gallery/map`}
-          className="text-sm font-medium text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-4 dark:text-zinc-50"
+          className="text-sm font-medium text-stone-900 underline decoration-stone-400 decoration-2 underline-offset-4 dark:text-stone-50"
         >
           {l === "zh" ? "地图视图" : "Map View"}
-          <span className="ml-1.5 text-xs text-zinc-400">({imagesWithLocation.length})</span>
+          <span className="ml-1.5 text-xs text-stone-400">({imagesWithLocation.length})</span>
         </Link>
       </nav>
 
@@ -53,7 +53,7 @@ export default async function LocalizedGalleryMapPage({ params }: PageProps) {
       <GalleryMapWrapper images={images} locale={l} />
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 pt-6 text-xs leading-relaxed text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+      <footer className="border-t border-stone-200 pt-6 text-xs leading-relaxed text-stone-500 dark:border-stone-800 dark:text-stone-400">
         <p>
           {l === "zh" ? (
             <>

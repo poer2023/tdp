@@ -11,7 +11,7 @@ interface GalleryGridProps {
 export function GalleryGrid({ images, locale = "zh" }: GalleryGridProps) {
   if (!images.length) {
     return (
-      <p className="border border-dashed border-zinc-300 px-6 py-12 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+      <p className="border border-dashed border-stone-300 px-6 py-12 text-center text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
         {locale === "zh"
           ? "相册还没有照片，登录后台即可上传"
           : "No photos yet, log in to the dashboard to upload"}
@@ -29,7 +29,7 @@ export function GalleryGrid({ images, locale = "zh" }: GalleryGridProps) {
         >
           <div className="relative aspect-square overflow-hidden">
             <Image
-              src={image.smallThumbPath || image.microThumbPath || image.filePath}
+              src={image.mediumPath || image.smallThumbPath || image.filePath}
               alt={image.title ?? (locale === "zh" ? "博客相册照片" : "Gallery photo")}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

@@ -128,9 +128,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         shouldFilter={false}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center border-b border-zinc-200 px-3 dark:border-zinc-800">
+        <div className="flex items-center border-b border-stone-200 px-3 dark:border-stone-800">
           <svg
-            className="h-5 w-5 text-zinc-400"
+            className="h-5 w-5 text-stone-400"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
@@ -145,19 +145,19 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             placeholder={
               locale === "zh" ? "搜索文章... (按 Esc 关闭)" : "Search posts... (press Esc to close)"
             }
-            className="flex h-12 w-full rounded-md bg-transparent px-3 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+            className="flex h-12 w-full rounded-md bg-transparent px-3 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:text-stone-100 dark:placeholder:text-stone-500"
           />
         </div>
 
         <Command.List className="max-h-[400px] overflow-y-auto p-2">
           {loading && (
-            <div className="py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <div className="py-6 text-center text-sm text-stone-500 dark:text-stone-400">
               {locale === "zh" ? "搜索中..." : "Searching..."}
             </div>
           )}
 
           {!loading && query && results.length === 0 && (
-            <Command.Empty className="py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <Command.Empty className="py-6 text-center text-sm text-stone-500 dark:text-stone-400">
               {locale === "zh" ? "未找到结果" : "No results found"}
             </Command.Empty>
           )}
@@ -165,27 +165,27 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           {!loading && results.length > 0 && (
             <Command.Group
               heading={locale === "zh" ? "文章" : "Posts"}
-              className="overflow-hidden p-1 text-zinc-900 dark:text-zinc-100"
+              className="overflow-hidden p-1 text-stone-900 dark:text-stone-100"
             >
               {results.map((result) => (
                 <Command.Item
                   key={result.id}
                   value={result.id}
                   onSelect={() => handleSelect(result.slug)}
-                  className="relative flex cursor-pointer items-start gap-3 rounded-lg px-3 py-3 text-sm outline-none select-none aria-selected:bg-zinc-100 dark:aria-selected:bg-zinc-800"
+                  className="relative flex cursor-pointer items-start gap-3 rounded-lg px-3 py-3 text-sm outline-none select-none aria-selected:bg-stone-100 dark:aria-selected:bg-stone-800"
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                    <div className="font-medium text-stone-900 dark:text-stone-100">
                       {result.title}
                     </div>
                     {result.excerpt && (
-                      <div className="mt-1 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">
+                      <div className="mt-1 line-clamp-2 text-xs text-stone-500 dark:text-stone-400">
                         {result.excerpt}
                       </div>
                     )}
                   </div>
                   <svg
-                    className="h-4 w-4 flex-shrink-0 text-zinc-400"
+                    className="h-4 w-4 flex-shrink-0 text-stone-400"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
@@ -200,18 +200,18 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         </Command.List>
 
         {/* Footer hint */}
-        <div className="flex items-center justify-between border-t border-zinc-200 px-3 py-2 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+        <div className="flex items-center justify-between border-t border-stone-200 px-3 py-2 text-xs text-stone-500 dark:border-stone-800 dark:text-stone-400">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
-              <kbd className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono dark:bg-zinc-800">↑↓</kbd>
+              <kbd className="rounded bg-stone-100 px-1.5 py-0.5 font-mono dark:bg-stone-800">↑↓</kbd>
               {locale === "zh" ? "导航" : "Navigate"}
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono dark:bg-zinc-800">↵</kbd>
+              <kbd className="rounded bg-stone-100 px-1.5 py-0.5 font-mono dark:bg-stone-800">↵</kbd>
               {locale === "zh" ? "选择" : "Select"}
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono dark:bg-zinc-800">
+              <kbd className="rounded bg-stone-100 px-1.5 py-0.5 font-mono dark:bg-stone-800">
                 Esc
               </kbd>
               {locale === "zh" ? "关闭" : "Close"}

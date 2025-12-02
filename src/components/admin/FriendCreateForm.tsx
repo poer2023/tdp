@@ -14,7 +14,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+      className="admin-primary-btn"
     >
       {pending ? "创建中..." : "创建朋友"}
     </button>
@@ -41,24 +41,24 @@ export function FriendCreateForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80"
+      className="space-y-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-950/80"
     >
       <div>
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-200" htmlFor="name">
+        <label className="text-sm font-medium text-stone-700 dark:text-stone-200" htmlFor="name">
           朋友昵称
         </label>
         <input
           id="name"
           name="name"
           required
-          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="mt-2 w-full rounded-xl border border-stone-200 px-4 py-2 text-sm shadow-sm focus:border-stone-500 focus:ring-2 focus:ring-stone-100 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
           placeholder="Alice"
         />
       </div>
 
       <div>
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-200"
+          className="text-sm font-medium text-stone-700 dark:text-stone-200"
           htmlFor="passphrase"
         >
           访问口令（可选）
@@ -68,9 +68,9 @@ export function FriendCreateForm() {
           name="passphrase"
           minLength={8}
           placeholder="留空自动生成"
-          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="mt-2 w-full rounded-xl border border-stone-200 px-4 py-2 text-sm shadow-sm focus:border-stone-500 focus:ring-2 focus:ring-stone-100 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
         />
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
           建议使用至少 8 位数字与字母组合。
         </p>
       </div>
@@ -90,7 +90,7 @@ export function FriendCreateForm() {
 
       <div>
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-200"
+          className="text-sm font-medium text-stone-700 dark:text-stone-200"
           htmlFor="description"
         >
           关系描述（可选）
@@ -100,7 +100,7 @@ export function FriendCreateForm() {
           name="description"
           rows={3}
           placeholder="我们一起做过的事情..."
-          className="mt-2 w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="mt-2 w-full rounded-xl border border-stone-200 px-4 py-2 text-sm shadow-sm focus:border-stone-500 focus:ring-2 focus:ring-stone-100 focus:outline-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
         />
       </div>
 
@@ -122,7 +122,7 @@ export function FriendCreateForm() {
           </p>
           <Link
             href="/admin/friends"
-            className="mt-2 inline-block text-xs font-medium text-blue-600 hover:underline"
+            className="mt-2 inline-block text-xs font-medium text-sage-600 hover:underline dark:text-sage-400"
           >
             返回朋友列表
           </Link>
@@ -133,7 +133,7 @@ export function FriendCreateForm() {
         <SubmitButton />
         <Link
           href="/admin/friends"
-          className="rounded-xl border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          className="rounded-xl border border-stone-200 px-4 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-900"
         >
           返回列表
         </Link>
