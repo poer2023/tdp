@@ -3,6 +3,14 @@ import prisma from "@/lib/prisma";
 import type { FinanceData, Subscription as PublicSubscription } from "@/types/live-data";
 import type { Subscription } from "@prisma/client";
 
+const FALLBACK_CATEGORY_DISTRIBUTION = [
+  { name: "Development", percentage: 35, amount: undefined },
+  { name: "AI Tools", percentage: 30, amount: undefined },
+  { name: "Entertainment", percentage: 20, amount: undefined },
+  { name: "Cloud", percentage: 10, amount: undefined },
+  { name: "Other", percentage: 5, amount: undefined },
+] as const;
+
 /**
  * Anonymize subscription amount based on CNY value
  * $ = <50 CNY, $$ = 50-150 CNY, $$$ = 150-500 CNY, $$$$ = >500 CNY
@@ -167,14 +175,25 @@ function calculateCategoryDistribution(subscriptions: Subscription[]) {
     totalAmount += monthlyAmount;
   }
 
+  if (subscriptions.length === 0 || totalAmount === 0) {
+    return FALLBACK_CATEGORY_DISTRIBUTION.map((category) => ({ ...category }));
+  }
+
   // Convert to percentages
-  return Object.entries(categoryTotals)
+  const categories = Object.entries(categoryTotals)
     .map(([name, amount]) => ({
       name,
       percentage: totalAmount > 0 ? Math.round((amount / totalAmount) * 100) : 0,
       amount: undefined, // Hide actual amounts
     }))
     .sort((a, b) => b.percentage - a.percentage);
+
+  const totalPercentage = categories.reduce((sum, category) => sum + category.percentage, 0);
+  if (totalPercentage === 0) {
+    return FALLBACK_CATEGORY_DISTRIBUTION.map((category) => ({ ...category }));
+  }
+
+  return categories;
 }
 
 /**
@@ -256,13 +275,7 @@ export async function GET() {
     // Return fallback data on error
     const fallbackData: FinanceData = {
       monthlyTrend: [65, 70, 68, 75, 80, 72, 85, 78, 82, 90, 88, 85],
-      categories: [
-        { name: "Development", percentage: 35, amount: undefined },
-        { name: "AI Tools", percentage: 30, amount: undefined },
-        { name: "Entertainment", percentage: 20, amount: undefined },
-        { name: "Cloud", percentage: 10, amount: undefined },
-        { name: "Other", percentage: 5, amount: undefined },
-      ],
+      categories: FALLBACK_CATEGORY_DISTRIBUTION.map((category) => ({ ...category })),
       subscriptions: [],
       insights: ["Unable to load subscription data"],
     };
