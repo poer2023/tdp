@@ -23,16 +23,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Cache node_modules
-        id: lint-node-cache
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-
       - name: Install dependencies
-        if: steps.lint-node-cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --prefer-offline
 
       - name: Generate Prisma Client
         run: npx prisma generate
@@ -78,16 +70,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Cache node_modules
-        id: tests-node-cache
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-
       - name: Install dependencies
-        if: steps.tests-node-cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --prefer-offline
 
       - name: Generate Prisma Client
         run: npx prisma generate
@@ -157,16 +141,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Cache node_modules
-        id: e2e-node-cache
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-
       - name: Install dependencies
-        if: steps.e2e-node-cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --prefer-offline
 
       - name: Generate Prisma Client
         run: npx prisma generate
