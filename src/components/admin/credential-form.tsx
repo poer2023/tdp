@@ -287,7 +287,7 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
         <button
           type="submit"
           disabled={!selectedPlatform}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
+          className="admin-primary-btn"
         >
           {t(locale, "saveChanges")}
         </button>

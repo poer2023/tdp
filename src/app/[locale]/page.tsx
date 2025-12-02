@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
-import { listPublishedPosts, parseTags } from "@/lib/posts";
+import { auth } from "@/auth";
+import { listPublishedPosts } from "@/lib/posts";
 import { listMoments } from "@/lib/moments";
 import { listGalleryImages } from "@/lib/gallery";
 import { LuminaHomePage } from "@/components/lumina";
 import { LuminaHeader, LuminaFooter } from "@/components/lumina";
 import type { FeedItem, FeedPost, FeedMoment } from "@/components/lumina";
+import { getLuminaProfile } from "@/lib/lumina-profile";
 
 // Incremental Static Regeneration for localized homepage
 export const runtime = "nodejs";
@@ -23,22 +25,24 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     notFound();
   }
 
+  const session = await auth();
+  const viewerId = session?.user?.id ?? null;
+
   // Fetch data for homepage
   const [posts, moments, galleryImages] = await Promise.all([
     listPublishedPosts(),
-    listMoments({ limit: 20, visibility: "PUBLIC" }),
+    listMoments({ limit: 20, visibility: "PUBLIC", viewerId }),
     listGalleryImages(16),
   ]);
 
   // Transform posts to FeedPost format
   const feedPosts: FeedPost[] = posts.map((post) => {
-    const dateStr = post.publishedAt
-      ? new Date(post.publishedAt).toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })
-      : "";
+    const dateObj = post.publishedAt ? new Date(post.publishedAt) : new Date(post.createdAt);
+    const dateStr = dateObj.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
 
     // Calculate read time (rough estimate: 200 words per minute)
     const wordCount = post.content.split(/\s+/).length;
@@ -56,12 +60,14 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       tags: post.tags || [],
       likes: post.viewCount || 0,
       slug: post.slug,
+      sortKey: dateObj.getTime(),
     };
   });
 
   // Transform moments to FeedMoment format
   const feedMoments: FeedMoment[] = moments.map((moment) => {
-    const dateStr = new Date(moment.createdAt).toLocaleDateString(
+    const createdAt = new Date(moment.createdAt);
+    const dateStr = createdAt.toLocaleDateString(
       locale === "zh" ? "zh-CN" : "en-US",
       {
         year: "numeric",
@@ -77,15 +83,16 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       images: moment.images?.map((img) => img.url) || [],
       date: dateStr,
       tags: moment.tags || [],
-      likes: 0, // Moments don't have likes in current schema
+      likes: moment.likeCount ?? 0,
+      liked: Boolean(moment.likedByViewer),
+      sortKey: createdAt.getTime(),
     };
   });
 
-  // Combine and sort by date (interleave posts and moments)
-  const feedItems: FeedItem[] = [...feedPosts, ...feedMoments].sort((a, b) => {
-    // Simple sort by date string - for more accurate sorting, convert to Date objects
-    return 0.5 - Math.random(); // Shuffle for now, similar to tdppro demo
-  });
+  // Combine and sort by timestamp (newest first)
+  const feedItems: FeedItem[] = [...feedPosts, ...feedMoments].sort(
+    (a, b) => (b.sortKey ?? 0) - (a.sortKey ?? 0)
+  );
 
   // Get hero images from gallery
   const heroImages =
@@ -100,14 +107,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
         <LuminaHomePage
           feedItems={feedItems}
           heroImages={heroImages}
-          profileData={{
-            name: "BaoZhi",
-            title: locale === "zh" ? "产品经理" : "Product Manager",
-            bio:
-              locale === "zh"
-                ? "把混乱变成路线图。痴迷于用户体验、数据和完美的咖啡。"
-                : "Turning chaos into roadmaps. Obsessed with UX, data, and the perfect cup of coffee.",
-          }}
+          profileData={getLuminaProfile(locale === "zh" ? "zh" : "en")}
         />
       </main>
       <LuminaFooter />

@@ -78,7 +78,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
             <button
               onClick={() => setOpen(true)}
               disabled={selectedIds.length === 0}
-              className="rounded-lg border border-stone-900 bg-stone-900 px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-50 dark:bg-stone-50 dark:text-stone-900"
+              className="admin-primary-btn admin-primary-btn--sm"
             >
               批量编辑（{selectedIds.length}）
             </button>
@@ -419,7 +419,7 @@ export function AdminGalleryGrid({ images }: { images: GalleryImage[] }) {
                     { once: true }
                   );
                 }}
-                className="rounded-lg border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-50 dark:bg-stone-50 dark:text-stone-900"
+                className="admin-primary-btn"
               >
                 应用修改
               </button>

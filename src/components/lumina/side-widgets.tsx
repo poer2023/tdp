@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -253,5 +254,3 @@ function StatusRow({ label, value, icon }: StatusRowProps) {
     </div>
   );
 }
-
-export default { ProfileWidget, CompactStatusWidget };

@@ -168,7 +168,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
   return (
     <>
       {/* Bottom Tab Bar - visible only on mobile (<768px) */}
-      <nav className="fixed right-0 bottom-0 left-0 z-50 border-t border-stone-800 bg-stone-950/95 backdrop-blur supports-[backdrop-filter]:bg-stone-950/80 md:hidden">
+      <nav className="fixed right-0 bottom-0 left-0 z-50 border-t border-stone-800 bg-stone-950/95 text-stone-50 backdrop-blur supports-[backdrop-filter]:bg-stone-950/80 md:hidden">
         <div className="grid h-16 grid-cols-5 gap-1 px-2">
           {/* Primary tabs */}
           {primaryTabs.map((tab) => {
@@ -180,7 +180,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
                 className={`flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl transition-colors ${
                   active
                     ? "text-sage-300 font-bold"
-                    : "text-white/90 hover:text-white"
+                    : "text-stone-100 hover:text-white"
                 }`}
               >
                 <div>{tab.icon}</div>
@@ -192,7 +192,7 @@ export function BottomTabBar({ locale }: BottomTabBarProps) {
           {/* More button */}
           <button
             onClick={() => setMoreOpen(true)}
-            className="flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl text-white/90 transition-colors hover:text-white"
+            className="flex min-h-[48px] flex-col items-center justify-center gap-1 rounded-xl text-stone-100 transition-colors hover:text-white"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path

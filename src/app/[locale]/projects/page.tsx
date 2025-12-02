@@ -31,9 +31,6 @@ function toProjectItem(
 ): LuminaProject {
   // Extract year from period (e.g., "2024 · Hikari Loom" -> "2024")
   const year = project.period.split("·")[0]?.trim() || "2024";
-  // Extract project name from period (e.g., "2024 · Hikari Loom" -> "Hikari Loom")
-  const projectName = project.period.split("·")[1]?.trim() || project.title;
-
   return {
     id: `project-${index}`,
     year: year,

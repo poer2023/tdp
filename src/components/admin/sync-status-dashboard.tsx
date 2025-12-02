@@ -146,7 +146,7 @@ export function SyncStatusDashboard() {
           <button
             onClick={() => triggerSync("bilibili")}
             disabled={!!syncing}
-            className="flex items-center gap-2 rounded-lg bg-stone-900 px-4 py-2 text-white transition hover:bg-stone-800 disabled:opacity-50 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
+            className="admin-primary-btn"
           >
             {syncing === "bilibili" && <RefreshCw className="h-4 w-4 animate-spin" />}
             Sync Bilibili
@@ -154,7 +154,7 @@ export function SyncStatusDashboard() {
           <button
             onClick={() => triggerSync("douban")}
             disabled={!!syncing}
-            className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white transition hover:bg-green-700 disabled:opacity-50"
+            className="admin-primary-btn"
           >
             {syncing === "douban" && <RefreshCw className="h-4 w-4 animate-spin" />}
             Sync Douban

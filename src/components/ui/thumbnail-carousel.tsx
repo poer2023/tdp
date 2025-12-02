@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, animate } from "framer-motion";

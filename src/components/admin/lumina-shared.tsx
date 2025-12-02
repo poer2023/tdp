@@ -148,8 +148,7 @@ export function LuminaActionBtn({
   };
 
   const variantStyles = {
-    primary:
-      "bg-stone-900 text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200",
+    primary: "admin-primary-btn",
     secondary:
       "bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700",
     danger:

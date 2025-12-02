@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -151,7 +150,7 @@ export function PhotoViewer({
         }
       }
     },
-    [image.filePath, image.id, image.mediumPath, image.title]
+    [image.filePath, image.id, image.mediumPath, image.title, locale]
   );
 
   const clearStoredDirection = useCallback(() => {
@@ -389,7 +388,7 @@ export function PhotoViewer({
     } else {
       setSlideContext(null);
     }
-  }, [image.id, image.mediumPath, image.filePath, image.title, startSlide, clearStoredDirection]);
+  }, [image.id, image.mediumPath, image.filePath, image.title, locale, startSlide, clearStoredDirection]);
 
   // Cleanup download artefacts on unmount
   useEffect(() => {
@@ -503,7 +502,7 @@ export function PhotoViewer({
       src: displaySrc,
       alt: image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo"),
     };
-  }, [image.id, displaySrc, image.title]);
+  }, [image.id, displaySrc, image.title, locale]);
 
   // Helper: clamp offset so image stays within bounds based on scale
   const clampOffset = useCallback(

@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import React, { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -33,7 +34,7 @@ interface ProjectSlideProps {
   total: number;
 }
 
-function ProjectSlide({ project, index, total }: ProjectSlideProps) {
+function ProjectSlide({ project, index, total: _total }: ProjectSlideProps) {
   const isEven = index % 2 === 0;
   const ref = useRef(null);
   const isInView = useInView(ref, { amount: 0.3, once: false });

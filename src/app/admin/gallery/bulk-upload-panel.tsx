@@ -387,7 +387,7 @@ export function BulkUploadPanel({}: { posts?: PostSummary[] }) {
           <button
             type="submit"
             disabled={pending || files.length === 0}
-            className="w-full rounded-lg border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-50 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
+            className="admin-primary-btn w-full"
           >
             {pending ? "上传中…" : "开始上传"}
           </button>

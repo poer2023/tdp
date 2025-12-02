@@ -331,7 +331,7 @@ export default function SubscriptionDashboard({
             type="button"
             onClick={handleExport}
             disabled={isExporting || items.length === 0}
-            className="mt-3 inline-flex items-center justify-center rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
+            className="admin-primary-btn"
           >
             {isExporting ? `${translation("markdownExport")}...` : translation("downloadMarkdown")}
           </button>
@@ -352,7 +352,7 @@ export default function SubscriptionDashboard({
         </div>
         <Link
           href="/admin/subscriptions/new"
-          className="inline-flex items-center justify-center rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
+          className="admin-primary-btn"
         >
           {translation("addSubscription")}
         </Link>
@@ -392,7 +392,7 @@ export default function SubscriptionDashboard({
                 onClick={() => setViewMode("MONTHLY")}
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
                   viewMode === "MONTHLY"
-                    ? "bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900"
+                    ? "bg-sage-600 text-white dark:bg-sage-400 dark:text-stone-950"
                     : "text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
                 }`}
               >
@@ -403,7 +403,7 @@ export default function SubscriptionDashboard({
                 onClick={() => setViewMode("ANNUAL")}
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
                   viewMode === "ANNUAL"
-                    ? "bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900"
+                    ? "bg-sage-600 text-white dark:bg-sage-400 dark:text-stone-950"
                     : "text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
                 }`}
               >

@@ -107,15 +107,15 @@ export function GalleryUploadForm({ posts }: { posts: PostSummary[] }) {
             </p>
           </Field>
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="inline-flex items-center justify-center rounded-lg border border-stone-900 bg-stone-900 px-4 py-2 text-sm font-medium text-white transition-all duration-150 hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60 dark:border-stone-50 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
-          >
-            {isPending ? "处理中…" : "上传照片"}
-          </button>
-        </div>
-      </form>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="admin-primary-btn"
+        >
+          {isPending ? "处理中…" : "上传照片"}
+        </button>
+      </div>
+    </form>
     </section>
   );
 }

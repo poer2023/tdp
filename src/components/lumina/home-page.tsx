@@ -41,11 +41,6 @@ export function LuminaHomePage({ feedItems, heroImages, profileData }: LuminaHom
     router.push(`/${locale}/posts/${post.slug}`);
   };
 
-  const handleMomentLike = (id: string) => {
-    // TODO: Implement like API call
-    console.log("Like moment:", id);
-  };
-
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
       {/* Hero Section */}
@@ -59,7 +54,6 @@ export function LuminaHomePage({ feedItems, heroImages, profileData }: LuminaHom
             <LuminaFeed
               initialItems={feedItems}
               onPostClick={handlePostClick}
-              onMomentLike={handleMomentLike}
             />
           </div>
 

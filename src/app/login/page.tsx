@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { LoginButtons } from "@/components/login-buttons";
 
@@ -50,7 +51,7 @@ export default async function LoginPage({
       {/* Right Form Panel */}
       <div className="flex w-full lg:w-1/2 flex-col justify-center px-8 sm:px-12 lg:px-24 bg-stone-50 dark:bg-stone-950 relative">
         {/* Back to Home - Desktop */}
-        <a
+        <Link
           href="/"
           className="absolute top-8 left-8 hidden lg:flex items-center gap-2 text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
         >
@@ -58,7 +59,7 @@ export default async function LoginPage({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
           <span className="text-sm font-medium">Back to Home</span>
-        </a>
+        </Link>
 
         <div className="max-w-md w-full mx-auto">
           {/* Mobile Logo */}

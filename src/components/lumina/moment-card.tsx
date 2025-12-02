@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -13,6 +14,7 @@ interface Moment {
   date: string;
   tags: string[];
   likes: number;
+  liked?: boolean;
 }
 
 interface MomentCardProps {
@@ -190,7 +192,13 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                 >
                   <Heart
                     size={18}
-                    className={moment.likes > 0 ? "fill-rose-500 text-rose-500" : ""}
+                    className={
+                      moment.liked
+                        ? "fill-rose-500 text-rose-500"
+                        : moment.likes > 0
+                          ? "text-rose-500"
+                          : ""
+                    }
                   />
                 </button>
                 <button className="rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10">
@@ -200,7 +208,9 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                   <Share2 size={18} />
                 </button>
               </div>
-              <span className="px-3 text-xs font-medium opacity-80">{moment.likes} likes</span>
+              <span className="px-3 text-xs font-medium opacity-80">
+                {moment.likes} {moment.likes === 1 ? "like" : "likes"}
+              </span>
             </div>
           </div>
         </div>

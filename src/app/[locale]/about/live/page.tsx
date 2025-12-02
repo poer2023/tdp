@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function LiveDashboardPage({ params }: PageProps) {
-  const { locale } = await params;
+  const { locale: _locale } = await params;
 
   return (
     <>

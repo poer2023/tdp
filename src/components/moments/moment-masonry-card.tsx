@@ -8,6 +8,7 @@ import { MultiImageOnlyCard } from "./cards/multi-image-only-card";
 import { ImageTextCard } from "./cards/image-text-card";
 import { MultiImageTextCard } from "./cards/multi-image-text-card";
 import { TextOnlyCard } from "./cards/text-only-card";
+import { DeleteIcon } from "@/components/moments/delete-icon";
 
 type MomentWithMasonryData = MomentListItem & {
   isPublic: boolean;
@@ -74,49 +75,52 @@ export function MomentMasonryCard({
   };
 
   // 根据卡片类型渲染对应组件
-  switch (cardType) {
-    case "image-only":
-      return (
-        <ImageOnlyCard
-          moment={moment}
-          locale={locale}
-          onImageClick={() => handleImageClick(0)}
-        />
-      );
+  const renderCard = () => {
+    switch (cardType) {
+      case "image-only":
+        return (
+          <ImageOnlyCard
+            moment={moment}
+            locale={locale}
+            onImageClick={() => handleImageClick(0)}
+          />
+        );
 
-    case "multi-image-only":
-      return (
-        <MultiImageOnlyCard
-          moment={moment}
-          locale={locale}
-          onImageClick={handleImageClick}
-        />
-      );
+      case "multi-image-only":
+        return <MultiImageOnlyCard moment={moment} locale={locale} onImageClick={handleImageClick} />;
 
-    case "image-text":
-      return (
-        <ImageTextCard
-          moment={moment}
-          locale={locale}
-          cardLink={cardLink}
-          onImageClick={() => handleImageClick(0)}
-        />
-      );
+      case "image-text":
+        return (
+          <ImageTextCard
+            moment={moment}
+            locale={locale}
+            cardLink={cardLink}
+            onImageClick={() => handleImageClick(0)}
+          />
+        );
 
-    case "multi-image-text":
-      return (
-        <MultiImageTextCard
-          moment={moment}
-          locale={locale}
-          cardLink={cardLink}
-          onImageClick={handleImageClick}
-        />
-      );
+      case "multi-image-text":
+        return (
+          <MultiImageTextCard
+            moment={moment}
+            locale={locale}
+            cardLink={cardLink}
+            onImageClick={handleImageClick}
+          />
+        );
 
-    case "text-only":
-      return <TextOnlyCard moment={moment} locale={locale} onTextClick={handleTextClick} />;
+      case "text-only":
+        return <TextOnlyCard moment={moment} locale={locale} onTextClick={handleTextClick} />;
 
-    default:
-      return null;
-  }
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="relative">
+      {renderCard()}
+      {_isAdmin && <DeleteIcon id={moment.id} />}
+    </div>
+  );
 }

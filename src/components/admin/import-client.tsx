@@ -139,7 +139,7 @@ export function ImportClient() {
               onClick={handleDryRun}
               disabled={isProcessing}
               data-testid="preview-import-button"
-              className="inline-flex items-center gap-2 rounded-lg border border-stone-900 bg-stone-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-700 disabled:opacity-50 dark:border-stone-100 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-300"
+              className="admin-primary-btn"
             >
               {isProcessing ? "Processing..." : "预览导入"}
             </button>
@@ -243,7 +243,7 @@ export function ImportClient() {
               <button
                 onClick={handleApply}
                 disabled={isProcessing}
-                className="inline-flex items-center gap-2 rounded-lg border border-stone-900 bg-stone-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-700 disabled:opacity-50 dark:border-stone-100 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-300"
+                className="admin-primary-btn"
               >
                 {isProcessing ? "Importing..." : "应用导入"}
               </button>
@@ -304,7 +304,7 @@ function ActionBadge({ action }: { action: string }) {
   const config = {
     create: {
       label: "Create",
-      className: "bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900",
+      className: "bg-sage-100 text-sage-800 dark:bg-sage-900/30 dark:text-sage-200",
     },
     update: {
       label: "Update",

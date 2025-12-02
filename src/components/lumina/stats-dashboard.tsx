@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -22,8 +23,6 @@ import {
   Film,
   Gamepad2,
   Code,
-  Server,
-  BookOpen,
   ArrowUpRight,
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";

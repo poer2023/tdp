@@ -10,6 +10,7 @@ import { SearchResultSkeleton } from "@/components/search/search-skeleton";
 import { SearchEmptyState } from "@/components/search/search-empty-state";
 import { addToSearchHistory } from "@/lib/search-history";
 import type { SearchResult, GallerySearchResult, MomentSearchResult } from "@/lib/search";
+import { LuminaHeader, LuminaFooter } from "@/components/lumina";
 
 type SearchResults = {
   posts: SearchResult[];
@@ -92,7 +93,9 @@ export default function SearchPage() {
   const totalResults = results.posts.length + results.images.length + results.moments.length;
 
   return (
-    <Container width="standard" padding="px-4 py-6 sm:px-6 sm:py-8 md:py-10">
+    <>
+      <LuminaHeader />
+      <Container width="standard" padding="px-4 py-6 sm:px-6 sm:py-8 md:py-10">
       {/* Breadcrumbs */}
       <nav
         className="mb-4 flex items-center gap-2 text-sm text-stone-600 dark:text-stone-400"
@@ -338,6 +341,8 @@ export default function SearchPage() {
           </p>
         </div>
       )}
-    </Container>
+      </Container>
+      <LuminaFooter />
+    </>
   );
 }

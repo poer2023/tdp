@@ -91,7 +91,7 @@ export function ImageCropModal({
               type="button"
               onClick={handleConfirm}
               disabled={isProcessing}
-              className="rounded-xl bg-stone-900 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
+              className="admin-primary-btn"
             >
               {isProcessing ? "处理中..." : "确认裁剪"}
             </button>

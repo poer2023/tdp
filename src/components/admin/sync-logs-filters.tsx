@@ -114,7 +114,7 @@ export function SyncLogsFilters({ platforms, currentFilters }: SyncLogsFiltersPr
       <div className="mt-4 flex gap-3">
         <button
           onClick={handleFilter}
-          className="rounded-lg bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
+          className="admin-primary-btn"
         >
           Apply Filters
         </button>

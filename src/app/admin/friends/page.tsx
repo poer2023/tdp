@@ -42,7 +42,7 @@ export default async function FriendsManagementPage() {
         </div>
         <Link
           href="/admin/friends/create"
-          className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
+          className="admin-primary-btn"
         >
           + 创建朋友
         </Link>

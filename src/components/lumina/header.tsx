@@ -1,13 +1,17 @@
 "use client";
+"use client";
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useEffect, useRef, startTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Menu, X, LogOut, LayoutDashboard, Moon, Sun, Languages } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, Moon, Sun, Languages, Search } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
 import { useTheme } from "next-themes";
+import { CommandPaletteTrigger } from "@/components/command-palette-trigger";
 
 interface NavLink {
   label: string;
@@ -95,6 +99,7 @@ export function LuminaHeader() {
         Theme: "Theme",
         Language: "Language",
         "Login / Sign up": "Login / Sign up",
+        Search: "Search",
       },
       zh: {
         Login: "登录",
@@ -103,6 +108,7 @@ export function LuminaHeader() {
         Theme: "主题",
         Language: "语言",
         "Login / Sign up": "登录 / 注册",
+        Search: "搜索",
       },
     };
     return translations[locale]?.[key] || key;
@@ -142,6 +148,16 @@ export function LuminaHeader() {
           <div className="hidden items-center gap-4 md:flex">
             {/* Settings Controls */}
             <div className="mr-1 flex items-center gap-2 border-r border-stone-200 pr-4 dark:border-stone-800">
+              <Link
+                href={localePath(locale, "/search")}
+                className="hidden rounded-full p-1.5 text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 md:flex dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+                aria-label={t("Search")}
+              >
+                <Search size={18} />
+              </Link>
+              <div className="hidden md:flex">
+                <CommandPaletteTrigger size="sm" />
+              </div>
               <button
                 onClick={toggleTheme}
                 className="rounded-full p-1.5 text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
@@ -271,6 +287,17 @@ export function LuminaHeader() {
                 {locale === "zh" ? link.labelZh : link.label}
               </button>
             ))}
+
+            <div className="mt-2 flex items-center justify-between rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 dark:border-stone-700 dark:bg-stone-800">
+              <Link
+                href={localePath(locale, "/search")}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="text-sm font-medium text-stone-700 hover:text-stone-900 dark:text-stone-200 dark:hover:text-stone-50"
+              >
+                {t("Search")}
+              </Link>
+              <CommandPaletteTrigger size="sm" />
+            </div>
 
             <div className="mt-2 flex items-center justify-between border-t border-stone-100 px-3 pt-4 pb-2 dark:border-stone-800">
               <span className="text-sm text-stone-500 dark:text-stone-400">{t("Theme")}</span>

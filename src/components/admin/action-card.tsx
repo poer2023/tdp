@@ -51,7 +51,7 @@ export function ActionCard({
           {primaryAction && (
             <Link
               href={primaryAction.href}
-              className="rounded-xl bg-stone-900 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-stone-700 dark:bg-stone-100 dark:hover:bg-stone-300"
+              className="admin-primary-btn admin-primary-btn--sm"
               onClick={(e) => e.stopPropagation()}
             >
               <span className="text-white dark:text-stone-900">{primaryAction.label}</span>

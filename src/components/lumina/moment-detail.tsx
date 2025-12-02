@@ -22,7 +22,7 @@ interface MomentComment {
 interface MomentDetailProps {
   moment: FeedMoment;
   onClose: () => void;
-  onLike?: (id: string) => void;
+  onLike?: (id: string) => Promise<{ liked: boolean; likeCount: number } | void> | void;
 }
 
 export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProps) {
@@ -30,6 +30,9 @@ export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProp
   const locale = getLocaleFromPathname(pathname) ?? "en";
   const hasImages = moment.images && moment.images.length > 0;
   const { data: session } = useSession();
+
+  const [likeCount, setLikeCount] = useState(moment.likes);
+  const [liked, setLiked] = useState(Boolean(moment.liked));
 
   const [comments, setComments] = useState<MomentComment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -57,6 +60,11 @@ export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProp
     };
     return translations[locale]?.[key] || key;
   };
+
+  useEffect(() => {
+    setLikeCount(moment.likes);
+    setLiked(Boolean(moment.liked));
+  }, [moment.id, moment.likes, moment.liked]);
 
   // Fetch comments
   const fetchComments = useCallback(async () => {
@@ -129,7 +137,20 @@ export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProp
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onLike?.(moment.id);
+    (async () => {
+      try {
+        const res = await onLike?.(moment.id);
+        if (res && typeof res === "object" && "likeCount" in res) {
+          setLikeCount(res.likeCount ?? likeCount);
+          setLiked(res.liked ?? liked);
+        } else {
+          setLiked((prev) => !prev);
+          setLikeCount((prev) => Math.max(0, prev + (liked ? -1 : 1)));
+        }
+      } catch (error) {
+        console.error("Failed to like moment", error);
+      }
+    })();
   };
 
   const formatCommentDate = (dateString: string) => {
@@ -289,12 +310,12 @@ export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProp
               <button
                 onClick={handleLike}
                 className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
-                  moment.likes > 0 ? "text-rose-500" : "text-stone-400 hover:text-rose-500"
+                  liked ? "text-rose-500" : "text-stone-400 hover:text-rose-500"
                 }`}
               >
-                <Heart size={20} className={moment.likes > 0 ? "fill-current" : ""} />
+                <Heart size={20} className={liked ? "fill-current" : ""} />
                 <span>
-                  {moment.likes || 0} {t("likes")}
+                  {likeCount || 0} {t("likes")}
                 </span>
               </button>
             </div>

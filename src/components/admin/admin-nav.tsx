@@ -72,7 +72,7 @@ export function AdminNav({
 
   return (
     <nav
-      className={`fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col bg-stone-950 transition-transform duration-200 md:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col bg-stone-950 text-stone-50 transition-transform duration-200 md:translate-x-0 ${
         mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       }`}
       aria-label="Admin navigation"
@@ -91,7 +91,7 @@ export function AdminNav({
         {navSections.map((section, idx) => (
           <div key={section.titleKey} className={idx > 0 ? "mt-6" : ""}>
             {/* Section Title */}
-            <h2 className="px-3 py-2 text-[11px] font-bold tracking-wider text-white/90 uppercase">
+            <h2 className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-stone-100">
               {t(locale, section.titleKey)}
             </h2>
 
@@ -110,7 +110,7 @@ export function AdminNav({
                       className={`group relative flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm transition-all duration-150 ${
                         isActive
                           ? "bg-sage-500 text-white font-semibold shadow-md before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-1 before:h-6 before:bg-sage-300 before:rounded-full"
-                          : "text-white/90 font-medium hover:bg-stone-800 hover:text-white"
+                          : "font-medium text-stone-200 hover:bg-stone-800 hover:text-white"
                       }`}
                     >
                       <span>{t(locale, item.labelKey)}</span>
@@ -128,7 +128,7 @@ export function AdminNav({
         {/* Back to Site */}
         <Link
           href="/"
-          className="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-white/90 transition-colors hover:bg-stone-800 hover:text-white"
+          className="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-stone-100 transition-colors hover:bg-stone-800 hover:text-white"
         >
           <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -153,7 +153,7 @@ export function AdminNav({
           <button
             type="button"
             onClick={onClose}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-stone-700 px-3 py-2 text-xs font-medium text-white/90 hover:bg-stone-900 hover:text-white"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-stone-700 px-3 py-2 text-xs font-medium text-stone-100 hover:bg-stone-900 hover:text-white"
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path

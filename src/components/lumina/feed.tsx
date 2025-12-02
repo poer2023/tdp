@@ -23,6 +23,7 @@ export interface FeedPost {
   tags: string[];
   likes: number;
   slug: string;
+  sortKey?: number;
 }
 
 export interface FeedMoment {
@@ -33,6 +34,8 @@ export interface FeedMoment {
   date: string;
   tags: string[];
   likes: number;
+  liked?: boolean;
+  sortKey?: number;
 }
 
 export type FeedItem = FeedPost | FeedMoment;
@@ -40,7 +43,7 @@ export type FeedItem = FeedPost | FeedMoment;
 interface LuminaFeedProps {
   initialItems: FeedItem[];
   onPostClick?: (post: FeedPost) => void;
-  onMomentLike?: (id: string) => void;
+  onMomentLike?: (id: string) => Promise<void> | void;
 }
 
 const ITEMS_PER_PAGE = 12;
@@ -51,6 +54,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
 
   // Modal state for moment detail
   const [selectedMoment, setSelectedMoment] = useState<FeedMoment | null>(null);
+  const [items, setItems] = useState<FeedItem[]>(initialItems);
 
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
@@ -78,13 +82,18 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  // Keep items in sync if server data changes
+  React.useEffect(() => {
+    setItems(initialItems);
+  }, [initialItems]);
+
   // Filter items based on current filter
   const filteredItems = useMemo(() => {
-    if (feedFilter === "All") return initialItems;
-    if (feedFilter === "Articles") return initialItems.filter((item) => item.type === "article");
-    if (feedFilter === "Moments") return initialItems.filter((item) => item.type === "moment");
-    return initialItems;
-  }, [feedFilter, initialItems]);
+    if (feedFilter === "All") return items;
+    if (feedFilter === "Articles") return items.filter((item) => item.type === "article");
+    if (feedFilter === "Moments") return items.filter((item) => item.type === "moment");
+    return items;
+  }, [feedFilter, items]);
 
   // Get visible items for pagination
   const visibleItems = useMemo(() => {
@@ -106,6 +115,34 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
     setVisibleCount(ITEMS_PER_PAGE);
   }, [feedFilter]);
 
+  // Handle moment like with server API + local state sync
+  const handleMomentLike = async (id: string) => {
+    try {
+      const res = await fetch(`/api/moments/${id}/likes`, { method: "POST" });
+      if (!res.ok) throw new Error(`Failed to toggle like: ${res.status}`);
+      const data = await res.json();
+
+      setItems((prev) =>
+        prev.map((item) =>
+          item.type === "moment" && item.id === id
+            ? { ...item, likes: data.likeCount ?? item.likes, liked: data.liked ?? item.liked }
+            : item
+        )
+      );
+
+      setSelectedMoment((prev) =>
+        prev && prev.id === id
+          ? { ...prev, likes: data.likeCount ?? prev.likes, liked: data.liked ?? prev.liked }
+          : prev
+      );
+
+      await onMomentLike?.(id);
+      return data;
+    } catch (error) {
+      console.error("[Moment like] error", error);
+    }
+  };
+
   return (
     <>
       {/* Moment Detail Modal */}
@@ -113,7 +150,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
         <LuminaMomentDetail
           moment={selectedMoment}
           onClose={() => setSelectedMoment(null)}
-          onLike={onMomentLike}
+          onLike={handleMomentLike}
         />
       )}
 
@@ -171,8 +208,10 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
                   date: item.date,
                   tags: item.tags,
                   likes: item.likes,
+                  liked: item.liked,
                 }}
                 onClick={() => setSelectedMoment(item)}
+                onLike={() => handleMomentLike(item.id)}
               />
             )}
           </React.Fragment>
