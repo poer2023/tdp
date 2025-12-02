@@ -157,7 +157,7 @@ function toPublicSubscription(sub: Subscription): PublicSubscription {
 /**
  * Calculate category distribution from subscriptions
  */
-function calculateCategoryDistribution(subscriptions: Subscription[]) {
+function calculateCategoryDistribution(subscriptions: Subscription[]): ExpenseCategory[] {
   const categoryTotals: Record<string, number> = {};
   let totalAmount = 0;
 
@@ -180,7 +180,7 @@ function calculateCategoryDistribution(subscriptions: Subscription[]) {
   }
 
   // Convert to percentages
-  const categories = Object.entries(categoryTotals)
+  const categories: ExpenseCategory[] = Object.entries(categoryTotals)
     .map(([name, amount]) => ({
       name,
       percentage: totalAmount > 0 ? Math.round((amount / totalAmount) * 100) : 0,
