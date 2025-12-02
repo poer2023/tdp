@@ -47,7 +47,7 @@ export class PostPage extends BasePage {
    * Language switcher selectors
    */
   get languageSwitcher(): Locator {
-    return this.page.locator(".language-switcher, [class*='language']");
+    return this.page.locator(".language-switcher");
   }
 
   get switchToEnglishLink(): Locator {
