@@ -4,11 +4,11 @@ import type { FinanceData, Subscription as PublicSubscription, ExpenseCategory }
 import type { Subscription } from "@prisma/client";
 
 const FALLBACK_CATEGORY_DISTRIBUTION: ExpenseCategory[] = [
-  { name: "Development", percentage: 35, amount: undefined },
-  { name: "AI Tools", percentage: 30, amount: undefined },
-  { name: "Entertainment", percentage: 20, amount: undefined },
-  { name: "Cloud", percentage: 10, amount: undefined },
-  { name: "Other", percentage: 5, amount: undefined },
+  { name: "Development", percentage: 35 },
+  { name: "AI Tools", percentage: 30 },
+  { name: "Entertainment", percentage: 20 },
+  { name: "Cloud", percentage: 10 },
+  { name: "Other", percentage: 5 },
 ];
 
 /**
@@ -176,21 +176,20 @@ function calculateCategoryDistribution(subscriptions: Subscription[]): ExpenseCa
   }
 
   if (subscriptions.length === 0 || totalAmount === 0) {
-    return FALLBACK_CATEGORY_DISTRIBUTION.map((category) => ({ ...category }));
+    return [...FALLBACK_CATEGORY_DISTRIBUTION];
   }
 
   // Convert to percentages
   const categories: ExpenseCategory[] = Object.entries(categoryTotals)
-    .map(([name, amount]) => ({
+    .map(([name, total]) => ({
       name,
-      percentage: totalAmount > 0 ? Math.round((amount / totalAmount) * 100) : 0,
-      amount: undefined, // Hide actual amounts
+      percentage: totalAmount > 0 ? Math.round((total / totalAmount) * 100) : 0,
     }))
     .sort((a, b) => b.percentage - a.percentage);
 
   const totalPercentage = categories.reduce((sum, category) => sum + category.percentage, 0);
   if (totalPercentage === 0) {
-    return FALLBACK_CATEGORY_DISTRIBUTION.map((category) => ({ ...category }));
+    return [...FALLBACK_CATEGORY_DISTRIBUTION];
   }
 
   return categories;
@@ -275,7 +274,7 @@ export async function GET() {
     // Return fallback data on error
     const fallbackData: FinanceData = {
       monthlyTrend: [65, 70, 68, 75, 80, 72, 85, 78, 82, 90, 88, 85],
-      categories: FALLBACK_CATEGORY_DISTRIBUTION.map((category) => ({ ...category })),
+      categories: [...FALLBACK_CATEGORY_DISTRIBUTION],
       subscriptions: [],
       insights: ["Unable to load subscription data"],
     };
