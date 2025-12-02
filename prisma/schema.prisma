@@ -16,6 +16,7 @@ model User {
   role           UserRole        @default(AUTHOR)
   accounts       Account[]
   moments        Moment[]
+  momentLikes    MomentLike[]
   posts          Post[]
   sessions       Session[]
   subscriptions  Subscription[]
@@ -176,6 +177,8 @@ model Moment {
   replies          Moment[]         @relation("MomentThread")
   friend           Friend?          @relation("FriendPrivateMoments", fields: [friendId], references: [id])
   comments         MomentComment[]
+  likes            MomentLike[]
+  likeStats        MomentLikeAggregate?
 
   @@index([createdAt, visibility, lang])
   @@index([status])
@@ -195,6 +198,28 @@ model MomentComment {
   author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@index([momentId, createdAt])
+}
+
+model MomentLike {
+  id        String   @id @default(cuid())
+  momentId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  moment Moment @relation(fields: [momentId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([momentId, userId])
+  @@index([momentId])
+  @@index([userId])
+}
+
+model MomentLikeAggregate {
+  momentId  String   @id
+  likeCount Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  moment Moment @relation(fields: [momentId], references: [id], onDelete: Cascade)
 }
 
 model Friend {
