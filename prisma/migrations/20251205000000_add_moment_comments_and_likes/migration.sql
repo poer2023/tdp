@@ -23,7 +23,7 @@ CREATE TABLE "MomentLike" (
 CREATE TABLE "MomentLikeAggregate" (
     "momentId" TEXT NOT NULL,
     "likeCount" INTEGER NOT NULL DEFAULT 0,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "MomentLikeAggregate_pkey" PRIMARY KEY ("momentId")
 );

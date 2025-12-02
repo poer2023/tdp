@@ -152,7 +152,7 @@ describe("SubscriptionDashboard", () => {
       const annualButton = screen.getByRole("button", { name: /annual view/i });
       fireEvent.click(annualButton);
 
-      expect(annualButton).toHaveClass(/bg-blue-600/);
+      expect(annualButton).toHaveClass(/bg-sage-600/);
     });
 
     it("should switch back to monthly view when clicked", () => {
@@ -164,7 +164,7 @@ describe("SubscriptionDashboard", () => {
       fireEvent.click(annualButton);
       fireEvent.click(monthlyButton);
 
-      expect(monthlyButton).toHaveClass(/bg-blue-600/);
+      expect(monthlyButton).toHaveClass(/bg-sage-600/);
     });
   });
 
