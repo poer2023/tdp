@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import type { FinanceData, Subscription as PublicSubscription } from "@/types/live-data";
+import type { FinanceData, Subscription as PublicSubscription, ExpenseCategory } from "@/types/live-data";
 import type { Subscription } from "@prisma/client";
 
-const FALLBACK_CATEGORY_DISTRIBUTION = [
+const FALLBACK_CATEGORY_DISTRIBUTION: ExpenseCategory[] = [
   { name: "Development", percentage: 35, amount: undefined },
   { name: "AI Tools", percentage: 30, amount: undefined },
   { name: "Entertainment", percentage: 20, amount: undefined },
   { name: "Cloud", percentage: 10, amount: undefined },
   { name: "Other", percentage: 5, amount: undefined },
-] as const;
+];
 
 /**
  * Anonymize subscription amount based on CNY value
