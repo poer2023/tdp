@@ -27,7 +27,7 @@ export class PostPage extends BasePage {
    * Post content selectors
    */
   get postTitle(): Locator {
-    return this.page.locator("h1").first();
+    return this.page.locator("article h1").first();
   }
 
   // Backward-compatible alias used by some tests
