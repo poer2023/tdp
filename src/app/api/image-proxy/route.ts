@@ -13,6 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
 
 // Allowed image domains (security measure)
 const ALLOWED_DOMAINS = [
@@ -78,16 +79,37 @@ export async function GET(request: NextRequest) {
     }
 
     // Get image data
-    const imageBuffer = await response.arrayBuffer();
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
     const contentType = response.headers.get("content-type") || "image/jpeg";
+    const isImage = contentType.startsWith("image/");
+    const isAnimated = contentType.includes("gif");
+    const alreadyWebP = contentType.includes("webp");
+
+    let optimizedBuffer = imageBuffer;
+    let outputContentType = contentType;
+
+    // Convert to WebP when safe to do so; fall back to original on failure/unsupported types
+    if (isImage && !isAnimated && !alreadyWebP) {
+      try {
+        optimizedBuffer = await sharp(imageBuffer)
+          .webp({ quality: 78, effort: 4 })
+          .toBuffer();
+        outputContentType = "image/webp";
+      } catch (err) {
+        console.warn("[Image Proxy] WebP conversion failed, returning original", err);
+        optimizedBuffer = imageBuffer;
+        outputContentType = contentType;
+      }
+    }
 
     // Return image with caching headers
-    return new NextResponse(imageBuffer, {
+    return new NextResponse(optimizedBuffer, {
       status: 200,
       headers: {
-        "Content-Type": contentType,
+        "Content-Type": outputContentType,
+        "Content-Length": optimizedBuffer.byteLength.toString(),
         // Cache for 7 days (images rarely change)
-        "Cache-Control": "public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400",
+        "Cache-Control": "public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400, immutable",
         // Allow CORS for our domain
         "Access-Control-Allow-Origin": "*",
         // Prevent caching errors
