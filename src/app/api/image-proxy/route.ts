@@ -70,13 +70,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Get image data
-    const imageBuffer = Buffer.from(await response.arrayBuffer());
+    const arrayBuffer = await response.arrayBuffer();
+    const imageBuffer = Buffer.from(new Uint8Array(arrayBuffer));
     const contentType = response.headers.get("content-type") || "image/jpeg";
     const isImage = contentType.startsWith("image/");
     const isAnimated = contentType.includes("gif");
     const alreadyWebP = contentType.includes("webp");
 
-    let optimizedBuffer = imageBuffer;
+    let optimizedBuffer: Buffer = imageBuffer;
     let outputContentType = contentType;
 
     // Convert to WebP when safe to do so; fall back to original on failure/unsupported types
