@@ -182,7 +182,7 @@ describe("ReadingDetailPage", () => {
 
     await waitFor(() => {
       const link = screen.getByText("Back to Dashboard");
-      expect(link.closest("a")).toHaveAttribute("href", "/en/about/live");
+      expect(link.closest("a")).toHaveAttribute("href", "/about/live");
     });
   });
 

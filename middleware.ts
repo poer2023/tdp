@@ -7,11 +7,24 @@ import { pinyin } from "pinyin-pro";
 // - Adds `x-pathname` header for locale detection in layout
 // - Enforces ADMIN role for `/admin/*` pages
 // - Localized routing rules:
-//   · English is default (no /en prefix). Keep `/` as English.
-//   · Chinese uses /zh prefix. Root `/` handles detection and redirects to `/zh` for Chinese browsers.
-//   · Redirect any `/en` or `/en/*` URL to the prefix-free path to hide /en.
+//   · English is default (no /en prefix). Keep `/` and child paths as English.
+//   · Chinese uses /zh prefix, only when user explicitly switches.
+//   · Redirect legacy `/en` URLs to prefix-free equivalents.
+
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const firstSegment = pathSegments[0] ?? "";
+  const secondSegment = pathSegments[1] ?? "";
+
+  // Redirect legacy /en paths to prefix-free equivalents (301 to preserve SEO)
+  if (firstSegment === "en") {
+    const remaining = pathSegments.slice(1).join("/");
+    const normalizedPath = remaining ? `/${remaining}` : "/";
+    const redirectUrl = new URL(normalizedPath, request.nextUrl.origin);
+    searchParams.forEach((value, key) => redirectUrl.searchParams.set(key, value));
+    return NextResponse.redirect(redirectUrl, { status: 301 });
+  }
 
   // Always attach pathname header for i18n html lang resolution
   const requestHeaders = new Headers(request.headers);
@@ -61,13 +74,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const friendStoryMatch = pathname.match(/^\/(en|zh)\/m\/friends\/([^/]+)$/);
-  if (friendStoryMatch && friendStoryMatch[1] && friendStoryMatch[2]) {
-    const [, targetLocale, slug] = friendStoryMatch;
+  const friendStoryMatch = pathname.match(/^\/(zh\/)?m\/friends\/([^/]+)$/);
+  if (friendStoryMatch && friendStoryMatch[2]) {
+    const hasZhPrefix = Boolean(friendStoryMatch[1]);
+    const slug = friendStoryMatch[2];
     const token = request.cookies.get("friendAuth")?.value;
 
     if (!token) {
-      const redirectUrl = new URL(`/${targetLocale}/m/friends`, request.nextUrl.origin);
+      const redirectUrl = new URL(hasZhPrefix ? "/zh/m/friends" : "/m/friends", request.nextUrl.origin);
       redirectUrl.searchParams.set("redirect", slug);
       return NextResponse.redirect(redirectUrl, { status: 302 });
     }
@@ -136,7 +150,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Default pass-through with augmented headers and locale cookie
   const res = NextResponse.next({
     request: {
       headers: requestHeaders,

@@ -5,7 +5,7 @@ import { SearchCommand } from "../search-command";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
-  usePathname: vi.fn(() => "/en"),
+  usePathname: vi.fn(() => "/"),
 }));
 
 // Mock fetch
@@ -18,9 +18,9 @@ describe("SearchCommand", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    // Reset usePathname to default "/en"
+    // Reset usePathname to default "/"
     const { usePathname } = await import("next/navigation");
-    vi.mocked(usePathname).mockReturnValue("/en");
+    vi.mocked(usePathname).mockReturnValue("/");
 
     vi.useFakeTimers();
     (global.fetch as vi.Mock).mockResolvedValue({
@@ -766,7 +766,7 @@ describe("SearchCommand", () => {
 
     it("英文环境应该显示英文文本", async () => {
       const { usePathname } = await import("next/navigation");
-      vi.mocked(usePathname).mockReturnValue("/en");
+      vi.mocked(usePathname).mockReturnValue("/");
 
       render(<SearchCommand open={true} onOpenChange={vi.fn()} />);
 

@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Command } from "cmdk";
 import { useRouter, usePathname } from "next/navigation";
 import { getLocaleFromPathname } from "@/lib/i18n";
+import { localePath } from "@/lib/locale-path";
 
 type SearchResult = {
   id: string;
@@ -73,7 +74,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const handleSelect = useCallback(
     (slug: string) => {
       onOpenChange(false);
-      router.push(`/${locale}/posts/${slug}`);
+      router.push(localePath(locale, `/posts/${slug}`));
     },
     [locale, router, onOpenChange]
   );

@@ -1,19 +1,11 @@
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import LocalizedHomePage from "./[locale]/page";
 
-// Root page - redirect to locale-specific homepage
-export default async function RootPage() {
-  const headersList = await headers();
-  const acceptLanguage = headersList.get("accept-language") || "";
+// Keep root page config aligned with localized page
+export const runtime = "nodejs";
+export const revalidate = 300;
+export const dynamicParams = false;
 
-  // Detect Chinese preference
-  const prefersChinese = /\bzh\b|zh-cn|zh-hans/i.test(acceptLanguage);
-
-  if (prefersChinese) {
-    redirect("/zh");
-  } else {
-    redirect("/en");
-  }
+// Root page renders English by default (prefix-free)
+export default function RootPage() {
+  return <LocalizedHomePage params={Promise.resolve({ locale: "en" })} />;
 }
-
-export const dynamic = "force-dynamic";

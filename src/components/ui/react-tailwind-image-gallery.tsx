@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { GalleryItemData } from "@/lib/gallery-utils";
+import { localePath } from "@/lib/locale-path";
 
 interface GalleryProps {
   data: GalleryItemData[];
@@ -28,7 +29,7 @@ export function Gallery({ data, onImageClick, locale }: GalleryProps) {
           {data.map((img) => (
             <Link
               key={img.id}
-              href={`/${locale}/gallery/${img.id}`}
+              href={localePath(locale as "en" | "zh", `/gallery/${img.id}`)}
               className={`group relative cursor-pointer overflow-hidden rounded-lg ${img.span} block`}
               onClick={(e) => {
                 // 如果提供了 onImageClick，则阻止默认跳转并触发点击事件

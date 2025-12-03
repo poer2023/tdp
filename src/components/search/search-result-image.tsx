@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { GallerySearchResult } from "@/lib/search";
 import { HighlightText } from "./highlight-text";
+import { localePath } from "@/lib/locale-path";
 
 type Props = {
   image: GallerySearchResult;
@@ -19,7 +20,7 @@ export function SearchResultImage({ image, query, locale, onSelect }: Props) {
 
   return (
     <Link
-      href={`/${locale}/gallery/${image.id}`}
+      href={localePath(locale as "en" | "zh", `/gallery/${image.id}`)}
       onClick={onSelect}
       className="group block overflow-hidden rounded-lg border border-stone-200 bg-white transition-all hover:shadow-md dark:border-stone-800 dark:bg-stone-900"
     >

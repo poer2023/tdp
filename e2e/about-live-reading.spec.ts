@@ -13,7 +13,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Reading Detail Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/en/about/live/reading");
+    await page.goto("/about/live/reading");
   });
 
   test("should display reading statistics", async ({ page }) => {
@@ -160,7 +160,7 @@ test.describe("Reading Detail Page", () => {
       setTimeout(() => route.continue(), 1000);
     });
 
-    await page.goto("/en/about/live/reading");
+    await page.goto("/about/live/reading");
 
     // Should show loading skeletons
     const skeletons = page.locator(".animate-pulse");
@@ -173,7 +173,7 @@ test.describe("Reading Detail Page", () => {
 
   test("should be responsive on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/en/about/live/reading");
+    await page.goto("/about/live/reading");
     await page.waitForLoadState("networkidle");
 
     // Content should be visible and stacked

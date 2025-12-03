@@ -3,6 +3,7 @@ import { LivePhotoPlayer } from "./live-photo-player";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDate } from "@/lib/date-utils";
+import { localePath } from "@/lib/locale-path";
 
 interface GalleryCardProps {
   image: GalleryImage;
@@ -23,7 +24,7 @@ export function GalleryCard({ image, locale = "zh", index = 0 }: GalleryCardProp
   const isPriority = index < 6; // Prioritize first 6 images (2 rows on desktop)
 
   return (
-    <Link href={`/${locale}/gallery/${image.id}`} className="block">
+    <Link href={localePath(locale, `/gallery/${image.id}`)} className="block">
       <article className="group relative overflow-hidden rounded-lg border border-stone-200 bg-white transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm dark:border-stone-800 dark:bg-stone-900">
         {/* 图片区域 */}
         <div className="relative aspect-square overflow-hidden bg-stone-100 dark:bg-stone-800">

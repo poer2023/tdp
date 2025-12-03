@@ -17,7 +17,7 @@ export class PostsListPage extends BasePage {
    * Navigate to posts list
    */
   async gotoPostsList(locale?: "en" | "zh") {
-    const path = locale === "zh" ? "/zh/posts" : locale === "en" ? "/en/posts" : "/posts";
+    const path = locale === "zh" ? "/zh/posts" : "/posts";
     await this.goto(path);
   }
 
@@ -25,12 +25,7 @@ export class PostsListPage extends BasePage {
    * Selectors
    */
   get postLinks(): Locator {
-    let prefix = "/posts/";
-    if (this.url.includes("/en/")) {
-      prefix = "/en/posts/";
-    } else if (this.url.includes("/zh/")) {
-      prefix = "/zh/posts/";
-    }
+    const prefix = this.url.includes("/zh/") ? "/zh/posts/" : "/posts/";
     return this.page.locator(`a[href^="${prefix}"]`);
   }
 

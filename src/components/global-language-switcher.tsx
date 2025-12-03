@@ -8,22 +8,22 @@ export function GlobalLanguageSwitcher() {
   const pathname = usePathname();
   const currentLocale = getLocaleFromPathname(pathname) ?? "en";
 
-  // Generate alternate URL (both locales use explicit prefixes)
-  const hasLocalePrefix = /^\/(en|zh)(?=\/|$)/.test(pathname);
-  const pathWithoutLocale = hasLocalePrefix ? pathname.replace(/^\/(en|zh)(?=\/|$)/, "") : pathname;
   const isAdminRoute = pathname.startsWith("/admin");
+  const isZhPath = pathname.startsWith("/zh");
+  const pathWithoutLocale =
+    pathname === "/"
+      ? "/"
+      : isZhPath
+        ? pathname.replace(/^\/zh(?=\/|$)/, "") || "/"
+        : pathname;
 
-  let alternateUrl: string;
-  if (hasLocalePrefix || pathname === "/") {
-    const base = pathWithoutLocale === "/" ? "" : pathWithoutLocale;
-    alternateUrl = currentLocale === "zh" ? `/en${base}` : `/zh${base}`;
-  } else if (isAdminRoute) {
+  if (isAdminRoute) {
     // Admin routes are not localized by pathname; hide switcher.
     return null;
-  } else {
-    alternateUrl = currentLocale === "zh" ? "/" : "/zh";
   }
 
+  const base = pathWithoutLocale === "/" ? "" : pathWithoutLocale;
+  const alternateUrl = currentLocale === "zh" ? base || "/" : `/zh${base}`;
   const alternateLocale = currentLocale === "zh" ? "en" : "zh";
   const alternateLabel = currentLocale === "zh" ? "EN" : "中";
 

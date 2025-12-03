@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { GalleryImage } from "@/lib/gallery";
+import { localePath } from "@/lib/locale-path";
 
 type Props = {
   images: GalleryImage[];
@@ -25,7 +26,7 @@ export function GalleryMasonry({ images, locale = "zh" }: Props) {
         return (
           <figure key={img.id} className="mb-3 break-inside-avoid sm:mb-4">
             <Link
-              href={`/${locale}/gallery/${img.id}`}
+              href={localePath(locale, `/gallery/${img.id}`)}
               className="group block overflow-hidden rounded-lg ring-1 ring-stone-200 transition-shadow hover:shadow-sm dark:ring-stone-800"
             >
               <Image

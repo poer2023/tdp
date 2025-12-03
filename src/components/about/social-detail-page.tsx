@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { SocialData } from "@/types/live-data";
 import { StatCard } from "./stat-card";
 import { SkeletonCard } from "./skeleton-card";
+import { localePath } from "@/lib/locale-path";
 
 interface SocialDetailPageProps {
   locale: "en" | "zh";
@@ -81,7 +82,7 @@ export function SocialDetailPage({ locale }: SocialDetailPageProps) {
       >
         <div className="mb-8">
           <Link
-            href={`/${locale}/about/live`}
+            href={localePath(locale, "/about/live")}
             className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -187,7 +188,7 @@ export function SocialDetailPage({ locale }: SocialDetailPageProps) {
     >
       <div className="mb-8">
         <Link
-          href={`/${locale}/about/live`}
+          href={localePath(locale, "/about/live")}
           className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
         >
           <ArrowLeft className="h-4 w-4" />

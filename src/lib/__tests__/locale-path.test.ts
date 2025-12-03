@@ -8,9 +8,9 @@ describe("localePath", () => {
     expect(localePath("zh", "m/archive")).toBe("/zh/m/archive");
   });
 
-  it("prefixes en routes with /en", () => {
-    expect(localePath("en", "/")).toBe("/en");
-    expect(localePath("en", "/m")).toBe("/en/m");
-    expect(localePath("en", "m")).toBe("/en/m");
+  it("keeps en routes prefix-free", () => {
+    expect(localePath("en", "/")).toBe("/");
+    expect(localePath("en", "/m")).toBe("/m");
+    expect(localePath("en", "m")).toBe("/m");
   });
 });

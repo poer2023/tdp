@@ -27,7 +27,7 @@ test.describe("Dark mode", () => {
     // Consistent viewport for stable screenshots
     await page.setViewportSize({ width: 1280, height: 900 });
 
-    const paths = ["/en", "/en/posts", "/en/gallery"];
+    const paths = ["/", "/posts", "/gallery"];
     for (const p of paths) {
       await page.goto(p);
       await waitForNetworkIdle(page);
@@ -56,7 +56,7 @@ test.describe("Dark mode", () => {
 
   test("toggle button switches theme at runtime", async ({ page }) => {
     await enableDarkBeforeNavigation(page);
-    await page.goto("/en");
+    await page.goto("/");
     await waitForNetworkIdle(page);
     await ensureHealthy(page);
 

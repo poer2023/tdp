@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getLocaleFromPathname } from "@/lib/i18n";
+import { localePath } from "@/lib/locale-path";
 
 export function Footer() {
   const pathname = usePathname();
@@ -14,11 +15,11 @@ export function Footer() {
 
   const links = [
     {
-      href: `/${locale}/posts`,
+      href: localePath(locale, "/posts"),
       label: locale === "zh" ? "博客" : "Blog",
     },
     {
-      href: `/${locale}/gallery`,
+      href: localePath(locale, "/gallery"),
       label: locale === "zh" ? "相册" : "Gallery",
     },
   ];

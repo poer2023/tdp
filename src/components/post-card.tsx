@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { PublicPost } from "@/lib/posts";
 import { toOptimizedImageUrl } from "@/lib/image-proxy";
+import { localePath } from "@/lib/locale-path";
 
 interface PostCardProps {
   post: PublicPost;
@@ -48,13 +49,15 @@ export function PostCard({ post, locale = "zh" }: PostCardProps) {
           )}
         </div>
         <h3 className="text-xl leading-snug font-semibold text-stone-900 dark:text-stone-50">
-          <Link href={`/${locale}/posts/${encodeURIComponent(post.slug)}`}>{post.title}</Link>
+          <Link href={localePath(locale, `/posts/${encodeURIComponent(post.slug)}`)}>
+            {post.title}
+          </Link>
         </h3>
         <p className="line-clamp-3 text-base leading-loose text-stone-600 dark:text-stone-400">
           {post.excerpt}
         </p>
         <Link
-          href={`/${locale}/posts/${encodeURIComponent(post.slug)}`}
+          href={localePath(locale, `/posts/${encodeURIComponent(post.slug)}`)}
           className="text-sm font-medium text-stone-900 underline underline-offset-4 hover:text-stone-600 dark:text-stone-100"
         >
           {locale === "zh" ? "阅读全文" : "Read more"}

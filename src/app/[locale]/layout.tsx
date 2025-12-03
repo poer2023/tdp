@@ -9,9 +9,9 @@ type LayoutProps = {
 export default async function LocaleLayout({ children, params }: LayoutProps) {
   const { locale } = await params;
 
-  // Redirect invalid locales to /en
+  // Redirect invalid locales to default English site
   if (locale !== "en" && locale !== "zh") {
-    redirect(`/en/${locale}`);
+    redirect("/");
   }
 
   return (

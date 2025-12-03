@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { localePath } from "@/lib/locale-path";
 
 interface FriendHeaderProps {
   friend: {
@@ -38,7 +39,7 @@ export function FriendHeader({ friend, locale }: FriendHeaderProps) {
       console.error("朋友退出失败", error);
     } finally {
       setLoading(false);
-      router.push(`/${locale}/m/friends`);
+      router.push(localePath(locale, "/m/friends"));
       router.refresh();
     }
   };

@@ -7,6 +7,7 @@ import { LuminaFeed } from "./feed";
 import type { FeedItem, FeedPost } from "./feed";
 import { ProfileWidget, CompactStatusWidget } from "./side-widgets";
 import { getLocaleFromPathname } from "@/lib/i18n";
+import { localePath } from "@/lib/locale-path";
 
 interface LuminaHomePageProps {
   feedItems: FeedItem[];
@@ -38,7 +39,7 @@ export function LuminaHomePage({ feedItems, heroImages, profileData }: LuminaHom
 
   const handlePostClick = (post: FeedPost) => {
     // Navigate to post detail page
-    router.push(`/${locale}/posts/${post.slug}`);
+    router.push(localePath(locale, `/posts/${post.slug}`));
   };
 
   return (

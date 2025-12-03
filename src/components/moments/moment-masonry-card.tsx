@@ -9,6 +9,7 @@ import { ImageTextCard } from "./cards/image-text-card";
 import { MultiImageTextCard } from "./cards/multi-image-text-card";
 import { TextOnlyCard } from "./cards/text-only-card";
 import { DeleteIcon } from "@/components/moments/delete-icon";
+import { localePath } from "@/lib/locale-path";
 
 type MomentWithMasonryData = MomentListItem & {
   isPublic: boolean;
@@ -58,8 +59,8 @@ export function MomentMasonryCard({
   const { openLightbox, openTextLightbox } = useLightbox();
   const cardType = getCardType(moment);
   const cardLink = moment.slug
-    ? `/${locale}/m/${moment.slug}`
-    : `/${locale}/m#${moment.id}`;
+    ? localePath(locale, `/m/${moment.slug}`)
+    : localePath(locale, `/m#${moment.id}`);
 
   // Lightbox 事件处理（使用类型安全的 Context）
   const handleImageClick = (initialIndex = 0) => {

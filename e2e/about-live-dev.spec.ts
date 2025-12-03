@@ -21,7 +21,7 @@ const waitForDevData = async (page: Page) => {
 
 test.describe("Development Detail Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/en/about/live/dev");
+    await page.goto("/about/live/dev");
   });
 
   test("should display dev statistics", async ({ page }) => {
@@ -157,7 +157,7 @@ test.describe("Development Detail Page", () => {
       setTimeout(() => route.continue(), 1000);
     });
 
-    await page.goto("/en/about/live/dev");
+    await page.goto("/about/live/dev");
 
     // Should show loading skeletons
     const skeletons = page.locator(".animate-pulse");
@@ -170,7 +170,7 @@ test.describe("Development Detail Page", () => {
 
   test("should be responsive on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/en/about/live/dev");
+    await page.goto("/about/live/dev");
     await waitForDevData(page);
 
     // Content should be visible and stacked

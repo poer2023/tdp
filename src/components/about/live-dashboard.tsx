@@ -16,6 +16,7 @@ import Link from "next/link";
 import type { LiveHighlightsData } from "@/types/live-data";
 import { StatCard } from "./stat-card";
 import { SkeletonGrid } from "./skeleton-card";
+import { localePath } from "@/lib/locale-path";
 
 interface LiveDashboardProps {
   locale: "en" | "zh";
@@ -121,7 +122,7 @@ export function LiveDashboard({ locale }: LiveDashboardProps) {
       {/* Header */}
       <div className="mb-8">
         <Link
-          href={`/${locale}/about`}
+          href={localePath(locale, "/about")}
           className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -161,7 +162,7 @@ export function LiveDashboard({ locale }: LiveDashboardProps) {
                   subtitle={highlight.subtitle}
                   value={highlight.value}
                   trend={highlight.trend}
-                  href={`/${locale}${highlight.href}`}
+                  href={localePath(locale, highlight.href)}
                 />
               ))}
             </div>

@@ -5,7 +5,6 @@ import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { MomentComposerBottomSheet } from "@/components/moments/moment-composer";
-import { GlobalSearchProvider } from "@/components/global-search-provider";
 import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
 import { HtmlLangSync } from "@/components/html-lang-sync";
 import { auth } from "@/auth";
@@ -183,22 +182,20 @@ export default async function RootLayout({
         <ThemeProvider>
           <SessionProvider session={session}>
             <ConfirmProvider>
-              <GlobalSearchProvider>
-                {/* Skip to content link for accessibility */}
-                <a
-                  href="#main-content"
-                  className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                >
-                  Skip to content
-                </a>
+              {/* Skip to content link for accessibility */}
+              <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              >
+                Skip to content
+              </a>
 
-                <main id="main-content" className="flex-1">
-                  {children}
-                </main>
+              <main id="main-content" className="flex-1">
+                {children}
+              </main>
 
-                {/* Global mobile composer FAB (hidden on admin) */}
-                {!isAdminRoute && <MomentComposerBottomSheet />}
-              </GlobalSearchProvider>
+              {/* Global mobile composer FAB (hidden on admin) */}
+              {!isAdminRoute && <MomentComposerBottomSheet />}
             </ConfirmProvider>
           </SessionProvider>
         </ThemeProvider>

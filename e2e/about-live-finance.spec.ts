@@ -13,7 +13,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Finance Detail Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/en/about/live/finance");
+    await page.goto("/about/live/finance");
   });
 
   test("should display privacy notice prominently", async ({ page }) => {
@@ -197,7 +197,7 @@ test.describe("Finance Detail Page", () => {
       setTimeout(() => route.continue(), 1000);
     });
 
-    await page.goto("/en/about/live/finance");
+    await page.goto("/about/live/finance");
 
     // Should show loading skeletons
     const skeletons = page.locator(".animate-pulse");
@@ -210,7 +210,7 @@ test.describe("Finance Detail Page", () => {
 
   test("should be responsive on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/en/about/live/finance");
+    await page.goto("/about/live/finance");
     await page.waitForLoadState("networkidle");
 
     // Content should be visible and stacked

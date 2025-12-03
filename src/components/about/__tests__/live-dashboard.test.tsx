@@ -146,19 +146,19 @@ describe("LiveDashboard", () => {
 
     await waitFor(() => {
       const devLink = screen.getByText("Commits Today").closest("a");
-      expect(devLink).toHaveAttribute("href", "/en/about/live/dev");
+      expect(devLink).toHaveAttribute("href", "/about/live/dev");
 
       const gamingLink = screen.getByText("Gaming This Week").closest("a");
-      expect(gamingLink).toHaveAttribute("href", "/en/about/live/gaming");
+      expect(gamingLink).toHaveAttribute("href", "/about/live/gaming");
 
       const readingLink = screen.getByText("Currently Reading").closest("a");
-      expect(readingLink).toHaveAttribute("href", "/en/about/live/reading");
+      expect(readingLink).toHaveAttribute("href", "/about/live/reading");
 
       const socialLink = screen.getByText("Social Activity").closest("a");
-      expect(socialLink).toHaveAttribute("href", "/en/about/live/social");
+      expect(socialLink).toHaveAttribute("href", "/about/live/social");
 
       const financeLink = screen.getByText("Subscriptions").closest("a");
-      expect(financeLink).toHaveAttribute("href", "/en/about/live/finance");
+      expect(financeLink).toHaveAttribute("href", "/about/live/finance");
     });
   });
 

@@ -18,7 +18,7 @@ export default async function SyncDashboardPage({ params }: PageProps) {
   // Check authentication
   const session = await auth();
   if (!session?.user || session.user.role !== "ADMIN") {
-    redirect(`/${locale}/auth/signin`);
+    redirect("/login");
   }
 
   return (

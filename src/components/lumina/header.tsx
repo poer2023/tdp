@@ -11,7 +11,6 @@ import { Menu, X, LogOut, LayoutDashboard, Moon, Sun, Languages, Search } from "
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
 import { useTheme } from "next-themes";
-import { CommandPaletteTrigger } from "@/components/command-palette-trigger";
 
 interface NavLink {
   label: string;
@@ -67,7 +66,7 @@ export function LuminaHeader() {
   const isActive = (path: string) => {
     const localizedPath = localePath(locale, path);
     if (path === "/") {
-      return pathname === `/${locale}` || pathname === "/en" || pathname === "/zh";
+      return pathname === "/" || pathname === "/zh";
     }
     return pathname.startsWith(localizedPath);
   };
@@ -85,9 +84,13 @@ export function LuminaHeader() {
 
   const toggleLanguage = () => {
     const newLocale = locale === "en" ? "zh" : "en";
-    // Replace locale in current path
-    const pathWithoutLocale = pathname.replace(/^\/(en|zh)/, "");
-    router.push(`/${newLocale}${pathWithoutLocale || ""}`);
+    // Swap locale prefix while keeping the rest of the path
+    const pathWithoutLocale = pathname.replace(/^\/(en|zh)(?=\/|$)/, "") || "/";
+    const nextPath =
+      newLocale === "zh"
+        ? `/zh${pathWithoutLocale === "/" ? "" : pathWithoutLocale}`
+        : pathWithoutLocale;
+    router.push(nextPath);
   };
 
   const t = (key: string) => {
@@ -155,9 +158,6 @@ export function LuminaHeader() {
               >
                 <Search size={18} />
               </Link>
-              <div className="hidden md:flex">
-                <CommandPaletteTrigger size="sm" />
-              </div>
               <button
                 onClick={toggleTheme}
                 className="rounded-full p-1.5 text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
@@ -288,16 +288,13 @@ export function LuminaHeader() {
               </button>
             ))}
 
-            <div className="mt-2 flex items-center justify-between rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 dark:border-stone-700 dark:bg-stone-800">
-              <Link
-                href={localePath(locale, "/search")}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-sm font-medium text-stone-700 hover:text-stone-900 dark:text-stone-200 dark:hover:text-stone-50"
-              >
-                {t("Search")}
-              </Link>
-              <CommandPaletteTrigger size="sm" />
-            </div>
+            <Link
+              href={localePath(locale, "/search")}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block w-full rounded-md px-3 py-3 text-left text-base font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+            >
+              {t("Search")}
+            </Link>
 
             <div className="mt-2 flex items-center justify-between border-t border-stone-100 px-3 pt-4 pb-2 dark:border-stone-800">
               <span className="text-sm text-stone-500 dark:text-stone-400">{t("Theme")}</span>

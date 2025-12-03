@@ -6,20 +6,12 @@ import { expectUrlContains } from "./helpers/assertion-helpers";
 import { waitForNetworkIdle } from "./helpers/wait-helpers";
 
 test.describe("i18n Routing", () => {
-  test("should resolve root to locale page or correct lang", async ({ page }) => {
+  test("should resolve root to English without locale prefix", async ({ page }) => {
     await page.goto("/");
     await page.waitForLoadState("domcontentloaded");
 
-    // First，尝试等待重定向到 /en 或 /zh（理想路径）
-    try {
-      await expect(page).toHaveURL(/\/(en|zh)(\/|$)/, { timeout: 3000 });
-    } catch {
-      // CI 环境下偶发保留在根路径，但 html.lang 应与当前语言匹配
-      const html = page.locator("html");
-      await expect(html).toBeVisible();
-      const lang = await html.getAttribute("lang");
-      expect(lang).toMatch(/^(en|zh)/);
-    }
+    await expect(page).toHaveURL("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", /^en/);
   });
 
   test("should serve Chinese content at /zh path", async ({ page }) => {
@@ -39,12 +31,12 @@ test.describe("i18n Routing", () => {
     await waitForNetworkIdle(page);
     await expect(page.locator("html")).toHaveAttribute("lang", /^en/);
 
-    // Test explicit /en path (if supported)
+    // Test legacy /en path redirects to prefix-free root
     const enResponse = await page.goto("/en");
-    if (enResponse?.status() === 200) {
-      await waitForNetworkIdle(page);
-      await expect(page.locator("html")).toHaveAttribute("lang", /^en/);
-    }
+    expect([301, 308, 307, 302]).toContain(enResponse?.status());
+    await waitForNetworkIdle(page);
+    await expect(page).toHaveURL("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", /^en/);
   });
 
   test("should maintain locale in navigation within same language", async ({ page }) => {
@@ -98,7 +90,7 @@ test.describe("Language Switching", () => {
       await waitForNetworkIdle(page);
 
       // Should be back on English version
-      await expectUrlContains(page, "/en/posts/");
+      await expectUrlContains(page, "/posts/");
       await expect(page.locator("html")).toHaveAttribute("lang", /^en/);
     } else {
       test.skip(true, "Post does not have translation");
@@ -139,7 +131,7 @@ test.describe("Language Switching", () => {
     await waitForNetworkIdle(page);
 
     // Should still be on post detail page (not redirected to list)
-    expect(page.url()).toMatch(/\/(en|zh)\/posts\//);
+    expect(page.url()).toMatch(/\/(zh\/)?posts\//);
 
     // Should be on the translated version of the same post
     const translatedTitle = await postPage.title.textContent();
@@ -151,7 +143,7 @@ test.describe("Language Switching", () => {
 test.describe("Locale-specific Routing", () => {
   test("should handle Chinese slug redirects via PostAlias", async ({ page }) => {
     // Test Chinese characters in URL - may redirect or render directly
-    const response = await page.goto("/en/posts/测试文章", { waitUntil: "domcontentloaded" });
+    const response = await page.goto("/posts/测试文章", { waitUntil: "domcontentloaded" });
 
     if (response && (response.status() === 301 || response.status() === 302)) {
       // Redirected to pinyin slug
@@ -203,7 +195,7 @@ test.describe("Locale-specific Routing", () => {
       // Get href attribute to verify locale prefix
       const href = await postsListPage.postLinks.nth(0).getAttribute("href");
       expect(href).toBeTruthy();
-      expect(href).toMatch(/^\/en\/posts\//);
+      expect(href).toMatch(/^\/posts\//);
     }
 
     // Navigate to Chinese posts
@@ -231,7 +223,7 @@ test.describe("Locale Edge Cases", () => {
     // If redirected, should go to valid locale
     if (response?.status() === 301 || response?.status() === 302) {
       const redirectUrl = page.url();
-      expect(redirectUrl).toMatch(/^\/(zh\/)?posts/);
+      expect(redirectUrl).toMatch(/^\/(zh\/)?posts|^\/$/);
     }
   });
 
@@ -249,7 +241,7 @@ test.describe("Locale Edge Cases", () => {
       expect(await postPage.languageSwitcher.count()).toBe(0);
 
       // Direct navigation to /zh version should handle gracefully
-      const currentSlug = page.url().split("/en/posts/")[1];
+      const currentSlug = page.url().split("/posts/")[1];
       const zhResponse = await page.goto(`/zh/posts/${currentSlug}`);
 
       // Should either show 404 or redirect to valid page
@@ -261,7 +253,7 @@ test.describe("Locale Edge Cases", () => {
     const postPage = new PostPage(page);
 
     // Navigate with query parameter
-    await page.goto(`/en/posts/${TEST_POST_IDS.enPost1}?ref=test`);
+    await page.goto(`/posts/${TEST_POST_IDS.enPost1}?ref=test`);
     await postPage.expectPostLoaded();
 
     const hasTranslation = await postPage.hasTranslation();

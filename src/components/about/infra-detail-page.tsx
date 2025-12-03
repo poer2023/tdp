@@ -8,6 +8,7 @@ import type { InfraData } from "@/types/live-data";
 import { ServerStatusCard } from "./server-status-card";
 import { ServiceStatusCard } from "./service-status-card";
 import { SkeletonGrid } from "./skeleton-card";
+import { localePath } from "@/lib/locale-path";
 
 interface InfraDetailPageProps {
   locale: "en" | "zh";
@@ -93,7 +94,7 @@ export function InfraDetailPage({ locale }: InfraDetailPageProps) {
         <div className="flex items-center justify-between">
           <div>
             <Link
-              href={`/${locale}/about/live`}
+              href={localePath(locale, "/about/live")}
               className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
             >
               <ArrowLeft className="h-4 w-4" />

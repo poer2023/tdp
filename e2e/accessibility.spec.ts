@@ -387,7 +387,7 @@ test.describe("Screen Reader Support", () => {
     expect(postsTitle.length).toBeGreaterThan(0);
 
     // Titles should be different and descriptive
-    // Note: After i18n changes, middleware redirects / to /en or /zh
+    // Note: Root stays English (prefix-free); /zh remains explicit for Chinese
     // Both homepage and posts page may have locale-specific titles
     // The key is that both have valid titles, even if middleware redirects make them similar
     expect(homeTitle === postsTitle || homeTitle !== postsTitle).toBe(true);

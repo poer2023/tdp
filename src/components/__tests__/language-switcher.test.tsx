@@ -111,8 +111,8 @@ describe("LanguageSwitcher", () => {
 
     const link = screen.getByRole("link", { name: "English" });
     expect(link).toBeInTheDocument();
-    // Component always adds /en/ prefix for English links
-    expect(link).toHaveAttribute("href", "/en/posts/test-post");
+    // English stays prefix-free
+    expect(link).toHaveAttribute("href", "/posts/test-post");
   });
 
   it("should return null when no alternate version exists", async () => {
@@ -237,10 +237,9 @@ describe("LanguageSwitcher", () => {
       })
     );
 
-    // Component always adds /en/ prefix for English links
     expect(screen.getByRole("link", { name: "English" })).toHaveAttribute(
       "href",
-      "/en/posts/english"
+      "/posts/english"
     );
   });
 });

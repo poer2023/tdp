@@ -13,7 +13,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Gaming Detail Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/en/about/live/gaming");
+    await page.goto("/about/live/gaming");
   });
 
   test("should display gaming statistics", async ({ page }) => {
@@ -116,7 +116,7 @@ test.describe("Gaming Detail Page", () => {
       setTimeout(() => route.continue(), 1000);
     });
 
-    await page.goto("/en/about/live/gaming");
+    await page.goto("/about/live/gaming");
 
     // Should show loading skeletons
     const skeletons = page.locator(".animate-pulse");
@@ -129,7 +129,7 @@ test.describe("Gaming Detail Page", () => {
 
   test("should be responsive on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/en/about/live/gaming");
+    await page.goto("/about/live/gaming");
     await page.waitForLoadState("networkidle");
 
     // Content should be visible and stacked
@@ -180,7 +180,7 @@ test.describe("Gaming Detail Page", () => {
       });
     });
 
-    await page.goto("/en/about/live/gaming");
+    await page.goto("/about/live/gaming");
     await page.waitForLoadState("networkidle");
 
     // Should still display structure with zero values
@@ -224,7 +224,7 @@ test.describe("Gaming Detail Page", () => {
       });
     });
 
-    await page.goto("/en/about/live/gaming");
+    await page.goto("/about/live/gaming");
     await page.waitForLoadState("networkidle");
 
     // Should fall back to mock data or show error gracefully
@@ -282,7 +282,7 @@ test.describe("Gaming Detail Page", () => {
     // Verify API is called correctly
     const apiPromise = page.waitForResponse("**/api/about/live/gaming");
 
-    await page.goto("/en/about/live/gaming");
+    await page.goto("/about/live/gaming");
 
     const response = await apiPromise;
     expect(response.status()).toBe(200);
@@ -299,7 +299,7 @@ test.describe("Gaming Detail Page", () => {
   test("should respect cache headers", async ({ page }) => {
     const apiPromise = page.waitForResponse("**/api/about/live/gaming");
 
-    await page.goto("/en/about/live/gaming");
+    await page.goto("/about/live/gaming");
 
     const response = await apiPromise;
     const cacheControl = response.headers()["cache-control"];

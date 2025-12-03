@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { SearchResult } from "@/lib/search";
 import { HighlightText } from "./highlight-text";
+import { localePath } from "@/lib/locale-path";
 
 type Props = {
   post: SearchResult;
@@ -12,7 +13,7 @@ type Props = {
 export function SearchResultPost({ post, query, locale, onSelect }: Props) {
   return (
     <Link
-      href={`/${locale}/posts/${post.slug}`}
+      href={localePath(locale as "en" | "zh", `/posts/${post.slug}`)}
       onClick={onSelect}
       className="group block rounded-lg px-4 py-3 transition-colors hover:bg-stone-50 dark:hover:bg-stone-800/50"
     >

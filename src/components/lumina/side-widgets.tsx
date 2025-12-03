@@ -5,6 +5,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Film, Gamepad2, Mail, Github, Twitter, MessageCircle, Compass, Zap } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
+import { localePath } from "@/lib/locale-path";
 
 interface ProfileWidgetProps {
   avatarUrl?: string;
@@ -32,7 +33,7 @@ export function ProfileWidget({
   React.useEffect(() => {
     if (shouldNavigateRef.current) {
       shouldNavigateRef.current = false;
-      router.push(`/${locale}/m/friends`);
+      router.push(localePath(locale, "/m/friends"));
     }
   }, [clickCount, locale, router]);
 

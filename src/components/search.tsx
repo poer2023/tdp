@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { getLocaleFromPathname } from "@/lib/i18n";
+import { localePath } from "@/lib/locale-path";
 import { LanguageBadge } from "@/components/ui/language-badge";
 import { SearchResultSkeleton } from "./search/search-skeleton";
 import { SearchEmptyState } from "./search/search-empty-state";
@@ -173,7 +174,8 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
     if (query) {
       addToSearchHistory(query);
     }
-    const target = `/${locale}/search?q=${encodeURIComponent(query)}`;
+    const searchPath = localePath(locale, "/search");
+    const target = `${searchPath}?q=${encodeURIComponent(query)}`;
     setOpen(false);
     router.push(target);
   };
@@ -345,7 +347,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                     {results.posts.map((post) => (
                       <li key={post.id}>
                         <a
-                          href={`/${locale}/posts/${post.slug}`}
+                          href={localePath(locale, `/posts/${post.slug}`)}
                           className="block px-4 py-3 text-sm text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                         >
                           <div className="font-medium text-stone-900 dark:text-stone-100">
@@ -605,7 +607,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
                     {results.posts.map((post) => (
                       <li key={post.id}>
                         <a
-                          href={`/${locale}/posts/${post.slug}`}
+                          href={localePath(locale, `/posts/${post.slug}`)}
                           className="block px-3 py-2.5 text-sm text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                         >
                           <div className="font-medium text-stone-900 dark:text-stone-100">

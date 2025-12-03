@@ -11,6 +11,7 @@ import { SearchEmptyState } from "@/components/search/search-empty-state";
 import { addToSearchHistory } from "@/lib/search-history";
 import type { SearchResult, GallerySearchResult, MomentSearchResult } from "@/lib/search";
 import { LuminaHeader, LuminaFooter } from "@/components/lumina";
+import { localePath } from "@/lib/locale-path";
 
 type SearchResults = {
   posts: SearchResult[];
@@ -101,7 +102,10 @@ export default function SearchPage() {
         className="mb-4 flex items-center gap-2 text-sm text-stone-600 dark:text-stone-400"
         aria-label={isZh ? "面包屑导航" : "Breadcrumb navigation"}
       >
-        <Link href={`/${locale}`} className="hover:text-stone-900 dark:hover:text-stone-100">
+        <Link
+          href={localePath(locale as "en" | "zh", "/")}
+          className="hover:text-stone-900 dark:hover:text-stone-100"
+        >
           {isZh ? "首页" : "Home"}
         </Link>
         <span aria-hidden="true">/</span>
@@ -210,7 +214,10 @@ export default function SearchPage() {
                       key={post.id}
                       className="border-b border-stone-200 pb-6 last:border-0 dark:border-stone-800"
                     >
-                      <Link href={`/${locale}/posts/${post.slug}`} className="group block">
+                      <Link
+                        href={localePath(locale as "en" | "zh", `/posts/${post.slug}`)}
+                        className="group block"
+                      >
                         <h3 className="text-xl font-semibold text-stone-900 group-hover:text-blue-600 dark:text-stone-100 dark:group-hover:text-blue-400">
                           {post.title}
                         </h3>

@@ -7,7 +7,7 @@ import { waitForNetworkIdle } from "./helpers/wait-helpers";
 
 test.describe("404 Not Found Errors", () => {
   test("should show custom 404 page for non-existent posts", async ({ page }) => {
-    const response = await page.goto("/en/posts/this-post-does-not-exist-12345");
+    const response = await page.goto("/posts/this-post-does-not-exist-12345");
 
     expect(response?.status()).toBe(404);
 
@@ -35,7 +35,7 @@ test.describe("404 Not Found Errors", () => {
   });
 
   test("should have navigation options on 404 page", async ({ page }) => {
-    await page.goto("/en/posts/non-existent");
+    await page.goto("/posts/non-existent");
 
     // Should have link to homepage or posts list
     const homeLink = page.getByRole("link", { name: /home|首页/i });
@@ -273,7 +273,7 @@ test.describe("Browser Compatibility", () => {
 
     const currentUrl = page.url();
 
-    // Navigate to posts list (may redirect to /en/posts or /zh/posts)
+    // Navigate to posts list (may redirect to /posts or /zh/posts)
     await page.goto("/posts");
     await waitForNetworkIdle(page);
 

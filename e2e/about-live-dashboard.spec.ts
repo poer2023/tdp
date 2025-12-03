@@ -13,7 +13,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("About Live Dashboard", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/en/about/live");
+    await page.goto("/about/live");
   });
 
   test("should display dashboard with all module cards", async ({ page }) => {
@@ -76,7 +76,7 @@ test.describe("About Live Dashboard", () => {
       setTimeout(() => route.continue(), 1000);
     });
 
-    await page.goto("/en/about/live");
+    await page.goto("/about/live");
 
     // Should display skeleton loading state
     const skeletons = page.locator(".animate-pulse");
@@ -128,7 +128,7 @@ test.describe("About Live Dashboard", () => {
   test("should be responsive on mobile", async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/en/about/live");
+    await page.goto("/about/live");
 
     // Dashboard should still be visible and functional
     await expect(page.getByRole("heading", { name: /Live Activity Dashboard/ })).toBeVisible();
@@ -141,7 +141,7 @@ test.describe("About Live Dashboard", () => {
   test("should be responsive on tablet", async ({ page }) => {
     // Set tablet viewport
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto("/en/about/live");
+    await page.goto("/about/live");
 
     // Dashboard should display properly
     await expect(page.getByRole("heading", { name: /Live Activity Dashboard/ })).toBeVisible();
@@ -169,7 +169,7 @@ test.describe("About Live Dashboard", () => {
       });
     });
 
-    await page.goto("/en/about/live");
+    await page.goto("/about/live");
 
     // Page should still render without crashing
     await expect(page.getByRole("heading", { name: /Live Activity Dashboard/ })).toBeVisible();
@@ -181,7 +181,7 @@ test.describe("About Live Dashboard", () => {
   });
 
   test("should support keyboard navigation", async ({ page }) => {
-    await page.goto("/en/about/live");
+    await page.goto("/about/live");
     const cards = page.locator("a[href*='/about/live/']");
     await cards.first().waitFor({ state: "visible", timeout: 10000 });
 

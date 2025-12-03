@@ -19,7 +19,7 @@ export class PostPage extends BasePage {
    * Navigate to a specific post
    */
   async gotoPost(slug: string, locale?: "en" | "zh") {
-    const path = locale === "zh" ? `/zh/posts/${slug}` : `/en/posts/${slug}`;
+    const path = locale === "zh" ? `/zh/posts/${slug}` : `/posts/${slug}`;
     await this.goto(path);
   }
 
@@ -51,7 +51,7 @@ export class PostPage extends BasePage {
   }
 
   get switchToEnglishLink(): Locator {
-    return this.page.locator('a[href^="/en/posts/"]').filter({ hasText: /english/i });
+    return this.page.locator('a[href^="/posts/"]').filter({ hasText: /english/i });
   }
 
   get switchToChineseLink(): Locator {

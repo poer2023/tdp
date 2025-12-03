@@ -224,7 +224,7 @@ export function MainNav() {
   return (
     <nav className="flex items-center gap-6" role="navigation" aria-label="Main navigation">
       <Link
-        href={locale === "zh" ? "/zh" : "/en"}
+        href={localePath(locale, "/")}
         className="text-lg font-semibold text-stone-900 dark:text-stone-100"
         aria-label="Home"
       >
@@ -256,7 +256,7 @@ export function MainNav() {
             <SheetHeader>
               <SheetTitle>
                 <Link
-                  href={locale === "zh" ? "/zh" : "/en"}
+                  href={localePath(locale, "/")}
                   className="text-lg font-semibold"
                   onClick={() => setMobileMenuOpen(false)}
                 >
