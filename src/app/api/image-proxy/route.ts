@@ -14,19 +14,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
+import { getAllowedImageProxyDomains } from "@/lib/image-proxy";
 
 // Allowed image domains (security measure)
-const ALLOWED_DOMAINS = [
-  "i0.hdslb.com",
-  "i1.hdslb.com",
-  "i2.hdslb.com",
-  "img1.doubanio.com",
-  "img2.doubanio.com",
-  "img3.doubanio.com",
-  "img9.doubanio.com",
-  // Google profile photos (avatars)
-  "lh3.googleusercontent.com",
-];
+const ALLOWED_DOMAINS = getAllowedImageProxyDomains();
 
 /**
  * GET /api/image-proxy?url=<image_url>
