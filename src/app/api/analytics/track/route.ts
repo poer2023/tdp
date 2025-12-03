@@ -9,6 +9,18 @@ interface TrackPayload {
   referer?: string | null;
 }
 
+type DeviceType = "MOBILE" | "DESKTOP" | "TABLET" | "BOT" | "UNKNOWN";
+
+function detectDevice(userAgent: string | null): DeviceType {
+  if (!userAgent) return "UNKNOWN";
+  const ua = userAgent.toLowerCase();
+  if (ua.includes("bot") || ua.includes("spider") || ua.includes("crawl")) return "BOT";
+  if (ua.includes("ipad") || ua.includes("tablet")) return "TABLET";
+  if (ua.includes("mobi") || ua.includes("android")) return "MOBILE";
+  if (ua.includes("windows") || ua.includes("macintosh") || ua.includes("linux")) return "DESKTOP";
+  return "UNKNOWN";
+}
+
 export async function POST(req: NextRequest) {
   try {
     const data = (await req.json()) as TrackPayload;
@@ -16,6 +28,8 @@ export async function POST(req: NextRequest) {
     const fingerprint = typeof data.fingerprint === "string" ? data.fingerprint : null;
     const locale = typeof data.locale === "string" ? data.locale : null;
     const referer = typeof data.referer === "string" ? data.referer : null;
+    const userAgent = req.headers.get("user-agent");
+    const device = detectDevice(userAgent);
 
     // Validate required fields
     if (!path || !fingerprint) {
@@ -35,6 +49,8 @@ export async function POST(req: NextRequest) {
           path,
           locale,
           referer,
+          userAgent,
+          device,
         },
       }),
 

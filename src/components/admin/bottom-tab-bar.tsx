@@ -56,7 +56,7 @@ const primaryTabs: TabItem[] = [
     ),
   },
   {
-    labelKey: "analytics",
+    labelKey: "trafficStats",
     href: "/admin/analytics",
     icon: (
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -72,6 +72,54 @@ const primaryTabs: TabItem[] = [
 ];
 
 const secondaryTabs: TabItem[] = [
+  {
+    labelKey: "moments",
+    href: "/admin/moments",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h6m3 8l4-4V5a2 2 0 00-2-2H6a2 2 0 00-2 2v14l4-4h10" />
+      </svg>
+    ),
+  },
+  {
+    labelKey: "projects",
+    href: "/admin/projects",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M3 12h18M3 17h18M7 7l2-3h6l2 3" />
+      </svg>
+    ),
+  },
+  {
+    labelKey: "curated",
+    href: "/admin/curated",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5h9l5 5v9a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9h3m-3 3h6" />
+      </svg>
+    ),
+  },
+  {
+    labelKey: "heroImages",
+    href: "/admin/hero",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13l2.5-3 3 4 2-2 2.5 3" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 8h.01" />
+      </svg>
+    ),
+  },
+  {
+    labelKey: "lifeLogData",
+    href: "/admin/data",
+    icon: (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 19h16M4 15l4-8 4 10 4-6 4 8" />
+      </svg>
+    ),
+  },
   {
     labelKey: "tools",
     href: "/admin/tools",

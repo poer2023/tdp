@@ -104,33 +104,36 @@ export default async function CredentialsPage({
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
-            {t(locale, "credentials")}
-          </h1>
-          <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-            {t(locale, "credentialDescription")}
-          </p>
+      <div className="rounded-2xl border border-stone-200 bg-white/90 p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/80">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
+              {t(locale, "credentials")}
+            </h1>
+            <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+              {t(locale, "credentialDescription")}
+            </p>
+          </div>
+          <Link href="/admin/credentials/new" className="admin-primary-btn">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            {t(locale, "addCredential")}
+          </Link>
+        </header>
+
+        <div className="mt-4">
+          <CredentialFilters locale={locale} params={params} platforms={platforms} />
         </div>
-        <Link
-          href="/admin/credentials/new"
-          className="admin-primary-btn"
-        >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          {t(locale, "addCredential")}
-        </Link>
-      </header>
+      </div>
 
-      <CredentialFilters locale={locale} params={params} platforms={platforms} />
-
-      <AdminErrorBoundary>
-        <Suspense fallback={<ModuleLoadingSkeleton rows={3} />}>
-          <CredentialsContent credentials={credentials} locale={locale} />
-        </Suspense>
-      </AdminErrorBoundary>
+      <div className="rounded-2xl border border-stone-200 bg-white/90 p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/80">
+        <AdminErrorBoundary>
+          <Suspense fallback={<ModuleLoadingSkeleton rows={3} />}>
+            <CredentialsContent credentials={credentials} locale={locale} />
+          </Suspense>
+        </AdminErrorBoundary>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import type { GalleryImage as GalleryImageType } from "@/lib/gallery";
 import type { PostSummary } from "@/lib/posts";
 import { UnifiedUploadForm } from "./unified-upload-form";
 import { AdminGalleryGrid } from "./admin-gallery-grid";
+import { LuminaDataSection } from "@/components/admin/lumina-shared";
 
 type GalleryClientProps = {
   images: GalleryImageType[];
@@ -23,13 +24,15 @@ export function AdminGalleryClient({ images, posts: _posts }: GalleryClientProps
         </p>
       </header>
 
-      <UnifiedUploadForm />
+      <LuminaDataSection title="上传" description="Lumina 风格上传区，支持批量和单独编辑">
+        <UnifiedUploadForm />
+      </LuminaDataSection>
 
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-50">照片列表</h2>
-          <span className="text-sm text-stone-500 dark:text-stone-400">共 {images.length} 张</span>
-        </div>
+      <LuminaDataSection
+        title="照片列表"
+        description="最新上传靠前展示，支持快速操作"
+        action={<span className="text-xs text-stone-500 dark:text-stone-400">共 {images.length} 张</span>}
+      >
         {images.length ? (
           <AdminGalleryGrid images={images} />
         ) : (
@@ -37,7 +40,7 @@ export function AdminGalleryClient({ images, posts: _posts }: GalleryClientProps
             相册还没有内容，尝试上传一张照片吧。
           </p>
         )}
-      </section>
+      </LuminaDataSection>
     </div>
   );
 }

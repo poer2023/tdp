@@ -44,6 +44,8 @@ export type AnalyticsOverviewData = {
   rangesByPeriod: Record<PeriodOption, PeriodRange>;
   deltasByPeriod: Record<PeriodOption, number | null>;
   localeDistribution: LocaleEntry[];
+  sourceBreakdown?: Array<{ label: string; value: number }>;
+  deviceBreakdown?: Array<{ label: string; value: number }>;
 };
 
 export type AnalyticsDashboardProps = {

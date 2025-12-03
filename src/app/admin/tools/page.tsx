@@ -26,37 +26,39 @@ export default function AdminToolsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">
-          Tools
-        </h1>
-        <p className="text-sm text-stone-500 dark:text-stone-400">
-          数据导入、导出和备份工具
-        </p>
-      </div>
+      <div className="rounded-2xl border border-stone-200 bg-white/90 p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/80">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-50">
+            Tools
+          </h1>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            数据导入、导出和备份工具
+          </p>
+        </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-stone-200 dark:border-stone-800">
-        <nav className="flex space-x-8" aria-label="Tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
-                activeTab === tab.id
-                  ? "border-stone-900 text-stone-900 dark:border-stone-100 dark:text-stone-100"
-                  : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700 dark:text-stone-400 dark:hover:border-stone-700 dark:hover:text-stone-300"
-              } `}
-              aria-current={activeTab === tab.id ? "page" : undefined}
-            >
-              {tab.label.en} / {tab.label.zh}
-            </button>
-          ))}
-        </nav>
+        {/* Tab Navigation */}
+        <div className="mt-4 border-b border-stone-200 dark:border-stone-800">
+          <nav className="flex space-x-8" aria-label="Tabs">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={`border-b-2 px-1 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
+                  activeTab === tab.id
+                    ? "border-stone-900 text-stone-900 dark:border-stone-100 dark:text-stone-100"
+                    : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700 dark:text-stone-400 dark:hover:border-stone-700 dark:hover:text-stone-300"
+                } `}
+                aria-current={activeTab === tab.id ? "page" : undefined}
+              >
+                {tab.label.en} / {tab.label.zh}
+              </button>
+            ))}
+          </nav>
+        </div>
       </div>
 
       {/* Tab Content */}
-      <div className="py-4">
+      <div className="rounded-2xl border border-stone-200 bg-white/90 p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/80">
         {activeTab === "export" && <ExportClientShell />}
         {activeTab === "import" && <ImportClient />}
         {activeTab === "backup" && (

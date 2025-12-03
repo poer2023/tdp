@@ -126,49 +126,50 @@ export default async function SyncDashboardPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Page Header */}
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
-            同步仪表板
-          </h1>
-          <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-            管理数据同步任务和平台连接状态
-          </p>
-        </div>
-        <Link
-          href="/admin/credentials"
-          className="admin-primary-btn"
-        >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          管理凭据
-        </Link>
-      </header>
+      <div className="rounded-2xl border border-stone-200 bg-stone-950 text-stone-100 shadow-sm dark:border-stone-800">
+        <header className="flex flex-col gap-4 border-b border-stone-800 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-stone-500">Sync</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              同步仪表板
+            </h1>
+            <p className="mt-2 text-sm text-stone-400">
+              管理数据同步任务和平台连接状态
+            </p>
+          </div>
+          <Link href="/admin/credentials" className="admin-primary-btn">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            管理凭据
+          </Link>
+        </header>
 
-      {/* Metrics Overview */}
-      <SyncMetricsOverview
-        totalJobs={stats.totalJobs}
-        successJobs={stats.successJobs}
-        failedJobs={stats.failedJobs}
-        runningJobs={stats.runningJobs}
-        successRate={successRate}
-        avgDuration={avgDuration}
-      />
+        <div className="p-5">
+          <SyncMetricsOverview
+            totalJobs={stats.totalJobs}
+            successJobs={stats.successJobs}
+            failedJobs={stats.failedJobs}
+            runningJobs={stats.runningJobs}
+            successRate={successRate}
+            avgDuration={avgDuration}
+          />
+        </div>
+      </div>
 
       {/* Platform Status Cards */}
-      <div>
+      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
         <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">平台状态</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {credentials.length === 0 ? (

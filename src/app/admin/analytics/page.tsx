@@ -4,6 +4,7 @@ import { features } from "@/config/features";
 import type { AdminLocale } from "@/lib/admin-translations";
 import type { AnalyticsOverviewData } from "@/components/admin/analytics-dashboard";
 import { AnalyticsDashboardShell } from "./analytics-dashboard-shell";
+import { TrafficCharts } from "@/components/admin/traffic-charts";
 
 export const revalidate = 0;
 
@@ -14,6 +15,8 @@ type AggregatedPages = {
   total: number;
   entries: Array<{ path: string; views: number }>;
 };
+type SourceBreakdown = Array<{ label: string; value: number }>;
+type DeviceBreakdown = Array<{ label: string; value: number }>;
 
 /**
  * Normalize path by removing locale prefix for statistics
@@ -138,6 +141,45 @@ async function resolvePageLabels(paths: string[]) {
   return labels;
 }
 
+function classifyReferer(value: string | null | undefined): "Direct" | "Search" | "Social" | "Referrals" {
+  if (!value || value.trim().length === 0) return "Direct";
+  const referer = value.toLowerCase();
+  if (referer.includes("google") || referer.includes("bing") || referer.includes("baidu") || referer.includes("duckduckgo")) {
+    return "Search";
+  }
+  if (referer.includes("twitter") || referer.includes("x.com") || referer.includes("weibo") || referer.includes("reddit") || referer.includes("zhihu")) {
+    return "Social";
+  }
+  return "Referrals";
+}
+
+function aggregateSources(referers: Array<{ referer: string | null }>): SourceBreakdown {
+  const counts = new Map<string, number>([
+    ["Direct", 0],
+    ["Search", 0],
+    ["Social", 0],
+    ["Referrals", 0],
+  ]);
+  referers.forEach((entry) => {
+    const key = classifyReferer(entry.referer);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  });
+  return Array.from(counts.entries())
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value);
+}
+
+function aggregateDevices(devices: Array<{ device: string | null; value?: number }>): DeviceBreakdown {
+  const counts = new Map<string, number>();
+  devices.forEach((entry) => {
+    const key = entry.device ?? "UNKNOWN";
+    counts.set(key, (counts.get(key) ?? 0) + (entry.value ?? 1));
+  });
+  return Array.from(counts.entries())
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value);
+}
+
 function getFallbackOverview(): AnalyticsOverviewData {
   const nowIso = new Date().toISOString();
   return {
@@ -167,7 +209,15 @@ function getFallbackOverview(): AnalyticsOverviewData {
       "30d": null,
     },
     localeDistribution: [],
+    sourceBreakdown: [],
+    deviceBreakdown: [],
   };
+}
+
+function formatDelta(delta: number | null): string | undefined {
+  if (delta === null || Number.isNaN(delta)) return undefined;
+  const rounded = delta.toFixed(1);
+  return `${delta >= 0 ? "+" : ""}${rounded}%`;
 }
 
 async function loadAnalyticsOverview(): Promise<AnalyticsOverviewData> {
@@ -206,6 +256,8 @@ async function loadAnalyticsOverview(): Promise<AnalyticsOverviewData> {
       rawPageViews30d,
       localeStats,
       last7Days,
+      recentReferers,
+      deviceStats,
     ] = await Promise.all([
       prisma.pageView.count({
         where: {
@@ -282,6 +334,21 @@ async function loadAnalyticsOverview(): Promise<AnalyticsOverviewData> {
         },
         orderBy: {
           date: "asc",
+        },
+      }),
+      prisma.pageView.findMany({
+        where: { createdAt: { gte: weekAgo } },
+        select: { referer: true },
+      }),
+      prisma.pageView.groupBy({
+        by: ["device"],
+        where: {
+          createdAt: {
+            gte: weekAgo,
+          },
+        },
+        _count: {
+          device: true,
         },
       }),
     ]);
@@ -363,6 +430,10 @@ async function loadAnalyticsOverview(): Promise<AnalyticsOverviewData> {
         locale: stat.locale,
         count: stat._count.locale,
       })),
+      sourceBreakdown: aggregateSources(recentReferers),
+      deviceBreakdown: aggregateDevices(
+        deviceStats.map((item) => ({ device: item.device ?? "UNKNOWN", value: item._count.device }))
+      ),
     };
   } catch (error) {
     console.error("Failed to load admin analytics data", error);
@@ -411,6 +482,42 @@ export default async function AdminAnalyticsPage() {
     <div className="space-y-10">
       <AnalyticsHeader locale={locale} />
       <AnalyticsDashboardShell locale={locale} overview={overview} />
+      <TrafficCharts
+        kpis={[
+          {
+            label: t(locale, "todayVisits"),
+            value: overview.metrics.todayViews.toLocaleString(),
+            deltaLabel: undefined,
+          },
+          {
+            label: t(locale, "weeklyVisits"),
+            value: overview.metrics.weekViews.toLocaleString(),
+            deltaLabel: formatDelta(overview.deltasByPeriod["7d"]),
+            positive: (overview.deltasByPeriod["7d"] ?? 0) >= 0,
+          },
+          {
+            label: t(locale, "totalVisitors"),
+            value: overview.metrics.totalVisitors.toLocaleString(),
+          },
+          {
+            label: t(locale, "registeredUsers"),
+            value: overview.metrics.totalUsers.toLocaleString(),
+          },
+        ]}
+        trendTitle={t(locale, "trendChart")}
+        trendData={overview.chartData.map((item) => ({
+          date: new Date(item.date).toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
+            month: "short",
+            day: "numeric",
+          }),
+          views: item.totalViews,
+        }))}
+        topPages={overview.topPages["7d"]
+          .slice(0, 5)
+          .map((page) => ({ path: page.label ?? page.path, views: page.views }))}
+        sourceBreakdown={overview.sourceBreakdown}
+        deviceBreakdown={overview.deviceBreakdown}
+      />
     </div>
   );
 }

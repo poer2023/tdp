@@ -19,38 +19,67 @@ type NavItem = {
 
 const navSections: NavSection[] = [
   {
-    titleKey: "content",
+    titleKey: "quickActions",
     items: [
       { labelKey: "overview", href: "/admin", descriptionKey: "dashboard" },
-      { labelKey: "posts", href: "/admin/posts", descriptionKey: "managePosts" },
-      { labelKey: "gallery", href: "/admin/gallery", descriptionKey: "photoManagement" },
+      {
+        labelKey: "trafficStats",
+        href: "/admin/analytics",
+        descriptionKey: "trafficStatsDescription",
+      },
     ],
   },
   {
-    titleKey: "operations",
+    titleKey: "content",
     items: [
-      { labelKey: "analytics", href: "/admin/analytics", descriptionKey: "analyticsDescription" },
-      { labelKey: "tools", href: "/admin/tools", descriptionKey: "toolsDescription" },
-      {
-        labelKey: "subscriptions",
-        href: "/admin/subscriptions",
-        descriptionKey: "subscriptionDescription",
-      },
+      { labelKey: "posts", href: "/admin/posts", descriptionKey: "managePosts" },
+      { labelKey: "moments", href: "/admin/moments", descriptionKey: "momentsDescription" },
+      { labelKey: "curated", href: "/admin/curated", descriptionKey: "curatedDescription" },
+      { labelKey: "projects", href: "/admin/projects", descriptionKey: "projectsDescription" },
+    ],
+  },
+  {
+    titleKey: "management",
+    items: [
       {
         labelKey: "friends",
         href: "/admin/friends",
         descriptionKey: "friendManagementDescription",
       },
       {
+        labelKey: "subscriptions",
+        href: "/admin/subscriptions",
+        descriptionKey: "subscriptionDescription",
+      },
+      {
         labelKey: "credentials",
         href: "/admin/credentials",
         descriptionKey: "credentialDescription",
       },
+    ],
+  },
+  {
+    titleKey: "media",
+    items: [
+      { labelKey: "gallery", href: "/admin/gallery", descriptionKey: "photoManagement" },
+      { labelKey: "heroImages", href: "/admin/hero", descriptionKey: "heroImagesDescription" },
+    ],
+  },
+  {
+    titleKey: "quantifiedSelf",
+    items: [
+      { labelKey: "lifeLogData", href: "/admin/data", descriptionKey: "lifeLogDataDescription" },
+    ],
+  },
+  {
+    titleKey: "system",
+    items: [
       {
         labelKey: "syncDashboard",
         href: "/admin/sync",
         descriptionKey: "syncDashboardDescription",
       },
+      { labelKey: "tools", href: "/admin/tools", descriptionKey: "toolsDescription" },
     ],
   },
 ];

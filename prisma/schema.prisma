@@ -152,6 +152,71 @@ model GalleryImage {
   @@index([category, createdAt])
 }
 
+model Project {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  imageUrl     String?
+  technologies String[]
+  demoUrl      String?
+  repoUrl      String?
+  role         String?
+  year         String?
+  features     String[]
+  stats        Json?
+  featured     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ShareItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  url         String
+  domain      String
+  imageUrl    String?
+  tags        String[]
+  likes       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model HeroImage {
+  id        String   @id @default(cuid())
+  url       String
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model SkillData {
+  id        String   @id @default(cuid())
+  name      String
+  level     Int
+  category  String?
+  updatedAt DateTime @updatedAt
+}
+
+model RoutineData {
+  id    String @id @default(cuid())
+  name  String
+  value Int
+  color String
+}
+
+model StepsData {
+  id    String   @id @default(cuid())
+  date  DateTime @unique
+  steps Int
+}
+
+model PhotoStats {
+  id    String   @id @default(cuid())
+  date  DateTime @unique
+  count Int
+}
+
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Moment {
   id               String           @id @default(cuid())
@@ -266,6 +331,8 @@ model PageView {
   path      String
   locale    String?
   referer   String?
+  userAgent String?
+  device    DeviceType @default(UNKNOWN)
   createdAt DateTime @default(now())
 
   @@index([createdAt])
@@ -662,6 +729,14 @@ enum CredentialType {
   API_KEY
   OAUTH_TOKEN
   PERSONAL_ACCESS_TOKEN
+}
+
+enum DeviceType {
+  MOBILE
+  DESKTOP
+  TABLET
+  BOT
+  UNKNOWN
 }
 
 // Infrastructure Monitoring Models

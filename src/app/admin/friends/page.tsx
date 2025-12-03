@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { listFriends } from "@/lib/friends";
 import { FriendCardsGrid } from "@/components/admin/FriendCardsGrid";
+import { LuminaSectionContainer } from "@/components/admin/lumina-shared";
 
 export const metadata: Metadata = {
   title: "朋友管理",
@@ -32,23 +33,23 @@ export default async function FriendsManagementPage() {
   }));
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-stone-900 dark:text-stone-50">朋友管理</h1>
-          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-            管理朋友故事访问和专属内容。
-          </p>
-        </div>
-        <Link
-          href="/admin/friends/create"
-          className="admin-primary-btn"
-        >
-          + 创建朋友
-        </Link>
-      </div>
+    <div className="space-y-6 sm:space-y-8">
+      <LuminaSectionContainer
+        title="朋友管理"
+        action={
+          <Link href="/admin/friends/create" className="admin-primary-btn">
+            + 创建朋友
+          </Link>
+        }
+      >
+        <p className="text-sm text-stone-500 dark:text-stone-400">
+          管理朋友故事访问和专属内容。
+        </p>
+      </LuminaSectionContainer>
 
-      <FriendCardsGrid friends={safeFriends} />
+      <div className="rounded-2xl border border-stone-200 bg-white/90 p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900/70">
+        <FriendCardsGrid friends={safeFriends} />
+      </div>
     </div>
   );
 }
