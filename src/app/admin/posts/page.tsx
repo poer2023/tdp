@@ -39,13 +39,13 @@ async function PostsListContent() {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
       <header className="space-y-3">
-        <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Posts</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
+        <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Content</p>
+        <h1 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">
           文章管理
         </h1>
-        <p className="text-sm text-stone-500 dark:text-stone-400">
+        <p className="text-stone-500 dark:text-stone-400">
           新建、发布和维护博客文章，支持 Markdown 与封面上传。
         </p>
       </header>
@@ -57,9 +57,9 @@ async function PostsListContent() {
           当前运行于数据库离线模式（E2E_SKIP_DB）。文章列表暂不可用。
         </section>
       ) : (
-        <section className="space-y-4">
+        <section className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-50">文章列表</h2>
+            <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">所有文章</h2>
             <span className="text-sm text-stone-500 dark:text-stone-400">共 {posts.length} 篇</span>
           </div>
 
@@ -74,7 +74,7 @@ async function PostsListContent() {
               }
             />
           ) : (
-            <div className="grid gap-3">
+            <div className="grid gap-4">
               {posts.map((post) => {
                 const tags =
                   typeof post.tags === "string" && post.tags.length
@@ -167,16 +167,16 @@ function StatusBadge({ status }: { status: PostStatus }) {
 export default async function AdminPostsPage() {
   if (!features.get("adminPosts")) {
     return (
-      <div className="space-y-6">
+      <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
         <header className="space-y-3">
-          <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Posts</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
+          <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Content</p>
+          <h1 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">
             文章管理
           </h1>
         </header>
         <section className="rounded-xl border border-stone-200 bg-white p-6 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
           已禁用文章管理功能。请在环境变量中设置
-          <code className="mx-2 rounded bg-stone-100 px-1 py-0.5 text-xs text-stone-700">
+          <code className="mx-2 rounded bg-stone-100 px-1 py-0.5 text-xs text-stone-700 dark:bg-stone-800 dark:text-stone-300">
             FEATURE_ADMIN_POSTS=on
           </code>
           后重新部署启用。

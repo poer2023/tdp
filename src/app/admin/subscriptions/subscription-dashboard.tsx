@@ -297,15 +297,13 @@ export default function SubscriptionDashboard({
   };
 
   return (
-    <div className="space-y-6 pb-16">
-      <header className="space-y-2">
-        <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">
-          {translation("subscriptions")}
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
+    <div className="space-y-8">
+      <header className="space-y-3">
+        <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Management</p>
+        <h1 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">
           {translation("subscriptionOverview")}
         </h1>
-        <p className="text-sm text-stone-500 dark:text-stone-400">
+        <p className="text-stone-500 dark:text-stone-400">
           {translation("subscriptionDescription")}
         </p>
       </header>

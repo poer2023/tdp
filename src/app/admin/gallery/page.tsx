@@ -23,16 +23,16 @@ async function GalleryContent() {
 export default async function AdminGalleryPage() {
   if (!features.get("adminGallery")) {
     return (
-      <div className="space-y-6">
+      <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
         <header className="space-y-3">
-          <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Gallery</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
+          <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Media</p>
+          <h1 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">
             相册管理
           </h1>
         </header>
         <section className="rounded-xl border border-stone-200 bg-white p-6 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
           已禁用相册管理功能。请在环境变量中设置{" "}
-          <code className="rounded bg-stone-100 px-1 py-0.5 text-xs">FEATURE_ADMIN_GALLERY=on</code>{" "}
+          <code className="rounded bg-stone-100 px-1 py-0.5 text-xs dark:bg-stone-800 dark:text-stone-300">FEATURE_ADMIN_GALLERY=on</code>{" "}
           后重新部署启用。
         </section>
       </div>

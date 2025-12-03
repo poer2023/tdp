@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-import { getAdminLocale, t } from "@/lib/admin-i18n";
+import { getAdminLocale } from "@/lib/admin-i18n";
+import { t } from "@/lib/admin-translations";
 import { LuminaBadge, LuminaListContainer, LuminaListItem } from "@/components/admin/lumina-shared";
 import { ShareItemForm } from "@/components/admin/share-item-form";
 
@@ -12,28 +13,25 @@ export default async function CuratedPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-stone-400">Curated</p>
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 dark:text-stone-50">
-            {t(locale, "curated")}
-          </h1>
-          <LuminaBadge variant="info">UI scaffold</LuminaBadge>
-        </div>
-        <p className="text-sm text-stone-500 dark:text-stone-400">
+    <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
+      <header className="space-y-3">
+        <p className="text-sm uppercase tracking-[0.3em] text-stone-400">Content</p>
+        <h1 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">
+          {t(locale, "curated")}
+        </h1>
+        <p className="text-stone-500 dark:text-stone-400">
           精选链接录入表单已对齐 Lumina，后续接入域名提取与数据库保存。
         </p>
       </header>
 
       <ShareItemForm submitLabel="保存精选" />
 
-      <section className="space-y-3">
+      <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">
-            预览列表
+          <h2 className="text-xl font-semibold text-stone-900 dark:text-stone-100">
+            精选列表
           </h2>
-          <span className="text-xs text-stone-500 dark:text-stone-400">示例数据</span>
+          <span className="text-sm text-stone-500 dark:text-stone-400">共 {items.length} 条</span>
         </div>
         <LuminaListContainer>
           {items.map((item) => (

@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-import { getAdminLocale, t } from "@/lib/admin-i18n";
+import { getAdminLocale } from "@/lib/admin-i18n";
+import { t } from "@/lib/admin-translations";
 import { LuminaBadge } from "@/components/admin/lumina-shared";
 import { HeroImageManager } from "@/components/admin/hero-image-manager";
 
@@ -12,16 +13,13 @@ export default async function HeroImagesPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-stone-400">Hero</p>
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 dark:text-stone-50">
-            {t(locale, "heroImages")}
-          </h1>
-          <LuminaBadge variant="info">排序拖拽待接入</LuminaBadge>
-        </div>
-        <p className="text-sm text-stone-500 dark:text-stone-400">管理首页头图，支持启用、删除与排序。</p>
+    <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
+      <header className="space-y-3">
+        <p className="text-sm uppercase tracking-[0.3em] text-stone-400">Media</p>
+        <h1 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">
+          {t(locale, "heroImages")}
+        </h1>
+        <p className="text-stone-500 dark:text-stone-400">管理首页头图，支持启用、删除与排序。</p>
       </header>
 
       <HeroImageManager initialItems={items} />

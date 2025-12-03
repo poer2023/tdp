@@ -1,4 +1,5 @@
-import { getAdminLocale, t } from "@/lib/admin-i18n";
+import { getAdminLocale } from "@/lib/admin-i18n";
+import { t } from "@/lib/admin-translations";
 import { MomentForm } from "@/components/admin/moment-form";
 
 export const revalidate = 0;

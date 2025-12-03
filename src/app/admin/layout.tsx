@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { getAdminLocale, t } from "@/lib/admin-i18n";
+import { getAdminLocale } from "@/lib/admin-i18n";
+import { t } from "@/lib/admin-translations";
 import { AdminFrame } from "@/components/admin/admin-frame";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

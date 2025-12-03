@@ -26,14 +26,18 @@ export function ActionCard({
   secondaryAction,
 }: ActionCardProps) {
   const content = (
-    <div className="group flex h-[96px] items-center gap-4 rounded-xl border border-stone-200 bg-white p-5 transition-all duration-200 focus-within:border-sage-400 focus-within:ring-2 focus-within:ring-sage-200 hover:border-stone-300 hover:shadow-sm dark:border-stone-800 dark:bg-stone-950 dark:focus-within:border-sage-600 dark:focus-within:ring-sage-800 dark:hover:border-stone-700 dark:hover:shadow-none">
+    <div className="group flex items-center gap-4 rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition-all duration-200 hover:border-stone-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700">
       {/* Icon */}
-      <div className="flex-shrink-0 text-stone-600 dark:text-stone-400">{icon}</div>
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400">
+        {icon}
+      </div>
 
       {/* Content */}
-      <div className="flex-1 space-y-0.5">
-        <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100">{title}</h3>
-        <p className="text-xs leading-tight text-stone-600 dark:text-stone-400">{description}</p>
+      <div className="flex-1 min-w-0">
+        <h3 className="font-bold text-stone-800 dark:text-stone-100">{title}</h3>
+        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 truncate">
+          {description}
+        </p>
       </div>
 
       {/* Actions or Arrow */}
@@ -42,7 +46,7 @@ export function ActionCard({
           {secondaryAction && (
             <Link
               href={secondaryAction.href}
-              className="rounded-xl border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-800 dark:text-stone-300 dark:hover:bg-stone-900"
+              className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
               onClick={(e) => e.stopPropagation()}
             >
               {secondaryAction.label}
@@ -51,16 +55,23 @@ export function ActionCard({
           {primaryAction && (
             <Link
               href={primaryAction.href}
-              className="admin-primary-btn admin-primary-btn--sm"
+              className="rounded-lg bg-stone-900 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-opacity hover:opacity-90 dark:bg-stone-100 dark:text-stone-900"
               onClick={(e) => e.stopPropagation()}
             >
-              <span className="text-white dark:text-stone-900">{primaryAction.label}</span>
+              {primaryAction.label}
             </Link>
           )}
         </div>
       ) : (
         <div className="flex-shrink-0 text-stone-400 transition-transform group-hover:translate-x-0.5">
-          →
+          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
         </div>
       )}
     </div>

@@ -93,16 +93,16 @@ async function getSyncDashboardData() {
 export default async function SyncDashboardPage() {
   if (!features.get("adminSync")) {
     return (
-      <div className="space-y-6">
+      <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
         <header className="space-y-3">
-          <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Sync</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
+          <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Management</p>
+          <h1 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">
             同步仪表板
           </h1>
         </header>
         <section className="rounded-xl border border-stone-200 bg-white p-6 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
           同步功能已被禁用。请将{" "}
-          <code className="mx-1 rounded bg-stone-100 px-1 py-0.5 text-xs text-stone-700">
+          <code className="mx-1 rounded bg-stone-100 px-1 py-0.5 text-xs text-stone-700 dark:bg-stone-800 dark:text-stone-300">
             FEATURE_ADMIN_SYNC
           </code>{" "}
           设置为 on 并重新部署以启用此页面。
@@ -124,19 +124,14 @@ export default async function SyncDashboardPage() {
       : 0;
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
       {/* Page Header */}
-      <div className="rounded-2xl border border-stone-200 bg-stone-950 text-stone-100 shadow-sm dark:border-stone-800">
-        <header className="flex flex-col gap-4 border-b border-stone-800 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-stone-500">Sync</p>
-            <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              同步仪表板
-            </h1>
-            <p className="mt-2 text-sm text-stone-400">
-              管理数据同步任务和平台连接状态
-            </p>
-          </div>
+      <header className="space-y-3">
+        <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">Management</p>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">
+            同步仪表板
+          </h1>
           <Link href="/admin/credentials" className="admin-primary-btn">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path
@@ -154,10 +149,14 @@ export default async function SyncDashboardPage() {
             </svg>
             管理凭据
           </Link>
-        </header>
+        </div>
+        <p className="text-stone-500 dark:text-stone-400">
+          管理数据同步任务和平台连接状态
+        </p>
+      </header>
 
-        <div className="p-5">
-          <SyncMetricsOverview
+      <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+        <SyncMetricsOverview
             totalJobs={stats.totalJobs}
             successJobs={stats.successJobs}
             failedJobs={stats.failedJobs}
@@ -165,11 +164,10 @@ export default async function SyncDashboardPage() {
             successRate={successRate}
             avgDuration={avgDuration}
           />
-        </div>
       </div>
 
       {/* Platform Status Cards */}
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+      <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900">
         <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">平台状态</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {credentials.length === 0 ? (

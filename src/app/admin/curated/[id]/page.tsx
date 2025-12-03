@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-import { getAdminLocale, t } from "@/lib/admin-i18n";
+import { getAdminLocale } from "@/lib/admin-i18n";
+import { t } from "@/lib/admin-translations";
 import { ShareItemForm } from "@/components/admin/share-item-form";
 
 export const revalidate = 0;

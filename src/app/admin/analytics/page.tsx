@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-import { getAdminLocale, t } from "@/lib/admin-i18n";
+import { getAdminLocale } from "@/lib/admin-i18n";
+import { t } from "@/lib/admin-translations";
 import { features } from "@/config/features";
 import type { AdminLocale } from "@/lib/admin-translations";
 import type { AnalyticsOverviewData } from "@/components/admin/analytics-dashboard";
@@ -257,7 +258,7 @@ async function loadAnalyticsOverview(): Promise<AnalyticsOverviewData> {
       localeStats,
       last7Days,
       recentReferers,
-      deviceStats,
+      recentDevices,
     ] = await Promise.all([
       prisma.pageView.count({
         where: {
@@ -340,16 +341,9 @@ async function loadAnalyticsOverview(): Promise<AnalyticsOverviewData> {
         where: { createdAt: { gte: weekAgo } },
         select: { referer: true },
       }),
-      prisma.pageView.groupBy({
-        by: ["device"],
-        where: {
-          createdAt: {
-            gte: weekAgo,
-          },
-        },
-        _count: {
-          device: true,
-        },
+      prisma.pageView.findMany({
+        where: { createdAt: { gte: weekAgo } },
+        select: { device: true },
       }),
     ]);
 
@@ -432,7 +426,7 @@ async function loadAnalyticsOverview(): Promise<AnalyticsOverviewData> {
       })),
       sourceBreakdown: aggregateSources(recentReferers),
       deviceBreakdown: aggregateDevices(
-        deviceStats.map((item) => ({ device: item.device ?? "UNKNOWN", value: item._count.device }))
+        recentDevices.map((item) => ({ device: item.device }))
       ),
     };
   } catch (error) {
@@ -479,7 +473,7 @@ export default async function AdminAnalyticsPage() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
       <AnalyticsHeader locale={locale} />
       <AnalyticsDashboardShell locale={locale} overview={overview} />
       <TrafficCharts
@@ -524,12 +518,13 @@ export default async function AdminAnalyticsPage() {
 
 function AnalyticsHeader({ locale }: { locale: AdminLocale }) {
   return (
-    <header className="space-y-3">
-      <p className="text-sm tracking-[0.3em] text-stone-400 uppercase">{t(locale, "analytics")}</p>
-      <h1 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
-        {t(locale, "analytics")}
+    <header>
+      <h1 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">
+        Traffic Analytics
       </h1>
-      <p className="text-sm text-stone-500 dark:text-stone-400">{t(locale, "trafficInsights")}</p>
+      <p className="text-stone-500 dark:text-stone-400">
+        {t(locale, "trafficInsights")}
+      </p>
     </header>
   );
 }
