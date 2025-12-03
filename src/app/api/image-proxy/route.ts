@@ -95,17 +95,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Return image with caching headers
-    const responseBody = new Uint8Array(
-      optimizedBuffer.buffer,
-      optimizedBuffer.byteOffset,
-      optimizedBuffer.byteLength
-    );
+    const responseArrayBuffer: ArrayBuffer = new Uint8Array(optimizedBuffer).buffer;
 
-    return new NextResponse(responseBody, {
+    return new NextResponse(responseArrayBuffer, {
       status: 200,
       headers: {
         "Content-Type": outputContentType,
-        "Content-Length": responseBody.byteLength.toString(),
+        "Content-Length": optimizedBuffer.byteLength.toString(),
         // Cache for 7 days (images rarely change)
         "Cache-Control": "public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400, immutable",
         // Allow CORS for our domain
