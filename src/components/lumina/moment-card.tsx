@@ -1,11 +1,11 @@
 "use client";
-/* eslint-disable @next/next/no-img-element */
 
 import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Heart, MessageCircle, Share2, Sparkles } from "lucide-react";
 import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform } from "framer-motion";
+import Image from "next/image";
 
 interface Moment {
   id: string;
@@ -121,12 +121,15 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
         />
 
         {/* 2. Image Layer */}
-        {hasImages && (
+        {hasImages && moment.images![0] && (
           <div className="absolute inset-0 z-0">
-            <img
+            <Image
               src={moment.images![0]}
               alt="Background"
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 400px"
+              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              quality={75}
             />
             {/* Dark gradient overlay for text readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90" />

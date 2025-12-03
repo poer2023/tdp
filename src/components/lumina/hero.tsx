@@ -1,11 +1,11 @@
 "use client";
-/* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { MapPin, Briefcase, Aperture, Cpu } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
+import Image from "next/image";
 
 // Default hero images - can be replaced with actual data
 const DEFAULT_HERO_IMAGES = [
@@ -148,12 +148,12 @@ function ShuffleGrid({ heroImages }: { heroImages: string[] }) {
 
   const initialSquares = useMemo(() => {
     const needed = 16;
-    const result = [];
+    const result: { id: number; src: string }[] = [];
     for (let i = 0; i < needed; i++) {
-      result.push({
-        id: i,
-        src: heroImages[i % heroImages.length],
-      });
+      const src = heroImages[i % heroImages.length];
+      if (src) {
+        result.push({ id: i, src });
+      }
     }
     return result;
   }, [heroImages]);
@@ -182,7 +182,14 @@ function ShuffleGrid({ heroImages }: { heroImages: string[] }) {
           transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
           className="relative h-full w-full overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-stone-800"
         >
-          <img src={sq.src} alt="" className="h-full w-full object-cover" loading="lazy" />
+          <Image
+            src={sq.src}
+            alt=""
+            fill
+            sizes="(max-width: 640px) 25vw, (max-width: 1024px) 12.5vw, 120px"
+            className="object-cover"
+            quality={75}
+          />
           <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
         </motion.div>
       ))}

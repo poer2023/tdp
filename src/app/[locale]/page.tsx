@@ -94,10 +94,10 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     (a, b) => (b.sortKey ?? 0) - (a.sortKey ?? 0)
   );
 
-  // Get hero images from gallery
+  // Get hero images from gallery (prefer optimized thumbnails)
   const heroImages =
     galleryImages.length > 0
-      ? galleryImages.map((img) => img.smallThumbPath || img.filePath)
+      ? galleryImages.map((img) => img.smallThumbPath || img.microThumbPath || img.filePath)
       : undefined;
 
   return (

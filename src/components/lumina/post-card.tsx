@@ -1,10 +1,10 @@
 "use client";
-/* eslint-disable @next/next/no-img-element */
 
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Heart } from "lucide-react";
+import Image from "next/image";
 
 interface BlogPost {
   id: string;
@@ -43,12 +43,15 @@ export function LuminaPostCard({ post, onClick, onLike }: PostCardProps) {
         {/* Image - Plain and sharp, full color */}
         {post.imageUrl && (
           <div className="relative mb-5 aspect-video w-full overflow-hidden rounded-sm">
-            <img
+            <Image
               src={post.imageUrl}
               alt={post.title}
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 600px"
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              quality={80}
             />
-            <div className="absolute top-3 left-3 border border-stone-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest dark:border-stone-700 dark:bg-stone-900">
+            <div className="absolute top-3 left-3 z-10 border border-stone-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest dark:border-stone-700 dark:bg-stone-900">
               {post.category}
             </div>
           </div>
