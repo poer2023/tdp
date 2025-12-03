@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { PublicPost } from "@/lib/posts";
+import { toOptimizedImageUrl } from "@/lib/image-proxy";
 
 interface PostCardProps {
   post: PublicPost;
@@ -8,7 +9,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, locale = "zh" }: PostCardProps) {
-  const cover = post.coverImagePath ?? "/images/placeholder-cover.svg";
+  const cover = toOptimizedImageUrl(post.coverImagePath) ?? "/images/placeholder-cover.svg";
   const formatted = post.publishedAt
     ? new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
         year: "numeric",
