@@ -68,43 +68,47 @@ export function ImageUploadArea({
       .finally(() => setUploading(false));
   };
 
-  const previewItems = useMemo(() => preview.slice(0, 6), [preview]);
-
   return (
-    <LuminaImageUploadArea
-      label={label}
-      description={description}
-      hint={hint}
-      accept={accept}
-      multiple={multiple}
-      onFilesSelected={handleFiles}
-      footer={
-        error
-          ? error
-          : uploading
-            ? "正在上传到 /api/admin/gallery/upload ..."
-            : preview.length > 6
-              ? `已选择 ${preview.length} 个文件，显示前 6 个预览`
-              : undefined
-      }
-    >
-      {previewItems.map((item) => (
-        <div
-          key={item}
-          className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 shadow-sm dark:border-stone-800 dark:bg-stone-950 dark:text-stone-200"
-        >
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-stone-100 text-xs text-stone-500 dark:bg-stone-800/70 dark:text-stone-300">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11l3 3 5-6" />
-              </svg>
-            </div>
-            <span className="truncate">{item}</span>
-          </div>
-          <span className="text-xs text-stone-500 dark:text-stone-400">就绪</span>
+    <div className="space-y-3 rounded-lg border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-950">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{label}</p>
+          <p className="text-xs text-stone-500">{description}</p>
+          {hint && <p className="text-[11px] text-stone-400 mt-1">{hint}</p>}
         </div>
-      ))}
-    </LuminaImageUploadArea>
+        <label className="cursor-pointer rounded-md bg-stone-900 px-3 py-2 text-xs font-medium text-white transition hover:opacity-90 dark:bg-stone-100 dark:text-stone-900">
+          选择文件
+          <input
+            type="file"
+            className="hidden"
+            multiple={multiple}
+            accept={accept}
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+        </label>
+      </div>
+
+      {uploading && <p className="text-xs text-sky-600">正在上传到 /api/admin/gallery/upload ...</p>}
+      {error && <p className="text-xs text-rose-600">{error}</p>}
+
+      {preview.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-stone-500">
+            预览 {preview.length > 6 ? `（显示前 6 个）` : ""}
+          </p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {preview.slice(0, 6).map((item) => (
+              <div
+                key={item}
+                className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-stone-700 shadow-sm dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200"
+              >
+                <span className="truncate">{item}</span>
+                <span className="text-xs text-stone-500 dark:text-stone-400">就绪</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

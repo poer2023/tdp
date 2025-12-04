@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import {
   CredentialPlatform,
   CredentialType,
+  Prisma,
   type ExternalCredential,
 } from "@prisma/client";
 import { encryptCredential, isEncrypted } from "@/lib/encryption";
@@ -30,19 +31,19 @@ function validateEnum<T extends { [key: string]: string }>(
   }
 }
 
-function parseMetadata(metadata: unknown): Record<string, unknown> | null {
+function parseMetadata(metadata: unknown): Prisma.InputJsonObject | null {
   if (!metadata) return null;
   if (typeof metadata === "string") {
     const trimmed = metadata.trim();
     if (!trimmed) return null;
     try {
-      return JSON.parse(trimmed);
+      return JSON.parse(trimmed) as Prisma.InputJsonObject;
     } catch {
       throw new Error("Metadata must be valid JSON");
     }
   }
   if (typeof metadata === "object") {
-    return metadata as Record<string, unknown>;
+    return metadata as Prisma.InputJsonObject;
   }
   throw new Error("Unsupported metadata format");
 }
@@ -94,7 +95,7 @@ export async function PUT(
       return NextResponse.json({ error: "Credential not found" }, { status: 404 });
     }
 
-    const data: Partial<ExternalCredential> = {
+    const data: Prisma.ExternalCredentialUpdateInput = {
       updatedAt: new Date(),
     };
 
@@ -115,9 +116,7 @@ export async function PUT(
 
     if (metadata !== undefined) {
       const parsedMetadata = parseMetadata(metadata);
-      if (parsedMetadata) {
-        data.metadata = parsedMetadata as ExternalCredential["metadata"];
-      }
+      data.metadata = parsedMetadata ?? Prisma.JsonNull;
     }
 
     if (autoSync !== undefined) {

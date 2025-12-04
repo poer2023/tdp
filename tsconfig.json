@@ -50,6 +50,7 @@
     "src/**/__tests__/**",
     "e2e/**",
     "scripts/**",
+    "lumina_source/**",
     "playwright.config.ts",
     "playwright.critical.config.ts"
   ],
