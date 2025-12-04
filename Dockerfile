@@ -51,8 +51,12 @@ COPY --from=builder --chown=node:node /app/public ./public
 COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 
 # Bring over dev-only tooling that is still required at runtime
+# tsx requires esbuild as a dependency
 COPY --from=builder --chown=node:node /app/node_modules/tsx ./node_modules/tsx
+COPY --from=builder --chown=node:node /app/node_modules/esbuild ./node_modules/esbuild
+COPY --from=builder --chown=node:node /app/node_modules/@esbuild ./node_modules/@esbuild
 COPY --from=builder --chown=node:node /app/node_modules/.bin/tsx ./node_modules/.bin/tsx
+COPY --from=builder --chown=node:node /app/node_modules/.bin/esbuild ./node_modules/.bin/esbuild
 
 # Copy prisma schema for migrations
 COPY --chown=node:node prisma ./prisma
