@@ -20,9 +20,10 @@ const revalidateGallery = () => {
   revalidatePath("/admin/gallery");
 };
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAdmin();
+    const { id } = await params;
     const body = await request.json().catch(() => ({}));
     const category =
       body.category === "REPOST" || body.category === "AI" || body.category === "ORIGINAL"
@@ -33,7 +34,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         ? new Date(body.capturedAt)
         : undefined;
 
-    const image = await updateGalleryImage(params.id, {
+    const image = await updateGalleryImage(id, {
       title: typeof body.title === "string" ? body.title : undefined,
       description: typeof body.description === "string" ? body.description : undefined,
       category,
@@ -51,10 +52,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAdmin();
-    await deleteGalleryImage(params.id);
+    const { id } = await params;
+    await deleteGalleryImage(id);
     revalidateGallery();
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -12,9 +12,10 @@ async function requireAdmin() {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAdmin();
+    const { id } = await params;
     const body = await request.json().catch(() => ({}));
     const title = typeof body.title === "string" ? body.title.trim() : "";
     const url = typeof body.url === "string" ? body.url.trim() : "";
@@ -23,7 +24,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const updated = await prisma.shareItem.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         description: typeof body.description === "string" ? body.description.trim() : "",
@@ -47,10 +48,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAdmin();
-    await prisma.shareItem.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.shareItem.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

@@ -56,11 +56,12 @@ async function requireAdmin() {
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdmin();
-    await prisma.externalCredential.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.externalCredential.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
@@ -76,10 +77,11 @@ export async function DELETE(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAdmin();
+    const { id } = await params;
 
     const body = await request.json().catch(() => {
       throw new Error("Invalid JSON payload");
@@ -88,7 +90,7 @@ export async function PUT(
     const { platform, type, value, metadata, autoSync, syncFrequency, isValid } = body ?? {};
 
     const existing = await prisma.externalCredential.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
     if (!existing) {
       return NextResponse.json({ error: "Credential not found" }, { status: 404 });
@@ -131,7 +133,7 @@ export async function PUT(
     }
 
     const updated = await prisma.externalCredential.update({
-      where: { id: params.id },
+      where: { id },
       data,
     });
 

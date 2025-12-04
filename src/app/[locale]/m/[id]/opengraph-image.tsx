@@ -3,8 +3,9 @@ import { getMomentByIdOrSlug, type MomentImage } from "@/lib/moments";
 
 export const runtime = "nodejs";
 
-export default async function Image({ params }: { params: { id: string } }) {
-  const m = await getMomentByIdOrSlug(params.id);
+export default async function Image({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const m = await getMomentByIdOrSlug(id);
   const title = (m?.content || "Moment").slice(0, 40);
   const images = (Array.isArray(m?.images) ? (m!.images as MomentImage[]) : []).slice(0, 3);
 

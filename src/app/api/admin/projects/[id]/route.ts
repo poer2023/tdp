@@ -12,9 +12,10 @@ async function requireAdmin() {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAdmin();
+    const { id } = await params;
     const body = await request.json().catch(() => ({}));
     const title = typeof body.title === "string" ? body.title.trim() : "";
     if (!title) {
@@ -22,7 +23,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const updated = await prisma.project.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         description: typeof body.description === "string" ? body.description.trim() : "",
@@ -52,10 +53,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAdmin();
-    await prisma.project.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.project.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

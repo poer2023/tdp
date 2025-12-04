@@ -5,8 +5,9 @@ import { getPostBySlug } from "@/lib/posts";
 // Force Node.js runtime for Prisma usage in lib
 export const runtime = "nodejs";
 
-export async function GET(_request: Request, { params }: { params: { slug: string } }) {
-  const slug = safeDecode(params.slug);
+export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug: rawSlug } = await params;
+  const slug = safeDecode(rawSlug);
   const post = await getPostBySlug(slug);
 
   if (!post || post.status !== PostStatus.PUBLISHED) {

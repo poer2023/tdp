@@ -12,9 +12,10 @@ async function requireAdmin() {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAdmin();
+    const { id } = await params;
     const body = await request.json().catch(() => ({}));
     const data: Record<string, unknown> = {};
     if (typeof body.url === "string") data.url = body.url.trim();
@@ -24,7 +25,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (typeof body.active === "boolean") data.active = body.active;
 
     const updated = await prisma.heroImage.update({
-      where: { id: params.id },
+      where: { id },
       data,
     });
     return NextResponse.json({ image: updated });
@@ -37,10 +38,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAdmin();
-    await prisma.heroImage.delete({ where: { id: params.id } });
+    const { id } = await params;
+    await prisma.heroImage.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

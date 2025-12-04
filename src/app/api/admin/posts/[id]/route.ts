@@ -57,9 +57,10 @@ async function requireAdmin() {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAdmin();
+    const { id } = await params;
 
     const body = await request.json().catch(() => {
       throw new Error("INVALID_JSON");
@@ -80,12 +81,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ message: "请检查提交信息", errors }, { status: 400 });
     }
 
-    const existing = await getPostById(params.id);
+    const existing = await getPostById(id);
     if (!existing) {
       return NextResponse.json({ message: "未找到对应文章" }, { status: 404 });
     }
 
-    const updated = await updatePost(params.id, {
+    const updated = await updatePost(id, {
       title,
       excerpt,
       content,
@@ -109,10 +110,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await requireAdmin();
-    await deletePost(params.id);
+    const { id } = await params;
+    await deletePost(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
