@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { BlogPost, Moment, MomentImage, MovieData, GameGenreData, SkillData, User, Theme, Language, GalleryItem, PhotoStatsData, RoutineData, StepData, Project, ShareItem, TrafficData, SourceData, PageVisitData, DeviceData, Friend, HeroImage, Subscription, Credential, SyncJob, Platform, Currency, LoadingState, ErrorState } from './types';
-import { BLOG_POSTS, MOMENTS, MOVIE_DATA, GAME_GENRE_DATA, SKILLS_DATA, PHOTO_WALL_IMAGES, GALLERY_ITEMS, PHOTO_STATS_DATA, ROUTINE_DATA, STEPS_DATA, PROJECTS, SHARE_ITEMS, TRAFFIC_DATA, SOURCE_DATA, PAGE_VISIT_DATA, DEVICE_DATA, FRIENDS_DATA, SUBSCRIPTIONS_DATA, CREDENTIALS_DATA } from './constants';
+import type { BlogPost, Moment, MomentImage, MovieData, GameGenreData, SkillData, Theme, Language, GalleryItem, PhotoStatsData, RoutineData, StepData, Project, ShareItem, TrafficData, SourceData, PageVisitData, DeviceData, Friend, HeroImage, Subscription, Credential, SyncJob, Platform, Currency, LoadingState, ErrorState } from './types';
+import { MOVIE_DATA, GAME_GENRE_DATA } from './constants';
 
 // --- Translations ---
 const TRANSLATIONS = {
@@ -843,6 +843,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         void refreshLifeData();
         void fetchCredentials();
         void fetchSubscriptions();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 

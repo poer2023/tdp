@@ -5,12 +5,11 @@ import {
     FileText, Image as ImageIcon, Database,
     Plus, Trash2, Edit2, X,
     Briefcase, Camera,
-    Home, UploadCloud, FileImage, Check,
+    UploadCloud, Check,
     Activity, Clock, TrendingUp, PieChart as PieIcon,
     ShieldCheck, Globe, Calendar, Tag, Heart, MessageCircle,
-    Users, MousePointer, Smartphone, ArrowUpRight, ArrowDownRight,
-    Eye, Key, CreditCard, RefreshCw, Shield, AlertTriangle, Terminal,
-    Coins, ArrowRightLeft, UserPlus, ExternalLink, Copy
+    Users, MousePointer, Smartphone,
+    Eye
 } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -316,7 +315,7 @@ export const OverviewSection: React.FC<{
     projects: Project[],
     shareItems: ShareItem[],
     onQuickAction: (tab: Tab) => void
-}> = ({ posts, moments, galleryItems, projects, shareItems, onQuickAction }) => {
+}> = ({ posts, moments, galleryItems, projects, shareItems: _shareItems, onQuickAction }) => {
     const stats = [
         { label: 'Articles', value: posts.length, icon: FileText, color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' },
         { label: 'Moments', value: moments.length, icon: ImageIcon, color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' },

@@ -16,7 +16,6 @@ type SanitizedCredential = Omit<ExternalCredential, "value">;
 const UNAUTHORIZED_RESPONSE = NextResponse.json({ error: "未授权" }, { status: 401 });
 
 function sanitize(credential: ExternalCredential): SanitizedCredential {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { value: _value, ...rest } = credential;
   return rest;
 }

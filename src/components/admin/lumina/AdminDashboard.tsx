@@ -7,12 +7,8 @@ import { useRouter } from 'next/navigation';
 import {
     LayoutTemplate, Home, FileText, Image as ImageIcon,
     Briefcase, Link2, Camera, Layers, Users, CreditCard,
-    Key, LogOut, Menu, X, Plus, Play, Edit2, Trash2,
-    UploadCloud, Check, Globe, Database, ShieldCheck,
-    Clock, TrendingUp, PieChart as PieIcon, Smartphone,
-    Eye, MousePointer, Activity, RefreshCw, Shield, AlertTriangle,
-    Terminal, Coins, ArrowRightLeft, UserPlus, ExternalLink, Copy,
-    Sun, Moon
+    Key, LogOut, Menu, X, Play, Edit2, Trash2,
+    Database, TrendingUp, RefreshCw, Terminal, Sun, Moon
 } from 'lucide-react';
 import { useData, useSettings } from './store';
 import type { Tab, BlogPost, Moment, Project, ShareItem, GalleryItem, Friend, Subscription, Credential } from './types';

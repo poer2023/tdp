@@ -1,5 +1,5 @@
 
-import type { BlogPost, Moment, MovieData, GameGenreData, SkillData, GalleryItem, PhotoStatsData, RoutineData, StepData, Project, ShareItem, TrafficData, SourceData, PageVisitData, DeviceData, Friend, Subscription, Credential, SyncJob } from './types';
+import type { BlogPost, Moment, MovieData, GameGenreData, SkillData, GalleryItem, PhotoStatsData, RoutineData, StepData, Project, ShareItem, TrafficData, SourceData, PageVisitData, DeviceData, Friend, Subscription, Credential } from './types';
 import { Category } from './types';
 
 // Simplified Navigation with Paths
