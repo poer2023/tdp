@@ -120,7 +120,7 @@ export function LuminaHeader() {
   const isAdmin = session?.user?.role === "ADMIN";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-stone-200 bg-stone-50/80 backdrop-blur-md transition-colors duration-300 dark:border-stone-800 dark:bg-stone-950/80">
+    <header className="sticky top-0 z-50 w-full border-b border-stone-200 bg-stone-50/80 backdrop-blur-md transition-colors duration-300 dark:border-[#1f1f23] dark:bg-[#0a0a0b]/80">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
@@ -150,7 +150,7 @@ export function LuminaHeader() {
           {/* Desktop User & Settings Menu */}
           <div className="hidden items-center gap-4 md:flex">
             {/* Settings Controls */}
-            <div className="mr-1 flex items-center gap-2 border-r border-stone-200 pr-4 dark:border-stone-800">
+            <div className="mr-1 flex items-center gap-2 border-r border-stone-200 pr-4 dark:border-[#27272a]">
               <Link
                 href={localePath(locale, "/search")}
                 className="hidden rounded-full p-1.5 text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 md:flex dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
@@ -181,7 +181,7 @@ export function LuminaHeader() {
                 {/* User Avatar Button */}
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-300 dark:bg-stone-700 dark:text-stone-200 dark:hover:bg-stone-600"
+                  className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-300 dark:bg-[#27272a] dark:text-stone-200 dark:hover:bg-[#3f3f46]"
                 >
                   {session.user?.image ? (
                     <img
@@ -196,7 +196,7 @@ export function LuminaHeader() {
 
                 {/* Dropdown Menu */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-stone-200 bg-white py-1 shadow-lg dark:border-stone-700 dark:bg-stone-900">
+                  <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-stone-200 bg-white py-1 shadow-lg dark:border-[#27272a] dark:bg-[#141416]">
                     {/* User Info */}
                     <div className="border-b border-stone-100 px-4 py-3 dark:border-stone-800">
                       <p className="truncate text-sm font-medium text-stone-900 dark:text-stone-100">
@@ -248,7 +248,7 @@ export function LuminaHeader() {
           {/* Mobile Menu Button */}
           <div className="flex items-center gap-4 md:hidden">
             {session && (
-              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-800 dark:bg-stone-800 dark:text-stone-100">
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-800 dark:bg-[#27272a] dark:text-stone-100">
                 {session.user?.image ? (
                   <img
                     src={session.user.image}
@@ -272,7 +272,7 @@ export function LuminaHeader() {
 
       {/* Mobile Nav */}
       {isMobileMenuOpen && (
-        <div className="border-b border-stone-200 bg-white shadow-lg md:hidden dark:border-stone-800 dark:bg-stone-900">
+        <div className="border-b border-stone-200 bg-white shadow-lg md:hidden dark:border-[#1f1f23] dark:bg-[#0f0f11]">
           <div className="space-y-1 px-4 pt-2 pb-6">
             {NAV_LINKS.map((link) => (
               <button
@@ -298,7 +298,7 @@ export function LuminaHeader() {
 
             <div className="mt-2 flex items-center justify-between border-t border-stone-100 px-3 pt-4 pb-2 dark:border-stone-800">
               <span className="text-sm text-stone-500 dark:text-stone-400">{t("Theme")}</span>
-              <button onClick={toggleTheme} className="rounded-full bg-stone-100 p-2 dark:bg-stone-800">
+              <button onClick={toggleTheme} className="rounded-full bg-stone-100 p-2 dark:bg-[#1f1f23]">
                 {mounted ? (
                   theme === "light" ? (
                     <Moon size={18} className="text-stone-600" />
@@ -315,7 +315,7 @@ export function LuminaHeader() {
               <span className="text-sm text-stone-500 dark:text-stone-400">{t("Language")}</span>
               <button
                 onClick={toggleLanguage}
-                className="rounded bg-stone-100 px-3 py-1 text-sm font-medium text-stone-600 dark:bg-stone-800 dark:text-stone-300"
+                className="rounded bg-stone-100 px-3 py-1 text-sm font-medium text-stone-600 dark:bg-[#1f1f23] dark:text-stone-300"
               >
                 {locale === "en" ? "English" : "中文"}
               </button>

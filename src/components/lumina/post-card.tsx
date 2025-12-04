@@ -39,7 +39,7 @@ export function LuminaPostCard({ post, onClick, onLike }: PostCardProps) {
 
   return (
     <div className="group mb-8 cursor-pointer break-inside-avoid" onClick={onClick}>
-      <article className="border-b-2 border-stone-100 bg-white pb-6 transition-colors duration-300 hover:border-stone-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-600">
+      <article className="border-b-2 border-stone-100 bg-white pb-6 transition-colors duration-300 hover:border-stone-300 dark:border-[#27272a] dark:bg-transparent dark:hover:border-stone-600">
         {/* Image - Plain and sharp, full color */}
         {post.imageUrl && (
           <div className="relative mb-5 aspect-video w-full overflow-hidden rounded-sm">
@@ -51,7 +51,7 @@ export function LuminaPostCard({ post, onClick, onLike }: PostCardProps) {
               className="object-cover transition-transform duration-700 group-hover:scale-105"
               quality={80}
             />
-            <div className="absolute top-3 left-3 z-10 border border-stone-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest dark:border-stone-700 dark:bg-stone-900">
+            <div className="absolute top-3 left-3 z-10 border border-stone-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-widest dark:border-[#2a2a2e] dark:bg-[#141416]">
               {post.category}
             </div>
           </div>

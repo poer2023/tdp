@@ -420,7 +420,11 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
           >
             <div className="relative">
               <img
-                src={item.type === "video" ? item.thumbnail || item.url : item.url}
+                src={
+                  item.type === "video"
+                    ? item.thumbnail || item.url
+                    : item.mediumPath || item.smallThumbPath || item.thumbnail || item.url
+                }
                 alt={item.title}
                 className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 loading="lazy"

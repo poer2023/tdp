@@ -80,13 +80,13 @@ export function ProfileWidget({
     "Turning chaos into roadmaps. Obsessed with UX, data, and the perfect cup of coffee.";
 
   return (
-    <div className="group relative mb-6 overflow-hidden rounded-2xl border border-stone-200 bg-white p-6 text-center shadow-sm dark:border-stone-800 dark:bg-stone-900">
+    <div className="group relative mb-6 overflow-hidden rounded-2xl border border-stone-200 bg-white p-6 text-center shadow-sm dark:border-[#27272a] dark:bg-[#141416]">
       {/* Decor */}
-      <div className="pointer-events-none absolute top-0 left-0 h-24 w-full bg-gradient-to-b from-stone-100 to-transparent dark:from-stone-800/50" />
+      <div className="pointer-events-none absolute top-0 left-0 h-24 w-full bg-gradient-to-b from-stone-100 to-transparent dark:from-[#1f1f23]/60" />
 
       <div
         onClick={handleAvatarClick}
-        className="relative mx-auto mb-4 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl transition-transform duration-500 group-hover:scale-105 dark:border-stone-900 dark:bg-stone-800"
+        className="relative mx-auto mb-4 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl transition-transform duration-500 group-hover:scale-105 dark:border-[#0a0a0b] dark:bg-[#27272a]"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -140,9 +140,9 @@ interface SocialBtnProps {
 
 function SocialBtn({ icon, label, href, color }: SocialBtnProps) {
   const baseClasses =
-    "p-2.5 rounded-xl text-stone-400 bg-stone-50 dark:bg-stone-800 border border-stone-100 dark:border-stone-700 transition-all active:scale-95";
+    "p-2.5 rounded-xl text-stone-400 bg-stone-50 dark:bg-[#1f1f23] border border-stone-100 dark:border-[#2a2a2e] transition-all active:scale-95";
   const hoverClasses =
-    color || "hover:bg-stone-200 hover:text-stone-900 dark:hover:bg-stone-700 dark:hover:text-stone-100";
+    color || "hover:bg-stone-200 hover:text-stone-900 dark:hover:bg-[#27272a] dark:hover:text-stone-100";
 
   if (href) {
     return (
@@ -214,7 +214,7 @@ export function CompactStatusWidget({ items, updatedAt }: CompactStatusWidgetPro
   const displayUpdatedAt = updatedAt || "2 HRS AGO";
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+    <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm dark:border-[#27272a] dark:bg-[#141416]">
       <h4 className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-stone-400">
         <Zap size={14} className="text-amber-500" />
         {t("At a Glance")}
@@ -226,7 +226,7 @@ export function CompactStatusWidget({ items, updatedAt }: CompactStatusWidgetPro
         ))}
       </div>
 
-      <div className="mt-5 flex items-center justify-between border-t border-stone-100 pt-4 font-mono text-[10px] text-stone-400 dark:border-stone-800">
+      <div className="mt-5 flex items-center justify-between border-t border-stone-100 pt-4 font-mono text-[10px] text-stone-400 dark:border-[#27272a]">
         <span>UPDATED</span>
         <span>{displayUpdatedAt}</span>
       </div>
@@ -244,7 +244,7 @@ function StatusRow({ label, value, icon }: StatusRowProps) {
   return (
     <div className="group flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-100 bg-stone-50 text-stone-400 transition-colors group-hover:bg-white dark:border-stone-700 dark:bg-stone-800 dark:group-hover:bg-stone-700">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-100 bg-stone-50 text-stone-400 transition-colors group-hover:bg-white dark:border-[#2a2a2e] dark:bg-[#1f1f23] dark:group-hover:bg-[#27272a]">
           {icon}
         </div>
         <span className="text-xs font-medium text-stone-500 dark:text-stone-400">{label}</span>

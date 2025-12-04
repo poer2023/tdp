@@ -87,8 +87,8 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
   };
 
   const bgStyle = hasImages
-    ? "bg-stone-900 border-stone-800"
-    : `bg-white dark:bg-stone-900/80 backdrop-blur-xl border ${getGradient(moment.id)}`;
+    ? "bg-[#141416] border-[#27272a]"
+    : `bg-white dark:bg-[#141416]/80 backdrop-blur-xl border ${getGradient(moment.id)}`;
 
   return (
     <div className="mb-8 break-inside-avoid" style={{ perspective: "1000px" }}>
@@ -148,7 +148,7 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                 className={`flex h-10 w-10 items-center justify-center rounded-full border ${
                   hasImages
                     ? "border-white/20 bg-white/10 text-white backdrop-blur-md"
-                    : "border-stone-200 bg-stone-100 text-stone-600 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
+                    : "border-stone-200 bg-stone-100 text-stone-600 dark:border-[#2a2a2e] dark:bg-[#1f1f23] dark:text-stone-300"
                 }`}
               >
                 <span className="font-serif font-bold">L</span>
@@ -185,7 +185,7 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
               className={`flex items-center justify-between rounded-2xl p-2 backdrop-blur-md transition-all duration-300 ${
                 hasImages
                   ? "border border-white/10 bg-white/10 text-white hover:bg-white/20"
-                  : "border border-stone-200 bg-stone-100/50 text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800/50 dark:text-stone-400 dark:hover:bg-stone-800"
+                  : "border border-stone-200 bg-stone-100/50 text-stone-600 hover:bg-stone-100 dark:border-[#2a2a2e] dark:bg-[#1f1f23]/50 dark:text-stone-400 dark:hover:bg-[#27272a]"
               }`}
             >
               <div className="flex gap-1">

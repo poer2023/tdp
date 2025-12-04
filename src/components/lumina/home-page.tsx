@@ -43,7 +43,7 @@ export function LuminaHomePage({ feedItems, heroImages, profileData }: LuminaHom
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
+    <div className="min-h-screen bg-stone-50 dark:bg-[#0a0a0b]">
       {/* Hero Section */}
       <LuminaHero heroImages={heroImages} />
 
@@ -68,9 +68,9 @@ export function LuminaHomePage({ feedItems, heroImages, profileData }: LuminaHom
               <CompactStatusWidget />
 
               {/* Footer Note */}
-              <div className="border-t border-stone-200 pt-8 text-center text-xs text-stone-400 lg:text-left dark:border-stone-800">
+              <div className="border-t border-stone-200 pt-8 text-center text-xs text-stone-400 lg:text-left dark:border-[#27272a]">
                 <p>{t("Designed with")} ❤️ & ☕</p>
-                <p className="mt-1">© {new Date().getFullYear()} Lumina Space</p>
+                <p className="mt-1">© {new Date().getFullYear()} Zhi</p>
               </div>
             </div>
           </div>

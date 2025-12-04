@@ -94,7 +94,7 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
           </div>
 
           {/* New Info Grid */}
-          <div className="mx-auto w-full max-w-md border-t border-stone-200 pt-6 lg:mx-0 dark:border-stone-800">
+          <div className="mx-auto w-full max-w-md border-t border-stone-200 pt-6 lg:mx-0 dark:border-[#27272a]">
             <div className="grid grid-cols-2 gap-4">
               <InfoItem icon={<Briefcase size={16} />} label={t("Product Manager")} />
               <InfoItem icon={<Aperture size={16} />} label={t("Photographer")} />
@@ -117,7 +117,7 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
 function InfoItem({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <div className="group flex cursor-default items-center gap-3 text-stone-600 dark:text-stone-400">
-      <div className="rounded-lg bg-stone-100 p-2 text-stone-500 transition-colors group-hover:bg-sage-50 group-hover:text-sage-600 dark:bg-stone-800 dark:group-hover:bg-sage-900/20 dark:group-hover:text-sage-400">
+      <div className="rounded-lg bg-stone-100 p-2 text-stone-500 transition-colors group-hover:bg-sage-50 group-hover:text-sage-600 dark:bg-[#1f1f23] dark:group-hover:bg-sage-900/20 dark:group-hover:text-sage-400">
         {icon}
       </div>
       <span className="text-sm font-medium tracking-wide">{label}</span>
@@ -180,7 +180,7 @@ function ShuffleGrid({ heroImages }: { heroImages: string[] }) {
           key={sq.id}
           layout
           transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
-          className="relative h-full w-full overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-stone-800"
+          className="relative h-full w-full overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
         >
           <Image
             src={sq.src}

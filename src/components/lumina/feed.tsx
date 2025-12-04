@@ -156,17 +156,17 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
 
       <div className="w-full">
         {/* Sticky Filter Bar */}
-      <div className="sticky top-16 z-30 -mx-4 mb-8 bg-stone-50/95 px-4 py-4 backdrop-blur-sm transition-colors md:mx-0 md:px-0 dark:bg-stone-950/95">
+      <div className="sticky top-16 z-30 -mx-4 mb-8 bg-stone-50/95 px-4 py-4 backdrop-blur-sm transition-colors md:mx-0 md:px-0 dark:bg-[#0a0a0b]/95">
         <div className="flex items-center justify-between">
           {/* Filter Pills */}
-          <div className="flex max-w-full overflow-x-auto rounded-full border border-stone-200 bg-white p-1 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+          <div className="flex max-w-full overflow-x-auto rounded-full border border-stone-200 bg-white p-1 shadow-sm dark:border-[#2a2a2e] dark:bg-[#18181b] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
             {(["All", "Articles", "Moments"] as FeedFilter[]).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setFeedFilter(filter)}
                 className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
                   feedFilter === filter
-                    ? "bg-stone-800 text-white shadow-md dark:bg-stone-100 dark:text-stone-900"
+                    ? "bg-stone-800 text-white shadow-md dark:bg-[#3f3f46] dark:text-stone-100"
                     : "text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
                 }`}
               >
@@ -174,7 +174,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
               </button>
             ))}
           </div>
-          <span className="hidden border-b border-stone-200 pb-1 text-xs font-bold uppercase tracking-widest text-stone-400 sm:block dark:border-stone-800">
+          <span className="hidden border-b border-stone-200 pb-1 text-xs font-bold uppercase tracking-widest text-stone-400 sm:block dark:border-[#2a2a2e]">
             {t(feedFilter === "All" ? "Mixed Feed" : feedFilter)}
           </span>
         </div>
@@ -218,7 +218,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
         ))}
 
         {visibleItems.length === 0 && (
-          <div className="col-span-full break-inside-avoid rounded-xl border border-dashed border-stone-200 bg-white py-20 text-center transition-colors dark:border-stone-800 dark:bg-stone-900">
+          <div className="col-span-full break-inside-avoid rounded-xl border border-dashed border-stone-200 bg-white py-20 text-center transition-colors dark:border-[#27272a] dark:bg-[#141416]">
             <p className="text-stone-400">{t("No content found here yet.")}</p>
           </div>
         )}
@@ -230,7 +230,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
           <button
             onClick={handleLoadMore}
             disabled={isLoadingMore}
-            className="group flex items-center gap-2 rounded-full border border-stone-200 bg-white px-8 py-3 font-medium text-stone-600 shadow-sm transition-all hover:border-sage-400 hover:text-sage-600 hover:shadow-md disabled:opacity-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300 dark:hover:text-sage-400"
+            className="group flex items-center gap-2 rounded-full border border-stone-200 bg-white px-8 py-3 font-medium text-stone-600 shadow-sm transition-all hover:border-sage-400 hover:text-sage-600 hover:shadow-md disabled:opacity-50 dark:border-[#27272a] dark:bg-[#141416] dark:text-stone-300 dark:hover:border-sage-700 dark:hover:text-sage-400"
           >
             {isLoadingMore ? (
               <Loader2 size={18} className="animate-spin" />
