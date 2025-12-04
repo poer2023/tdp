@@ -40,70 +40,136 @@ export async function seedTestData() {
     });
 
     // 2. 创建测试文章 (EN/ZH 配对)
+    // NOTE: IDs/slugs must match TEST_POST_IDS in fixtures/test-data.ts
     console.log("   Creating test posts...");
-    const groupId = "test-group-e2e-1";
+    const groupId1 = "test-group-1";
+    const groupId2 = "test-group-2";
+    const groupId3 = "test-group-3";
 
-    const enPost = await prisma.post.upsert({
-      where: {
-        locale_slug: {
-          locale: PostLocale.EN,
-          slug: "test-post-en",
-        },
-      },
+    // Group 1: EN + ZH pair (for translation tests)
+    const enPost1 = await prisma.post.upsert({
+      where: { id: "test-post-en-1" },
       update: {
-        title: "Test Post EN",
-        excerpt: "This is a test post for E2E testing",
-        content: "# Test Post\n\nThis is test content for automated E2E testing.",
-        groupId,
+        title: "Test Post EN 1",
+        excerpt: "This is the first English test post for E2E testing",
+        content: "# Test Post EN 1\n\nThis is test content for automated E2E testing. It has enough content to be meaningful.",
+        groupId: groupId1,
         status: PostStatus.PUBLISHED,
         publishedAt: new Date(),
-        tags: JSON.stringify(["test", "e2e"]),
+        tags: "test,e2e,english",
         authorId: adminUser.id,
       },
       create: {
-        title: "Test Post EN",
-        slug: "test-post-en",
-        excerpt: "This is a test post for E2E testing",
-        content: "# Test Post\n\nThis is test content for automated E2E testing.",
+        id: "test-post-en-1",
+        title: "Test Post EN 1",
+        slug: "test-post-en-1",
+        excerpt: "This is the first English test post for E2E testing",
+        content: "# Test Post EN 1\n\nThis is test content for automated E2E testing. It has enough content to be meaningful.",
         locale: PostLocale.EN,
-        groupId,
+        groupId: groupId1,
         status: PostStatus.PUBLISHED,
         publishedAt: new Date(),
-        tags: JSON.stringify(["test", "e2e"]),
+        tags: "test,e2e,english",
         authorId: adminUser.id,
       },
     });
 
-    const zhPost = await prisma.post.upsert({
-      where: {
-        locale_slug: {
-          locale: PostLocale.ZH,
-          slug: "ce-shi-wen-zhang",
-        },
-      },
+    const zhPost1 = await prisma.post.upsert({
+      where: { id: "test-post-zh-1" },
       update: {
-        title: "测试文章",
-        excerpt: "这是一篇用于 E2E 测试的测试文章",
-        content: "# 测试文章\n\n这是自动化 E2E 测试的测试内容。",
-        groupId,
+        title: "测试文章中文 1",
+        excerpt: "这是第一篇中文测试文章，用于 E2E 测试",
+        content: "# 测试文章中文 1\n\n这是自动化 E2E 测试的测试内容。内容足够长以便有意义。",
+        groupId: groupId1,
         status: PostStatus.PUBLISHED,
         publishedAt: new Date(),
-        tags: JSON.stringify(["测试", "e2e"]),
+        tags: "测试,e2e,中文",
         authorId: adminUser.id,
       },
       create: {
-        title: "测试文章",
-        slug: "ce-shi-wen-zhang",
-        excerpt: "这是一篇用于 E2E 测试的测试文章",
-        content: "# 测试文章\n\n这是自动化 E2E 测试的测试内容。",
+        id: "test-post-zh-1",
+        title: "测试文章中文 1",
+        slug: "test-post-zh-1",
+        excerpt: "这是第一篇中文测试文章，用于 E2E 测试",
+        content: "# 测试文章中文 1\n\n这是自动化 E2E 测试的测试内容。内容足够长以便有意义。",
         locale: PostLocale.ZH,
-        groupId,
+        groupId: groupId1,
         status: PostStatus.PUBLISHED,
         publishedAt: new Date(),
-        tags: JSON.stringify(["测试", "e2e"]),
+        tags: "测试,e2e,中文",
         authorId: adminUser.id,
       },
     });
+
+    // Group 2: EN only (no translation) - for testing posts without translations
+    const enPost2 = await prisma.post.upsert({
+      where: { id: "test-post-en-2" },
+      update: {
+        title: "Test Post EN 2",
+        excerpt: "Second English test post without translation",
+        content: "# Test Post EN 2\n\nThis post does not have a Chinese translation.",
+        groupId: groupId2,
+        status: PostStatus.PUBLISHED,
+        publishedAt: new Date(),
+        tags: "test,no-translation",
+        authorId: adminUser.id,
+      },
+      create: {
+        id: "test-post-en-2",
+        title: "Test Post EN 2",
+        slug: "test-post-en-2",
+        excerpt: "Second English test post without translation",
+        content: "# Test Post EN 2\n\nThis post does not have a Chinese translation.",
+        locale: PostLocale.EN,
+        groupId: groupId2,
+        status: PostStatus.PUBLISHED,
+        publishedAt: new Date(),
+        tags: "test,no-translation",
+        authorId: adminUser.id,
+      },
+    });
+
+    // Group 3: EN only for pagination tests
+    const enPost3 = await prisma.post.upsert({
+      where: { id: "test-post-en-3" },
+      update: {
+        title: "Test Post EN 3",
+        excerpt: "Third English test post for pagination",
+        content: "# Test Post EN 3\n\nUsed for testing pagination and listing.",
+        groupId: groupId3,
+        status: PostStatus.PUBLISHED,
+        publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        tags: "test,pagination",
+        authorId: adminUser.id,
+      },
+      create: {
+        id: "test-post-en-3",
+        title: "Test Post EN 3",
+        slug: "test-post-en-3",
+        excerpt: "Third English test post for pagination",
+        content: "# Test Post EN 3\n\nUsed for testing pagination and listing.",
+        locale: PostLocale.EN,
+        groupId: groupId3,
+        status: PostStatus.PUBLISHED,
+        publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        tags: "test,pagination",
+        authorId: adminUser.id,
+      },
+    });
+
+    // Initialize reaction aggregates for test posts
+    const postIds = ["test-post-en-1", "test-post-zh-1", "test-post-en-2", "test-post-en-3"];
+    for (const postId of postIds) {
+      await prisma.reactionAggregate.upsert({
+        where: { postId },
+        create: { postId, likeCount: 0 },
+        update: {},
+      });
+    }
+
+    // For backwards compatibility, keep the old posts
+    const enPost = enPost1;
+    const zhPost = zhPost1;
 
     console.log("✅ E2E test data seeded successfully");
     console.log(`   - Regular User: ${regularUser.email} (${regularUser.id})`);
