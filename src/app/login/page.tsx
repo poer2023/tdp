@@ -24,10 +24,10 @@ export default async function LoginPage({
         {/* Logo */}
         <div className="relative z-10">
           <h1 className="font-serif text-4xl font-bold tracking-tighter mb-4">
-            Lumina<span className="text-emerald-500">.</span>
+            ZHI<span className="text-emerald-500">.</span>
           </h1>
           <p className="text-stone-400 max-w-sm font-light">
-            Your personal digital garden. A space to curate, share, and reflect.
+            个人数字花园，记录、分享与思考的空间。
           </p>
         </div>
 
@@ -44,7 +44,7 @@ export default async function LoginPage({
 
         {/* Footer */}
         <div className="relative z-10 text-xs text-stone-600">
-          © 2025 Lumina. All rights reserved.
+          © {new Date().getFullYear()} Zhi. All rights reserved.
         </div>
       </div>
 
@@ -65,7 +65,7 @@ export default async function LoginPage({
           {/* Mobile Logo */}
           <div className="text-center lg:hidden mb-10">
             <h1 className="font-serif text-3xl font-bold tracking-tighter text-stone-900 dark:text-stone-100">
-              Lumina<span className="text-emerald-500">.</span>
+              ZHI<span className="text-emerald-500">.</span>
             </h1>
           </div>
 

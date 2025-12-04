@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { useData } from './store';
 import { SectionContainer } from './AdminComponents';
+import { AdminImage } from '../AdminImage';
 
 export const HeroSection: React.FC = () => {
     const { heroImages, addHeroImage, deleteHeroImage } = useData();
@@ -38,7 +39,7 @@ export const HeroSection: React.FC = () => {
             <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                 {heroImages.map((img) => (
                     <div key={img.id} className="relative group rounded-lg overflow-hidden aspect-square bg-stone-200 dark:bg-stone-800">
-                        <img src={img.url} className="w-full h-full object-cover" />
+                        <AdminImage src={img.url} alt="" className="w-full h-full" containerClassName="w-full h-full" />
                         <button onClick={() => handleRemoveHeroImage(img.id)} className="absolute top-2 right-2 p-1 bg-rose-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
                             <X size={14} />
                         </button>

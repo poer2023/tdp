@@ -7,6 +7,7 @@ import type { Friend } from './types';
 import {
     SectionContainer, ListContainer, EditForm, Input, TextArea, ActionBtn
 } from './AdminComponents';
+import { AdminAvatar } from '../AdminImage';
 
 export const FriendsSection: React.FC = () => {
     const { friends, addFriend, updateFriend, deleteFriend, resetFriendPassword } = useData();
@@ -143,11 +144,7 @@ export const FriendsSection: React.FC = () => {
                         <div key={f.id} className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 {f.avatar ? (
-                                    <img
-                                        src={f.avatar}
-                                        alt={f.name}
-                                        className="w-10 h-10 rounded-full object-cover"
-                                    />
+                                    <AdminAvatar src={f.avatar} alt={f.name} size={40} />
                                 ) : (
                                     <div className="w-10 h-10 rounded-full flex items-center justify-center bg-sage-100 dark:bg-sage-900 text-sage-600">
                                         <User size={20} />

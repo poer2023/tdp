@@ -11,7 +11,8 @@ import {
     UploadCloud, Check, Globe, Database, ShieldCheck,
     Clock, TrendingUp, PieChart as PieIcon, Smartphone,
     Eye, MousePointer, Activity, RefreshCw, Shield, AlertTriangle,
-    Terminal, Coins, ArrowRightLeft, UserPlus, ExternalLink, Copy
+    Terminal, Coins, ArrowRightLeft, UserPlus, ExternalLink, Copy,
+    Sun, Moon
 } from 'lucide-react';
 import { useData, useSettings } from './store';
 import type { Tab, BlogPost, Moment, Project, ShareItem, GalleryItem, Friend, Subscription, Credential } from './types';
@@ -20,6 +21,7 @@ import {
     EditForm, Input, TextArea, DataSection, OverviewSection,
     TrafficStatsSection, ImageUploadArea, RichPostItem, RichMomentItem
 } from './AdminComponents';
+import { AdminImage, AdminAvatar } from '../AdminImage';
 
 interface AdminDashboardProps {
     user: {
@@ -350,7 +352,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 <div className="p-6 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-stone-900 font-bold font-serif">L</div>
-                        <h1 className="text-xl font-bold text-white tracking-tight">Lumina CMS</h1>
+                        <h1 className="text-xl font-bold text-white tracking-tight">ZHI CMS</h1>
                     </div>
                     <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-stone-400"><X /></button>
                 </div>
@@ -374,6 +376,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 </nav>
 
                 <div className="p-4 border-t border-stone-800">
+                    {/* Quick Actions */}
+                    <div className="flex gap-2 mb-4">
+                        <button
+                            onClick={() => router.push('/')}
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-stone-400 hover:text-white hover:bg-stone-800 rounded-lg transition-colors text-sm"
+                            title="返回主页"
+                        >
+                            <Home size={16} />
+                            <span className="text-xs">主页</span>
+                        </button>
+                        <button
+                            onClick={toggleTheme}
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-stone-400 hover:text-white hover:bg-stone-800 rounded-lg transition-colors text-sm"
+                            title="切换主题"
+                        >
+                            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                            <span className="text-xs">{theme === 'dark' ? '浅色' : '深色'}</span>
+                        </button>
+                    </div>
+
+                    {/* User Info */}
                     <div className="flex items-center gap-3 px-4 py-3 mb-2">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sage-400 to-stone-600"></div>
                         <div>
@@ -402,25 +425,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 {/* Mobile Header */}
                 <header className="lg:hidden bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 p-4 flex justify-between items-center sticky top-0 z-40">
                     <button onClick={() => setIsSidebarOpen(true)} className="text-stone-600 dark:text-stone-300"><Menu /></button>
-                    <span className="font-bold text-stone-900 dark:text-stone-100">Lumina Admin</span>
+                    <span className="font-bold text-stone-900 dark:text-stone-100">ZHI CMS</span>
                     <div className="w-8"></div>
                 </header>
 
                 <div className="p-6 lg:p-10">
                     {/* Top Bar */}
-                    <div className="flex justify-between items-center mb-8">
-                        <div>
-                            <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 capitalize">{activeTab}</h2>
-                            <p className="text-sm text-stone-500 dark:text-stone-400">Manage your content and settings</p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button onClick={() => router.push('/')} className="p-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors" title="View Site">
-                                <Home size={20} />
-                            </button>
-                            <button onClick={toggleTheme} className="p-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-                                {theme === 'dark' ? '☀️' : '🌙'}
-                            </button>
-                        </div>
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 capitalize">{activeTab}</h2>
+                        <p className="text-sm text-stone-500 dark:text-stone-400">Manage your content and settings</p>
                     </div>
 
                     {/* Content Area */}
@@ -745,7 +758,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {galleryItems.map(item => (
                                         <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
-                                            <img src={item.type === 'video' ? item.thumbnail : item.url} className="w-full h-full object-cover" />
+                                            <AdminImage src={item.type === 'video' ? item.thumbnail : item.url} alt={item.title || ''} className="w-full h-full" containerClassName="w-full h-full" />
                                             {item.type === 'video' && <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white"><Play size={12} /></div>}
                                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                                     <button onClick={() => setEditingGallery(item)} className="p-2 bg-white rounded-full text-stone-900 hover:scale-110 transition-transform"><Edit2 size={16} /></button>
@@ -775,7 +788,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                             <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                                 {heroImages.map((img) => (
                                     <div key={img.id} className="relative group rounded-lg overflow-hidden aspect-square bg-stone-200 dark:bg-stone-800">
-                                        <img src={img.url} className="w-full h-full object-cover" />
+                                        <AdminImage src={img.url} alt="" className="w-full h-full" containerClassName="w-full h-full" />
                                         <button onClick={() => handleRemoveHeroImage(img.id)} className="absolute top-2 right-2 p-1 bg-rose-500 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                             <X size={14} />
                                         </button>
@@ -877,7 +890,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                                         <div key={f.id} className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 flex items-center justify-between">
                                             <div className="flex items-center gap-4">
                                                 {f.avatar ? (
-                                                    <img src={f.avatar} alt={f.name} className="w-10 h-10 rounded-full object-cover" />
+                                                    <AdminAvatar src={f.avatar} alt={f.name} size={40} />
                                                 ) : (
                                                     <div className="w-10 h-10 rounded-full flex items-center justify-center bg-sage-100 dark:bg-sage-900 text-sage-600 font-bold">
                                                         {f.name.charAt(0)}

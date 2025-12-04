@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
     LayoutTemplate, Home, FileText, Image as ImageIcon,
     Briefcase, Link2, Camera, Layers, Users, CreditCard,
-    Key, LogOut, Menu, X, Database, TrendingUp
+    Key, LogOut, Menu, X, Database, TrendingUp, Sun, Moon
 } from 'lucide-react';
 import { useSettings } from './store';
 
@@ -85,7 +85,7 @@ export const AdminShell: React.FC<AdminShellProps> = ({ user, children, pageTitl
                 <div className="p-6 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-stone-900 font-bold font-serif">L</div>
-                        <h1 className="text-xl font-bold text-white tracking-tight">Lumina CMS</h1>
+                        <h1 className="text-xl font-bold text-white tracking-tight">ZHI CMS</h1>
                     </div>
                     <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-stone-400"><X /></button>
                 </div>
@@ -103,6 +103,27 @@ export const AdminShell: React.FC<AdminShellProps> = ({ user, children, pageTitl
                 </nav>
 
                 <div className="p-4 border-t border-stone-800">
+                    {/* Quick Actions */}
+                    <div className="flex gap-2 mb-4">
+                        <button
+                            onClick={() => router.push('/')}
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-stone-400 hover:text-white hover:bg-stone-800 rounded-lg transition-colors text-sm"
+                            title="返回主页"
+                        >
+                            <Home size={16} />
+                            <span className="text-xs">主页</span>
+                        </button>
+                        <button
+                            onClick={toggleTheme}
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-stone-400 hover:text-white hover:bg-stone-800 rounded-lg transition-colors text-sm"
+                            title="切换主题"
+                        >
+                            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                            <span className="text-xs">{theme === 'dark' ? '浅色' : '深色'}</span>
+                        </button>
+                    </div>
+
+                    {/* User Info */}
                     <div className="flex items-center gap-3 px-4 py-3 mb-2">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sage-400 to-stone-600"></div>
                         <div>
@@ -131,25 +152,15 @@ export const AdminShell: React.FC<AdminShellProps> = ({ user, children, pageTitl
                 {/* Mobile Header */}
                 <header className="lg:hidden bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 p-4 flex justify-between items-center sticky top-0 z-40">
                     <button onClick={() => setIsSidebarOpen(true)} className="text-stone-600 dark:text-stone-300"><Menu /></button>
-                    <span className="font-bold text-stone-900 dark:text-stone-100">Lumina Admin</span>
+                    <span className="font-bold text-stone-900 dark:text-stone-100">ZHI CMS</span>
                     <div className="w-8"></div>
                 </header>
 
                 <div className="p-6 lg:p-10">
                     {/* Top Bar */}
-                    <div className="flex justify-between items-center mb-8">
-                        <div>
-                            <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 capitalize">{pageTitle}</h2>
-                            <p className="text-sm text-stone-500 dark:text-stone-400">{pageDescription}</p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button onClick={() => router.push('/')} className="p-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors" title="View Site">
-                                <Home size={20} />
-                            </button>
-                            <button onClick={toggleTheme} className="p-2 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-                                {theme === 'dark' ? '☀️' : '🌙'}
-                            </button>
-                        </div>
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 capitalize">{pageTitle}</h2>
+                        <p className="text-sm text-stone-500 dark:text-stone-400">{pageDescription}</p>
                     </div>
 
                     {/* Page Content */}

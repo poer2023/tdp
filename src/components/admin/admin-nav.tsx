@@ -52,7 +52,7 @@ export function AdminNav({
       <div className="px-6 py-6">
         <Link href="/admin" className="block">
           <h1 className="font-serif text-xl font-bold tracking-tight text-white">
-            Lumina CMS
+            ZHI CMS
           </h1>
         </Link>
       </div>

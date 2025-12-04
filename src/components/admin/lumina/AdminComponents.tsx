@@ -17,6 +17,7 @@ import {
     AreaChart, Area, CartesianGrid, PieChart, Pie
 } from 'recharts';
 import type { BlogPost, Moment, MomentImage, Project, ShareItem, GalleryItem, TrafficData, SourceData, PageVisitData, DeviceData, Tab } from './types';
+import { AdminImage } from '../AdminImage';
 
 // Helper to get image URL from string or MomentImage
 const getImageUrl = (img: string | MomentImage): string => {
@@ -93,7 +94,7 @@ export const ImageUploadArea: React.FC<{
             <div className={`grid gap-2 ${multiple ? 'grid-cols-4' : 'grid-cols-2'}`}>
                 {currentImageUrl && queue.length === 0 && (
                     <div className="relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                        <img src={currentImageUrl} className="w-full h-full object-cover" />
+                        <AdminImage src={currentImageUrl} alt="Current cover" className="w-full h-full" containerClassName="w-full h-full" />
                         <div className="absolute inset-0 bg-black/40 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             Current Cover
                         </div>
@@ -102,7 +103,7 @@ export const ImageUploadArea: React.FC<{
 
                 {existingImages && existingImages.map((img, idx) => (
                     <div key={`exist-${idx}`} className="relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                        <img src={getImageUrl(img)} className="w-full h-full object-cover" />
+                        <AdminImage src={getImageUrl(img)} alt="Saved image" className="w-full h-full" containerClassName="w-full h-full" />
                         {onRemoveExisting && (
                             <button
                                 onClick={() => onRemoveExisting(idx)}
@@ -119,7 +120,7 @@ export const ImageUploadArea: React.FC<{
 
                 {queue.map((item, idx) => (
                     <div key={`queue-${idx}`} className="relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-sage-500 shadow-md">
-                        <img src={item.preview} className="w-full h-full object-cover" />
+                        <AdminImage src={item.preview} alt="Upload preview" className="w-full h-full" containerClassName="w-full h-full" />
                         <button
                             onClick={() => onRemove(idx)}
                             className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
@@ -140,7 +141,7 @@ export const RichPostItem: React.FC<{ post: BlogPost, onEdit: () => void, onDele
     <div className="group bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 flex gap-4 transition-all hover:border-stone-300 dark:hover:border-stone-600">
         <div className="w-24 h-24 flex-shrink-0 bg-stone-200 dark:bg-stone-800 rounded-lg overflow-hidden relative">
             {post.imageUrl ? (
-                <img src={post.imageUrl} alt="" className="w-full h-full object-cover" />
+                <AdminImage src={post.imageUrl} alt={post.title || ''} className="w-full h-full" containerClassName="w-full h-full" />
             ) : (
                 <div className="w-full h-full flex items-center justify-center text-stone-400">
                     <FileText size={24} />
@@ -201,7 +202,7 @@ export const RichMomentItem: React.FC<{ moment: Moment, onEdit: () => void, onDe
             <div className="flex gap-2 overflow-x-auto pb-1">
                 {moment.images.map((img, idx) => (
                     <div key={idx} className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-100 dark:border-stone-700">
-                        <img src={getImageUrl(img)} className="w-full h-full object-cover" />
+                        <AdminImage src={getImageUrl(img)} alt="" className="w-full h-full" containerClassName="w-full h-full" />
                     </div>
                 ))}
             </div>
@@ -239,7 +240,7 @@ export const ListContainer: React.FC<{ children: React.ReactNode }> = ({ childre
 
 export const ListItem: React.FC<{ title: string, subtitle?: string, image?: string, onEdit: () => void, onDelete: () => void }> = ({ title, subtitle, image, onEdit, onDelete }) => (
     <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 flex items-center gap-4 transition-colors">
-        {image && <img src={image} className="w-10 h-10 rounded object-cover bg-stone-200" />}
+        {image && <AdminImage src={image} alt={title} fill={false} width={40} height={40} className="rounded object-cover" />}
         <div className="flex-1 min-w-0">
             <h3 className="font-bold text-stone-800 dark:text-stone-100 truncate">{title}</h3>
             {subtitle && <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 truncate">{subtitle}</p>}

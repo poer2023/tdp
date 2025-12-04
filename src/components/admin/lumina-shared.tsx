@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { X, UploadCloud } from "lucide-react";
+import { AdminImage } from "./AdminImage";
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -463,8 +464,7 @@ export function LuminaListItem({
   const content = (
     <>
       {image && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt="" className="w-10 h-10 rounded object-cover bg-stone-200" />
+        <AdminImage src={image} alt="" fill={false} width={40} height={40} className="rounded object-cover" />
       )}
       {icon && !image && (
         <div className="w-10 h-10 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-500">
@@ -703,8 +703,7 @@ export function LuminaImageUploadArea({
       <div className={cn("grid gap-2", multiple ? "grid-cols-4" : "grid-cols-2")}>
         {currentImageUrl && queue.length === 0 && (
           <div className="relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={currentImageUrl} alt="" className="w-full h-full object-cover" />
+            <AdminImage src={currentImageUrl} alt="当前封面" className="w-full h-full" containerClassName="w-full h-full" />
             <div className="absolute inset-0 bg-black/40 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               当前封面
             </div>
@@ -717,8 +716,7 @@ export function LuminaImageUploadArea({
               key={`exist-${idx}`}
               className="relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="w-full h-full object-cover" />
+              <AdminImage src={src} alt="已保存图片" className="w-full h-full" containerClassName="w-full h-full" />
               {onRemoveExisting && (
                 <button
                   onClick={() => onRemoveExisting(idx)}
@@ -738,8 +736,7 @@ export function LuminaImageUploadArea({
             key={`queue-${idx}`}
             className="relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-sage-500 shadow-md"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={item.preview} alt="" className="w-full h-full object-cover" />
+            <AdminImage src={item.preview} alt="待上传图片" className="w-full h-full" containerClassName="w-full h-full" />
             <button
               onClick={() => onRemove(idx)}
               className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
@@ -788,8 +785,7 @@ export function LuminaRichPostItem({
     <div className="group bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 flex gap-4 transition-all hover:border-stone-300 dark:hover:border-stone-600">
       <div className="w-24 h-24 flex-shrink-0 bg-stone-200 dark:bg-stone-800 rounded-lg overflow-hidden relative">
         {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+          <AdminImage src={imageUrl} alt={title || ''} className="w-full h-full" containerClassName="w-full h-full" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-stone-400">
             <FileIcon size={24} />
@@ -893,8 +889,7 @@ export function LuminaRichMomentItem({
               key={idx}
               className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-100 dark:border-stone-700"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="w-full h-full object-cover" />
+              <AdminImage src={src} alt="" className="w-full h-full" containerClassName="w-full h-full" />
             </div>
           ))}
         </div>

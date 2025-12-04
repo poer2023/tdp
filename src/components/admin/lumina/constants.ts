@@ -13,8 +13,8 @@ export const NAV_LINKS = [
 export const PROJECTS: Project[] = [
     {
         id: 'p1',
-        title: 'Lumina Blog System',
-        description: 'A minimalist personal blog platform built with React and Tailwind CSS. Features dark mode, masonry layout, and interactive data visualization for quantified self tracking.',
+        title: 'Zhi Blog System',
+        description: '使用 Next.js 和 Tailwind CSS 构建的极简个人博客平台。支持深色模式、瀑布流布局和量化自我追踪的交互式数据可视化。',
         imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1469&q=80',
         technologies: ['React', 'TypeScript', 'Tailwind', 'Recharts'],
         demoUrl: '#',
@@ -400,7 +400,7 @@ export const SOURCE_DATA: SourceData[] = [
 export const PAGE_VISIT_DATA: PageVisitData[] = [
     { path: '/blog/exploring-gemini-2-5', title: 'Exploring Gemini 2.5 Flash', visits: 1245 },
     { path: '/gallery', title: 'Gallery', visits: 856 },
-    { path: '/projects/lumina', title: 'Project: Lumina Blog', visits: 645 },
+    { path: '/projects/zhi-blog', title: 'Project: Zhi Blog', visits: 645 },
     { path: '/', title: 'Home', visits: 3421 },
     { path: '/about', title: 'About Me', visits: 220 },
     { path: '/blog/sunday-morning', title: 'Sunday Morning Rituals', visits: 189 },

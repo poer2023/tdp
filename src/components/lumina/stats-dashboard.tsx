@@ -232,7 +232,7 @@ export function LuminaStatsDashboard({
 
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Card 1: Interactive Shutter Count */}
-        <div className="relative col-span-1 select-none overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 p-6 text-white shadow-2xl md:col-span-2">
+        <div className="relative col-span-1 select-none overflow-hidden rounded-2xl border border-stone-800 bg-[#171717] p-6 text-white shadow-2xl md:col-span-2">
           {/* Flash Overlay */}
           {isFlashing && (
             <div className="flash-overlay absolute inset-0 z-50 bg-white"></div>
