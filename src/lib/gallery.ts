@@ -187,6 +187,29 @@ export async function addGalleryImage(input: CreateGalleryImageInput): Promise<G
   return toGalleryImage(image);
 }
 
+export type UpdateGalleryImageInput = {
+  title?: string | null;
+  description?: string | null;
+  category?: GalleryCategory | null;
+  capturedAt?: Date | null;
+};
+
+export async function updateGalleryImage(
+  id: string,
+  input: UpdateGalleryImageInput
+): Promise<GalleryImage> {
+  const image = await prisma.galleryImage.update({
+    where: { id },
+    data: {
+      title: typeof input.title === "string" ? input.title.trim() : undefined,
+      description: typeof input.description === "string" ? input.description.trim() : undefined,
+      category: input.category ?? undefined,
+      capturedAt: input.capturedAt ?? undefined,
+    },
+  });
+  return toGalleryImage(image);
+}
+
 export async function deleteGalleryImage(id: string): Promise<void> {
   await prisma.galleryImage.delete({ where: { id } });
 }

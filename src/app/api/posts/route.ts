@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { createPost, listPublishedPosts } from "@/lib/posts";
-import { PostStatus, UserRole } from "@prisma/client";
+import { PostLocale, PostStatus, UserRole } from "@prisma/client";
 
 // Force Node.js runtime for Prisma
 export const runtime = "nodejs";
@@ -31,6 +31,10 @@ export async function POST(request: Request) {
             .filter(Boolean)
         : [];
     const statusValue = payload.status === "PUBLISHED" ? PostStatus.PUBLISHED : PostStatus.DRAFT;
+    const locale =
+      typeof payload.locale === "string" && payload.locale.toUpperCase() === "ZH"
+        ? PostLocale.ZH
+        : PostLocale.EN;
     const coverImagePath =
       typeof payload.coverImagePath === "string" ? payload.coverImagePath : null;
 
@@ -49,6 +53,7 @@ export async function POST(request: Request) {
       content,
       tags,
       status: statusValue,
+      locale,
       coverImagePath,
       authorId: session.user.id,
     });

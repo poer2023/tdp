@@ -26,6 +26,11 @@ export async function POST(req: Request) {
     const description = (formData.get("description") as string | null)?.trim() || null;
     const category = (formData.get("category") as string | null) ?? "ORIGINAL";
     const postId = ((formData.get("postId") as string | null) ?? "").trim() || null;
+    const capturedAtRaw = (formData.get("capturedAt") as string | null) ?? null;
+    const capturedAt =
+      capturedAtRaw && !Number.isNaN(new Date(capturedAtRaw).getTime())
+        ? new Date(capturedAtRaw)
+        : null;
 
     if (!image) {
       return NextResponse.json({ error: "Missing image file" }, { status: 400 });
@@ -98,7 +103,7 @@ export async function POST(req: Request) {
       width: exif?.width ?? null,
       height: exif?.height ?? null,
       mimeType: image.type || null,
-      capturedAt: exif?.capturedAt ?? null,
+      capturedAt: capturedAt ?? exif?.capturedAt ?? null,
       storageType: process.env.STORAGE_TYPE || "local",
     });
 

@@ -1,0 +1,26 @@
+import { auth } from "@/auth";
+import { SettingsProvider, DataProvider } from '@/components/admin/lumina/store';
+import AdminShell from '@/components/admin/lumina/AdminShell';
+import ArticlesSection from '@/components/admin/lumina/ArticlesSection';
+
+export default async function ArticlesPage() {
+    const session = await auth();
+
+    return (
+        <SettingsProvider>
+            <DataProvider>
+                <AdminShell
+                    user={{
+                        username: session!.user.name ?? session!.user.email ?? "Admin",
+                        email: session!.user.email ?? "",
+                        role: session!.user.role
+                    }}
+                    pageTitle="Posts"
+                    pageDescription="Manage your content and settings"
+                >
+                    <ArticlesSection />
+                </AdminShell>
+            </DataProvider>
+        </SettingsProvider>
+    );
+}

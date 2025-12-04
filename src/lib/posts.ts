@@ -1,4 +1,4 @@
-import { PostStatus, type Prisma } from "@prisma/client";
+import { PostLocale, PostStatus, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { pinyin } from "pinyin-pro";
 import { shouldSkipDb, withDbFallback } from "@/lib/utils/db-fallback";
@@ -15,6 +15,7 @@ export type PublicPost = {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  locale: PostLocale;
   viewCount?: number;
   author?: {
     id: string;
@@ -42,6 +43,7 @@ export type CreatePostInput = {
   status?: PostStatus;
   coverImagePath?: string | null;
   authorId?: string;
+  locale?: PostLocale;
 };
 
 export type UpdatePostInput = {
@@ -52,6 +54,7 @@ export type UpdatePostInput = {
   status?: PostStatus;
   coverImagePath?: string | null;
   publishedAt?: Date | null;
+  locale?: PostLocale;
 };
 
 type PostWithAuthor = Prisma.PostGetPayload<{ include: { author: true } }>;
@@ -144,7 +147,8 @@ export async function getPostById(id: string): Promise<PublicPost | null> {
 
 export async function createPost(input: CreatePostInput): Promise<PublicPost> {
   const title = input.title.trim();
-  const slug = await createUniqueSlug(title);
+  const locale = input.locale ?? PostLocale.EN;
+  const slug = await createUniqueSlug(title, locale);
   const status = input.status ?? PostStatus.DRAFT;
 
   const now = new Date();
@@ -161,6 +165,7 @@ export async function createPost(input: CreatePostInput): Promise<PublicPost> {
         status,
         coverImagePath: input.coverImagePath ?? null,
         publishedAt,
+        locale,
         ...(input.authorId ? { author: { connect: { id: input.authorId } } } : {}),
       },
       include: { author: true },
@@ -182,6 +187,7 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Pu
     status === PostStatus.PUBLISHED
       ? (input.publishedAt ?? existing.publishedAt ?? new Date())
       : null;
+  const locale = input.locale ?? existing.locale;
 
   try {
     const post = await prisma.post.update({
@@ -194,6 +200,7 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Pu
         status,
         coverImagePath: input.coverImagePath ?? existing.coverImagePath,
         publishedAt,
+        locale,
       },
       include: { author: true },
     });
@@ -227,7 +234,7 @@ export function serializeTags(tags?: string[]): string | null {
     .join(",");
 }
 
-async function createUniqueSlug(title: string, locale: "EN" | "ZH" = "EN"): Promise<string> {
+async function createUniqueSlug(title: string, locale: PostLocale = PostLocale.EN): Promise<string> {
   const base = slugify(title);
   let candidate = base || `post-${Date.now()}`;
   let suffix = 2;
@@ -287,6 +294,7 @@ function toPublicPost(post: PostWithAuthor): PublicPost {
     publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
     createdAt: post.createdAt.toISOString(),
     updatedAt: post.updatedAt.toISOString(),
+    locale: post.locale,
     viewCount: post.viewCount || 0,
     author: post.author
       ? {
