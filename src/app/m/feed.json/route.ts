@@ -1,4 +1,9 @@
-export { GET } from "../../[locale]/m/feed.json/route";
+import { GET as localizedGet } from "../../[locale]/m/feed.json/route";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+export async function GET(req: Request, _ctx: { params: { locale: string } }) {
+  void req;
+  return localizedGet();
+}
