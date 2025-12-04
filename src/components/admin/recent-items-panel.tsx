@@ -41,7 +41,7 @@ export function RecentItemsPanel({ recentPosts, recentUploads, locale }: RecentI
       id: upload.id,
       title: upload.title || "Untitled",
       type: "gallery" as const,
-      date: safeDate(upload.uploadedAt),
+      date: safeDate(upload.createdAt),
       icon: Camera,
     })),
   ]
