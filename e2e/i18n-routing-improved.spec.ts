@@ -25,15 +25,22 @@ test.describe("i18n Routing", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", /^zh/);
   });
 
-  test("should serve English content at root and /en paths", async ({ page }) => {
+  test("should serve English content at root and /en paths", async ({ page, request }) => {
     // Test root path
     await page.goto("/");
     await waitForNetworkIdle(page);
     await expect(page.locator("html")).toHaveAttribute("lang", /^en/);
 
     // Test legacy /en path redirects to prefix-free root
-    const enResponse = await page.goto("/en");
-    expect([301, 308, 307, 302]).toContain(enResponse?.status());
+    // Use request API to check redirect status without following redirects
+    const baseURL = page.url().replace(/\/$/, ""); // Get base URL from current page
+    const enResponse = await request.get(`${baseURL}/en`, {
+      maxRedirects: 0, // Don't follow redirects
+    });
+    expect([301, 308, 307, 302]).toContain(enResponse.status());
+
+    // Verify navigation to /en ends up at root
+    await page.goto("/en");
     await waitForNetworkIdle(page);
     await expect(page).toHaveURL("/");
     await expect(page.locator("html")).toHaveAttribute("lang", /^en/);
