@@ -333,14 +333,14 @@ export const OverviewSection: React.FC<{
     const recentActivity = [
         ...posts.slice(0, 2).map(p => ({ type: 'Article', title: p.title, date: p.date, icon: FileText })),
         ...moments.slice(0, 2).map(m => ({ type: 'Moment', title: m.content.substring(0, 30) + '...', date: m.date, icon: ImageIcon })),
-    ].sort(() => Math.random() - 0.5).slice(0, 4);
+    ].slice(0, 4);
 
     return (
         <div className="max-w-6xl mx-auto animate-in fade-in space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">Dashboard Overview</h2>
-                    <p className="text-stone-500 dark:text-stone-400">Welcome back. Here is what's happening today.</p>
+                    <p className="text-stone-500 dark:text-stone-400">Welcome back. Here is what&apos;s happening today.</p>
                 </div>
                 <div className="flex gap-3">
                     <button onClick={() => onQuickAction('posts')} className="px-4 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">

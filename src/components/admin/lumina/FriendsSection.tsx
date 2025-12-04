@@ -83,7 +83,7 @@ export const FriendsSection: React.FC = () => {
                                 <KeyRound className="text-emerald-600" size={24} />
                             </div>
                             <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">Friend Passphrase</h3>
-                            <p className="text-sm text-stone-500 mt-1">Save this passphrase - it won't be shown again!</p>
+                            <p className="text-sm text-stone-500 mt-1">Save this passphrase - it won&apos;t be shown again!</p>
                         </div>
 
                         <div className="bg-stone-100 dark:bg-stone-800 p-4 rounded-lg flex items-center justify-between gap-3 mb-4">
@@ -102,7 +102,7 @@ export const FriendsSection: React.FC = () => {
                             onClick={() => setPassphrase(null)}
                             className="w-full py-2 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-lg font-medium hover:opacity-90 transition-opacity"
                         >
-                            I've Saved It
+                            I&apos;ve Saved It
                         </button>
                     </div>
                 </div>

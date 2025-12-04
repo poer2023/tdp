@@ -18,6 +18,7 @@ const customIgnores = [
   "playwright-report/**",
   "test-results/**",
   "coverage/**",
+  "lumina_source/**",
 ];
 
 export default [
