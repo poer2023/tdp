@@ -412,6 +412,10 @@ function toGalleryImage(image: {
     storageType: image.storageType,
   };
 
+  // In production (Vercel/Docker), skip local file existence checks
+  // as files may be stored in persistent volumes or served via different paths
+  const isProduction = process.env.NODE_ENV === "production";
+
   const normalizeLocalAsset = (url: string | null | undefined): string | null => {
     if (!url) return null;
     const [rawBase, ...queryParts] = url.split("?");
@@ -431,11 +435,16 @@ function toGalleryImage(image: {
       .normalize(relative)
       .replace(/^(\.\.(\/|\\))+/, "")
       .replace(/^[/\\]+/, "");
-    const uploadsRoot = path.join(process.cwd(), "public", "uploads");
-    const onDisk = path.join(uploadsRoot, normalizedRelative);
-    if (!fs.existsSync(onDisk)) {
-      return null;
+
+    // In production, skip file existence check as files may be in remote storage
+    if (!isProduction) {
+      const uploadsRoot = path.join(process.cwd(), "public", "uploads");
+      const onDisk = path.join(uploadsRoot, normalizedRelative);
+      if (!fs.existsSync(onDisk)) {
+        return null;
+      }
     }
+
     const normalizedBase = `/api/uploads/${normalizedRelative.replace(/\\/g, "/")}`;
     return `${normalizedBase}${query}`;
   };
@@ -455,7 +464,11 @@ function toGalleryImage(image: {
       const filename = extractFileName(mapped.filePath);
       if (filename) {
         const ensureFromLocal = (name: string) => {
-          // 本地存储：仅当文件真实存在时才返回，避免 404
+          // 本地存储：在开发环境检查文件真实存在，生产环境直接返回 URL
+          // 生产环境文件可能在持久化卷或远程存储中，本地检查会失败
+          if (isProduction) {
+            return `/api/uploads/gallery/${name}`;
+          }
           const baseDir = path.join(process.cwd(), "public", "uploads", "gallery");
           const onDisk = path.join(baseDir, name);
           return fs.existsSync(onDisk) ? `/api/uploads/gallery/${name}` : null;
@@ -475,7 +488,7 @@ function toGalleryImage(image: {
           }
         };
 
-        // 选择策略：S3/CDN 直接推导；本地优先校验存在，否则不返回
+        // 选择策略：S3/CDN 直接推导；本地存储在生产环境也直接推导
         const ensure = (suffix: "_micro" | "_small" | "_medium") => {
           if (mapped.storageType && mapped.storageType !== "local") {
             return ensureFromOrigin(suffix);

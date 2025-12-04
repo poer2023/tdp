@@ -38,7 +38,11 @@ function buildHeaders(stats: { size: number; mtime: Date }) {
   };
 }
 
-async function resolveFile(request: NextRequest, params: string[]) {
+type ResolveResult =
+  | { status: 403 | 404 }
+  | { status: 200; filePath: string; stats: { size: number; mtime: Date }; dynamicTransform?: TransformOptions };
+
+async function resolveFile(request: NextRequest, params: string[]): Promise<ResolveResult> {
   void request;
   const uploadsRoot = path.resolve(process.cwd(), "public", "uploads") + path.sep;
   const filePath = path.resolve(uploadsRoot, ...params);
@@ -54,6 +58,48 @@ async function resolveFile(request: NextRequest, params: string[]) {
     }
     return { status: 200 as const, filePath, stats };
   } catch {
+    // If file not found, check if it's a webp thumbnail request
+    // and try to find the original image for dynamic conversion
+    const fileName = params[params.length - 1] || "";
+    const thumbMatch = fileName.match(/^(.+)_(micro|small|medium)\.webp$/);
+
+    if (thumbMatch) {
+      const baseName = thumbMatch[1];
+      const thumbSize = thumbMatch[2] as "micro" | "small" | "medium";
+
+      // Try to find original image with common extensions
+      const extensions = [".jpg", ".jpeg", ".png", ".webp", ".heic"];
+      for (const ext of extensions) {
+        const originalParams = [...params.slice(0, -1), `${baseName}${ext}`];
+        const originalPath = path.resolve(uploadsRoot, ...originalParams);
+
+        try {
+          const originalStats = await stat(originalPath);
+          if (originalStats.isFile()) {
+            // Determine resize dimensions based on thumbnail size
+            const dimensions: Record<string, { width?: number; height?: number }> = {
+              micro: { width: 64, height: 64 },
+              small: { width: 480 },
+              medium: { width: 1200 },
+            };
+
+            return {
+              status: 200 as const,
+              filePath: originalPath,
+              stats: originalStats,
+              dynamicTransform: {
+                ...dimensions[thumbSize],
+                format: "webp",
+                quality: 85,
+              },
+            };
+          }
+        } catch {
+          // Continue to next extension
+        }
+      }
+    }
+
     return { status: 404 as const };
   }
 }
@@ -182,12 +228,19 @@ async function serveFile(
     return new NextResponse("Not Found", { status: resolved.status });
   }
 
-  const { filePath, stats } = resolved;
+  const { filePath, stats, dynamicTransform } = resolved;
   const { baseEtag, lastModified, cacheControl } = buildHeaders(stats);
   const url = new URL(request.url);
-  const transformOptions = parseTransformOptions(url);
+  // Merge dynamic transform options with URL query params (URL params take precedence)
+  const urlOptions = parseTransformOptions(url);
+  const transformOptions: TransformOptions = {
+    ...dynamicTransform,
+    ...Object.fromEntries(
+      Object.entries(urlOptions).filter(([, v]) => v !== undefined)
+    ),
+  };
   const mime = getMimeType(filePath);
-  const shouldApplyTransform = shouldTransform(mime, transformOptions);
+  const shouldApplyTransform = shouldTransform(mime, transformOptions) || !!dynamicTransform;
   const etagSuffix = shouldApplyTransform
     ? `-opt-${transformOptions.width ?? ""}-${transformOptions.height ?? ""}-${transformOptions.format ?? "auto"}-${transformOptions.quality ?? ""}`
     : "";
