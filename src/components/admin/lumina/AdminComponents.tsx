@@ -3,9 +3,9 @@
 import React from 'react';
 import {
     FileText, Image as ImageIcon, Database,
-    LogOut, Plus, Trash2, Edit2, Menu, X,
-    Briefcase, Link2, Camera, Layers, Play,
-    LayoutTemplate, Home, UploadCloud, FileImage, Check,
+    Plus, Trash2, Edit2, X,
+    Briefcase, Camera,
+    Home, UploadCloud, FileImage, Check,
     Activity, Clock, TrendingUp, PieChart as PieIcon,
     ShieldCheck, Globe, Calendar, Tag, Heart, MessageCircle,
     Users, MousePointer, Smartphone, ArrowUpRight, ArrowDownRight,

@@ -15,7 +15,6 @@ export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   const pathSegments = pathname.split("/").filter(Boolean);
   const firstSegment = pathSegments[0] ?? "";
-  const secondSegment = pathSegments[1] ?? "";
 
   // Redirect legacy /en paths to prefix-free equivalents (301 to preserve SEO)
   if (firstSegment === "en") {

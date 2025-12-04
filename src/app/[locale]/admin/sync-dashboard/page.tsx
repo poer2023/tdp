@@ -13,7 +13,7 @@ type PageProps = {
 };
 
 export default async function SyncDashboardPage({ params }: PageProps) {
-  const { locale } = await params;
+  const { locale: _locale } = await params;
 
   // Check authentication
   const session = await auth();

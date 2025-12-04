@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { LuminaImageUploadArea } from "./lumina-shared";
+import { useState } from "react";
 
 type ImageUploadAreaProps = {
   label?: string;
