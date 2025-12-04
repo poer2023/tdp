@@ -1,6 +1,6 @@
-import LocalizedPostPage, { runtime as localizedRuntime } from "../../[locale]/posts/[slug]/page";
+import LocalizedPostPage from "../../[locale]/posts/[slug]/page";
 
-export const runtime = localizedRuntime;
+export const runtime = "nodejs";
 
 type PageProps = {
   params: Promise<{ slug: string }>;

@@ -1,6 +1,6 @@
-import LocalizedPostsPage, { runtime as localizedRuntime } from "../[locale]/posts/page";
+import LocalizedPostsPage from "../[locale]/posts/page";
 
-export const runtime = localizedRuntime;
+export const runtime = "nodejs";
 
 export default function PostsPage() {
   return <LocalizedPostsPage params={Promise.resolve({ locale: "en" })} />;

@@ -1,6 +1,6 @@
-import LocalizedGalleryDetailPage, { runtime as localizedRuntime } from "../../[locale]/gallery/[id]/page";
+import LocalizedGalleryDetailPage from "../../[locale]/gallery/[id]/page";
 
-export const runtime = localizedRuntime;
+export const runtime = "nodejs";
 
 type PageProps = {
   params: Promise<{ id: string }>;
