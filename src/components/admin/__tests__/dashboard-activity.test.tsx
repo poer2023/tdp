@@ -50,193 +50,109 @@ const mockRecentUploads: RecentUploadsData = [
   },
 ];
 
+const defaultProps = {
+  recentPosts: mockRecentPosts,
+  recentUploads: mockRecentUploads,
+  locale: "en" as const,
+  totalPosts: 10,
+  totalMoments: 5,
+  totalGallery: 20,
+  totalProjects: 3,
+};
+
 describe("DashboardActivity", () => {
   describe("normal state", () => {
     it("should render recent activity section header", () => {
-      render(
-        <DashboardActivity
-          recentPosts={mockRecentPosts}
-          recentUploads={mockRecentUploads}
-          locale="en"
-        />
-      );
+      render(<DashboardActivity {...defaultProps} />);
 
       expect(screen.getByText("Recent Activity")).toBeInTheDocument();
     });
 
-    it("should render RecentPosts component with data", () => {
-      render(
-        <DashboardActivity
-          recentPosts={mockRecentPosts}
-          recentUploads={mockRecentUploads}
-          locale="en"
-        />
-      );
+    it("should render ContentDistributionChart", () => {
+      render(<DashboardActivity {...defaultProps} />);
 
-      expect(screen.getByText("Test Post")).toBeInTheDocument();
-      expect(screen.getByText("Recent Posts")).toBeInTheDocument();
+      // ContentDistributionChart shows "Content" in its header
+      expect(screen.getByText("Content Distribution")).toBeInTheDocument();
     });
 
-    it("should render RecentUploads component with data", () => {
-      render(
-        <DashboardActivity
-          recentPosts={mockRecentPosts}
-          recentUploads={mockRecentUploads}
-          locale="en"
-        />
-      );
+    it("should render RecentItemsPanel", () => {
+      render(<DashboardActivity {...defaultProps} />);
 
-      expect(screen.getByAltText("Test Image")).toBeInTheDocument();
-      expect(screen.getByText("Recent Uploads")).toBeInTheDocument();
+      // RecentItemsPanel shows "Recent Items" header
+      expect(screen.getByText("Recent Items")).toBeInTheDocument();
     });
 
-    it("should render PostStatsTop component", () => {
-      render(
-        <DashboardActivity
-          recentPosts={mockRecentPosts}
-          recentUploads={mockRecentUploads}
-          locale="en"
-        />
-      );
+    it("should render SystemStatusPanel", () => {
+      render(<DashboardActivity {...defaultProps} />);
 
-      // PostStatsTop should be rendered (exact text depends on implementation)
-      expect(screen.getByText(/Top/i)).toBeInTheDocument();
-    });
-
-    it("should render empty state for posts when no data", () => {
-      render(<DashboardActivity recentPosts={[]} recentUploads={mockRecentUploads} locale="en" />);
-
-      expect(screen.getByText("No posts yet")).toBeInTheDocument();
-    });
-
-    it("should render empty state for uploads when no data", () => {
-      render(<DashboardActivity recentPosts={mockRecentPosts} recentUploads={[]} locale="en" />);
-
-      expect(screen.getByText("No uploads yet")).toBeInTheDocument();
+      // SystemStatusPanel shows "System Status" header
+      expect(screen.getByText("System Status")).toBeInTheDocument();
     });
   });
 
   describe("service degradation", () => {
-    it("should pass isServiceDegraded prop to RecentPosts", () => {
-      render(
-        <DashboardActivity
-          recentPosts={mockRecentPosts}
-          recentUploads={mockRecentUploads}
-          locale="en"
-          isServiceDegraded={true}
-        />
-      );
+    it("should show degradation message when isServiceDegraded is true", () => {
+      render(<DashboardActivity {...defaultProps} isServiceDegraded={true} />);
 
-      // Should show degradation message instead of post content
-      const unavailableMessages = screen.getAllByText("Service temporarily unavailable");
-      expect(unavailableMessages.length).toBeGreaterThan(0);
-      expect(screen.getByText("Posts data is currently inaccessible")).toBeInTheDocument();
-      expect(screen.queryByText("Test Post")).not.toBeInTheDocument();
+      expect(screen.getByText("Service temporarily unavailable")).toBeInTheDocument();
     });
 
-    it("should pass isServiceDegraded prop to RecentUploads", () => {
-      render(
-        <DashboardActivity
-          recentPosts={mockRecentPosts}
-          recentUploads={mockRecentUploads}
-          locale="en"
-          isServiceDegraded={true}
-        />
-      );
+    it("should not render content panels in degraded state", () => {
+      render(<DashboardActivity {...defaultProps} isServiceDegraded={true} />);
 
-      // Should show degradation message instead of upload content
-      expect(screen.getByText("Gallery data is currently inaccessible")).toBeInTheDocument();
-      expect(screen.queryByText("Test Image")).not.toBeInTheDocument();
+      // Should not show normal content
+      expect(screen.queryByText("Content Distribution")).not.toBeInTheDocument();
+      expect(screen.queryByText("Recent Items")).not.toBeInTheDocument();
     });
 
-    it("should show multiple degradation warnings when service is degraded", () => {
-      render(
-        <DashboardActivity
-          recentPosts={[]}
-          recentUploads={[]}
-          locale="en"
-          isServiceDegraded={true}
-        />
-      );
+    it("should still show section header in degraded state", () => {
+      render(<DashboardActivity {...defaultProps} isServiceDegraded={true} />);
 
-      // Should have multiple "Service temporarily unavailable" messages
-      const unavailableMessages = screen.getAllByText("Service temporarily unavailable");
-      expect(unavailableMessages.length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByText("Recent Activity")).toBeInTheDocument();
     });
   });
 
   describe("locale support", () => {
     it("should render with Chinese locale", () => {
-      render(
-        <DashboardActivity
-          recentPosts={mockRecentPosts}
-          recentUploads={mockRecentUploads}
-          locale="zh"
-        />
-      );
+      render(<DashboardActivity {...defaultProps} locale="zh" />);
 
       expect(screen.getByText("最近活动")).toBeInTheDocument();
     });
 
     it("should pass locale to child components", () => {
-      render(
-        <DashboardActivity
-          recentPosts={mockRecentPosts}
-          recentUploads={mockRecentUploads}
-          locale="zh"
-        />
-      );
+      render(<DashboardActivity {...defaultProps} locale="zh" />);
 
-      expect(screen.getByText("最近文章")).toBeInTheDocument();
-      expect(screen.getByText("最近上传")).toBeInTheDocument();
+      expect(screen.getByText("内容分布")).toBeInTheDocument();
+      expect(screen.getByText("最近项目")).toBeInTheDocument();
     });
   });
 
   describe("default props", () => {
     it("should default isServiceDegraded to false", () => {
-      render(
-        <DashboardActivity
-          recentPosts={mockRecentPosts}
-          recentUploads={mockRecentUploads}
-          locale="en"
-        />
-      );
+      render(<DashboardActivity {...defaultProps} />);
 
       // Should show normal content, not degradation messages
-      expect(screen.getByText("Test Post")).toBeInTheDocument();
-      expect(screen.getByAltText("Test Image")).toBeInTheDocument();
+      expect(screen.getByText("Content Distribution")).toBeInTheDocument();
       expect(screen.queryByText("Service temporarily unavailable")).not.toBeInTheDocument();
     });
   });
 
   describe("layout", () => {
     it("should use grid layout for activity components", () => {
-      const { container } = render(
-        <DashboardActivity
-          recentPosts={mockRecentPosts}
-          recentUploads={mockRecentUploads}
-          locale="en"
-        />
-      );
+      const { container } = render(<DashboardActivity {...defaultProps} />);
 
       const grid = container.querySelector(".grid");
       expect(grid).toBeInTheDocument();
-      expect(grid).toHaveClass("gap-6", "lg:grid-cols-2", "xl:grid-cols-3");
     });
 
-    it("should maintain layout structure in degraded state", () => {
+    it("should maintain section structure in degraded state", () => {
       const { container } = render(
-        <DashboardActivity
-          recentPosts={[]}
-          recentUploads={[]}
-          locale="en"
-          isServiceDegraded={true}
-        />
+        <DashboardActivity {...defaultProps} isServiceDegraded={true} />
       );
 
-      // Grid layout should still exist
-      const grid = container.querySelector(".grid");
-      expect(grid).toBeInTheDocument();
+      // Section should still exist
+      const section = container.querySelector("section");
+      expect(section).toBeInTheDocument();
     });
   });
 });

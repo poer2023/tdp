@@ -136,7 +136,7 @@ describe("DashboardMetrics", () => {
       const { container } = render(<DashboardMetrics {...mockMetricsData} />);
 
       const section = container.querySelector("section");
-      expect(section).toHaveClass("grid", "gap-6", "sm:grid-cols-2");
+      expect(section).toHaveClass("grid", "gap-4", "sm:grid-cols-2", "lg:grid-cols-4");
     });
 
     it("should apply degradation styling in degraded state", () => {

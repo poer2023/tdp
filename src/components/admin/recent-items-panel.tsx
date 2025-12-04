@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, isValid } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { Clock, FileText, Image, Camera } from "lucide-react";
 import { t, type AdminLocale } from "@/lib/admin-translations";
@@ -20,6 +20,13 @@ type RecentItemsPanelProps = {
   locale: AdminLocale;
 };
 
+// Helper to safely parse date
+function safeDate(value: Date | string | number | null | undefined): Date {
+  if (!value) return new Date();
+  const date = value instanceof Date ? value : new Date(value);
+  return isValid(date) ? date : new Date();
+}
+
 export function RecentItemsPanel({ recentPosts, recentUploads, locale }: RecentItemsPanelProps) {
   // Aggregate and sort recent activity (matches Lumina pattern)
   const recentActivity: RecentItem[] = [
@@ -27,14 +34,14 @@ export function RecentItemsPanel({ recentPosts, recentUploads, locale }: RecentI
       id: post.id,
       title: post.title,
       type: "post" as const,
-      date: new Date(post.updatedAt),
+      date: safeDate(post.updatedAt),
       icon: FileText,
     })),
     ...recentUploads.slice(0, 2).map(upload => ({
       id: upload.id,
       title: upload.title || "Untitled",
       type: "gallery" as const,
-      date: new Date(upload.createdAt),
+      date: safeDate(upload.uploadedAt),
       icon: Camera,
     })),
   ]
