@@ -1,8 +1,7 @@
-import LocalizedGalleryMapPage, {
-  revalidate as localizedRevalidate,
-} from "../../[locale]/gallery/map/page";
+import LocalizedGalleryMapPage from "../../[locale]/gallery/map/page";
 
-export const revalidate = localizedRevalidate;
+// Match the localized page's ISR settings (no revalidation)
+export const revalidate = 0;
 
 type PageProps = {
   params?: Promise<Record<string, never>>;

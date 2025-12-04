@@ -1,6 +1,7 @@
-import LocalizedGalleryPage, { revalidate as localizedRevalidate } from "../[locale]/gallery/page";
+import LocalizedGalleryPage from "../[locale]/gallery/page";
 
-export const revalidate = localizedRevalidate;
+// Use the same revalidate interval as the localized page (60s)
+export const revalidate = 60;
 
 type PageProps = {
   searchParams: Promise<{ category?: string }>;

@@ -1,6 +1,7 @@
-import LocalizedProjectsPage, { revalidate as localizedRevalidate } from "../[locale]/projects/page";
+import LocalizedProjectsPage from "../[locale]/projects/page";
 
-export const revalidate = localizedRevalidate;
+// Keep revalidation interval consistent with the localized page (60s)
+export const revalidate = 60;
 
 export default function ProjectsPage() {
   return <LocalizedProjectsPage params={Promise.resolve({ locale: "en" })} />;

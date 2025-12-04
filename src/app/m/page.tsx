@@ -1,8 +1,7 @@
-import LocalizedMomentsPage, {
-  revalidate as localizedRevalidate,
-} from "../[locale]/m/page";
+import LocalizedMomentsPage from "../[locale]/m/page";
 
-export const revalidate = localizedRevalidate;
+// Match the localized page's ISR setting (no revalidation)
+export const revalidate = 0;
 
 type PageProps = {
   params?: Promise<Record<string, never>>;
