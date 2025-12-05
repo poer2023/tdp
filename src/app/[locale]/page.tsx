@@ -6,6 +6,7 @@ import { listGalleryImages } from "@/lib/gallery";
 import { LuminaHomePage } from "@/components/lumina";
 import { LuminaHeader, LuminaFooter } from "@/components/lumina";
 import type { FeedItem, FeedPost, FeedMoment, FeedCurated } from "@/components/lumina";
+import type { HeroImageItem } from "@/components/lumina/hero";
 import { getLuminaProfile } from "@/lib/lumina-profile";
 import prisma from "@/lib/prisma";
 
@@ -126,11 +127,47 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     (a, b) => (b.sortKey ?? 0) - (a.sortKey ?? 0)
   );
 
-  // Get hero images from gallery (prefer optimized thumbnails)
-  const heroImages =
-    galleryImages.length > 0
-      ? galleryImages.map((img) => img.smallThumbPath || img.microThumbPath || img.filePath)
-      : undefined;
+  // Aggregate hero images from multiple sources: Gallery, Moments, Posts
+  const heroImageItems: HeroImageItem[] = [];
+
+  // 1. Gallery images
+  for (const img of galleryImages) {
+    const src = img.smallThumbPath || img.microThumbPath || img.filePath;
+    if (src) {
+      heroImageItems.push({
+        src,
+        href: `/${locale}/gallery/${img.id}`,
+        type: "gallery",
+      });
+    }
+  }
+
+  // 2. Moment images (first image of each moment)
+  for (const moment of moments) {
+    const firstImage = moment.images?.[0];
+    if (firstImage) {
+      heroImageItems.push({
+        src: firstImage.previewUrl || firstImage.url,
+        href: `/${locale}/m/${moment.id}`,
+        type: "moment",
+      });
+    }
+  }
+
+  // 3. Post cover images
+  for (const post of posts) {
+    if (post.coverImagePath) {
+      heroImageItems.push({
+        src: post.coverImagePath,
+        href: `/${locale}/posts/${post.slug}`,
+        type: "post",
+      });
+    }
+  }
+
+  // Take first 16 images (already sorted by recency from data sources)
+  // Note: shuffle happens on client side in hero.tsx component
+  const heroImages = heroImageItems.slice(0, 16);
 
   return (
     <>
@@ -138,7 +175,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       <main>
         <LuminaHomePage
           feedItems={feedItems}
-          heroImages={heroImages}
+          heroImages={heroImages.length > 0 ? heroImages : undefined}
           profileData={getLuminaProfile(locale === "zh" ? "zh" : "en")}
         />
       </main>
