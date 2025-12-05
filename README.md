@@ -370,7 +370,7 @@ e2e/
 - 为未覆盖的行添加测试
 - 考虑代码是否可测试 (如果不可测试,重构)
 
-详细的CI/CD测试优化清单见 [claudedocs/ci-cd-optimization-checklist.md](claudedocs/ci-cd-optimization-checklist.md)
+详细的 CI/CD 流程与优化建议见 [docs/CI_CD_DEPLOYMENT_GUIDE.md](docs/CI_CD_DEPLOYMENT_GUIDE.md)
 
 ## 目录与关键文件
 
@@ -396,7 +396,6 @@ e2e/
 #### 开发者文档
 
 - **E2E 测试指南**：[docs/E2E_TESTING_GUIDE.md](docs/E2E_TESTING_GUIDE.md) - Playwright E2E 测试完整指南
-- **E2E 本地执行**：[LOCAL_E2E_SCHEME_B_PLAYBOOK.md](LOCAL_E2E_SCHEME_B_PLAYBOOK.md) - 本地分阶段执行方案
 - **测试指南**：[docs/TESTING.md](docs/TESTING.md) - 自动化测试概览
 - **手动测试**：[docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) - 性能、安全、可访问性
 
@@ -404,7 +403,7 @@ e2e/
 
 - **分支管理策略**：[docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md) - GitHub Flow 工作流程
 - **分支保护配置**：[docs/BRANCH_PROTECTION_SETUP.md](docs/BRANCH_PROTECTION_SETUP.md) - 分支保护规则设置指南
-- **CI/CD 配置**：[claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md](claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md) - E2E CI/CD 完整配置指南
+- **CI/CD 配置**：[docs/CI_CD_DEPLOYMENT_GUIDE.md](docs/CI_CD_DEPLOYMENT_GUIDE.md) - CI/CD 配置与部署流程
 - **部署指南**：[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - 生产部署步骤
 - **Docker 构建**：[docs/docker-build.md](docs/docker-build.md) - 本地构建与推送
 - **Docker 部署**：[docs/docker-deployment.md](docs/docker-deployment.md) - Docker 生产部署
@@ -418,8 +417,7 @@ e2e/
 
 #### 项目历史
 
-- **i18n 完成总结**：[docs/i18n-COMPLETION-SUMMARY.md](docs/i18n-COMPLETION-SUMMARY.md) - i18n 项目总结
-- **历史文档归档**：[docs/archive/](docs/archive/) - 已完成阶段的开发文档
+- 历史文档已清理，如需查看请查阅 Git 历史或发布说明
 
 ### Docker 与部署
 
@@ -440,7 +438,7 @@ e2e/
   - 执行：全量 314 tests，4-way sharding，Chromium only
   - 用途：**非阻塞式检测**，失败创建 GitHub Issue
 
-详细配置说明见 [claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md](claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md)
+详细配置说明见 [docs/CI_CD_DEPLOYMENT_GUIDE.md](docs/CI_CD_DEPLOYMENT_GUIDE.md)
 
 ### 测试配置
 

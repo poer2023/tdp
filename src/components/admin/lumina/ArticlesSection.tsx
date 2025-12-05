@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useData } from './store';
@@ -9,14 +9,23 @@ import {
     SectionContainer, ListContainer, EditForm, Input, TextArea,
     ImageUploadArea, RichPostItem
 } from './AdminComponents';
+import { SimpleToast } from './Toast';
+import { useAdminLocale } from './useAdminLocale';
 
 export const ArticlesSection: React.FC = () => {
     const { posts, addPost, updatePost, deletePost, loading } = useData();
+    const { t } = useAdminLocale();
 
     const [editingPost, setEditingPost] = useState<Partial<BlogPost> | null>(null);
     const [uploadQueue, setUploadQueue] = useState<{ file: File, preview: string }[]>([]);
     const [manualUrl, setManualUrl] = useState('');
     const [isDragOver, setIsDragOver] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+    const [_isSaving, setIsSaving] = useState(false);
+
+    const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
+        setToast({ message, type });
+    }, []);
 
     const handleDelete = async (id: string) => {
         try {
@@ -55,7 +64,24 @@ export const ArticlesSection: React.FC = () => {
     };
 
     const handleSavePost = async () => {
-        if (!editingPost?.title) return;
+        if (!editingPost?.title) {
+            showToast(t('titleRequired'), 'error');
+            return;
+        }
+
+        // Client-side validation
+        if ((editingPost.title?.length || 0) < 3) {
+            showToast(t('titleMinLength'), 'error');
+            return;
+        }
+        if ((editingPost.excerpt?.length || 0) < 10) {
+            showToast(t('excerptMinLength'), 'error');
+            return;
+        }
+        if ((editingPost.content?.length || 0) < 30) {
+            showToast(t('contentMinLength'), 'error');
+            return;
+        }
 
         let finalCoverPath = editingPost.coverImagePath || editingPost.imageUrl;
         if (manualUrl) finalCoverPath = manualUrl;
@@ -77,117 +103,129 @@ export const ArticlesSection: React.FC = () => {
             content: editingPost.content || ''
         } as BlogPost;
 
+        setIsSaving(true);
         try {
             if (editingPost.id) {
                 await updatePost(postData);
+                showToast(t('articleUpdated'), 'success');
             } else {
                 await addPost(postData);
+                showToast(t('articleCreated'), 'success');
             }
             setEditingPost(null);
             setUploadQueue([]);
             setManualUrl('');
         } catch (error) {
             console.error('Failed to save article:', error);
+            const errorMessage = error instanceof Error ? error.message : t('failedToSave');
+            showToast(errorMessage, 'error');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     return (
-        <SectionContainer title="Articles" onAdd={() => { setEditingPost({}); setUploadQueue([]); setManualUrl(''); }}>
-            {editingPost ? (
-                <EditForm title={editingPost.id ? 'Edit Article' : 'New Article'} onSave={handleSavePost} onCancel={() => setEditingPost(null)}>
-                    <Input label="Title" value={editingPost.title} onChange={v => setEditingPost({ ...editingPost, title: v })} />
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input label="Category" value={editingPost.category} onChange={v => setEditingPost({ ...editingPost, category: v })} />
-                        <Input label="Read Time" value={editingPost.readTime} onChange={v => setEditingPost({ ...editingPost, readTime: v })} />
-                    </div>
-                    <TextArea label="Excerpt" value={editingPost.excerpt} onChange={v => setEditingPost({ ...editingPost, excerpt: v })} />
+        <>
+            {/* Toast Notification */}
+            {toast && <SimpleToast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Content (Markdown)</label>
-                            <textarea
-                                className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none min-h-[300px] font-mono text-sm"
-                                placeholder="Write your article content in Markdown..."
-                                value={editingPost.content || ''}
-                                onChange={e => setEditingPost({ ...editingPost, content: e.target.value })}
-                            />
+            <SectionContainer title={t('articles')} onAdd={() => { setEditingPost({}); setUploadQueue([]); setManualUrl(''); }}>
+                {editingPost ? (
+                    <EditForm title={editingPost.id ? t('editArticle') : t('newArticle')} onSave={handleSavePost} onCancel={() => setEditingPost(null)}>
+                        <Input label={t('title')} value={editingPost.title} onChange={v => setEditingPost({ ...editingPost, title: v })} />
+                        <div className="grid grid-cols-2 gap-4">
+                            <Input label={t('category')} value={editingPost.category} onChange={v => setEditingPost({ ...editingPost, category: v })} />
+                            <Input label={t('readTime')} value={editingPost.readTime} onChange={v => setEditingPost({ ...editingPost, readTime: v })} />
                         </div>
-                        <div className="border border-stone-200 dark:border-stone-800 rounded-lg p-4 bg-white dark:bg-stone-900 min-h-[300px] overflow-auto">
-                            <div className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Preview</div>
-                            <div className="prose prose-sm dark:prose-invert max-w-none text-stone-800 dark:text-stone-100">
-                                {editingPost.content ? (
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                        {editingPost.content}
-                                    </ReactMarkdown>
-                                ) : (
-                                    <p className="text-stone-400">Start typing to see Markdown preview.</p>
-                                )}
+                        <TextArea label={t('excerpt')} value={editingPost.excerpt} onChange={v => setEditingPost({ ...editingPost, excerpt: v })} />
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('contentMarkdown')}</label>
+                                <textarea
+                                    className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none min-h-[300px] font-mono text-sm"
+                                    placeholder={t('writeMarkdownContent')}
+                                    value={editingPost.content || ''}
+                                    onChange={e => setEditingPost({ ...editingPost, content: e.target.value })}
+                                />
+                            </div>
+                            <div className="border border-stone-200 dark:border-stone-800 rounded-lg p-4 bg-white dark:bg-stone-900 min-h-[300px] overflow-auto">
+                                <div className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('preview')}</div>
+                                <div className="prose prose-sm dark:prose-invert max-w-none text-stone-800 dark:text-stone-100">
+                                    {editingPost.content ? (
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {editingPost.content}
+                                        </ReactMarkdown>
+                                    ) : (
+                                        <p className="text-stone-400">{t('startTypingPreview')}</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Status</label>
-                            <select
-                                className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
-                                value={editingPost.status || 'DRAFT'}
-                                onChange={e => setEditingPost({ ...editingPost, status: e.target.value as 'PUBLISHED' | 'DRAFT' })}
-                            >
-                                <option value="DRAFT">Draft</option>
-                                <option value="PUBLISHED">Published</option>
-                            </select>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('status')}</label>
+                                <select
+                                    className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
+                                    value={editingPost.status || 'DRAFT'}
+                                    onChange={e => setEditingPost({ ...editingPost, status: e.target.value as 'PUBLISHED' | 'DRAFT' })}
+                                >
+                                    <option value="DRAFT">{t('draft')}</option>
+                                    <option value="PUBLISHED">{t('published')}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('language')}</label>
+                                <select
+                                    className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
+                                    value={editingPost.locale || 'EN'}
+                                    onChange={e => setEditingPost({ ...editingPost, locale: e.target.value as 'EN' | 'ZH' })}
+                                >
+                                    <option value="EN">{t('english')}</option>
+                                    <option value="ZH">{t('chinese')}</option>
+                                </select>
+                            </div>
                         </div>
+
+                        <Input label={t('tagsCommaSeparated')} value={editingPost.tags?.join(', ')} onChange={v => setEditingPost({ ...editingPost, tags: v.split(',').map(s => s.trim()).filter(Boolean) })} />
+
                         <div>
-                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Language</label>
-                            <select
-                                className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
-                                value={editingPost.locale || 'EN'}
-                                onChange={e => setEditingPost({ ...editingPost, locale: e.target.value as 'EN' | 'ZH' })}
-                            >
-                                <option value="EN">English</option>
-                                <option value="ZH">中文</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <Input label="Tags (Comma separated)" value={editingPost.tags?.join(', ')} onChange={v => setEditingPost({ ...editingPost, tags: v.split(',').map(s => s.trim()).filter(Boolean) })} />
-
-                    <div>
-                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Cover Image</label>
-                        <ImageUploadArea
-                            queue={uploadQueue}
-                            onDrop={handleDrop}
-                            onFileSelect={handleFileSelect}
-                            onRemove={removeFileFromQueue}
-                            isDragOver={isDragOver}
-                            setIsDragOver={setIsDragOver}
-                            multiple={false}
-                            currentImageUrl={editingPost.imageUrl}
-                            manualUrl={manualUrl}
-                            setManualUrl={setManualUrl}
-                        />
-                    </div>
-                </EditForm>
-            ) : (
-                <ListContainer>
-                    {loading?.posts ? (
-                        <div className="text-sm text-stone-400">Loading articles...</div>
-                    ) : posts.length === 0 ? (
-                        <div className="text-sm text-stone-400">No articles yet.</div>
-                    ) : (
-                        posts.map(post => (
-                            <RichPostItem
-                                key={post.id}
-                                post={post}
-                                onEdit={() => setEditingPost(post)}
-                                onDelete={() => handleDelete(post.id)}
+                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('coverImage')}</label>
+                            <ImageUploadArea
+                                queue={uploadQueue}
+                                onDrop={handleDrop}
+                                onFileSelect={handleFileSelect}
+                                onRemove={removeFileFromQueue}
+                                isDragOver={isDragOver}
+                                setIsDragOver={setIsDragOver}
+                                multiple={false}
+                                currentImageUrl={editingPost.imageUrl}
+                                manualUrl={manualUrl}
+                                setManualUrl={setManualUrl}
                             />
-                        ))
-                    )}
-                </ListContainer>
-            )}
-        </SectionContainer>
+                        </div>
+                    </EditForm>
+                ) : (
+                    <ListContainer>
+                        {loading?.posts ? (
+                            <div className="text-sm text-stone-400">{t('loadingArticles')}</div>
+                        ) : posts.length === 0 ? (
+                            <div className="text-sm text-stone-400">{t('noArticlesYet')}</div>
+                        ) : (
+                            posts.map(post => (
+                                <RichPostItem
+                                    key={post.id}
+                                    post={post}
+                                    onEdit={() => setEditingPost(post)}
+                                    onDelete={() => handleDelete(post.id)}
+                                />
+                            ))
+                        )}
+                    </ListContainer>
+                )}
+            </SectionContainer>
+        </>
     );
 };
 

@@ -339,7 +339,17 @@ type GalleryUpdateInput = GalleryUploadInput & { id: string };
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [theme, setTheme] = useState<Theme>('light');
-    const [language, setLanguage] = useState<Language>('en');
+    // Always start with 'en' to avoid SSR hydration mismatch
+    const [language, setLanguageState] = useState<Language>(() => {
+        // Lazy initialization: read from sessionStorage on client-side only
+        if (typeof window !== 'undefined') {
+            const savedLanguage = sessionStorage.getItem('admin-language');
+            if (savedLanguage === 'zh' || savedLanguage === 'en') {
+                return savedLanguage;
+            }
+        }
+        return 'en';
+    });
 
     // Apply theme to html
     useEffect(() => {
@@ -352,6 +362,12 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const toggleTheme = () => {
         setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    };
+
+    // Persist language to sessionStorage
+    const setLanguage = (lang: Language) => {
+        setLanguageState(lang);
+        sessionStorage.setItem('admin-language', lang);
     };
 
     const t = (key: string) => {
@@ -867,7 +883,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 }),
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to create post');
+            if (!res.ok) {
+                // Handle both error formats: { error: "..." } and { message: "...", errors: {...} }
+                const errorMsg = data.error || data.message || 'Failed to create post';
+                const validationErrors = data.errors ? Object.values(data.errors).join(', ') : '';
+                throw new Error(validationErrors || errorMsg);
+            }
             setPosts(prev => [mapApiPost(data), ...prev]);
         } catch (error) {
             handleApiError(error, 'posts');
@@ -892,7 +913,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 }),
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to update post');
+            if (!res.ok) {
+                // Handle both error formats: { error: "..." } and { message: "...", errors: {...} }
+                const errorMsg = data.error || data.message || 'Failed to update post';
+                const validationErrors = data.errors ? Object.values(data.errors).join(', ') : '';
+                throw new Error(validationErrors || errorMsg);
+            }
             setPosts(prev => prev.map(p => p.id === updated.id ? mapApiPost(data) : p));
         } catch (error) {
             handleApiError(error, 'posts');

@@ -729,7 +729,7 @@ gh run watch              # 监控当前分支的 workflow
 
 ## 相关文档
 
-- **CI/CD 配置**: [claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md](../claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md)
+- **CI/CD 配置**: [CI_CD_DEPLOYMENT_GUIDE.md](./CI_CD_DEPLOYMENT_GUIDE.md)
 - **E2E 测试指南**: [E2E_TESTING_GUIDE.md](E2E_TESTING_GUIDE.md)
 - **部署指南**: [DEPLOYMENT.md](DEPLOYMENT.md)
 - **测试指南**: [TESTING.md](TESTING.md)

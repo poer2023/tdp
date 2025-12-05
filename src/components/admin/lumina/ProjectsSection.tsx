@@ -6,9 +6,11 @@ import type { Project } from './types';
 import {
     SectionContainer, ListContainer, ListItem, EditForm, Input, TextArea
 } from './AdminComponents';
+import { useAdminLocale } from './useAdminLocale';
 
 export const ProjectsSection: React.FC = () => {
     const { projects, addProject, updateProject, deleteProject } = useData();
+    const { t } = useAdminLocale();
     const [editingProject, setEditingProject] = useState<Partial<Project> | null>(null);
 
     const handleDelete = async (id: string) => {
@@ -41,25 +43,25 @@ export const ProjectsSection: React.FC = () => {
     };
 
     return (
-        <SectionContainer title="Projects" onAdd={() => setEditingProject({})}>
+        <SectionContainer title={t('projectsTitle')} onAdd={() => setEditingProject({})}>
             {editingProject ? (
-                <EditForm title={editingProject.id ? 'Edit Project' : 'New Project'} onSave={handleSaveProject} onCancel={() => setEditingProject(null)}>
+                <EditForm title={editingProject.id ? t('editProject') : t('newProject')} onSave={handleSaveProject} onCancel={() => setEditingProject(null)}>
                     <div className="grid grid-cols-2 gap-4">
-                        <Input label="Title" value={editingProject.title} onChange={v => setEditingProject({ ...editingProject, title: v })} />
-                        <Input label="Role" value={editingProject.role} onChange={v => setEditingProject({ ...editingProject, role: v })} />
+                        <Input label={t('title')} value={editingProject.title} onChange={v => setEditingProject({ ...editingProject, title: v })} />
+                        <Input label={t('role')} value={editingProject.role} onChange={v => setEditingProject({ ...editingProject, role: v })} />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <Input label="Year" value={editingProject.year} onChange={v => setEditingProject({ ...editingProject, year: v })} />
-                        <Input label="Date" value={editingProject.date} onChange={v => setEditingProject({ ...editingProject, date: v })} />
+                        <Input label={t('year')} value={editingProject.year} onChange={v => setEditingProject({ ...editingProject, year: v })} />
+                        <Input label={t('date')} value={editingProject.date} onChange={v => setEditingProject({ ...editingProject, date: v })} />
                     </div>
-                    <TextArea label="Description" value={editingProject.description} onChange={v => setEditingProject({ ...editingProject, description: v })} />
-                    <Input label="Image URL" value={editingProject.imageUrl} onChange={v => setEditingProject({ ...editingProject, imageUrl: v })} />
+                    <TextArea label={t('description')} value={editingProject.description} onChange={v => setEditingProject({ ...editingProject, description: v })} />
+                    <Input label={t('imageUrl')} value={editingProject.imageUrl} onChange={v => setEditingProject({ ...editingProject, imageUrl: v })} />
                     <div className="grid grid-cols-2 gap-4">
-                        <Input label="Demo URL" value={editingProject.demoUrl} onChange={v => setEditingProject({ ...editingProject, demoUrl: v })} />
-                        <Input label="Repo URL" value={editingProject.repoUrl} onChange={v => setEditingProject({ ...editingProject, repoUrl: v })} />
+                        <Input label={t('demoUrl')} value={editingProject.demoUrl} onChange={v => setEditingProject({ ...editingProject, demoUrl: v })} />
+                        <Input label={t('repoUrl')} value={editingProject.repoUrl} onChange={v => setEditingProject({ ...editingProject, repoUrl: v })} />
                     </div>
-                    <Input label="Technologies (Comma separated)" value={editingProject.technologies?.join(', ')} onChange={v => setEditingProject({ ...editingProject, technologies: v.split(',').map(s => s.trim()) })} />
-                    <Input label="Features (Comma separated)" value={editingProject.features?.join(', ')} onChange={v => setEditingProject({ ...editingProject, features: v.split(',').map(s => s.trim()) })} />
+                    <Input label={t('technologiesCommaSeparated')} value={editingProject.technologies?.join(', ')} onChange={v => setEditingProject({ ...editingProject, technologies: v.split(',').map(s => s.trim()) })} />
+                    <Input label={t('featuresCommaSeparated')} value={editingProject.features?.join(', ')} onChange={v => setEditingProject({ ...editingProject, features: v.split(',').map(s => s.trim()) })} />
                 </EditForm>
             ) : (
                 <ListContainer>

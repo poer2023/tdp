@@ -17,6 +17,7 @@ import {
 } from 'recharts';
 import type { BlogPost, Moment, MomentImage, Project, ShareItem, GalleryItem, TrafficData, SourceData, PageVisitData, DeviceData, Tab } from './types';
 import { AdminImage } from '../AdminImage';
+import { useAdminLocale } from './useAdminLocale';
 
 // Helper to get image URL from string or MomentImage
 const getImageUrl = (img: string | MomentImage): string => {
@@ -40,6 +41,8 @@ export const ImageUploadArea: React.FC<{
     manualUrl: string,
     setManualUrl: (v: string) => void
 }> = ({ queue, onDrop, onFileSelect, onRemove, isDragOver, setIsDragOver, multiple, currentImageUrl, existingImages, onRemoveExisting, manualUrl, setManualUrl }) => {
+    const { t } = useAdminLocale();
+
     return (
         <div className="space-y-4">
             <div
@@ -65,28 +68,28 @@ export const ImageUploadArea: React.FC<{
                             <UploadCloud size={20} />
                         </div>
                         <p className="text-sm font-medium text-stone-700 dark:text-stone-300 pointer-events-none">
-                            {multiple ? "Drag multiple photos" : "Drag cover photo"}
+                            {multiple ? t('dragMultiplePhotos') : t('dragCoverPhoto')}
                         </p>
                         <p className="text-xs text-stone-400 mt-1 pointer-events-none">
-                            JPG, PNG, WebP supported
+                            {t('jpgPngWebpSupported')}
                         </p>
                     </>
                 ) : (
                     <div className="text-sm text-stone-400">
-                        {multiple ? "Drag to add more" : "Drag to replace"}
+                        {multiple ? t('dragToAddMore') : t('dragToReplace')}
                     </div>
                 )}
             </div>
 
             <div className="flex gap-2 items-center">
                 <div className="h-px bg-stone-200 dark:bg-stone-800 flex-1" />
-                <span className="text-[10px] text-stone-400 font-bold uppercase">OR</span>
+                <span className="text-[10px] text-stone-400 font-bold uppercase">{t('or')}</span>
                 <div className="h-px bg-stone-200 dark:bg-stone-800 flex-1" />
             </div>
             <Input
                 value={manualUrl}
                 onChange={setManualUrl}
-                label={manualUrl ? "Image URL to save" : undefined}
+                label={manualUrl ? t('imageUrlToSave') : undefined}
                 type="text"
             />
 
@@ -95,7 +98,7 @@ export const ImageUploadArea: React.FC<{
                     <div className="relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
                         <AdminImage src={currentImageUrl} alt="Current cover" className="w-full h-full" containerClassName="w-full h-full" />
                         <div className="absolute inset-0 bg-black/40 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            Current Cover
+                            {t('currentCover')}
                         </div>
                     </div>
                 )}
@@ -112,7 +115,7 @@ export const ImageUploadArea: React.FC<{
                             </button>
                         )}
                         <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] p-1 truncate text-center">
-                            Saved
+                            {t('saved')}
                         </div>
                     </div>
                 ))}
@@ -127,7 +130,7 @@ export const ImageUploadArea: React.FC<{
                             <X size={12} />
                         </button>
                         <div className="absolute bottom-0 inset-x-0 bg-sage-600 text-white text-[9px] p-1 truncate text-center">
-                            Ready to Upload
+                            {t('readyToUpload')}
                         </div>
                     </div>
                 ))}
@@ -218,20 +221,23 @@ export const NavBtn: React.FC<{ active: boolean, onClick: () => void, icon: Reac
     </button>
 );
 
-export const SectionContainer: React.FC<{ title: string, children: React.ReactNode, onAdd: () => void }> = ({ title, children, onAdd }) => (
-    <div className="max-w-5xl mx-auto animate-in fade-in duration-500 pb-10">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100">{title}</h2>
-            <button
-                onClick={onAdd}
-                className="bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 font-medium text-sm transition-opacity"
-            >
-                <Plus size={16} /> Add New
-            </button>
+export const SectionContainer: React.FC<{ title: string, children: React.ReactNode, onAdd: () => void }> = ({ title, children, onAdd }) => {
+    const { t } = useAdminLocale();
+    return (
+        <div className="max-w-5xl mx-auto animate-in fade-in duration-500 pb-10">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100">{title}</h2>
+                <button
+                    onClick={onAdd}
+                    className="cursor-pointer bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90 font-medium text-sm transition-opacity"
+                >
+                    <Plus size={16} /> {t('addNew')}
+                </button>
+            </div>
+            {children}
         </div>
-        {children}
-    </div>
-);
+    );
+};
 
 export const ListContainer: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <div className="grid gap-3">{children}</div>
@@ -254,27 +260,30 @@ export const ListItem: React.FC<{ title: string, subtitle?: string, image?: stri
 export const ActionBtn: React.FC<{ onClick: () => void, icon: React.ReactNode, danger?: boolean }> = ({ onClick, icon, danger }) => (
     <button
         onClick={onClick}
-        className={`p-2 rounded-lg transition-colors ${danger ? 'text-stone-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20' : 'text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'}`}
+        className={`cursor-pointer p-2 rounded-lg transition-colors ${danger ? 'text-stone-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20' : 'text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'}`}
     >
         {icon}
     </button>
 );
 
-export const EditForm: React.FC<{ title: string, children: React.ReactNode, onSave: () => void, onCancel: () => void }> = ({ title, children, onSave, onCancel }) => (
-    <div className="bg-white dark:bg-stone-900 p-6 rounded-xl shadow-sm border border-stone-200 dark:border-stone-800">
-        <div className="flex justify-between items-center mb-6 border-b border-stone-100 dark:border-stone-800 pb-4">
-            <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">{title}</h3>
-            <button onClick={onCancel} className="text-stone-400 hover:text-stone-600"><X size={20} /></button>
+export const EditForm: React.FC<{ title: string, children: React.ReactNode, onSave: () => void, onCancel: () => void }> = ({ title, children, onSave, onCancel }) => {
+    const { t } = useAdminLocale();
+    return (
+        <div className="bg-white dark:bg-stone-900 p-6 rounded-xl shadow-sm border border-stone-200 dark:border-stone-800">
+            <div className="flex justify-between items-center mb-6 border-b border-stone-100 dark:border-stone-800 pb-4">
+                <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">{title}</h3>
+                <button onClick={onCancel} className="cursor-pointer text-stone-400 hover:text-stone-600 transition-colors"><X size={20} /></button>
+            </div>
+            <div className="space-y-4">
+                {children}
+            </div>
+            <div className="flex gap-3 pt-6 mt-2 border-t border-stone-100 dark:border-stone-800">
+                <button onClick={onSave} className="flex-1 cursor-pointer bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-6 py-2.5 rounded-lg font-bold hover:opacity-90 transition-opacity">{t('saveChanges')}</button>
+                <button onClick={onCancel} className="flex-1 cursor-pointer bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 px-6 py-2.5 rounded-lg font-medium hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors">{t('cancel')}</button>
+            </div>
         </div>
-        <div className="space-y-4">
-            {children}
-        </div>
-        <div className="flex gap-3 pt-6 mt-2 border-t border-stone-100 dark:border-stone-800">
-            <button onClick={onSave} className="flex-1 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-6 py-2.5 rounded-lg font-bold hover:opacity-90">Save Changes</button>
-            <button onClick={onCancel} className="flex-1 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 px-6 py-2.5 rounded-lg font-medium hover:bg-stone-200 dark:hover:bg-stone-700">Cancel</button>
-        </div>
-    </div>
-);
+    );
+};
 
 export const Input: React.FC<{ label?: string, value?: string, onChange: (val: string) => void, type?: string }> = ({ label, value, onChange, type = "text" }) => (
     <div>

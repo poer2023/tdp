@@ -7,9 +7,11 @@ import {
     SectionContainer, EditForm, Input, TextArea,
     ImageUploadArea, RichMomentItem
 } from './AdminComponents';
+import { useAdminLocale } from './useAdminLocale';
 
 export const MomentsSection: React.FC = () => {
     const { moments, addMoment, updateMoment, deleteMoment, loading } = useData();
+    const { t } = useAdminLocale();
 
     const [editingMoment, setEditingMoment] = useState<Partial<Moment> | null>(null);
     const [uploadQueue, setUploadQueue] = useState<{ file: File, preview: string }[]>([]);
@@ -76,42 +78,42 @@ export const MomentsSection: React.FC = () => {
     };
 
     return (
-        <SectionContainer title="Moments" onAdd={() => { setEditingMoment({}); setUploadQueue([]); setManualUrl(''); }}>
+        <SectionContainer title={t('momentsTitle')} onAdd={() => { setEditingMoment({}); setUploadQueue([]); setManualUrl(''); }}>
             {editingMoment ? (
-                <EditForm title={editingMoment.id ? 'Edit Moment' : 'New Moment'} onSave={handleSaveMoment} onCancel={() => setEditingMoment(null)}>
+                <EditForm title={editingMoment.id ? t('editMoment') : t('newMoment')} onSave={handleSaveMoment} onCancel={() => setEditingMoment(null)}>
                         <div className="grid grid-cols-1 gap-6">
                             <div className="space-y-4">
-                                <TextArea label="What's happening?" value={editingMoment.content} onChange={v => setEditingMoment({ ...editingMoment, content: v })} />
-                                <Input label="Tags (Comma separated)" value={editingMoment.tags?.join(', ')} onChange={v => setEditingMoment({ ...editingMoment, tags: v.split(',').map(s => s.trim()).filter(Boolean) })} />
+                                <TextArea label={t('whatsHappening')} value={editingMoment.content} onChange={v => setEditingMoment({ ...editingMoment, content: v })} />
+                                <Input label={t('tagsCommaSeparated')} value={editingMoment.tags?.join(', ')} onChange={v => setEditingMoment({ ...editingMoment, tags: v.split(',').map(s => s.trim()).filter(Boolean) })} />
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Status</label>
+                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('status')}</label>
                                         <select
                                             className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
                                             value={editingMoment.status || 'PUBLISHED'}
                                             onChange={e => setEditingMoment({ ...editingMoment, status: e.target.value as Moment['status'] })}
                                         >
-                                            <option value="PUBLISHED">Published</option>
-                                            <option value="DRAFT">Draft</option>
+                                            <option value="PUBLISHED">{t('published')}</option>
+                                            <option value="DRAFT">{t('draft')}</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Visibility</label>
+                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('visibility')}</label>
                                         <select
                                             className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
                                             value={editingMoment.visibility || 'PUBLIC'}
                                             onChange={e => setEditingMoment({ ...editingMoment, visibility: e.target.value as Moment['visibility'] })}
                                         >
-                                            <option value="PUBLIC">Public</option>
-                                            <option value="FRIENDS_ONLY">Friends only</option>
-                                            <option value="PRIVATE">Private</option>
+                                            <option value="PUBLIC">{t('public')}</option>
+                                            <option value="FRIENDS_ONLY">{t('friendsOnly')}</option>
+                                            <option value="PRIVATE">{t('private')}</option>
                                         </select>
                                     </div>
                                 </div>
-                                <Input label="Happened At" type="datetime-local" value={editingMoment.happenedAt || ''} onChange={v => setEditingMoment({ ...editingMoment, happenedAt: v })} />
+                                <Input label={t('happenedAt')} type="datetime-local" value={editingMoment.happenedAt || ''} onChange={v => setEditingMoment({ ...editingMoment, happenedAt: v })} />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Attached Images</label>
+                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('attachedImages')}</label>
                                 <ImageUploadArea
                                     queue={uploadQueue}
                                 onDrop={handleDrop}
@@ -135,9 +137,9 @@ export const MomentsSection: React.FC = () => {
             ) : (
                 <div className="grid gap-4">
                     {loading?.moments ? (
-                        <div className="text-sm text-stone-400">Loading moments...</div>
+                        <div className="text-sm text-stone-400">{t('loadingMoments')}</div>
                     ) : moments.length === 0 ? (
-                        <div className="text-sm text-stone-400">No moments yet.</div>
+                        <div className="text-sm text-stone-400">{t('noMomentsYet')}</div>
                     ) : (
                         moments.map(m => (
                             <RichMomentItem

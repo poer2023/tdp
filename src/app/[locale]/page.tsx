@@ -5,8 +5,10 @@ import { listMoments } from "@/lib/moments";
 import { listHeroImages } from "@/lib/hero";
 import { LuminaHomePage } from "@/components/lumina";
 import { LuminaHeader, LuminaFooter } from "@/components/lumina";
-import type { FeedItem, FeedPost, FeedMoment } from "@/components/lumina";
+import type { FeedItem, FeedPost, FeedMoment, FeedCurated } from "@/components/lumina";
+import type { HeroImageItem } from "@/components/lumina/hero";
 import { getLuminaProfile } from "@/lib/lumina-profile";
+import prisma from "@/lib/prisma";
 
 // Incremental Static Regeneration for localized homepage
 export const runtime = "nodejs";
@@ -29,10 +31,14 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   const viewerId = session?.user?.id ?? null;
 
   // Fetch data for homepage
-  const [posts, moments, heroImages] = await Promise.all([
+  const [posts, moments, heroImageUrls, curatedItems] = await Promise.all([
     listPublishedPosts(),
     listMoments({ limit: 20, visibility: "PUBLIC", viewerId }),
     listHeroImages(),
+    prisma.shareItem.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    }),
   ]);
 
   // Transform posts to FeedPost format
@@ -89,13 +95,45 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     };
   });
 
+  // Transform curated items to FeedCurated format
+  const feedCurated: FeedCurated[] = curatedItems.map((item) => {
+    const createdAt = new Date(item.createdAt);
+    const dateStr = createdAt.toLocaleDateString(
+      locale === "zh" ? "zh-CN" : "en-US",
+      {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }
+    );
+
+    return {
+      id: item.id,
+      type: "curated" as const,
+      title: item.title,
+      description: item.description,
+      url: item.url,
+      domain: item.domain,
+      imageUrl: item.imageUrl || undefined,
+      date: dateStr,
+      tags: item.tags || [],
+      likes: item.likes,
+      sortKey: createdAt.getTime(),
+    };
+  });
+
   // Combine and sort by timestamp (newest first)
-  const feedItems: FeedItem[] = [...feedPosts, ...feedMoments].sort(
+  const feedItems: FeedItem[] = [...feedPosts, ...feedMoments, ...feedCurated].sort(
     (a, b) => (b.sortKey ?? 0) - (a.sortKey ?? 0)
   );
 
-  // Hero images already fetched from HeroImage table via listHeroImages()
-  // Returns array of URLs directly, no transformation needed
+  // Transform hero image URLs to HeroImageItem format
+  // Default to gallery type since they come from admin-selected hero images
+  const heroImages: HeroImageItem[] = heroImageUrls.map((url) => ({
+    src: url,
+    href: `/${locale}/gallery`,
+    type: "gallery" as const,
+  }));
 
   return (
     <>

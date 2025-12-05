@@ -1,19 +1,30 @@
 "use client";
 
-import React, { useState } from 'react';
-import { CreditCard, Edit2, Trash2 } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { CreditCard, Edit2, Trash2, Plus } from 'lucide-react';
 import { useData } from './store';
 import type { Subscription } from './types';
 import {
-    SectionContainer, ListContainer, EditForm, Input, ActionBtn
+    ListContainer, EditForm, Input, ActionBtn
 } from './AdminComponents';
+import { SimpleToast } from './Toast';
+import { useAdminLocale } from './useAdminLocale';
 
 export const SubscriptionsSection: React.FC = () => {
     const { subscriptions, addSubscription, updateSubscription, deleteSubscription, convertCurrency } = useData();
+    const { t } = useAdminLocale();
     const [editingSubscription, setEditingSubscription] = useState<Partial<Subscription> | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
+        setToast({ message, type });
+    }, []);
 
     const handleSaveSubscription = () => {
-        if (!editingSubscription?.name) return;
+        if (!editingSubscription?.name) {
+            showToast('Service name is required', 'error');
+            return;
+        }
         const startDate = editingSubscription.startDate || new Date().toISOString();
         const endDate = editingSubscription.active === false
             ? (editingSubscription.endDate ?? new Date().toISOString())
@@ -30,40 +41,68 @@ export const SubscriptionsSection: React.FC = () => {
             endDate
         } as Subscription;
 
-        if (editingSubscription.id) updateSubscription(subData);
-        else addSubscription(subData);
+        if (editingSubscription.id) {
+            updateSubscription(subData);
+            showToast('Subscription updated', 'success');
+        } else {
+            addSubscription(subData);
+            showToast('Subscription added', 'success');
+        }
         setEditingSubscription(null);
     };
 
+    const handleDelete = (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+        deleteSubscription(id);
+        showToast(`${name} deleted`, 'success');
+    };
+
     return (
-        <SectionContainer title="Subscriptions" onAdd={() => setEditingSubscription({})}>
+        <div className="max-w-5xl mx-auto animate-in fade-in duration-500 pb-10">
+            {/* Toast Notification */}
+            {toast && <SimpleToast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <div>
+                    <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100">{t('subscriptionsTitle')}</h2>
+                </div>
+                <button
+                    onClick={() => setEditingSubscription({})}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:opacity-90 transition-opacity"
+                >
+                    <Plus size={16} />
+                    {t('addNew')}
+                </button>
+            </div>
+
             {editingSubscription ? (
-                <EditForm title={editingSubscription.id ? 'Edit Subscription' : 'New Subscription'} onSave={handleSaveSubscription} onCancel={() => setEditingSubscription(null)}>
+                <EditForm title={editingSubscription.id ? t('editSubscription') : t('newSubscription')} onSave={handleSaveSubscription} onCancel={() => setEditingSubscription(null)}>
                     <div className="grid grid-cols-2 gap-4">
-                        <Input label="Service Name" value={editingSubscription.name || ''} onChange={v => setEditingSubscription({ ...editingSubscription, name: v })} />
-                        <Input label="Category" value={editingSubscription.category || ''} onChange={v => setEditingSubscription({ ...editingSubscription, category: v })} />
+                        <Input label={t('serviceName')} value={editingSubscription.name || ''} onChange={v => setEditingSubscription({ ...editingSubscription, name: v })} />
+                        <Input label={t('category')} value={editingSubscription.category || ''} onChange={v => setEditingSubscription({ ...editingSubscription, category: v })} />
                     </div>
                     <div className="grid grid-cols-3 gap-4">
-                        <Input label="Price" type="number" value={editingSubscription.price?.toString() || ''} onChange={v => setEditingSubscription({ ...editingSubscription, price: Number(v) })} />
-                        <Input label="Currency" value={editingSubscription.currency || ''} onChange={v => setEditingSubscription({ ...editingSubscription, currency: v as any })} />
-                        <Input label="Cycle" value={editingSubscription.cycle || ''} onChange={v => setEditingSubscription({ ...editingSubscription, cycle: v as any })} />
+                        <Input label={t('price')} type="number" value={editingSubscription.price?.toString() || ''} onChange={v => setEditingSubscription({ ...editingSubscription, price: Number(v) })} />
+                        <Input label={t('currency')} value={editingSubscription.currency || ''} onChange={v => setEditingSubscription({ ...editingSubscription, currency: v as any })} />
+                        <Input label={t('cycle')} value={editingSubscription.cycle || ''} onChange={v => setEditingSubscription({ ...editingSubscription, cycle: v as any })} />
                     </div>
                     <div className="flex items-center gap-2 mt-2">
                         <input type="checkbox" checked={editingSubscription.active || false} onChange={e => setEditingSubscription({ ...editingSubscription, active: e.target.checked })} />
-                        <label className="text-sm">Active Subscription</label>
+                        <label className="text-sm">{t('activeSubscription')}</label>
                     </div>
                 </EditForm>
             ) : (
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
-                            <div className="text-xs text-stone-500 uppercase font-bold mb-1">Monthly Total</div>
+                            <div className="text-xs text-stone-500 uppercase font-bold mb-1">{t('monthlyTotal')}</div>
                             <div className="text-2xl font-bold text-stone-900 dark:text-stone-100">
                                 ¥{subscriptions.filter(s => s.active && s.cycle === 'monthly').reduce((acc, s) => acc + convertCurrency(s.price, s.currency), 0).toFixed(2)}
                             </div>
                         </div>
                         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
-                            <div className="text-xs text-stone-500 uppercase font-bold mb-1">Yearly Total</div>
+                            <div className="text-xs text-stone-500 uppercase font-bold mb-1">{t('yearlyTotal')}</div>
                             <div className="text-2xl font-bold text-stone-900 dark:text-stone-100">
                                 ¥{subscriptions.filter(s => s.active).reduce((acc, s) => {
                                     const monthly = s.cycle === 'monthly' ? s.price : s.price / 12;
@@ -92,7 +131,7 @@ export const SubscriptionsSection: React.FC = () => {
                                 </div>
                                 <div className="flex gap-2">
                                     <ActionBtn onClick={() => setEditingSubscription(s)} icon={<Edit2 size={16} />} />
-                                    <ActionBtn onClick={() => void deleteSubscription(s.id)} icon={<Trash2 size={16} />} danger />
+                                    <ActionBtn onClick={() => handleDelete(s.id, s.name)} icon={<Trash2 size={16} />} danger />
                                 </div>
                             </div>
                         </div>
@@ -100,7 +139,7 @@ export const SubscriptionsSection: React.FC = () => {
                     </ListContainer>
                 </div>
             )}
-        </SectionContainer>
+        </div>
     );
 };
 

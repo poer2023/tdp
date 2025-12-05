@@ -6,9 +6,11 @@ import type { ShareItem } from './types';
 import {
     SectionContainer, ListContainer, ListItem, EditForm, Input, TextArea
 } from './AdminComponents';
+import { useAdminLocale } from './useAdminLocale';
 
 export const CuratedSection: React.FC = () => {
     const { shareItems, addShareItem, updateShareItem, deleteShareItem } = useData();
+    const { t } = useAdminLocale();
     const [editingShare, setEditingShare] = useState<Partial<ShareItem> | null>(null);
 
     const handleDelete = async (id: string) => {
@@ -42,15 +44,15 @@ export const CuratedSection: React.FC = () => {
     };
 
     return (
-        <SectionContainer title="Curated Links" onAdd={() => setEditingShare({})}>
+        <SectionContainer title={t('curatedLinks')} onAdd={() => setEditingShare({})}>
             {editingShare ? (
-                <EditForm title={editingShare.id ? 'Edit Share' : 'New Share'} onSave={handleSaveShare} onCancel={() => setEditingShare(null)}>
-                    <Input label="Title" value={editingShare.title} onChange={v => setEditingShare({ ...editingShare, title: v })} />
-                    <Input label="URL" value={editingShare.url} onChange={v => setEditingShare({ ...editingShare, url: v })} />
-                    <TextArea label="Description" value={editingShare.description} onChange={v => setEditingShare({ ...editingShare, description: v })} />
-                    <Input label="Domain (Optional)" value={editingShare.domain} onChange={v => setEditingShare({ ...editingShare, domain: v })} />
-                    <Input label="Image URL (Optional)" value={editingShare.imageUrl} onChange={v => setEditingShare({ ...editingShare, imageUrl: v })} />
-                    <Input label="Tags" value={editingShare.tags?.join(', ')} onChange={v => setEditingShare({ ...editingShare, tags: v.split(',').map(s => s.trim()) })} />
+                <EditForm title={editingShare.id ? t('editCurated') : t('newCurated')} onSave={handleSaveShare} onCancel={() => setEditingShare(null)}>
+                    <Input label={t('title')} value={editingShare.title} onChange={v => setEditingShare({ ...editingShare, title: v })} />
+                    <Input label={t('url')} value={editingShare.url} onChange={v => setEditingShare({ ...editingShare, url: v })} />
+                    <TextArea label={t('description')} value={editingShare.description} onChange={v => setEditingShare({ ...editingShare, description: v })} />
+                    <Input label={t('domainOptional')} value={editingShare.domain} onChange={v => setEditingShare({ ...editingShare, domain: v })} />
+                    <Input label={t('imageUrlOptional')} value={editingShare.imageUrl} onChange={v => setEditingShare({ ...editingShare, imageUrl: v })} />
+                    <Input label={t('tags')} value={editingShare.tags?.join(', ')} onChange={v => setEditingShare({ ...editingShare, tags: v.split(',').map(s => s.trim()) })} />
                 </EditForm>
             ) : (
                 <ListContainer>

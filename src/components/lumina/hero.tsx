@@ -7,24 +7,31 @@ import { MapPin, Briefcase, Aperture, Cpu } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import Image from "next/image";
 
-// Default hero images - used as fallback
-const DEFAULT_HERO_IMAGES = [
-  "https://picsum.photos/400/400?random=101",
-  "https://picsum.photos/400/400?random=102",
-  "https://picsum.photos/400/400?random=103",
-  "https://picsum.photos/400/400?random=104",
-  "https://picsum.photos/400/400?random=105",
-  "https://picsum.photos/400/400?random=106",
-  "https://picsum.photos/400/400?random=107",
-  "https://picsum.photos/400/400?random=108",
-  "https://picsum.photos/400/400?random=109",
-  "https://picsum.photos/400/400?random=110",
-  "https://picsum.photos/400/400?random=111",
-  "https://picsum.photos/400/400?random=112",
+// Default hero images - can be replaced with actual data
+const DEFAULT_HERO_IMAGES: HeroImageItem[] = [
+  { src: "https://picsum.photos/400/400?random=101", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=102", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=103", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=104", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=105", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=106", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=107", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=108", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=109", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=110", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=111", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=112", href: "/gallery", type: "gallery" },
 ];
 
+// Hero image item with source info for navigation
+export interface HeroImageItem {
+  src: string;
+  href: string;
+  type: "gallery" | "moment" | "post";
+}
+
 interface LuminaHeroProps {
-  heroImages?: string[];
+  heroImages?: HeroImageItem[];
 }
 
 export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps) {
@@ -48,7 +55,7 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
         "Let's change": "尝试一些",
         "it up a bit": "新鲜事物",
         "Welcome to my digital garden...":
-          "欢迎来到我的数字花园。我是产品经理，在这里捕捉光影、探索科技，并分享我日常生活中的小数据。",
+          "欢迎来到我的数字花园。我是产品经理,在这里捕捉光影、探索科技,并分享我日常生活中的小数据。",
         "Product Manager": "产品经理",
         Photographer: "独立摄影",
         "Tech Enthusiast": "数码玩家",
@@ -58,10 +65,10 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
   };
 
   return (
-    <section className="relative w-full overflow-hidden py-16 md:py-24">
-      <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-12 px-4 sm:px-6 lg:flex-row lg:gap-20 lg:px-8">
+    <section className="relative w-full overflow-hidden py-12 sm:py-16 md:py-24">
+      <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-10 px-4 sm:px-6 lg:flex-row lg:gap-16 lg:px-8">
         {/* Content Column */}
-        <div className="order-2 flex max-w-2xl flex-1 flex-col space-y-10 text-center lg:order-1 lg:max-w-none lg:text-left">
+        <div className="order-2 flex w-full max-w-2xl flex-1 flex-col space-y-10 text-center lg:order-1 lg:max-w-none lg:text-left">
           <div className="space-y-6">
             {/* Decorative Label */}
             <div className="flex items-center justify-center gap-3 lg:justify-start">
@@ -72,8 +79,8 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
             </div>
 
             {/* Main Headline */}
-            <h1 className="font-serif text-5xl font-medium leading-[1.05] tracking-tight text-stone-900 md:text-6xl lg:text-7xl dark:text-stone-100">
-              {t("Let's change")} <br className="hidden md:block" />
+            <h1 className="font-serif text-4xl font-medium leading-[1.05] tracking-tight text-stone-900 sm:text-5xl md:text-6xl lg:text-7xl dark:text-stone-100">
+              {t("Let's change")} <br className="hidden sm:block" />
               <span className="relative inline-block font-serif font-light italic text-stone-400 dark:text-stone-500">
                 {t("it up a bit")}
                 {/* Subtle underline decoration */}
@@ -88,14 +95,14 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
             </h1>
 
             {/* Description */}
-            <p className="mx-auto max-w-lg text-lg font-light leading-relaxed text-stone-500 md:text-xl lg:mx-0 dark:text-stone-400">
+            <p className="mx-auto max-w-2xl text-base font-light leading-relaxed text-stone-500 sm:text-lg md:text-xl lg:mx-0 dark:text-stone-400">
               {t("Welcome to my digital garden...")}
             </p>
           </div>
 
           {/* New Info Grid */}
           <div className="mx-auto w-full max-w-md border-t border-stone-200 pt-6 lg:mx-0 dark:border-[#27272a]">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
               <InfoItem icon={<Briefcase size={16} />} label={t("Product Manager")} />
               <InfoItem icon={<Aperture size={16} />} label={t("Photographer")} />
               <InfoItem icon={<Cpu size={16} />} label={t("Tech Enthusiast")} />
@@ -104,9 +111,9 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
           </div>
         </div>
 
-        {/* Shuffle Grid Column - Now Adaptive */}
+        {/* Shuffle Grid Column */}
         <div className="order-1 w-full lg:order-2 lg:w-1/2">
-          <AdaptiveShuffleGrid heroImages={heroImages} />
+          <ShuffleGrid heroImages={heroImages} />
         </div>
       </div>
     </section>
@@ -158,8 +165,8 @@ function getGridLayout(count: number): GridLayout {
   return { cols: 1, rows: 1, type: "hero" };
 }
 
-// Adaptive Shuffle Grid Component
-function AdaptiveShuffleGrid({ heroImages }: { heroImages: string[] }) {
+// Shuffle Grid Component
+function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const imageCount = heroImages.length;
   const layout = useMemo(() => getGridLayout(imageCount), [imageCount]);
@@ -169,11 +176,11 @@ function AdaptiveShuffleGrid({ heroImages }: { heroImages: string[] }) {
 
   const initialSquares = useMemo(() => {
     const needed = Math.min(maxImages, imageCount);
-    const result: { id: number; src: string }[] = [];
+    const result: { id: number; src: string; href: string }[] = [];
     for (let i = 0; i < needed; i++) {
-      const src = heroImages[i % heroImages.length];
-      if (src) {
-        result.push({ id: i, src });
+      const item = heroImages[i % heroImages.length];
+      if (item) {
+        result.push({ id: i, src: item.src, href: item.href });
       }
     }
     return result;
@@ -184,11 +191,11 @@ function AdaptiveShuffleGrid({ heroImages }: { heroImages: string[] }) {
   // Update squares when heroImages change
   useEffect(() => {
     const needed = Math.min(maxImages, imageCount);
-    const result: { id: number; src: string }[] = [];
+    const result: { id: number; src: string; href: string }[] = [];
     for (let i = 0; i < needed; i++) {
-      const src = heroImages[i % heroImages.length];
-      if (src) {
-        result.push({ id: i, src });
+      const item = heroImages[i % heroImages.length];
+      if (item) {
+        result.push({ id: i, src: item.src, href: item.href });
       }
     }
     setSquares(result);
@@ -213,7 +220,7 @@ function AdaptiveShuffleGrid({ heroImages }: { heroImages: string[] }) {
   // Handle empty state
   if (squares.length === 0) {
     return (
-      <div className="flex h-[400px] items-center justify-center rounded-xl bg-stone-100 dark:bg-[#1f1f23] sm:h-[450px]">
+      <div className="flex h-[280px] items-center justify-center rounded-xl bg-stone-100 dark:bg-[#1f1f23] sm:h-[340px] md:h-[420px]">
         <p className="text-stone-400 dark:text-stone-500">No images</p>
       </div>
     );
@@ -222,27 +229,31 @@ function AdaptiveShuffleGrid({ heroImages }: { heroImages: string[] }) {
   // Single hero image layout
   if (layout.type === "hero" && squares[0]) {
     return (
-      <div className="relative h-[400px] overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23] sm:h-[450px]">
+      <motion.a
+        href={squares[0].href}
+        className="relative block h-[280px] overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23] sm:h-[340px] md:h-[420px]"
+      >
         <Image
           src={squares[0].src}
           alt=""
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
-          className="object-cover"
+          className="object-cover transition-transform duration-300 hover:scale-105"
           quality={90}
         />
         <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
-      </div>
+      </motion.a>
     );
   }
 
   // Featured layout (2-3 images)
   if (layout.type === "featured") {
     return (
-      <div className="grid h-[400px] grid-cols-3 grid-rows-2 gap-2 sm:h-[450px]">
+      <div className="grid h-[280px] grid-cols-3 grid-rows-2 gap-1.5 sm:h-[340px] sm:gap-2 md:h-[420px]">
         {/* Large featured image */}
         {squares[0] && (
-          <motion.div
+          <motion.a
+            href={squares[0].href}
             layout
             transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
             className="relative col-span-2 row-span-2 overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
@@ -252,16 +263,17 @@ function AdaptiveShuffleGrid({ heroImages }: { heroImages: string[] }) {
               alt=""
               fill
               sizes="(max-width: 640px) 66vw, (max-width: 1024px) 40vw, 400px"
-              className="object-cover"
+              className="object-cover transition-transform duration-300 hover:scale-105"
               quality={85}
             />
             <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
-          </motion.div>
+          </motion.a>
         )}
         {/* Smaller images */}
         {squares.slice(1, 3).map((sq) => (
-          <motion.div
+          <motion.a
             key={sq.id}
+            href={sq.href}
             layout
             transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
             className="relative overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
@@ -271,46 +283,37 @@ function AdaptiveShuffleGrid({ heroImages }: { heroImages: string[] }) {
               alt=""
               fill
               sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 200px"
-              className="object-cover"
+              className="object-cover transition-transform duration-300 hover:scale-105"
               quality={85}
             />
             <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
-          </motion.div>
+          </motion.a>
         ))}
       </div>
     );
   }
 
   // Standard grid layout with shuffle animation
-  const gridTemplateColumns = `repeat(${layout.cols}, 1fr)`;
-  const gridTemplateRows = `repeat(${layout.rows}, 1fr)`;
-
   return (
-    <div
-      className="h-[400px] gap-2 sm:h-[450px]"
-      style={{
-        display: "grid",
-        gridTemplateColumns,
-        gridTemplateRows,
-      }}
-    >
+    <div className="grid h-[280px] grid-cols-3 grid-rows-4 gap-1.5 sm:h-[340px] sm:grid-cols-4 sm:gap-2 md:h-[420px]">
       {squares.map((sq) => (
-        <motion.div
+        <motion.a
           key={sq.id}
+          href={sq.href}
           layout
           transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
-          className="relative h-full w-full overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
+          className="relative h-full w-full cursor-pointer overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
         >
           <Image
             src={sq.src}
             alt=""
             fill
-            sizes={`(max-width: 640px) ${Math.round(100 / layout.cols)}vw, (max-width: 1024px) ${Math.round(50 / layout.cols)}vw, ${Math.round(600 / layout.cols)}px`}
-            className="object-cover"
-            quality={85}
+            sizes="(max-width: 640px) 25vw, (max-width: 1024px) 12.5vw, 120px"
+            className="object-cover transition-transform duration-300 hover:scale-105"
+            quality={75}
           />
           <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
-        </motion.div>
+        </motion.a>
       ))}
     </div>
   );

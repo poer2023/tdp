@@ -1,11 +1,10 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import React, { useState, useRef, useCallback } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import React from "react";
+import { usePathname } from "next/navigation";
 import { Film, Gamepad2, Mail, Github, Twitter, MessageCircle, Compass, Zap } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
-import { localePath } from "@/lib/locale-path";
 
 interface ProfileWidgetProps {
   avatarUrl?: string;
@@ -21,46 +20,7 @@ export function ProfileWidget({
   bio,
 }: ProfileWidgetProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const locale = getLocaleFromPathname(pathname) ?? "en";
-
-  // Secret entrance: click avatar 5 times within 2 seconds to access friends page
-  const [clickCount, setClickCount] = useState(0);
-  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const shouldNavigateRef = useRef(false);
-
-  // Handle navigation outside of setState to avoid React warning
-  React.useEffect(() => {
-    if (shouldNavigateRef.current) {
-      shouldNavigateRef.current = false;
-      router.push(localePath(locale, "/m/friends"));
-    }
-  }, [clickCount, locale, router]);
-
-  const handleAvatarClick = useCallback(() => {
-    // Reset timeout on each click
-    if (clickTimeoutRef.current) {
-      clearTimeout(clickTimeoutRef.current);
-    }
-    clickTimeoutRef.current = setTimeout(() => {
-      setClickCount(0);
-    }, 2000);
-
-    setClickCount((prev) => {
-      const newCount = prev + 1;
-
-      // Mark for navigation on 5th click
-      if (newCount >= 5) {
-        shouldNavigateRef.current = true;
-        if (clickTimeoutRef.current) {
-          clearTimeout(clickTimeoutRef.current);
-        }
-        return 0; // Reset count
-      }
-
-      return newCount;
-    });
-  }, []);
 
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
@@ -84,17 +44,7 @@ export function ProfileWidget({
       {/* Decor */}
       <div className="pointer-events-none absolute top-0 left-0 h-24 w-full bg-gradient-to-b from-stone-100 to-transparent dark:from-[#1f1f23]/60" />
 
-      <div
-        onClick={handleAvatarClick}
-        className="relative mx-auto mb-4 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl transition-transform duration-500 group-hover:scale-105 dark:border-[#0a0a0b] dark:bg-[#27272a]"
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            handleAvatarClick();
-          }
-        }}
-      >
+      <div className="relative mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl transition-transform duration-500 group-hover:scale-105 dark:border-[#0a0a0b] dark:bg-[#27272a]">
         <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
       </div>
       <h3 className="mb-1 font-serif text-2xl font-bold text-stone-900 dark:text-stone-100">
@@ -140,7 +90,7 @@ interface SocialBtnProps {
 
 function SocialBtn({ icon, label, href, color }: SocialBtnProps) {
   const baseClasses =
-    "p-2.5 rounded-xl text-stone-400 bg-stone-50 dark:bg-[#1f1f23] border border-stone-100 dark:border-[#2a2a2e] transition-all active:scale-95";
+    "cursor-pointer p-2.5 rounded-xl text-stone-400 bg-stone-50 dark:bg-[#1f1f23] border border-stone-100 dark:border-[#2a2a2e] transition-all active:scale-95";
   const hoverClasses =
     color || "hover:bg-stone-200 hover:text-stone-900 dark:hover:bg-[#27272a] dark:hover:text-stone-100";
 

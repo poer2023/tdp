@@ -13,7 +13,7 @@ export { LuminaShareCard } from "./share-card";
 export { ProfileWidget, CompactStatusWidget } from "./side-widgets";
 
 // Feed
-export { LuminaFeed, type FeedItem, type FeedPost, type FeedMoment, type FeedFilter } from "./feed";
+export { LuminaFeed, type FeedItem, type FeedPost, type FeedMoment, type FeedCurated, type FeedFilter } from "./feed";
 
 // Pages
 export { LuminaHomePage } from "./home-page";

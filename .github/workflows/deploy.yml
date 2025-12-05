@@ -66,6 +66,9 @@ jobs:
       ENV_FEATURE_ADMIN_EXPORT: ${{ secrets.ENV_FEATURE_ADMIN_EXPORT }}
       ENV_FEATURE_ADMIN_DASHBOARD: ${{ secrets.ENV_FEATURE_ADMIN_DASHBOARD }}
 
+      # Maintenance API token for post-deploy tasks
+      MAINTENANCE_API_TOKEN: ${{ secrets.MAINTENANCE_API_TOKEN }}
+
     steps:
       - name: Verify CI and Docker Build Status
         shell: bash
@@ -416,6 +419,43 @@ jobs:
             if [ -n "$containers" ]; then
               docker inspect $containers --format '{{.Name}} => {{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' || true
             fi
+
+            echo "==> Running post-deploy maintenance tasks (non-blocking)"
+            # Wait a bit for the app to fully warm up
+            sleep 10
+            
+            # Run maintenance tasks in subshell with error handling disabled
+            # Failures here should NOT fail the deployment
+            (
+              set +e  # Disable exit on error for this subshell
+              
+              APP_URL="http://localhost:3000"
+              MAINT_TOKEN="${MAINTENANCE_API_TOKEN:-}"
+              
+              if [ -n "$MAINT_TOKEN" ]; then
+                echo "  -> Fixing duplicate gallery images..."
+                curl -sf --max-time 30 -X POST "$APP_URL/api/admin/maintenance" \
+                  -H "Authorization: Bearer $MAINT_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d '{"action":"fix_duplicates"}' && echo " done" || echo " skipped"
+                
+                echo "  -> Regenerating missing thumbnails (batch 1)..."
+                curl -sf --max-time 60 -X POST "$APP_URL/api/admin/maintenance" \
+                  -H "Authorization: Bearer $MAINT_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d '{"action":"regenerate_thumbnails","limit":100}' && echo " done" || echo " skipped"
+                
+                echo "  -> Checking maintenance status..."
+                curl -sf --max-time 10 -X POST "$APP_URL/api/admin/maintenance" \
+                  -H "Authorization: Bearer $MAINT_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d '{"action":"status"}' && echo " done" || echo " skipped"
+              else
+                echo "  -> MAINTENANCE_API_TOKEN not set, skipping maintenance tasks"
+              fi
+              
+              exit 0  # Always succeed
+            ) || echo "  -> Maintenance tasks completed (some may have been skipped)"
 
             echo "==> Cleaning up unused images"
             docker image prune -f || true

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { LuminaHero } from "./hero";
+import { LuminaHero, type HeroImageItem } from "./hero";
 import { LuminaFeed } from "./feed";
 import type { FeedItem, FeedPost } from "./feed";
 import { ProfileWidget, CompactStatusWidget } from "./side-widgets";
@@ -11,7 +11,7 @@ import { localePath } from "@/lib/locale-path";
 
 interface LuminaHomePageProps {
   feedItems: FeedItem[];
-  heroImages?: string[];
+  heroImages?: HeroImageItem[];
   profileData?: {
     avatarUrl?: string;
     name?: string;
