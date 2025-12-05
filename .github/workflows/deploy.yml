@@ -66,6 +66,9 @@ jobs:
       ENV_FEATURE_ADMIN_EXPORT: ${{ secrets.ENV_FEATURE_ADMIN_EXPORT }}
       ENV_FEATURE_ADMIN_DASHBOARD: ${{ secrets.ENV_FEATURE_ADMIN_DASHBOARD }}
 
+      # Maintenance API token for post-deploy tasks
+      MAINTENANCE_API_TOKEN: ${{ secrets.MAINTENANCE_API_TOKEN }}
+
     steps:
       - name: Verify CI and Docker Build Status
         shell: bash
@@ -415,6 +418,36 @@ jobs:
             containers=$(docker compose ps -q || true)
             if [ -n "$containers" ]; then
               docker inspect $containers --format '{{.Name}} => {{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' || true
+            fi
+
+            echo "==> Running post-deploy maintenance tasks"
+            # Wait a bit for the app to fully warm up
+            sleep 10
+            
+            # Call maintenance API to fix duplicates and regenerate thumbnails
+            APP_URL="http://localhost:3000"
+            MAINT_TOKEN="${MAINTENANCE_API_TOKEN:-}"
+            
+            if [ -n "$MAINT_TOKEN" ]; then
+              echo "  -> Fixing duplicate gallery images..."
+              curl -sf -X POST "$APP_URL/api/admin/maintenance" \
+                -H "Authorization: Bearer $MAINT_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d '{"action":"fix_duplicates"}' || echo "     (fix_duplicates skipped or failed)"
+              
+              echo "  -> Regenerating missing thumbnails (batch 1)..."
+              curl -sf -X POST "$APP_URL/api/admin/maintenance" \
+                -H "Authorization: Bearer $MAINT_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d '{"action":"regenerate_thumbnails","limit":100}' || echo "     (regenerate_thumbnails skipped or failed)"
+              
+              echo "  -> Checking maintenance status..."
+              curl -sf -X POST "$APP_URL/api/admin/maintenance" \
+                -H "Authorization: Bearer $MAINT_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d '{"action":"status"}' || echo "     (status check failed)"
+            else
+              echo "  -> MAINTENANCE_API_TOKEN not set, skipping maintenance tasks"
             fi
 
             echo "==> Cleaning up unused images"
