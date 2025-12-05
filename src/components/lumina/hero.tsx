@@ -188,19 +188,6 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
 
   const [squares, setSquares] = useState(initialSquares);
 
-  // Update squares when heroImages change
-  useEffect(() => {
-    const needed = Math.min(maxImages, imageCount);
-    const result: { id: number; src: string; href: string }[] = [];
-    for (let i = 0; i < needed; i++) {
-      const item = heroImages[i % heroImages.length];
-      if (item) {
-        result.push({ id: i, src: item.src, href: item.href });
-      }
-    }
-    setSquares(result);
-  }, [heroImages, imageCount, maxImages]);
-
   // Shuffle animation (only for grid layouts with 4+ images)
   useEffect(() => {
     if (layout.type !== "grid" || squares.length < 4) return;

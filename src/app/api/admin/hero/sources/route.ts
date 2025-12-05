@@ -29,9 +29,9 @@ async function requireAdmin() {
 
 // Extract images from Moment's JSON images field
 function extractMomentImages(
-  momentId: string,
+  _momentId: string,
   images: unknown,
-  createdAt: Date
+  _createdAt: Date
 ): Array<{ url: string; index: number }> {
   if (!Array.isArray(images)) return [];
 

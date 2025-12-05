@@ -212,7 +212,7 @@ export const AdaptiveHeroGrid: React.FC<AdaptiveHeroGridProps> = ({
  */
 function ImageCell({
   image,
-  animated,
+  animated: _animated,
 }: {
   image: HeroGridImage;
   animated: boolean;
