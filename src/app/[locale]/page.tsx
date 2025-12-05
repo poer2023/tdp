@@ -165,10 +165,9 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     }
   }
 
-  // Shuffle and limit to 16 unique images
-  const shuffledHeroImages = heroImageItems
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 16);
+  // Take first 16 images (already sorted by recency from data sources)
+  // Note: shuffle happens on client side in hero.tsx component
+  const heroImages = heroImageItems.slice(0, 16);
 
   return (
     <>
@@ -176,7 +175,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       <main>
         <LuminaHomePage
           feedItems={feedItems}
-          heroImages={shuffledHeroImages.length > 0 ? shuffledHeroImages : undefined}
+          heroImages={heroImages.length > 0 ? heroImages : undefined}
           profileData={getLuminaProfile(locale === "zh" ? "zh" : "en")}
         />
       </main>
