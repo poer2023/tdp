@@ -410,7 +410,7 @@ git push origin feature/my-branch
 ## 相关文档
 
 - **分支管理策略**: [BRANCHING_STRATEGY.md](BRANCHING_STRATEGY.md)
-- **CI/CD 配置**: [../claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md](../claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md)
+- **CI/CD 配置**: [./CI_CD_DEPLOYMENT_GUIDE.md](./CI_CD_DEPLOYMENT_GUIDE.md)
 - **GitHub 官方文档**: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches
 
 ---

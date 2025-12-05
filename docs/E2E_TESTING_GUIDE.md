@@ -305,16 +305,11 @@ Separate config: `playwright.critical.config.ts`
 
 - **[E2E Auth Setup](E2E_AUTH_SETUP.md)** - Detailed authentication testing setup
 - **[E2E Scaling Guide](../E2E_SCALING_GUIDE.md)** - Large-scale execution strategies
-- **[Local E2E Playbook](../LOCAL_E2E_SCHEME_B_PLAYBOOK.md)** - Step-by-step local execution
-- **[CI/CD Configuration](../claudedocs/E2E_CICD_CONFIGURATION_GUIDE.md)** - Complete CI/CD setup
+- **[CI/CD Deployment Guide](./CI_CD_DEPLOYMENT_GUIDE.md)** - CI/CD setup and deployment flow
 
 ## Archive
 
-Historical documentation can be found in `docs/archive/development/`:
-
-- E2E test improvement summaries
-- Phase completion reports
-- CI/CD implementation success reports
+历史文档已清理，如需查看旧版记录请查阅 Git 历史。
 
 ---
 
