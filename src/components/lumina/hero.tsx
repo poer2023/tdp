@@ -8,23 +8,30 @@ import { getLocaleFromPathname } from "@/lib/i18n";
 import Image from "next/image";
 
 // Default hero images - can be replaced with actual data
-const DEFAULT_HERO_IMAGES = [
-  "https://picsum.photos/400/400?random=101",
-  "https://picsum.photos/400/400?random=102",
-  "https://picsum.photos/400/400?random=103",
-  "https://picsum.photos/400/400?random=104",
-  "https://picsum.photos/400/400?random=105",
-  "https://picsum.photos/400/400?random=106",
-  "https://picsum.photos/400/400?random=107",
-  "https://picsum.photos/400/400?random=108",
-  "https://picsum.photos/400/400?random=109",
-  "https://picsum.photos/400/400?random=110",
-  "https://picsum.photos/400/400?random=111",
-  "https://picsum.photos/400/400?random=112",
+const DEFAULT_HERO_IMAGES: HeroImageItem[] = [
+  { src: "https://picsum.photos/400/400?random=101", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=102", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=103", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=104", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=105", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=106", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=107", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=108", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=109", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=110", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=111", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/400/400?random=112", href: "/gallery", type: "gallery" },
 ];
 
+// Hero image item with source info for navigation
+export interface HeroImageItem {
+  src: string;
+  href: string;
+  type: "gallery" | "moment" | "post";
+}
+
 interface LuminaHeroProps {
-  heroImages?: string[];
+  heroImages?: HeroImageItem[];
 }
 
 export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps) {
@@ -143,16 +150,16 @@ function shuffle<T>(array: T[]): T[] {
 }
 
 // Shuffle Grid Component
-function ShuffleGrid({ heroImages }: { heroImages: string[] }) {
+function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const initialSquares = useMemo(() => {
     const needed = 16;
-    const result: { id: number; src: string }[] = [];
+    const result: { id: number; src: string; href: string }[] = [];
     for (let i = 0; i < needed; i++) {
-      const src = heroImages[i % heroImages.length];
-      if (src) {
-        result.push({ id: i, src });
+      const item = heroImages[i % heroImages.length];
+      if (item) {
+        result.push({ id: i, src: item.src, href: item.href });
       }
     }
     return result;
@@ -176,22 +183,23 @@ function ShuffleGrid({ heroImages }: { heroImages: string[] }) {
   return (
     <div className="grid h-[280px] grid-cols-3 grid-rows-4 gap-1.5 sm:h-[340px] sm:grid-cols-4 sm:gap-2 md:h-[420px]">
       {squares.map((sq) => (
-        <motion.div
+        <motion.a
           key={sq.id}
+          href={sq.href}
           layout
           transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
-          className="relative h-full w-full overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
+          className="relative h-full w-full cursor-pointer overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
         >
           <Image
             src={sq.src}
             alt=""
             fill
             sizes="(max-width: 640px) 25vw, (max-width: 1024px) 12.5vw, 120px"
-            className="object-cover"
+            className="object-cover transition-transform duration-300 hover:scale-105"
             quality={75}
           />
           <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
-        </motion.div>
+        </motion.a>
       ))}
     </div>
   );

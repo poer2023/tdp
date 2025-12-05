@@ -6,6 +6,7 @@ import { listGalleryImages } from "@/lib/gallery";
 import { LuminaHomePage } from "@/components/lumina";
 import { LuminaHeader, LuminaFooter } from "@/components/lumina";
 import type { FeedItem, FeedPost, FeedMoment, FeedCurated } from "@/components/lumina";
+import type { HeroImageItem } from "@/components/lumina/hero";
 import { getLuminaProfile } from "@/lib/lumina-profile";
 import prisma from "@/lib/prisma";
 
@@ -126,18 +127,48 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     (a, b) => (b.sortKey ?? 0) - (a.sortKey ?? 0)
   );
 
-  // Get hero images: prefer HeroImage table (admin configured), fallback to gallery
-  const heroImageRecords = await prisma.heroImage.findMany({
-    where: { active: true },
-    orderBy: { sortOrder: "asc" },
-  });
+  // Aggregate hero images from multiple sources: Gallery, Moments, Posts
+  const heroImageItems: HeroImageItem[] = [];
 
-  const heroImages =
-    heroImageRecords.length > 0
-      ? heroImageRecords.map((h) => h.url)
-      : galleryImages.length > 0
-        ? galleryImages.map((img) => img.smallThumbPath || img.microThumbPath || img.filePath)
-        : undefined;
+  // 1. Gallery images
+  for (const img of galleryImages) {
+    const src = img.smallThumbPath || img.microThumbPath || img.filePath;
+    if (src) {
+      heroImageItems.push({
+        src,
+        href: `/${locale}/gallery/${img.id}`,
+        type: "gallery",
+      });
+    }
+  }
+
+  // 2. Moment images (first image of each moment)
+  for (const moment of moments) {
+    const firstImage = moment.images?.[0];
+    if (firstImage) {
+      heroImageItems.push({
+        src: firstImage.previewUrl || firstImage.url,
+        href: `/${locale}/m/${moment.id}`,
+        type: "moment",
+      });
+    }
+  }
+
+  // 3. Post cover images
+  for (const post of posts) {
+    if (post.coverImagePath) {
+      heroImageItems.push({
+        src: post.coverImagePath,
+        href: `/${locale}/posts/${post.slug}`,
+        type: "post",
+      });
+    }
+  }
+
+  // Shuffle and limit to 16 unique images
+  const shuffledHeroImages = heroImageItems
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 16);
 
   return (
     <>
@@ -145,7 +176,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       <main>
         <LuminaHomePage
           feedItems={feedItems}
-          heroImages={heroImages}
+          heroImages={shuffledHeroImages.length > 0 ? shuffledHeroImages : undefined}
           profileData={getLuminaProfile(locale === "zh" ? "zh" : "en")}
         />
       </main>
