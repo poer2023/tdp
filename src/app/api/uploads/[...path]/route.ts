@@ -73,12 +73,6 @@ async function resolveFile(request: NextRequest, params: string[]): Promise<Reso
         const originalParams = [...params.slice(0, -1), `${baseName}${ext}`];
         const originalPath = path.resolve(uploadsRoot, ...originalParams);
 
-        // Security check: prevent path traversal attacks
-        // Ensure the resolved path stays within uploadsRoot
-        if (!originalPath.startsWith(uploadsRoot)) {
-          continue;
-        }
-
         try {
           const originalStats = await stat(originalPath);
           if (originalStats.isFile()) {

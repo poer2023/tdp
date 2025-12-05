@@ -226,6 +226,20 @@ export interface HeroImage {
   active: boolean;
 }
 
+// Hero Image Source Types (for image selection)
+export type HeroImageSource = 'post' | 'moment' | 'gallery';
+
+export interface SourceImage {
+  id: string;
+  url: string;           // WebP thumbnail for display
+  originalUrl: string;   // Original image URL
+  source: HeroImageSource;
+  sourceId: string;      // ID of the source (post/moment/gallery)
+  title?: string;        // Image title or content excerpt
+  createdAt: string;
+  isSelected: boolean;   // Whether already added to Hero
+}
+
 // --- Subscription Module ---
 export type Currency = 'CNY' | 'USD' | 'JPY' | 'HKD';
 export type Cycle = 'monthly' | 'yearly' | 'one-time';

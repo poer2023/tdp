@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { listPublishedPosts } from "@/lib/posts";
 import { listMoments } from "@/lib/moments";
-import { listGalleryImages } from "@/lib/gallery";
+import { listHeroImages } from "@/lib/hero";
 import { LuminaHomePage } from "@/components/lumina";
 import { LuminaHeader, LuminaFooter } from "@/components/lumina";
 import type { FeedItem, FeedPost, FeedMoment } from "@/components/lumina";
@@ -29,10 +29,10 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   const viewerId = session?.user?.id ?? null;
 
   // Fetch data for homepage
-  const [posts, moments, galleryImages] = await Promise.all([
+  const [posts, moments, heroImages] = await Promise.all([
     listPublishedPosts(),
     listMoments({ limit: 20, visibility: "PUBLIC", viewerId }),
-    listGalleryImages(16),
+    listHeroImages(),
   ]);
 
   // Transform posts to FeedPost format
@@ -94,11 +94,8 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     (a, b) => (b.sortKey ?? 0) - (a.sortKey ?? 0)
   );
 
-  // Get hero images from gallery (prefer optimized thumbnails)
-  const heroImages =
-    galleryImages.length > 0
-      ? galleryImages.map((img) => img.smallThumbPath || img.microThumbPath || img.filePath)
-      : undefined;
+  // Hero images already fetched from HeroImage table via listHeroImages()
+  // Returns array of URLs directly, no transformation needed
 
   return (
     <>
@@ -106,7 +103,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       <main>
         <LuminaHomePage
           feedItems={feedItems}
-          heroImages={heroImages}
+          heroImages={heroImages.length > 0 ? heroImages : undefined}
           profileData={getLuminaProfile(locale === "zh" ? "zh" : "en")}
         />
       </main>

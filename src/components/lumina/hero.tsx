@@ -7,7 +7,7 @@ import { MapPin, Briefcase, Aperture, Cpu } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import Image from "next/image";
 
-// Default hero images - can be replaced with actual data
+// Default hero images - used as fallback
 const DEFAULT_HERO_IMAGES = [
   "https://picsum.photos/400/400?random=101",
   "https://picsum.photos/400/400?random=102",
@@ -104,9 +104,9 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
           </div>
         </div>
 
-        {/* Shuffle Grid Column */}
+        {/* Shuffle Grid Column - Now Adaptive */}
         <div className="order-1 w-full lg:order-2 lg:w-1/2">
-          <ShuffleGrid heroImages={heroImages} />
+          <AdaptiveShuffleGrid heroImages={heroImages} />
         </div>
       </div>
     </section>
@@ -125,7 +125,7 @@ function InfoItem({ icon, label }: { icon: React.ReactNode; label: string }) {
   );
 }
 
-// Shuffle Algorithm
+// Shuffle Algorithm (Fisher-Yates)
 function shuffle<T>(array: T[]): T[] {
   const newArray = [...array];
   let currentIndex = newArray.length;
@@ -133,7 +133,6 @@ function shuffle<T>(array: T[]): T[] {
   while (currentIndex !== 0) {
     const randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
-    // Swap elements using temporary variable to avoid TypeScript issues
     const temp = newArray[currentIndex]!;
     newArray[currentIndex] = newArray[randomIndex]!;
     newArray[randomIndex] = temp;
@@ -142,12 +141,34 @@ function shuffle<T>(array: T[]): T[] {
   return newArray;
 }
 
-// Shuffle Grid Component
-function ShuffleGrid({ heroImages }: { heroImages: string[] }) {
+// Layout calculation
+interface GridLayout {
+  cols: number;
+  rows: number;
+  type: "grid" | "featured" | "hero";
+}
+
+function getGridLayout(count: number): GridLayout {
+  if (count >= 16) return { cols: 4, rows: 4, type: "grid" };
+  if (count >= 12) return { cols: 4, rows: 3, type: "grid" };
+  if (count >= 9) return { cols: 3, rows: 3, type: "grid" };
+  if (count >= 6) return { cols: 3, rows: 2, type: "grid" };
+  if (count >= 4) return { cols: 2, rows: 2, type: "grid" };
+  if (count >= 2) return { cols: 2, rows: 1, type: "featured" };
+  return { cols: 1, rows: 1, type: "hero" };
+}
+
+// Adaptive Shuffle Grid Component
+function AdaptiveShuffleGrid({ heroImages }: { heroImages: string[] }) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const imageCount = heroImages.length;
+  const layout = useMemo(() => getGridLayout(imageCount), [imageCount]);
+
+  // Calculate how many images to display
+  const maxImages = layout.cols * layout.rows;
 
   const initialSquares = useMemo(() => {
-    const needed = 16;
+    const needed = Math.min(maxImages, imageCount);
     const result: { id: number; src: string }[] = [];
     for (let i = 0; i < needed; i++) {
       const src = heroImages[i % heroImages.length];
@@ -156,11 +177,27 @@ function ShuffleGrid({ heroImages }: { heroImages: string[] }) {
       }
     }
     return result;
-  }, [heroImages]);
+  }, [heroImages, imageCount, maxImages]);
 
   const [squares, setSquares] = useState(initialSquares);
 
+  // Update squares when heroImages change
   useEffect(() => {
+    const needed = Math.min(maxImages, imageCount);
+    const result: { id: number; src: string }[] = [];
+    for (let i = 0; i < needed; i++) {
+      const src = heroImages[i % heroImages.length];
+      if (src) {
+        result.push({ id: i, src });
+      }
+    }
+    setSquares(result);
+  }, [heroImages, imageCount, maxImages]);
+
+  // Shuffle animation (only for grid layouts with 4+ images)
+  useEffect(() => {
+    if (layout.type !== "grid" || squares.length < 4) return;
+
     const shuffleSquares = () => {
       setSquares((prev) => shuffle(prev));
       timeoutRef.current = setTimeout(shuffleSquares, 3000);
@@ -171,10 +208,92 @@ function ShuffleGrid({ heroImages }: { heroImages: string[] }) {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, []);
+  }, [layout.type, squares.length]);
+
+  // Handle empty state
+  if (squares.length === 0) {
+    return (
+      <div className="flex h-[400px] items-center justify-center rounded-xl bg-stone-100 dark:bg-[#1f1f23] sm:h-[450px]">
+        <p className="text-stone-400 dark:text-stone-500">No images</p>
+      </div>
+    );
+  }
+
+  // Single hero image layout
+  if (layout.type === "hero" && squares[0]) {
+    return (
+      <div className="relative h-[400px] overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23] sm:h-[450px]">
+        <Image
+          src={squares[0].src}
+          alt=""
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+          className="object-cover"
+          quality={90}
+        />
+        <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
+      </div>
+    );
+  }
+
+  // Featured layout (2-3 images)
+  if (layout.type === "featured") {
+    return (
+      <div className="grid h-[400px] grid-cols-3 grid-rows-2 gap-2 sm:h-[450px]">
+        {/* Large featured image */}
+        {squares[0] && (
+          <motion.div
+            layout
+            transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
+            className="relative col-span-2 row-span-2 overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
+          >
+            <Image
+              src={squares[0].src}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 66vw, (max-width: 1024px) 40vw, 400px"
+              className="object-cover"
+              quality={85}
+            />
+            <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
+          </motion.div>
+        )}
+        {/* Smaller images */}
+        {squares.slice(1, 3).map((sq) => (
+          <motion.div
+            key={sq.id}
+            layout
+            transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
+            className="relative overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
+          >
+            <Image
+              src={sq.src}
+              alt=""
+              fill
+              sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 200px"
+              className="object-cover"
+              quality={85}
+            />
+            <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
+          </motion.div>
+        ))}
+      </div>
+    );
+  }
+
+  // Standard grid layout with shuffle animation
+  const gridTemplateColumns = `repeat(${layout.cols}, 1fr)`;
+  const gridTemplateRows = `repeat(${layout.rows}, 1fr)`;
 
   return (
-    <div className="grid h-[400px] grid-cols-4 grid-rows-4 gap-2 sm:h-[450px]">
+    <div
+      className="h-[400px] gap-2 sm:h-[450px]"
+      style={{
+        display: "grid",
+        gridTemplateColumns,
+        gridTemplateRows,
+      }}
+    >
       {squares.map((sq) => (
         <motion.div
           key={sq.id}
@@ -186,9 +305,9 @@ function ShuffleGrid({ heroImages }: { heroImages: string[] }) {
             src={sq.src}
             alt=""
             fill
-            sizes="(max-width: 640px) 25vw, (max-width: 1024px) 12.5vw, 120px"
+            sizes={`(max-width: 640px) ${Math.round(100 / layout.cols)}vw, (max-width: 1024px) ${Math.round(50 / layout.cols)}vw, ${Math.round(600 / layout.cols)}px`}
             className="object-cover"
-            quality={75}
+            quality={85}
           />
           <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
         </motion.div>
