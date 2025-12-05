@@ -7,7 +7,6 @@ import type { Credential, SyncJob } from './types';
 import {
     ListContainer, EditForm, Input, ActionBtn
 } from './AdminComponents';
-import { useAdminLocale } from './useAdminLocale';
 
 // Toast notification component
 interface ToastProps {
@@ -38,7 +37,6 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
 
 export const CredentialsSection: React.FC = () => {
     const { credentials, addCredential, updateCredential, deleteCredential, triggerSync, syncJobs, loading } = useData();
-    const { t } = useAdminLocale();
     const [editingCredential, setEditingCredential] = useState<Partial<Credential> | null>(null);
     const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
     const [validatingIds, setValidatingIds] = useState<Set<string>>(new Set());

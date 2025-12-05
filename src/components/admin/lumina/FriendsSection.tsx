@@ -5,21 +5,18 @@ import { User, Edit2, Trash2, KeyRound, Copy, Check, Loader2, RotateCcw } from '
 import { useData } from './store';
 import type { Friend } from './types';
 import {
-    SectionContainer, ListContainer, EditForm, Input, TextArea, ActionBtn
+    ListContainer, EditForm, Input, TextArea, ActionBtn
 } from './AdminComponents';
 import { AdminAvatar } from '../AdminImage';
 import { SimpleToast } from './Toast';
-import { useAdminLocale } from './useAdminLocale';
 
 export const FriendsSection: React.FC = () => {
     const { friends, addFriend, updateFriend, deleteFriend, resetFriendPassword, refreshFriends, loading } = useData();
-    const { t } = useAdminLocale();
     const [editingFriend, setEditingFriend] = useState<Partial<Friend> | null>(null);
     const [passphrase, setPassphrase] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [resettingId, setResettingId] = useState<string | null>(null);
 
     const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {

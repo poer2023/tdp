@@ -22,7 +22,6 @@ export interface DashboardStatsData {
 export async function GET() {
   try {
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfYear = new Date(now.getFullYear(), 0, 1);
 
     // Fetch all data in parallel

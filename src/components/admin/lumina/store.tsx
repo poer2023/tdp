@@ -339,15 +339,16 @@ type GalleryUpdateInput = GalleryUploadInput & { id: string };
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [theme, setTheme] = useState<Theme>('light');
-    const [language, setLanguageState] = useState<Language>('en');
-
-    // Hydrate language from sessionStorage on mount (client-side only)
-    useEffect(() => {
-        const savedLanguage = sessionStorage.getItem('admin-language');
-        if (savedLanguage === 'zh' || savedLanguage === 'en') {
-            setLanguageState(savedLanguage);
+    // Use lazy initializer to read from sessionStorage without triggering cascading renders
+    const [language, setLanguageState] = useState<Language>(() => {
+        if (typeof window !== 'undefined') {
+            const savedLanguage = sessionStorage.getItem('admin-language');
+            if (savedLanguage === 'zh' || savedLanguage === 'en') {
+                return savedLanguage;
+            }
         }
-    }, []);
+        return 'en';
+    });
 
     // Apply theme to html
     useEffect(() => {

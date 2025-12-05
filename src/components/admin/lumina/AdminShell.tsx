@@ -139,7 +139,6 @@ export const AdminShell: React.FC<AdminShellProps> = ({ user, children, pageTitl
         ? (pageDescriptionTranslations[pageDescription]?.[adminLocale] || pageDescription)
         : defaultDescription;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
         setToast({ message, type });
     }, []);

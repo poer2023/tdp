@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { X, Link2, Image, Check, Loader2 } from 'lucide-react';
+import { X, Link2, Image as ImageIcon, Check, Loader2 } from 'lucide-react';
 import { useData } from './store';
 import { AdminImage } from '../AdminImage';
 import { useAdminLocale } from './useAdminLocale';
@@ -99,7 +99,7 @@ export const HeroSection: React.FC = () => {
                                 : 'bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-stone-700'
                         }`}
                     >
-                        <Image size={16} />
+                        <ImageIcon size={16} />
                         {t('fromGallery')}
                     </button>
                     <button
@@ -145,7 +145,7 @@ export const HeroSection: React.FC = () => {
                             </div>
                         ) : availableGalleryItems.length === 0 ? (
                             <div className="text-center py-12 text-stone-500">
-                                <Image size={48} className="mx-auto mb-3 opacity-30" />
+                                <ImageIcon size={48} className="mx-auto mb-3 opacity-30" />
                                 <p>No available images in gallery</p>
                                 <p className="text-sm mt-1">Upload images to gallery first or all images are already added</p>
                             </div>
@@ -218,7 +218,7 @@ export const HeroSection: React.FC = () => {
                 </h3>
                 {heroImages.length === 0 ? (
                     <div className="text-center py-12 text-stone-500">
-                        <Image size={48} className="mx-auto mb-3 opacity-30" />
+                        <ImageIcon size={48} className="mx-auto mb-3 opacity-30" />
                         <p>No hero images yet</p>
                         <p className="text-sm mt-1">Add images from gallery or paste a URL above</p>
                     </div>
