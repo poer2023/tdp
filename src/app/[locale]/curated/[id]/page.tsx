@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import prisma from "@/lib/prisma";
 import { LuminaHeader, LuminaFooter } from "@/components/lumina";
 import CuratedDetailContent from "./curated-detail-content";

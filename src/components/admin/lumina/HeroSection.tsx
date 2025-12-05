@@ -48,6 +48,7 @@ export const HeroSection: React.FC = () => {
             const selectedItems = galleryItems.filter(g => selectedGalleryIds.has(g.id));
             for (let i = 0; i < selectedItems.length; i++) {
                 const item = selectedItems[i];
+                if (!item) continue;
                 const url = item.filePath || item.url;
                 if (url) {
                     await addHeroImage({
