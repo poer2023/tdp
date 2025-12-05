@@ -9,5 +9,13 @@ export async function listHeroImages(): Promise<string[]> {
     where: { active: true },
     orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
   });
-  return images.map((img) => img.url);
+
+  // Convert small thumbnails to medium resolution for better quality
+  return images.map((img) => {
+    // Replace _small.webp with _medium.webp for higher quality
+    if (img.url.includes("_small.webp")) {
+      return img.url.replace("_small.webp", "_medium.webp");
+    }
+    return img.url;
+  });
 }

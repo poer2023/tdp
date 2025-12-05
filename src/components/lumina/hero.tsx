@@ -9,18 +9,10 @@ import Image from "next/image";
 
 // Default hero images - can be replaced with actual data
 const DEFAULT_HERO_IMAGES: HeroImageItem[] = [
-  { src: "https://picsum.photos/400/400?random=101", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=102", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=103", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=104", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=105", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=106", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=107", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=108", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=109", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=110", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=111", href: "/gallery", type: "gallery" },
-  { src: "https://picsum.photos/400/400?random=112", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/800/800?random=101", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/800/800?random=102", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/800/800?random=103", href: "/gallery", type: "gallery" },
+  { src: "https://picsum.photos/800/800?random=104", href: "/gallery", type: "gallery" },
 ];
 
 // Hero image item with source info for navigation
@@ -100,9 +92,9 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
             </p>
           </div>
 
-          {/* New Info Grid */}
-          <div className="mx-auto w-full max-w-md border-t border-stone-200 pt-6 lg:mx-0 dark:border-[#27272a]">
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
+          {/* Info Grid - 2x2 Layout */}
+          <div className="mx-auto w-full max-w-sm border-t border-stone-200 pt-6 lg:mx-0 dark:border-[#27272a]">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
               <InfoItem icon={<Briefcase size={16} />} label={t("Product Manager")} />
               <InfoItem icon={<Aperture size={16} />} label={t("Photographer")} />
               <InfoItem icon={<Cpu size={16} />} label={t("Tech Enthusiast")} />
@@ -124,10 +116,10 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
 function InfoItem({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <div className="group flex cursor-default items-center gap-3 text-stone-600 dark:text-stone-400">
-      <div className="rounded-lg bg-stone-100 p-2 text-stone-500 transition-colors group-hover:bg-sage-50 group-hover:text-sage-600 dark:bg-[#1f1f23] dark:group-hover:bg-sage-900/20 dark:group-hover:text-sage-400">
+      <div className="shrink-0 rounded-lg bg-stone-100 p-2 text-stone-500 transition-colors group-hover:bg-sage-50 group-hover:text-sage-600 dark:bg-[#1f1f23] dark:group-hover:bg-sage-900/20 dark:group-hover:text-sage-400">
         {icon}
       </div>
-      <span className="text-sm font-medium tracking-wide">{label}</span>
+      <span className="whitespace-nowrap text-sm font-medium">{label}</span>
     </div>
   );
 }
@@ -148,30 +140,48 @@ function shuffle<T>(array: T[]): T[] {
   return newArray;
 }
 
-// Layout calculation
+// Layout calculation - determines grid dimensions based on image count
 interface GridLayout {
   cols: number;
   rows: number;
-  type: "grid" | "featured" | "hero";
+  gap: string;
 }
 
 function getGridLayout(count: number): GridLayout {
-  if (count >= 16) return { cols: 4, rows: 4, type: "grid" };
-  if (count >= 12) return { cols: 4, rows: 3, type: "grid" };
-  if (count >= 9) return { cols: 3, rows: 3, type: "grid" };
-  if (count >= 6) return { cols: 3, rows: 2, type: "grid" };
-  if (count >= 4) return { cols: 2, rows: 2, type: "grid" };
-  if (count >= 2) return { cols: 2, rows: 1, type: "featured" };
-  return { cols: 1, rows: 1, type: "hero" };
+  if (count >= 13) return { cols: 4, rows: 4, gap: "gap-1" };
+  if (count >= 10) return { cols: 4, rows: 3, gap: "gap-1.5" };
+  if (count >= 7) return { cols: 3, rows: 3, gap: "gap-1.5" };
+  if (count >= 5) return { cols: 3, rows: 2, gap: "gap-2" };
+  if (count >= 4) return { cols: 2, rows: 2, gap: "gap-2" };
+  if (count >= 2) return { cols: 2, rows: 1, gap: "gap-2" };
+  return { cols: 1, rows: 1, gap: "gap-0" };
 }
 
-// Shuffle Grid Component
+// Get image quality based on grid size - always high quality
+function getImageQuality(cols: number): number {
+  // Keep quality high for all layouts (WebP compression handles file size)
+  if (cols === 1) return 95;
+  if (cols === 2) return 90;
+  return 85;
+}
+
+// Get image sizes for responsive loading - request larger images for Retina displays
+function getImageSizes(cols: number): string {
+  // Request 2x the display size to ensure sharp images on Retina displays
+  // WebP compression keeps file sizes reasonable even at larger dimensions
+  if (cols === 1) return "(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 800px";
+  if (cols === 2) return "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px";
+  if (cols === 3) return "(max-width: 640px) 50vw, (max-width: 1024px) 40vw, 450px";
+  return "(max-width: 640px) 50vw, (max-width: 1024px) 35vw, 400px";
+}
+
+// Shuffle Grid Component - unified layout for 1-16 images
 function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const imageCount = heroImages.length;
   const layout = useMemo(() => getGridLayout(imageCount), [imageCount]);
 
-  // Calculate how many images to display
+  // Calculate how many images to display (capped by grid capacity)
   const maxImages = layout.cols * layout.rows;
 
   const initialSquares = useMemo(() => {
@@ -188,9 +198,9 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
 
   const [squares, setSquares] = useState(initialSquares);
 
-  // Shuffle animation (only for grid layouts with 4+ images)
+  // Shuffle animation (only for layouts with 4+ images)
   useEffect(() => {
-    if (layout.type !== "grid" || squares.length < 4) return;
+    if (squares.length < 4) return;
 
     const shuffleSquares = () => {
       setSquares((prev) => shuffle(prev));
@@ -202,102 +212,46 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [layout.type, squares.length]);
+  }, [squares.length]);
 
   // Handle empty state
   if (squares.length === 0) {
     return (
-      <div className="flex h-[280px] items-center justify-center rounded-xl bg-stone-100 dark:bg-[#1f1f23] sm:h-[340px] md:h-[420px]">
+      <div className="flex aspect-square w-full items-center justify-center rounded-xl bg-stone-100 dark:bg-[#1f1f23]">
         <p className="text-stone-400 dark:text-stone-500">No images</p>
       </div>
     );
   }
 
-  // Single hero image layout
-  if (layout.type === "hero" && squares[0]) {
-    return (
-      <motion.a
-        href={squares[0].href}
-        className="relative block h-[280px] overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23] sm:h-[340px] md:h-[420px]"
-      >
-        <Image
-          src={squares[0].src}
-          alt=""
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
-          className="object-cover transition-transform duration-300 hover:scale-105"
-          quality={90}
-        />
-        <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
-      </motion.a>
-    );
-  }
+  const imageQuality = getImageQuality(layout.cols);
+  const imageSizes = getImageSizes(layout.cols);
 
-  // Featured layout (2-3 images)
-  if (layout.type === "featured") {
-    return (
-      <div className="grid h-[280px] grid-cols-3 grid-rows-2 gap-1.5 sm:h-[340px] sm:gap-2 md:h-[420px]">
-        {/* Large featured image */}
-        {squares[0] && (
-          <motion.a
-            href={squares[0].href}
-            layout
-            transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
-            className="relative col-span-2 row-span-2 overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
-          >
-            <Image
-              src={squares[0].src}
-              alt=""
-              fill
-              sizes="(max-width: 640px) 66vw, (max-width: 1024px) 40vw, 400px"
-              className="object-cover transition-transform duration-300 hover:scale-105"
-              quality={85}
-            />
-            <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
-          </motion.a>
-        )}
-        {/* Smaller images */}
-        {squares.slice(1, 3).map((sq) => (
-          <motion.a
-            key={sq.id}
-            href={sq.href}
-            layout
-            transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
-            className="relative overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
-          >
-            <Image
-              src={sq.src}
-              alt=""
-              fill
-              sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 200px"
-              className="object-cover transition-transform duration-300 hover:scale-105"
-              quality={85}
-            />
-            <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
-          </motion.a>
-        ))}
-      </div>
-    );
-  }
-
-  // Standard grid layout with shuffle animation
+  // Unified grid layout - all sizes use the same structure
   return (
-    <div className="grid h-[280px] grid-cols-3 grid-rows-4 gap-1.5 sm:h-[340px] sm:grid-cols-4 sm:gap-2 md:h-[420px]">
+    <div
+      className={`grid w-full ${layout.gap}`}
+      style={{
+        gridTemplateColumns: `repeat(${layout.cols}, 1fr)`,
+        gridTemplateRows: `repeat(${layout.rows}, 1fr)`,
+        aspectRatio: `${layout.cols} / ${layout.rows}`,
+      }}
+    >
       {squares.map((sq) => (
         <motion.a
           key={sq.id}
           href={sq.href}
           layout
           transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
-          className="relative h-full w-full cursor-pointer overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
+          className="relative cursor-pointer overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
+          style={{ aspectRatio: "1 / 1" }}
         >
           <Image
             src={sq.src}
             alt=""
             fill
-            sizes="(max-width: 640px) 25vw, (max-width: 1024px) 12.5vw, 120px"
+            sizes={imageSizes}
             className="object-cover transition-transform duration-300 hover:scale-105"
-            quality={75}
+            quality={imageQuality}
           />
           <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
         </motion.a>

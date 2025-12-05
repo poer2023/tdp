@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Film, Gamepad2, Code, Server } from "lucide-react";
 import type { LiveHighlightsData } from "@/types/live-data";
+import { localePath as buildLocalePath } from "@/lib/locale-path";
 
 interface LiveHighlightsSectionProps {
   locale: "en" | "zh";
@@ -64,17 +65,17 @@ export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlig
   const t =
     locale === "zh"
       ? {
-          title: "实时动态",
-          subtitle: "最近的娱乐、游戏和开发活动",
-          viewDashboard: "查看完整仪表盘",
-          loading: "加载中...",
-        }
+        title: "实时动态",
+        subtitle: "最近的娱乐、游戏和开发活动",
+        viewDashboard: "查看完整仪表盘",
+        loading: "加载中...",
+      }
       : {
-          title: "Live Updates",
-          subtitle: "Recent entertainment, gaming, and development activity",
-          viewDashboard: "View Full Dashboard",
-          loading: "Loading...",
-        };
+        title: "Live Updates",
+        subtitle: "Recent entertainment, gaming, and development activity",
+        viewDashboard: "View Full Dashboard",
+        loading: "Loading...",
+      };
 
   const iconMap = {
     "🎬": <Film className="h-5 w-5" />,
@@ -83,7 +84,7 @@ export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlig
     "🖥️": <Server className="h-5 w-5" />,
   };
 
-  const localePath = (path: string) => `/${locale}${path}`;
+  const lp = (path: string) => buildLocalePath(locale, path);
 
   if (!data) {
     return (
@@ -128,7 +129,7 @@ export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlig
               (highlight as unknown as { title?: string }).title ||
               String(idx)
             }
-            href={localePath(highlight.href)}
+            href={lp(highlight.href || "/about/live")}
             className="group relative overflow-hidden rounded-2xl border border-stone-200 bg-white/70 p-6 shadow-[0_8px_24px_-12px_rgba(39,39,42,0.25)] backdrop-blur transition-all hover:shadow-[0_12px_32px_-8px_rgba(39,39,42,0.35)] dark:border-stone-800 dark:bg-stone-950/70"
           >
             {/* Icon */}
@@ -174,7 +175,7 @@ export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlig
                 const isFresh =
                   status.lastSyncAt &&
                   new Date().getTime() - new Date(status.lastSyncAt).getTime() <
-                    24 * 60 * 60 * 1000;
+                  24 * 60 * 60 * 1000;
 
                 return (
                   <div
@@ -187,11 +188,10 @@ export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlig
                     }
                   >
                     <div
-                      className={`h-2 w-2 rounded-full ${
-                        isFresh
-                          ? "bg-green-500 dark:bg-green-400"
-                          : "bg-yellow-500 dark:bg-yellow-400"
-                      }`}
+                      className={`h-2 w-2 rounded-full ${isFresh
+                        ? "bg-green-500 dark:bg-green-400"
+                        : "bg-yellow-500 dark:bg-yellow-400"
+                        }`}
                     />
                     <span className="text-stone-600 capitalize dark:text-stone-400">
                       {status.platform}
@@ -207,7 +207,7 @@ export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlig
       {/* View Full Dashboard Button */}
       <div className="pt-4 text-center">
         <Link
-          href={localePath("/about/live")}
+          href={lp("/about/live")}
           className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/70 px-6 py-3 text-sm font-semibold text-stone-900 backdrop-blur transition-all hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950/70 dark:text-stone-50 dark:hover:bg-stone-900"
         >
           {t.viewDashboard}

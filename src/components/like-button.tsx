@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type LikeButtonProps = {
   slug: string;
@@ -18,8 +18,8 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
     isLiked: false,
   });
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
   const lastClickTime = useRef<number>(0);
 
   const [displayState, setDisplayState] = useState<LikeState>(serverState);
@@ -51,12 +51,12 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
   }, [slug, locale]);
 
   const handleLike = async () => {
-    // Already liked or pending
-    if (serverState.isLiked || isPending) return;
+    // Already liked or submitting
+    if (serverState.isLiked || isSubmitting) return;
 
-    // Debounce: prevent rapid clicks (500ms)
+    // Debounce: prevent rapid clicks (300ms instead of 500ms for snappier feel)
     const now = Date.now();
-    if (now - lastClickTime.current < 500) return;
+    if (now - lastClickTime.current < 300) return;
     lastClickTime.current = now;
 
     // Clear any previous errors
@@ -67,74 +67,81 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
       likeCount: serverState.likeCount + 1,
       isLiked: true,
     };
+
+    // Optimistically update UI immediately
     setDisplayState(optimisticState);
+    setServerState(optimisticState);
+    setIsSubmitting(true);
 
-    // Optimistically update UI immediately, then reconcile with server response
-    startTransition(async () => {
-      try {
-        const res = await fetch(`/api/posts/${slug}/like`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ locale }),
-        });
+    try {
+      const res = await fetch(`/api/posts/${slug}/like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale }),
+      });
 
-        if (!res.ok) {
-          let errorMessage = "Failed to like post";
+      if (!res.ok) {
+        let errorMessage = "Failed to like post";
 
-          try {
-            const errorData = await res.json();
-            errorMessage = errorData.error || errorMessage;
-          } catch {
-            // Response is not JSON, use status-based message
-            if (res.status === 429) {
-              errorMessage = "Too many requests. Please try again later.";
-            } else if (res.status === 404) {
-              errorMessage = "Post not found";
-            } else {
-              errorMessage = `Server error (${res.status})`;
-            }
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          // Response is not JSON, use status-based message
+          if (res.status === 429) {
+            errorMessage = "Too many requests. Please try again later.";
+          } else if (res.status === 404) {
+            errorMessage = "Post not found";
+          } else {
+            errorMessage = `Server error (${res.status})`;
           }
-
-          throw new Error(errorMessage);
         }
 
-        const data = await res.json();
-
-        // Update server state with actual response
-        setServerState({
-          likeCount: data.likeCount,
-          isLiked: true,
-        });
-      } catch (err) {
-        // Rollback on error - restore UI state
-        setDisplayState(previousState);
-
-        const errorMessage = err instanceof Error ? err.message : "Failed to like post";
-        setError(errorMessage);
-        console.error("Failed to like post:", err);
-
-        // Auto-clear error after 3 seconds
-        setTimeout(() => setError(null), 3000);
+        throw new Error(errorMessage);
       }
-    });
+
+      const data = await res.json();
+
+      // Update server state with actual response
+      setServerState({
+        likeCount: data.likeCount,
+        isLiked: true,
+      });
+      setDisplayState({
+        likeCount: data.likeCount,
+        isLiked: true,
+      });
+    } catch (err) {
+      // Rollback on error - restore UI state
+      setDisplayState(previousState);
+      setServerState(previousState);
+
+      const errorMessage = err instanceof Error ? err.message : "Failed to like post";
+      setError(errorMessage);
+      console.error("Failed to like post:", err);
+
+      // Auto-clear error after 3 seconds
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="flex flex-col gap-2">
       <button
         onClick={handleLike}
-        disabled={displayState.isLiked || isPending || isInitialLoading}
+        disabled={displayState.isLiked || isSubmitting || isInitialLoading}
         data-testid="like-button"
-        className={`flex items-center gap-2 rounded-lg border px-4 py-2 transition-all ${
-          displayState.isLiked
-            ? "border-red-300 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
-            : "border-stone-200 bg-white text-stone-700 hover:border-red-300 hover:bg-red-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-red-800 dark:hover:bg-red-950"
-        } ${isPending || isInitialLoading ? "cursor-wait opacity-50" : ""} ${displayState.isLiked ? "cursor-not-allowed" : "cursor-pointer"}`}
+        className={`flex items-center gap-2 rounded-lg border px-4 py-2 transition-all ${displayState.isLiked
+          ? "border-red-300 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
+          : "border-stone-200 bg-white text-stone-700 hover:border-red-300 hover:bg-red-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-red-800 dark:hover:bg-red-950"
+          } ${isSubmitting || isInitialLoading ? "cursor-wait opacity-50" : ""} ${displayState.isLiked ? "cursor-not-allowed" : "cursor-pointer"}`}
         aria-label={displayState.isLiked ? "Already liked" : "Like this post"}
         aria-live="polite"
       >
         <svg
-          className={`h-5 w-5 transition-all ${displayState.isLiked ? "scale-110" : ""} ${isPending ? "animate-pulse" : ""}`}
+          className={`h-5 w-5 transition-all ${displayState.isLiked ? "scale-110" : ""} ${isSubmitting ? "animate-pulse" : ""}`}
           fill={displayState.isLiked ? "currentColor" : "none"}
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -149,7 +156,7 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
         </svg>
         <span className="font-medium">{displayState.likeCount}</span>
         {displayState.isLiked && <span className="text-xs">Liked</span>}
-        {isPending && <span className="text-xs">Saving...</span>}
+        {isSubmitting && <span className="text-xs">Saving...</span>}
       </button>
 
       {error && (

@@ -14,7 +14,7 @@ interface ProfileWidgetProps {
 }
 
 export function ProfileWidget({
-  avatarUrl = "https://aistudiocdn.com/72b5f4228e1b81681e679509282e412406e613940be14c87e7544f4d02e95506.jpg",
+  avatarUrl,
   name = "BaoZhi",
   title,
   bio,
@@ -39,13 +39,30 @@ export function ProfileWidget({
     bio ||
     "Turning chaos into roadmaps. Obsessed with UX, data, and the perfect cup of coffee.";
 
+  // Fallback avatar using initials
+  const initials = name.slice(0, 2).toUpperCase();
+
   return (
     <div className="group relative mb-6 overflow-hidden rounded-2xl border border-stone-200 bg-white p-6 text-center shadow-sm dark:border-[#27272a] dark:bg-[#141416]">
       {/* Decor */}
       <div className="pointer-events-none absolute top-0 left-0 h-24 w-full bg-gradient-to-b from-stone-100 to-transparent dark:from-[#1f1f23]/60" />
 
       <div className="relative mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl transition-transform duration-500 group-hover:scale-105 dark:border-[#0a0a0b] dark:bg-[#27272a]">
-        <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={name}
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              // Hide the broken image and show fallback
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sage-400 to-sage-600 text-2xl font-bold text-white">
+            {initials}
+          </div>
+        )}
       </div>
       <h3 className="mb-1 font-serif text-2xl font-bold text-stone-900 dark:text-stone-100">
         {name}
