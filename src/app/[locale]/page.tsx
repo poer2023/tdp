@@ -126,11 +126,18 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     (a, b) => (b.sortKey ?? 0) - (a.sortKey ?? 0)
   );
 
-  // Get hero images from gallery (prefer optimized thumbnails)
+  // Get hero images: prefer HeroImage table (admin configured), fallback to gallery
+  const heroImageRecords = await prisma.heroImage.findMany({
+    where: { active: true },
+    orderBy: { sortOrder: "asc" },
+  });
+
   const heroImages =
-    galleryImages.length > 0
-      ? galleryImages.map((img) => img.smallThumbPath || img.microThumbPath || img.filePath)
-      : undefined;
+    heroImageRecords.length > 0
+      ? heroImageRecords.map((h) => h.url)
+      : galleryImages.length > 0
+        ? galleryImages.map((img) => img.smallThumbPath || img.microThumbPath || img.filePath)
+        : undefined;
 
   return (
     <>
