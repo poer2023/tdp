@@ -110,7 +110,7 @@ export async function GET() {
   } catch (error) {
     console.error("[Reading API] Error:", error);
 
-    // Return empty data structure on error
+    // Return error response with empty data structure
     const emptyData: ReadingData = {
       stats: {
         thisMonth: { books: 0, articles: 0 },
@@ -122,11 +122,15 @@ export async function GET() {
       recentArticles: [],
     };
 
-    return NextResponse.json(emptyData, {
-      headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
-      },
-    });
+    return NextResponse.json(
+      { error: "Failed to fetch reading data", data: emptyData },
+      {
+        status: 500,
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+        },
+      }
+    );
   }
 }
 

@@ -66,10 +66,10 @@ export const CredentialsSection: React.FC = () => {
 
         try {
             if (editingCredential.id) {
-                updateCredential(credData);
+                await updateCredential(credData);
                 showToast('Credential updated successfully', 'success');
             } else {
-                addCredential(credData);
+                await addCredential(credData);
                 showToast('Credential created successfully', 'success');
             }
             setEditingCredential(null);
