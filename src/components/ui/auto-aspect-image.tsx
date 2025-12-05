@@ -47,6 +47,7 @@ export function AutoAspectImage({
     >
       <Image
         {...imageProps}
+        alt={imageProps.alt || ""}
         fill={fill}
         className={`${className} ${objectFit === "contain" ? "object-contain" : "object-cover"} h-full w-full`}
         onLoadingComplete={handleLoadingComplete}
