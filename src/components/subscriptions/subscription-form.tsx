@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { adminTranslations } from "@/lib/admin-translations";
 import type { AdminLocale } from "@/lib/admin-translations";
@@ -49,7 +49,7 @@ type SubscriptionFormProps = {
 export function SubscriptionForm({ locale, initialData, onSuccess }: SubscriptionFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(initialData || INITIAL_FORM);
-  const [isSubmitting, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = Boolean(form.id);
@@ -74,34 +74,35 @@ export function SubscriptionForm({ locale, initialData, onSuccess }: Subscriptio
       return;
     }
 
-    startTransition(async () => {
-      try {
-        const endpoint = form.id ? `/api/subscriptions/${form.id}` : "/api/subscriptions";
-        const method = form.id ? "PUT" : "POST";
+    setIsSubmitting(true);
+    try {
+      const endpoint = form.id ? `/api/subscriptions/${form.id}` : "/api/subscriptions";
+      const method = form.id ? "PUT" : "POST";
 
-        const response = await fetch(endpoint, {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+      const response = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-        if (!response.ok) {
-          const data = await response.json().catch(() => ({}));
-          setError(data.error ?? "Failed to save subscription.");
-          return;
-        }
-
-        router.push("/admin/subscriptions");
-        router.refresh();
-
-        if (onSuccess) {
-          onSuccess();
-        }
-      } catch (submissionError) {
-        setError("Network error. Please try again.");
-        console.error("Failed to submit subscription:", submissionError);
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        setError(data.error ?? "Failed to save subscription.");
+        return;
       }
-    });
+
+      router.push("/admin/subscriptions");
+      router.refresh();
+
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (submissionError) {
+      setError("Network error. Please try again.");
+      console.error("Failed to submit subscription:", submissionError);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
