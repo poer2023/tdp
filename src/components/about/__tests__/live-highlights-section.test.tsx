@@ -46,7 +46,7 @@ describe("LiveHighlightsSection", () => {
   };
 
   it("should show loading state initially", () => {
-    mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockFetch.mockImplementation(() => new Promise(() => { })); // Never resolves
 
     render(<LiveHighlightsSection locale="en" />);
 
@@ -172,8 +172,8 @@ describe("LiveHighlightsSection", () => {
     await waitFor(() => {
       const dashboardLink = screen.getByRole("link", { name: /dashboard/i });
       expect(dashboardLink).toBeInTheDocument();
-      // localePath adds locale prefix: /en/about/live
-      expect(dashboardLink).toHaveAttribute("href", "/en/about/live");
+      // localePath returns prefix-free paths for EN (default locale)
+      expect(dashboardLink).toHaveAttribute("href", "/about/live");
     });
   });
 
