@@ -118,6 +118,11 @@ export function LuminaHeader() {
 
   const isAdmin = session?.user?.role === "ADMIN";
 
+  // Avoid SSR/CSR className差异导致的 hydration mismatch
+  if (!mounted) {
+    return <div className="h-16 w-full" aria-hidden />;
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-stone-200 bg-stone-50/80 backdrop-blur-md transition-colors duration-300 dark:border-[#1f1f23] dark:bg-[#0a0a0b]/80">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
