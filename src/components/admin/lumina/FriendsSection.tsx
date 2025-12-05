@@ -17,7 +17,7 @@ export const FriendsSection: React.FC = () => {
     const [copied, setCopied] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
+    const [_isSaving, setIsSaving] = useState(false);
     const [resettingId, setResettingId] = useState<string | null>(null);
 
     const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {

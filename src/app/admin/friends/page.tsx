@@ -13,7 +13,8 @@ export default async function FriendsPage() {
                     user={{
                         username: session!.user.name ?? session!.user.email ?? "Admin",
                         email: session!.user.email ?? "",
-                        role: session!.user.role
+                        role: session!.user.role,
+                        image: session!.user.image ?? undefined,
                     }}
                     pageTitle="Friends & Access"
                     pageDescription="Manage friend access codes and permissions"

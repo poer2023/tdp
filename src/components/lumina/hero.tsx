@@ -58,10 +58,10 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
   };
 
   return (
-    <section className="relative w-full overflow-hidden py-16 md:py-24">
-      <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-12 px-4 sm:px-6 lg:flex-row lg:gap-20 lg:px-8">
+    <section className="relative w-full overflow-hidden py-12 sm:py-16 md:py-24">
+      <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-10 px-4 sm:px-6 lg:flex-row lg:gap-16 lg:px-8">
         {/* Content Column */}
-        <div className="order-2 flex max-w-2xl flex-1 flex-col space-y-10 text-center lg:order-1 lg:max-w-none lg:text-left">
+        <div className="order-2 flex w-full max-w-2xl flex-1 flex-col space-y-10 text-center lg:order-1 lg:max-w-none lg:text-left">
           <div className="space-y-6">
             {/* Decorative Label */}
             <div className="flex items-center justify-center gap-3 lg:justify-start">
@@ -72,8 +72,8 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
             </div>
 
             {/* Main Headline */}
-            <h1 className="font-serif text-5xl font-medium leading-[1.05] tracking-tight text-stone-900 md:text-6xl lg:text-7xl dark:text-stone-100">
-              {t("Let's change")} <br className="hidden md:block" />
+            <h1 className="font-serif text-4xl font-medium leading-[1.05] tracking-tight text-stone-900 sm:text-5xl md:text-6xl lg:text-7xl dark:text-stone-100">
+              {t("Let's change")} <br className="hidden sm:block" />
               <span className="relative inline-block font-serif font-light italic text-stone-400 dark:text-stone-500">
                 {t("it up a bit")}
                 {/* Subtle underline decoration */}
@@ -88,14 +88,14 @@ export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps
             </h1>
 
             {/* Description */}
-            <p className="mx-auto max-w-lg text-lg font-light leading-relaxed text-stone-500 md:text-xl lg:mx-0 dark:text-stone-400">
+            <p className="mx-auto max-w-2xl text-base font-light leading-relaxed text-stone-500 sm:text-lg md:text-xl lg:mx-0 dark:text-stone-400">
               {t("Welcome to my digital garden...")}
             </p>
           </div>
 
           {/* New Info Grid */}
           <div className="mx-auto w-full max-w-md border-t border-stone-200 pt-6 lg:mx-0 dark:border-[#27272a]">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
               <InfoItem icon={<Briefcase size={16} />} label={t("Product Manager")} />
               <InfoItem icon={<Aperture size={16} />} label={t("Photographer")} />
               <InfoItem icon={<Cpu size={16} />} label={t("Tech Enthusiast")} />
@@ -174,7 +174,7 @@ function ShuffleGrid({ heroImages }: { heroImages: string[] }) {
   }, []);
 
   return (
-    <div className="grid h-[400px] grid-cols-4 grid-rows-4 gap-2 sm:h-[450px]">
+    <div className="grid h-[280px] grid-cols-3 grid-rows-4 gap-1.5 sm:h-[340px] sm:grid-cols-4 sm:gap-2 md:h-[420px]">
       {squares.map((sq) => (
         <motion.div
           key={sq.id}

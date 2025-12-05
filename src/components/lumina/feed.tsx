@@ -174,10 +174,10 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
 
       <div className="w-full">
         {/* Sticky Filter Bar */}
-      <div className="sticky top-16 z-30 -mx-4 mb-8 bg-stone-50/95 px-4 py-4 backdrop-blur-sm transition-colors md:mx-0 md:px-0 dark:bg-[#0a0a0b]/95">
-        <div className="flex items-center justify-between">
+      <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] z-30 -mx-4 mb-8 bg-stone-50/95 px-4 py-4 backdrop-blur-sm transition-colors shadow-sm md:top-16 md:mx-0 md:px-0 dark:bg-[#0a0a0b]/95">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {/* Filter Pills */}
-          <div className="flex max-w-full overflow-x-auto rounded-full border border-stone-200 bg-white p-1 shadow-sm dark:border-[#2a2a2e] dark:bg-[#18181b] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+          <div className="flex w-full max-w-full overflow-x-auto rounded-full border border-stone-200 bg-white p-1 shadow-sm dark:border-[#2a2a2e] dark:bg-[#18181b] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] sm:w-auto">
             {(["All", "Articles", "Moments", "Curated"] as FeedFilter[]).map((filter) => (
               <button
                 key={filter}

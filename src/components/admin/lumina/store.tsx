@@ -339,8 +339,9 @@ type GalleryUpdateInput = GalleryUploadInput & { id: string };
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [theme, setTheme] = useState<Theme>('light');
-    // Use lazy initializer to read from sessionStorage without triggering cascading renders
+    // Always start with 'en' to avoid SSR hydration mismatch
     const [language, setLanguageState] = useState<Language>(() => {
+        // Lazy initialization: read from sessionStorage on client-side only
         if (typeof window !== 'undefined') {
             const savedLanguage = sessionStorage.getItem('admin-language');
             if (savedLanguage === 'zh' || savedLanguage === 'en') {
