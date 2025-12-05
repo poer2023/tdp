@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Image from "next/image";
 import { Upload, Save, RefreshCw } from "lucide-react";
 
 interface ProfileSectionProps {
@@ -67,7 +68,13 @@ export function ProfileSection({ user }: ProfileSectionProps) {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative h-20 w-20 overflow-hidden rounded-full bg-gradient-to-br from-sage-400 to-stone-600 text-center text-xl font-semibold text-stone-900">
               {avatarPreview ? (
-                <img src={avatarPreview} alt="Avatar preview" className="h-full w-full object-cover" />
+                <Image
+                  src={avatarPreview}
+                  alt="Avatar preview"
+                  width={80}
+                  height={80}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">{initials}</div>
               )}

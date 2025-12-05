@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -281,7 +282,13 @@ export const AdminShell: React.FC<AdminShellProps> = ({ user, children, pageTitl
                     >
                         <div className="h-9 w-9 overflow-hidden rounded-full bg-gradient-to-br from-sage-400 to-stone-600 flex items-center justify-center text-sm font-bold text-stone-900 flex-shrink-0">
                             {user.image ? (
-                                <img src={user.image} alt={user.username} className="h-full w-full object-cover" />
+                                <Image
+                                    src={user.image}
+                                    alt={user.username || "avatar"}
+                                    width={36}
+                                    height={36}
+                                    className="h-full w-full object-cover"
+                                />
                             ) : (
                                 (user.username || 'U')[0]?.toUpperCase()
                             )}

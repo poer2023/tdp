@@ -26,8 +26,9 @@ export function AutoAspectImage({
   className = "",
   onLoadingComplete,
   fill = true,
+  alt,
   ...imageProps
-}: AutoAspectImageProps) {
+}: AutoAspectImageProps & { alt: string }) {
   const [aspectRatio, setAspectRatio] = useState<string | undefined>(undefined);
 
   const handleLoadingComplete = useCallback(
@@ -47,7 +48,7 @@ export function AutoAspectImage({
     >
       <Image
         {...imageProps}
-        alt={imageProps.alt || ""}
+        alt={alt}
         fill={fill}
         className={`${className} ${objectFit === "contain" ? "object-contain" : "object-cover"} h-full w-full`}
         onLoadingComplete={handleLoadingComplete}
