@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useCallback } from "react";
 import type { DragEndEvent } from "@dnd-kit/core";
 import {
     DndContext,
@@ -115,17 +115,6 @@ function SortableImage({
 }
 
 export function HeroPreviewGrid({ images, onReorder, onRemove }: HeroPreviewGridProps) {
-    // Local state for optimistic updates - prevents flash on reorder
-    const [localImages, setLocalImages] = useState<HeroImageItem[]>(images);
-    const pendingUpdate = useRef(false);
-
-    // Sync local state when external images change (but not during pending update)
-    useEffect(() => {
-        if (!pendingUpdate.current) {
-            setLocalImages(images);
-        }
-    }, [images]);
-
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
@@ -137,38 +126,29 @@ export function HeroPreviewGrid({ images, onReorder, onRemove }: HeroPreviewGrid
         })
     );
 
-    const layout = getGridLayout(localImages.length);
+    const layout = getGridLayout(images.length);
 
     const handleDragEnd = useCallback(
         (event: DragEndEvent) => {
             const { active, over } = event;
 
             if (over && active.id !== over.id) {
-                const oldIndex = localImages.findIndex((img) => img.id === active.id);
-                const newIndex = localImages.findIndex((img) => img.id === over.id);
+                const oldIndex = images.findIndex((img) => img.id === active.id);
+                const newIndex = images.findIndex((img) => img.id === over.id);
 
-                const newOrder = arrayMove(localImages, oldIndex, newIndex).map((img, index) => ({
+                const newOrder = arrayMove(images, oldIndex, newIndex).map((img, index) => ({
                     ...img,
                     sortOrder: index,
                 }));
 
-                // Optimistically update local state immediately
-                pendingUpdate.current = true;
-                setLocalImages(newOrder);
-
-                // Notify parent to persist changes
+                // Notify parent to persist changes - parent handles optimistic update
                 onReorder(newOrder);
-
-                // Allow syncing again after a short delay
-                setTimeout(() => {
-                    pendingUpdate.current = false;
-                }, 1000);
             }
         },
-        [localImages, onReorder]
+        [images, onReorder]
     );
 
-    if (localImages.length === 0) {
+    if (images.length === 0) {
         return null;
     }
 
@@ -178,7 +158,7 @@ export function HeroPreviewGrid({ images, onReorder, onRemove }: HeroPreviewGrid
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
         >
-            <SortableContext items={localImages.map((img) => img.id)} strategy={rectSortingStrategy}>
+            <SortableContext items={images.map((img) => img.id)} strategy={rectSortingStrategy}>
                 <div
                     className={`grid w-full ${layout.gap}`}
                     style={{
@@ -188,7 +168,7 @@ export function HeroPreviewGrid({ images, onReorder, onRemove }: HeroPreviewGrid
                         maxWidth: "500px",
                     }}
                 >
-                    {localImages.slice(0, layout.cols * layout.rows).map((img) => (
+                    {images.slice(0, layout.cols * layout.rows).map((img) => (
                         <SortableImage key={img.id} image={img} onRemove={onRemove} />
                     ))}
                 </div>
