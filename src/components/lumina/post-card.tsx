@@ -57,7 +57,7 @@ export function LuminaPostCard({ post, onClick, onLike }: PostCardProps) {
           </div>
         )}
 
-        <div className="px-1">
+        <div className="px-3">
           {!post.imageUrl && (
             <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-stone-400">
               {post.category}
@@ -82,9 +82,8 @@ export function LuminaPostCard({ post, onClick, onLike }: PostCardProps) {
             <div className="flex items-center gap-4">
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-1 transition-colors hover:text-rose-500 ${
-                  post.likes > 0 ? "text-rose-500" : ""
-                }`}
+                className={`flex items-center gap-1 transition-colors hover:text-rose-500 ${post.likes > 0 ? "text-rose-500" : ""
+                  }`}
               >
                 <Heart size={14} className={post.likes > 0 ? "fill-current" : ""} />
                 <span>{post.likes}</span>

@@ -397,6 +397,14 @@ export const adminTranslations = {
 
     // Hero
     heroShuffleGrid: "Hero Shuffle Grid",
+    heroPreview: "Hero Preview",
+    removeAll: "Remove All",
+    dragToReorder: "Drag to reorder images",
+    loadingImages: "Loading images...",
+    imagesAvailable: "images available",
+    selectAll: "Select All",
+    noImagesFound: "No images found",
+    loadMore: "Load More",
     pasteImageUrl: "Paste image URL here...",
     add: "Add",
     selectFromGallery: "Select from Gallery",
@@ -855,6 +863,14 @@ export const adminTranslations = {
 
     // Hero
     heroShuffleGrid: "头图轮播",
+    heroPreview: "头图预览",
+    removeAll: "全部移除",
+    dragToReorder: "拖拽调整图片顺序",
+    loadingImages: "加载图片中...",
+    imagesAvailable: "张可选图片",
+    selectAll: "全选",
+    noImagesFound: "未找到图片",
+    loadMore: "加载更多",
     pasteImageUrl: "粘贴图片链接...",
     add: "添加",
     selectFromGallery: "从相册选择",

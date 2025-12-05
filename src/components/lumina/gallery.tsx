@@ -1,5 +1,4 @@
 "use client";
-"use client";
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 
@@ -20,7 +19,6 @@ import {
   HardDrive,
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
-import L from "leaflet";
 
 // Dynamic import for map components (avoid SSR issues)
 const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), {
@@ -400,11 +398,13 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
 
   // Fix Leaflet default marker icon issue
   useEffect(() => {
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    import("leaflet").then((L) => {
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      });
     });
   }, []);
 
@@ -724,9 +724,8 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
 
             {/* Mobile Bottom Drawer */}
             <div
-              className={`fixed inset-x-0 bottom-0 z-[75] transform transition-transform duration-300 ease-out lg:hidden ${
-                drawerOpen ? "translate-y-0" : "translate-y-[calc(100%-120px)]"
-              }`}
+              className={`fixed inset-x-0 bottom-0 z-[75] transform transition-transform duration-300 ease-out lg:hidden ${drawerOpen ? "translate-y-0" : "translate-y-[calc(100%-120px)]"
+                }`}
             >
               {/* Drawer Handle */}
               <button
@@ -841,9 +840,8 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
                       },
                     }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className={`relative h-full shrink-0 overflow-hidden rounded ${
-                      i === currentIndex ? "ring-2 ring-white" : "opacity-60 hover:opacity-100"
-                    }`}
+                    className={`relative h-full shrink-0 overflow-hidden rounded ${i === currentIndex ? "ring-2 ring-white" : "opacity-60 hover:opacity-100"
+                      }`}
                   >
                     <img
                       src={item.smallThumbPath || item.microThumbPath || item.thumbnail || item.url}

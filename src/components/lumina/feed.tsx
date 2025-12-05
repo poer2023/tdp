@@ -161,6 +161,55 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
     }
   };
 
+  // Handle article like with server API + optimistic update
+  const handlePostLike = async (id: string) => {
+    // Find the post to get its slug
+    const post = items.find((item) => item.type === "article" && item.id === id) as FeedPost | undefined;
+    if (!post) return;
+
+    // Optimistic update
+    setItems((prev) =>
+      prev.map((item) =>
+        item.type === "article" && item.id === id
+          ? { ...item, likes: item.likes + 1 }
+          : item
+      )
+    );
+
+    try {
+      const res = await fetch(`/api/posts/${post.slug}/like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale: locale.toUpperCase() }),
+      });
+
+      if (!res.ok) {
+        // Rollback on error
+        setItems((prev) =>
+          prev.map((item) =>
+            item.type === "article" && item.id === id
+              ? { ...item, likes: item.likes - 1 }
+              : item
+          )
+        );
+        throw new Error(`Failed to like post: ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      // Update with actual server count
+      setItems((prev) =>
+        prev.map((item) =>
+          item.type === "article" && item.id === id
+            ? { ...item, likes: data.likeCount ?? item.likes }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error("[Post like] error", error);
+    }
+  };
+
   return (
     <>
       {/* Moment Detail Modal */}
@@ -174,105 +223,105 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
 
       <div className="w-full">
         {/* Sticky Filter Bar */}
-      <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] z-30 -mx-4 mb-8 bg-stone-50/95 px-4 py-4 backdrop-blur-sm transition-colors shadow-sm md:top-16 md:mx-0 md:px-0 dark:bg-[#0a0a0b]/95">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {/* Filter Pills */}
-          <div className="flex w-full max-w-full overflow-x-auto rounded-full border border-stone-200 bg-white p-1 shadow-sm dark:border-[#2a2a2e] dark:bg-[#18181b] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] sm:w-auto">
-            {(["All", "Articles", "Moments", "Curated"] as FeedFilter[]).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setFeedFilter(filter)}
-                className={`cursor-pointer whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
-                  feedFilter === filter
+        <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] z-30 -mx-4 mb-8 px-4 py-4 md:top-16 md:mx-0 md:px-0">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Filter Pills */}
+            <div className="flex w-full max-w-full overflow-x-auto rounded-full border border-stone-200 bg-white p-1 shadow-sm dark:border-[#2a2a2e] dark:bg-[#18181b] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] sm:w-auto">
+              {(["All", "Articles", "Moments", "Curated"] as FeedFilter[]).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setFeedFilter(filter)}
+                  className={`cursor-pointer whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-all ${feedFilter === filter
                     ? "bg-stone-800 text-white shadow-md dark:bg-[#3f3f46] dark:text-stone-100"
                     : "text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
-                }`}
-              >
-                {t(filter)}
-              </button>
-            ))}
+                    }`}
+                >
+                  {t(filter)}
+                </button>
+              ))}
+            </div>
+            <span className="hidden border-b border-stone-200 pb-1 text-xs font-bold uppercase tracking-widest text-stone-400 sm:block dark:border-[#2a2a2e]">
+              {t(feedFilter === "All" ? "Mixed Feed" : feedFilter)}
+            </span>
           </div>
-          <span className="hidden border-b border-stone-200 pb-1 text-xs font-bold uppercase tracking-widest text-stone-400 sm:block dark:border-[#2a2a2e]">
-            {t(feedFilter === "All" ? "Mixed Feed" : feedFilter)}
-          </span>
         </div>
-      </div>
 
-      {/* Feed Content - Masonry Layout */}
-      <div className="mb-12 columns-1 gap-8 space-y-8 md:columns-2">
-        {visibleItems.map((item) => (
-          <React.Fragment key={item.id}>
-            {item.type === "article" ? (
-              <LuminaPostCard
-                post={{
-                  id: item.id,
-                  title: item.title,
-                  excerpt: item.excerpt,
-                  category: item.category,
-                  date: item.date,
-                  readTime: item.readTime,
-                  imageUrl: item.imageUrl,
-                  tags: item.tags,
-                  likes: item.likes,
-                }}
-                onClick={() => onPostClick?.(item)}
-              />
-            ) : item.type === "moment" ? (
-              <LuminaMomentCard
-                moment={{
-                  id: item.id,
-                  content: item.content,
-                  images: item.images,
-                  date: item.date,
-                  tags: item.tags,
-                  likes: item.likes,
-                  liked: item.liked,
-                }}
-                onClick={() => setSelectedMoment(item)}
-                onLike={() => handleMomentLike(item.id)}
-              />
-            ) : (
-              <LuminaShareCard
-                item={{
-                  id: item.id,
-                  title: item.title,
-                  description: item.description,
-                  url: item.url,
-                  domain: item.domain,
-                  imageUrl: item.imageUrl,
-                  date: item.date,
-                  tags: item.tags,
-                  likes: item.likes,
-                }}
-              />
-            )}
-          </React.Fragment>
-        ))}
+        {/* Feed Content - Masonry Layout */}
+        <div className="mb-12 columns-1 gap-8 space-y-8 md:columns-2">
+          {visibleItems.map((item) => (
+            <React.Fragment key={item.id}>
+              {item.type === "article" ? (
+                <LuminaPostCard
+                  post={{
+                    id: item.id,
+                    title: item.title,
+                    excerpt: item.excerpt,
+                    category: item.category,
+                    date: item.date,
+                    readTime: item.readTime,
+                    imageUrl: item.imageUrl,
+                    tags: item.tags,
+                    likes: item.likes,
+                  }}
+                  onClick={() => onPostClick?.(item)}
+                  onLike={handlePostLike}
+                />
+              ) : item.type === "moment" ? (
+                <LuminaMomentCard
+                  moment={{
+                    id: item.id,
+                    content: item.content,
+                    images: item.images,
+                    date: item.date,
+                    tags: item.tags,
+                    likes: item.likes,
+                    liked: item.liked,
+                  }}
+                  onClick={() => setSelectedMoment(item)}
+                  onLike={() => handleMomentLike(item.id)}
+                />
+              ) : (
+                <LuminaShareCard
+                  item={{
+                    id: item.id,
+                    title: item.title,
+                    description: item.description,
+                    url: item.url,
+                    domain: item.domain,
+                    imageUrl: item.imageUrl,
+                    date: item.date,
+                    tags: item.tags,
+                    likes: item.likes,
+                  }}
+                />
+              )}
+            </React.Fragment>
+          ))}
 
-        {visibleItems.length === 0 && (
-          <div className="col-span-full break-inside-avoid rounded-xl border border-dashed border-stone-200 bg-white py-20 text-center transition-colors dark:border-[#27272a] dark:bg-[#141416]">
-            <p className="text-stone-400">{t("No content found here yet.")}</p>
+          {visibleItems.length === 0 && (
+            <div className="col-span-full break-inside-avoid rounded-xl border border-dashed border-stone-200 bg-white py-20 text-center transition-colors dark:border-[#27272a] dark:bg-[#141416]">
+              <p className="text-stone-400">{t("No content found here yet.")}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Load More Button */}
+        {hasMore && (
+          <div className="flex justify-center pb-8">
+            <button
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              className="group flex cursor-pointer items-center gap-2 rounded-full border border-stone-200 bg-white px-8 py-3 font-medium text-stone-600 shadow-sm transition-all hover:border-sage-400 hover:text-sage-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#27272a] dark:bg-[#141416] dark:text-stone-300 dark:hover:border-sage-700 dark:hover:text-sage-400"
+            >
+              {isLoadingMore ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <ArrowDown size={18} className="transition-transform group-hover:translate-y-1" />
+              )}
+              {isLoadingMore ? "Loading..." : t("Read More")}
+            </button>
           </div>
         )}
-      </div>
-
-      {/* Load More Button */}
-      {hasMore && (
-        <div className="flex justify-center pb-8">
-          <button
-            onClick={handleLoadMore}
-            disabled={isLoadingMore}
-            className="group flex cursor-pointer items-center gap-2 rounded-full border border-stone-200 bg-white px-8 py-3 font-medium text-stone-600 shadow-sm transition-all hover:border-sage-400 hover:text-sage-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#27272a] dark:bg-[#141416] dark:text-stone-300 dark:hover:border-sage-700 dark:hover:text-sage-400"
-          >
-            {isLoadingMore ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <ArrowDown size={18} className="transition-transform group-hover:translate-y-1" />
-            )}
-            {isLoadingMore ? "Loading..." : t("Read More")}
-          </button>
-        </div>
-      )}
       </div>
     </>
   );

@@ -86,8 +86,8 @@ export async function GET(request: NextRequest) {
       });
 
       for (const img of galleryImages) {
-        // Prefer WebP thumbnails
-        const displayUrl = img.smallThumbPath || img.mediumPath || img.filePath;
+        // Use medium resolution for hero images (higher quality)
+        const displayUrl = img.mediumPath || img.filePath;
         const originalUrl = img.filePath;
 
         if (displayUrl) {
