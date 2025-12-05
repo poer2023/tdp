@@ -1,5 +1,4 @@
 "use client";
-"use client";
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @next/next/no-img-element */
 
@@ -136,7 +135,7 @@ export function LuminaHeader() {
               <button
                 key={link.path}
                 onClick={() => handleNavClick(link.path)}
-                className={`text-sm font-medium transition-colors duration-200 ${
+                className={`cursor-pointer text-sm font-medium transition-colors duration-200 ${
                   isActive(link.path)
                     ? "border-b-2 border-sage-500 text-stone-900 dark:text-stone-100"
                     : "text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
@@ -153,14 +152,14 @@ export function LuminaHeader() {
             <div className="mr-1 flex items-center gap-2 border-r border-stone-200 pr-4 dark:border-[#27272a]">
               <Link
                 href={localePath(locale, "/search")}
-                className="hidden rounded-full p-1.5 text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 md:flex dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+                className="hidden cursor-pointer rounded-full p-1.5 text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 md:flex dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
                 aria-label={t("Search")}
               >
                 <Search size={18} />
               </Link>
               <button
                 onClick={toggleTheme}
-                className="rounded-full p-1.5 text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+                className="cursor-pointer rounded-full p-1.5 text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
                 title="Toggle Theme"
               >
                 {mounted && (theme === "light" ? <Moon size={18} /> : <Sun size={18} />)}
@@ -168,7 +167,7 @@ export function LuminaHeader() {
               </button>
               <button
                 onClick={toggleLanguage}
-                className="flex items-center gap-1 rounded-full p-1.5 font-sans text-xs font-bold text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
+                className="flex cursor-pointer items-center gap-1 rounded-full p-1.5 font-sans text-xs font-bold text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
                 title="Switch Language"
               >
                 <Languages size={18} />
@@ -181,7 +180,7 @@ export function LuminaHeader() {
                 {/* User Avatar Button */}
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-300 dark:bg-[#27272a] dark:text-stone-200 dark:hover:bg-[#3f3f46]"
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-300 dark:bg-[#27272a] dark:text-stone-200 dark:hover:bg-[#3f3f46]"
                 >
                   {session.user?.image ? (
                     <img
@@ -214,7 +213,7 @@ export function LuminaHeader() {
                       <Link
                         href="/admin"
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+                        className="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                       >
                         <LayoutDashboard size={16} />
                         {t("Admin")}
@@ -227,7 +226,7 @@ export function LuminaHeader() {
                         setIsUserMenuOpen(false);
                         signOut();
                       }}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/20"
+                      className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-sm text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/20"
                     >
                       <LogOut size={16} />
                       {t("Logout")}
@@ -238,7 +237,7 @@ export function LuminaHeader() {
             ) : (
               <Link
                 href="/login"
-                className="text-sm font-medium text-stone-900 transition-colors hover:text-sage-600 dark:text-stone-100 dark:hover:text-sage-400"
+                className="cursor-pointer text-sm font-medium text-stone-900 transition-colors hover:text-sage-600 dark:text-stone-100 dark:hover:text-sage-400"
               >
                 {t("Login")}
               </Link>
@@ -262,7 +261,7 @@ export function LuminaHeader() {
             )}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
+              className="cursor-pointer p-2 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -278,7 +277,7 @@ export function LuminaHeader() {
               <button
                 key={link.path}
                 onClick={() => handleNavClick(link.path)}
-                className={`block w-full rounded-md px-3 py-3 text-left text-base font-medium ${
+                className={`block w-full cursor-pointer rounded-md px-3 py-3 text-left text-base font-medium ${
                   isActive(link.path)
                     ? "bg-sage-50 text-sage-600 dark:bg-sage-900/30 dark:text-sage-400"
                     : "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
@@ -291,14 +290,14 @@ export function LuminaHeader() {
             <Link
               href={localePath(locale, "/search")}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block w-full rounded-md px-3 py-3 text-left text-base font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+              className="block w-full cursor-pointer rounded-md px-3 py-3 text-left text-base font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
             >
               {t("Search")}
             </Link>
 
             <div className="mt-2 flex items-center justify-between border-t border-stone-100 px-3 pt-4 pb-2 dark:border-stone-800">
               <span className="text-sm text-stone-500 dark:text-stone-400">{t("Theme")}</span>
-              <button onClick={toggleTheme} className="rounded-full bg-stone-100 p-2 dark:bg-[#1f1f23]">
+              <button onClick={toggleTheme} className="cursor-pointer rounded-full bg-stone-100 p-2 transition-colors hover:bg-stone-200 dark:bg-[#1f1f23] dark:hover:bg-[#27272a]">
                 {mounted ? (
                   theme === "light" ? (
                     <Moon size={18} className="text-stone-600" />
@@ -315,7 +314,7 @@ export function LuminaHeader() {
               <span className="text-sm text-stone-500 dark:text-stone-400">{t("Language")}</span>
               <button
                 onClick={toggleLanguage}
-                className="rounded bg-stone-100 px-3 py-1 text-sm font-medium text-stone-600 dark:bg-[#1f1f23] dark:text-stone-300"
+                className="cursor-pointer rounded bg-stone-100 px-3 py-1 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-200 dark:bg-[#1f1f23] dark:text-stone-300 dark:hover:bg-[#27272a]"
               >
                 {locale === "en" ? "English" : "中文"}
               </button>
@@ -326,7 +325,7 @@ export function LuminaHeader() {
                 <Link
                   href="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block w-full rounded-md px-3 py-3 text-left text-base font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+                  className="block w-full cursor-pointer rounded-md px-3 py-3 text-left text-base font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                 >
                   {t("Login / Sign up")}
                 </Link>
@@ -336,14 +335,14 @@ export function LuminaHeader() {
                     <Link
                       href="/admin"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block w-full rounded-md px-3 py-3 text-left text-base font-medium text-stone-800 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800"
+                      className="block w-full cursor-pointer rounded-md px-3 py-3 text-left text-base font-medium text-stone-800 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800"
                     >
                       {t("Admin")}
                     </Link>
                   )}
                   <button
                     onClick={() => signOut()}
-                    className="block w-full rounded-md px-3 py-3 text-left text-base font-medium text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                    className="block w-full cursor-pointer rounded-md px-3 py-3 text-left text-base font-medium text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20"
                   >
                     {t("Logout")}
                   </button>

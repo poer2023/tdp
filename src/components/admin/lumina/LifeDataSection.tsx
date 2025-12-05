@@ -1,45 +1,87 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Layers, Database, Save } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { Layers, Database, Save, RotateCcw } from 'lucide-react';
 import { useData } from './store';
 import { DataSection, Input } from './AdminComponents';
+import { SimpleToast } from './Toast';
+import { useAdminLocale } from './useAdminLocale';
 
 export const LifeDataSection: React.FC = () => {
     const {
         movieData, gameData, skillData, photoStats, routineData, stepsData,
         updateMovieData, updateGameData, updateSkillData, updatePhotoStats, updateRoutineData, updateStepsData,
-        saveLifeData, loading
+        saveLifeData, refreshLifeData, loading
     } = useData();
+    const { t } = useAdminLocale();
 
     const [isSaving, setIsSaving] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
+        setToast({ message, type });
+    }, []);
 
     const handleSave = async () => {
         setIsSaving(true);
         try {
             await saveLifeData();
+            showToast(t('dataSaved'), 'success');
         } catch (error) {
             console.error('Failed to save life data:', error);
+            showToast(t('failedToSave'), 'error');
         } finally {
             setIsSaving(false);
         }
     };
 
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            await refreshLifeData();
+            showToast(t('dataRefreshed'), 'success');
+        } catch {
+            showToast(t('failedToSave'), 'error');
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+
     return (
         <div className="max-w-5xl mx-auto animate-in fade-in duration-500 pb-20 space-y-8">
+            {/* Toast Notification */}
+            {toast && <SimpleToast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
             <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100">Life Log Data</h2>
-                <button
-                    onClick={handleSave}
-                    disabled={isSaving || loading.lifeData}
-                    className="flex items-center gap-2 px-6 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <Save size={18} />
-                    {isSaving ? 'Saving...' : 'Save Changes'}
-                </button>
+                <div>
+                    <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100">{t('lifeDataTitle')}</h2>
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleRefresh}
+                        disabled={isRefreshing || loading.lifeData}
+                        className="flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded-lg font-medium hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        <RotateCcw size={18} className={isRefreshing ? 'animate-spin' : ''} />
+                        {t('refresh')}
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving || loading.lifeData}
+                        className="flex items-center gap-2 px-6 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                    >
+                        {isSaving ? (
+                            <RotateCcw size={18} className="animate-spin" />
+                        ) : (
+                            <Save size={18} />
+                        )}
+                        {isSaving ? t('saving') : t('saveChanges')}
+                    </button>
+                </div>
             </div>
 
-            <DataSection title="Skills" icon={<Layers size={18} />}>
+            <DataSection title={t('skills')} icon={<Layers size={18} />}>
                 <div className="space-y-3">
                     {skillData.map((skill, idx) => (
                         <div key={idx} className="flex gap-2">
@@ -50,18 +92,18 @@ export const LifeDataSection: React.FC = () => {
                 </div>
             </DataSection>
 
-            <DataSection title="Game Stats (Radar)" icon={<Database size={18} />}>
+            <DataSection title={t('gameStatsRadar')} icon={<Database size={18} />}>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {gameData.map((g, idx) => (
                         <div key={idx} className="p-3 border rounded bg-stone-50 dark:bg-stone-900 dark:border-stone-800">
                             <div className="text-xs font-bold mb-2 text-stone-500">{g.subject}</div>
-                            <Input type="number" label="Value" value={g.A.toString()} onChange={v => { const n = [...gameData]; if (n[idx]) { n[idx].A = Number(v); updateGameData(n); } }} />
+                            <Input type="number" label={t('value')} value={g.A.toString()} onChange={v => { const n = [...gameData]; if (n[idx]) { n[idx].A = Number(v); updateGameData(n); } }} />
                         </div>
                     ))}
                 </div>
             </DataSection>
 
-            <DataSection title="Weekly Routine (Pie)" icon={<Database size={18} />}>
+            <DataSection title={t('weeklyRoutinePie')} icon={<Database size={18} />}>
                 <div className="space-y-3">
                     {routineData.map((r, idx) => (
                         <div key={idx} className="flex gap-2 items-center">
@@ -73,7 +115,7 @@ export const LifeDataSection: React.FC = () => {
                 </div>
             </DataSection>
 
-            <DataSection title="Daily Steps" icon={<Database size={18} />}>
+            <DataSection title={t('dailySteps')} icon={<Database size={18} />}>
                 <div className="grid grid-cols-7 gap-2">
                     {stepsData.map((s, idx) => (
                         <div key={idx} className="text-center">
@@ -84,7 +126,7 @@ export const LifeDataSection: React.FC = () => {
                 </div>
             </DataSection>
 
-            <DataSection title="Photo Stats" icon={<Database size={18} />}>
+            <DataSection title={t('photoStatsTitle')} icon={<Database size={18} />}>
                 <div className="grid grid-cols-7 gap-2">
                     {photoStats.map((s, idx) => (
                         <div key={idx} className="text-center">
@@ -95,7 +137,7 @@ export const LifeDataSection: React.FC = () => {
                 </div>
             </DataSection>
 
-            <DataSection title="Movies & Series" icon={<Database size={18} />}>
+            <DataSection title={t('moviesSeries')} icon={<Database size={18} />}>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                     {movieData.map((m, idx) => (
                         <div key={idx} className="text-center p-2 border rounded dark:border-stone-800">

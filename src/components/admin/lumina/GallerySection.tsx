@@ -8,9 +8,11 @@ import {
     SectionContainer, Input, TextArea, ImageUploadArea
 } from './AdminComponents';
 import { AdminImage } from '../AdminImage';
+import { useAdminLocale } from './useAdminLocale';
 
 export const GallerySection: React.FC = () => {
     const { galleryItems, addGalleryItem, updateGalleryItem, deleteGalleryItem, loading } = useData();
+    const { t } = useAdminLocale();
 
     const [editingGallery, setEditingGallery] = useState<Partial<GalleryItem> | null>(null);
     const [uploadQueue, setUploadQueue] = useState<{ file: File, preview: string }[]>([]);
@@ -104,12 +106,12 @@ export const GallerySection: React.FC = () => {
     };
 
     return (
-        <SectionContainer title="Gallery" onAdd={() => { setEditingGallery({}); setUploadQueue([]); setIsBatchMode(false); setManualUrl(''); }}>
+        <SectionContainer title={t('galleryTitle')} onAdd={() => { setEditingGallery({}); setUploadQueue([]); setIsBatchMode(false); setManualUrl(''); }}>
             {editingGallery ? (
                 <div className="bg-white dark:bg-stone-900 p-6 rounded-xl shadow-sm border border-stone-200 dark:border-stone-800">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">
-                            {editingGallery?.id ? 'Edit Image Info' : 'Upload Media'}
+                            {editingGallery?.id ? t('editImageInfo') : t('uploadMedia')}
                         </h3>
                         <button onClick={() => { setEditingGallery(null); setUploadQueue([]); }} className="text-stone-400 hover:text-stone-600"><X size={20} /></button>
                     </div>
@@ -120,13 +122,13 @@ export const GallerySection: React.FC = () => {
                                 onClick={() => { setIsBatchMode(false); setUploadQueue([]); }}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${!isBatchMode ? 'bg-white dark:bg-stone-700 shadow-sm text-stone-900 dark:text-stone-100' : 'text-stone-500 hover:text-stone-700'}`}
                             >
-                                Single File
+                                {t('singleFile')}
                             </button>
                             <button
                                 onClick={() => { setIsBatchMode(true); setUploadQueue([]); }}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${isBatchMode ? 'bg-white dark:bg-stone-700 shadow-sm text-stone-900 dark:text-stone-100' : 'text-stone-500 hover:text-stone-700'}`}
                             >
-                                Batch Upload
+                                {t('batchUpload')}
                             </button>
                         </div>
                     )}
@@ -152,34 +154,34 @@ export const GallerySection: React.FC = () => {
                             <div className="space-y-4">
                                 {!editingGallery?.id && isBatchMode ? (
                                     <Input
-                                        label="Batch Name Prefix"
+                                        label={t('batchNamePrefix')}
                                         value={editingGallery?.title || ''}
                                         onChange={v => setEditingGallery(prev => ({ ...prev!, title: v }))}
                                     />
                                 ) : (
                                     <Input
-                                        label="Title"
+                                        label={t('title')}
                                         value={editingGallery?.title || ''}
                                         onChange={v => setEditingGallery(prev => ({ ...prev!, title: v }))}
                                     />
                                 )}
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Input label="Date" value={editingGallery?.date || ''} onChange={v => setEditingGallery(prev => ({ ...prev!, date: v }))} />
-                                    <Input label="Location" value={editingGallery?.location || ''} onChange={v => setEditingGallery(prev => ({ ...prev!, location: v }))} />
+                                    <Input label={t('date')} value={editingGallery?.date || ''} onChange={v => setEditingGallery(prev => ({ ...prev!, date: v }))} />
+                                    <Input label={t('location')} value={editingGallery?.location || ''} onChange={v => setEditingGallery(prev => ({ ...prev!, location: v }))} />
                                 </div>
 
-                                <TextArea label="Description (Shared)" value={editingGallery?.description || ''} onChange={v => setEditingGallery(prev => ({ ...prev!, description: v }))} />
+                                <TextArea label={t('description')} value={editingGallery?.description || ''} onChange={v => setEditingGallery(prev => ({ ...prev!, description: v }))} />
                             </div>
 
                             <div className="mt-6 flex justify-end gap-3">
-                                <button onClick={() => { setEditingGallery(null); setUploadQueue([]); }} className="px-6 py-2 rounded-lg text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800">Cancel</button>
+                                <button onClick={() => { setEditingGallery(null); setUploadQueue([]); }} className="px-6 py-2 rounded-lg text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800">{t('cancel')}</button>
                                 <button
                                     onClick={handleSaveGallery}
                                     disabled={!editingGallery?.id && uploadQueue.length === 0 && !manualUrl}
                                     className="px-6 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg font-bold disabled:opacity-50"
                                 >
-                                    {editingGallery?.id ? 'Update Info' : `Upload ${uploadQueue.length > 0 ? `(${uploadQueue.length})` : ''}`}
+                                    {editingGallery?.id ? t('updateInfo') : `${t('uploadCount')} ${uploadQueue.length > 0 ? `(${uploadQueue.length})` : ''}`}
                                 </button>
                             </div>
                         </div>
@@ -188,9 +190,9 @@ export const GallerySection: React.FC = () => {
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {loading?.gallery ? (
-                        <div className="text-sm text-stone-400">Loading gallery...</div>
+                        <div className="text-sm text-stone-400">{t('loadingGallery')}</div>
                     ) : galleryItems.length === 0 ? (
-                        <div className="text-sm text-stone-400">No gallery items yet.</div>
+                        <div className="text-sm text-stone-400">{t('noGalleryItems')}</div>
                     ) : (
                         galleryItems.map(item => (
                             <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">

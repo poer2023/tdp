@@ -6,9 +6,10 @@ import { Loader2, ArrowDown } from "lucide-react";
 import { LuminaPostCard } from "./post-card";
 import { LuminaMomentCard } from "./moment-card";
 import { LuminaMomentDetail } from "./moment-detail";
+import { LuminaShareCard } from "./share-card";
 import { getLocaleFromPathname } from "@/lib/i18n";
 
-export type FeedFilter = "All" | "Articles" | "Moments";
+export type FeedFilter = "All" | "Articles" | "Moments" | "Curated";
 
 // Unified feed item types
 export interface FeedPost {
@@ -38,7 +39,21 @@ export interface FeedMoment {
   sortKey?: number;
 }
 
-export type FeedItem = FeedPost | FeedMoment;
+export interface FeedCurated {
+  id: string;
+  type: "curated";
+  title: string;
+  description: string;
+  url: string;
+  domain: string;
+  imageUrl?: string;
+  date: string;
+  tags: string[];
+  likes: number;
+  sortKey?: number;
+}
+
+export type FeedItem = FeedPost | FeedMoment | FeedCurated;
 
 interface LuminaFeedProps {
   initialItems: FeedItem[];
@@ -62,6 +77,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
         All: "All",
         Articles: "Articles",
         Moments: "Moments",
+        Curated: "Curated",
         "Mixed Feed": "Mixed Feed",
         "No content found here yet.": "No content found here yet.",
         "Read More": "Read More",
@@ -70,6 +86,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
         All: "全部",
         Articles: "文章",
         Moments: "动态",
+        Curated: "精选",
         "Mixed Feed": "综合内容",
         "No content found here yet.": "暂无内容",
         "Read More": "加载更多",
@@ -92,6 +109,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
     if (feedFilter === "All") return items;
     if (feedFilter === "Articles") return items.filter((item) => item.type === "article");
     if (feedFilter === "Moments") return items.filter((item) => item.type === "moment");
+    if (feedFilter === "Curated") return items.filter((item) => item.type === "curated");
     return items;
   }, [feedFilter, items]);
 
@@ -160,11 +178,11 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
         <div className="flex items-center justify-between">
           {/* Filter Pills */}
           <div className="flex max-w-full overflow-x-auto rounded-full border border-stone-200 bg-white p-1 shadow-sm dark:border-[#2a2a2e] dark:bg-[#18181b] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
-            {(["All", "Articles", "Moments"] as FeedFilter[]).map((filter) => (
+            {(["All", "Articles", "Moments", "Curated"] as FeedFilter[]).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setFeedFilter(filter)}
-                className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                className={`cursor-pointer whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
                   feedFilter === filter
                     ? "bg-stone-800 text-white shadow-md dark:bg-[#3f3f46] dark:text-stone-100"
                     : "text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
@@ -199,7 +217,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
                 }}
                 onClick={() => onPostClick?.(item)}
               />
-            ) : (
+            ) : item.type === "moment" ? (
               <LuminaMomentCard
                 moment={{
                   id: item.id,
@@ -212,6 +230,20 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
                 }}
                 onClick={() => setSelectedMoment(item)}
                 onLike={() => handleMomentLike(item.id)}
+              />
+            ) : (
+              <LuminaShareCard
+                item={{
+                  id: item.id,
+                  title: item.title,
+                  description: item.description,
+                  url: item.url,
+                  domain: item.domain,
+                  imageUrl: item.imageUrl,
+                  date: item.date,
+                  tags: item.tags,
+                  likes: item.likes,
+                }}
               />
             )}
           </React.Fragment>
@@ -230,7 +262,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
           <button
             onClick={handleLoadMore}
             disabled={isLoadingMore}
-            className="group flex items-center gap-2 rounded-full border border-stone-200 bg-white px-8 py-3 font-medium text-stone-600 shadow-sm transition-all hover:border-sage-400 hover:text-sage-600 hover:shadow-md disabled:opacity-50 dark:border-[#27272a] dark:bg-[#141416] dark:text-stone-300 dark:hover:border-sage-700 dark:hover:text-sage-400"
+            className="group flex cursor-pointer items-center gap-2 rounded-full border border-stone-200 bg-white px-8 py-3 font-medium text-stone-600 shadow-sm transition-all hover:border-sage-400 hover:text-sage-600 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#27272a] dark:bg-[#141416] dark:text-stone-300 dark:hover:border-sage-700 dark:hover:text-sage-400"
           >
             {isLoadingMore ? (
               <Loader2 size={18} className="animate-spin" />

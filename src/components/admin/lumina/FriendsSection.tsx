@@ -1,23 +1,38 @@
 "use client";
 
-import React, { useState } from 'react';
-import { User, Edit2, Trash2, KeyRound, Copy, Check } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { User, Edit2, Trash2, KeyRound, Copy, Check, Loader2, RotateCcw } from 'lucide-react';
 import { useData } from './store';
 import type { Friend } from './types';
 import {
     SectionContainer, ListContainer, EditForm, Input, TextArea, ActionBtn
 } from './AdminComponents';
 import { AdminAvatar } from '../AdminImage';
+import { SimpleToast } from './Toast';
+import { useAdminLocale } from './useAdminLocale';
 
 export const FriendsSection: React.FC = () => {
-    const { friends, addFriend, updateFriend, deleteFriend, resetFriendPassword } = useData();
+    const { friends, addFriend, updateFriend, deleteFriend, resetFriendPassword, refreshFriends, loading } = useData();
+    const { t } = useAdminLocale();
     const [editingFriend, setEditingFriend] = useState<Partial<Friend> | null>(null);
     const [passphrase, setPassphrase] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [resettingId, setResettingId] = useState<string | null>(null);
+
+    const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
+        setToast({ message, type });
+    }, []);
 
     const handleSaveFriend = async () => {
-        if (!editingFriend?.name) return;
+        if (!editingFriend?.name) {
+            showToast('Name is required', 'error');
+            return;
+        }
 
+        setIsSaving(true);
         try {
             if (editingFriend.id) {
                 // Update existing friend
@@ -29,6 +44,7 @@ export const FriendsSection: React.FC = () => {
                     description: editingFriend.description,
                     createdAt: editingFriend.createdAt || new Date().toISOString(),
                 });
+                showToast('Friend updated successfully', 'success');
                 setEditingFriend(null);
             } else {
                 // Create new friend - will return passphrase
@@ -38,6 +54,7 @@ export const FriendsSection: React.FC = () => {
                     cover: editingFriend.cover,
                     description: editingFriend.description,
                 });
+                showToast('Friend created successfully', 'success');
                 setEditingFriend(null);
                 if (result.passphrase) {
                     setPassphrase(result.passphrase);
@@ -45,15 +62,25 @@ export const FriendsSection: React.FC = () => {
             }
         } catch (error) {
             console.error('Failed to save friend:', error);
+            showToast('Failed to save friend', 'error');
+        } finally {
+            setIsSaving(false);
         }
     };
 
-    const handleResetPassword = async (id: string) => {
+    const handleResetPassword = async (id: string, name: string) => {
+        if (!confirm(`Reset password for ${name}? This will generate a new passphrase.`)) return;
+
+        setResettingId(id);
         try {
             const newPassphrase = await resetFriendPassword(id);
             setPassphrase(newPassphrase);
+            showToast('Password reset successfully', 'success');
         } catch (error) {
             console.error('Failed to reset password:', error);
+            showToast('Failed to reset password', 'error');
+        } finally {
+            setResettingId(null);
         }
     };
 
@@ -61,20 +88,66 @@ export const FriendsSection: React.FC = () => {
         if (passphrase) {
             navigator.clipboard.writeText(passphrase);
             setCopied(true);
+            showToast('Passphrase copied to clipboard', 'success');
             setTimeout(() => setCopied(false), 2000);
         }
     };
 
-    const handleDeleteFriend = async (id: string) => {
+    const handleDeleteFriend = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return;
+
         try {
             await deleteFriend(id);
+            showToast(`${name} deleted successfully`, 'success');
         } catch (error) {
             console.error('Failed to delete friend:', error);
+            showToast('Failed to delete friend', 'error');
+        }
+    };
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            await refreshFriends();
+            showToast('Friends list refreshed', 'success');
+        } catch {
+            showToast('Failed to refresh', 'error');
+        } finally {
+            setIsRefreshing(false);
         }
     };
 
     return (
-        <SectionContainer title="Friends" onAdd={() => setEditingFriend({})}>
+        <div className="max-w-5xl mx-auto animate-in fade-in duration-500 pb-10">
+            {/* Toast Notification */}
+            {toast && <SimpleToast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <div>
+                    <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100">Friends</h2>
+                    <p className="text-sm text-stone-500 mt-1">Manage friend accounts and access permissions</p>
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        onClick={handleRefresh}
+                        disabled={isRefreshing || loading.friends}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors disabled:opacity-50"
+                        title="Refresh friends list"
+                    >
+                        <RotateCcw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+                        Refresh
+                    </button>
+                    <button
+                        onClick={() => setEditingFriend({})}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:opacity-90 transition-opacity"
+                    >
+                        <User size={16} />
+                        Add Friend
+                    </button>
+                </div>
+            </div>
+
             {/* Passphrase Modal */}
             {passphrase && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -159,20 +232,21 @@ export const FriendsSection: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
-                                    onClick={() => handleResetPassword(f.id)}
-                                    className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors"
+                                    onClick={() => handleResetPassword(f.id, f.name)}
+                                    disabled={resettingId === f.id}
+                                    className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors disabled:opacity-50"
                                     title="Reset Password"
                                 >
-                                    <KeyRound size={16} />
+                                    {resettingId === f.id ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
                                 </button>
                                 <ActionBtn onClick={() => setEditingFriend(f)} icon={<Edit2 size={16} />} />
-                                <ActionBtn onClick={() => handleDeleteFriend(f.id)} icon={<Trash2 size={16} />} danger />
+                                <ActionBtn onClick={() => handleDeleteFriend(f.id, f.name)} icon={<Trash2 size={16} />} danger />
                             </div>
                         </div>
                     ))}
                 </ListContainer>
             )}
-        </SectionContainer>
+        </div>
     );
 };
 

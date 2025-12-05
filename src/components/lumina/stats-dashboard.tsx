@@ -24,6 +24,7 @@ import {
   Gamepad2,
   Code,
   ArrowUpRight,
+  Loader2,
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 
@@ -93,17 +94,17 @@ interface LuminaStatsDashboardProps {
   highlights?: StatCardData[];
 }
 
-// Default mock data for demonstration
+// Default fallback data (used while loading or on error)
 const defaultStats: StatsData = {
-  photoCount: 2847,
+  photoCount: 0,
   photosByMonth: [
-    { day: "Mon", count: 45 },
-    { day: "Tue", count: 38 },
-    { day: "Wed", count: 62 },
-    { day: "Thu", count: 51 },
-    { day: "Fri", count: 73 },
-    { day: "Sat", count: 89 },
-    { day: "Sun", count: 67 },
+    { day: "Mon", count: 0 },
+    { day: "Tue", count: 0 },
+    { day: "Wed", count: 0 },
+    { day: "Thu", count: 0 },
+    { day: "Fri", count: 0 },
+    { day: "Sat", count: 0 },
+    { day: "Sun", count: 0 },
   ],
   routineData: [
     { name: "Work", value: 8, color: "#5c9c6d" },
@@ -113,38 +114,55 @@ const defaultStats: StatsData = {
     { name: "Other", value: 4, color: "#a8a29e" },
   ],
   stepsData: [
-    { day: "M", steps: 8500 },
-    { day: "T", steps: 6200 },
-    { day: "W", steps: 9100 },
-    { day: "T", steps: 7800 },
-    { day: "F", steps: 11200 },
-    { day: "S", steps: 15600 },
-    { day: "S", steps: 12300 },
+    { day: "M", steps: 0 },
+    { day: "T", steps: 0 },
+    { day: "W", steps: 0 },
+    { day: "T", steps: 0 },
+    { day: "F", steps: 0 },
+    { day: "S", steps: 0 },
+    { day: "S", steps: 0 },
   ],
-  movieCount: 24,
-  movieData: [
-    { month: "Sep", movies: 4 },
-    { month: "Oct", movies: 6 },
-    { month: "Nov", movies: 8 },
-    { month: "Dec", movies: 6 },
-  ],
-  skillData: [
-    { name: "React/Next.js", level: 90 },
-    { name: "TypeScript", level: 85 },
-    { name: "Product Design", level: 80 },
-    { name: "Photography", level: 75 },
-  ],
-  currentGame: { name: "Baldur's Gate 3", progress: 75 },
+  movieCount: 0,
+  movieData: [],
+  skillData: [],
+  currentGame: undefined,
 };
 
 export function LuminaStatsDashboard({
-  stats = defaultStats,
+  stats: initialStats,
   highlights,
 }: LuminaStatsDashboardProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
   const [animationTrigger, setAnimationTrigger] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
+  const [stats, setStats] = useState<StatsData>(initialStats || defaultStats);
+  const [loading, setLoading] = useState(!initialStats);
+
+  // Fetch real data from dashboard API
+  useEffect(() => {
+    fetch("/api/about/live/dashboard")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.photoCount !== undefined) {
+          setStats({
+            photoCount: data.photoCount,
+            photosByMonth: data.photosByWeek || defaultStats.photosByMonth,
+            routineData: data.routineData || defaultStats.routineData,
+            stepsData: data.stepsData || defaultStats.stepsData,
+            movieCount: data.movieCount || 0,
+            movieData: data.movieData || [],
+            skillData: data.skillData || [],
+            currentGame: data.currentGame,
+          });
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch dashboard stats:", err);
+        setLoading(false);
+      });
+  }, []);
 
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
@@ -199,6 +217,35 @@ export function LuminaStatsDashboard({
   const avgSteps = Math.round(
     stats.stepsData.reduce((acc, curr) => acc + curr.steps, 0) / stats.stepsData.length
   );
+
+  // Loading skeleton
+  if (loading) {
+    return (
+      <div className="w-full animate-in fade-in pb-16 duration-700">
+        <div className="mb-8 border-b border-stone-200 bg-white px-4 pb-16 pt-12 dark:border-stone-800 dark:bg-stone-900">
+          <div className="mx-auto max-w-5xl text-center">
+            <span className="mb-6 inline-block rounded-full bg-stone-100 p-3 text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+              <Loader2 size={24} strokeWidth={1.5} className="animate-spin" />
+            </span>
+            <h3 className="mb-4 font-serif text-4xl text-stone-900 md:text-5xl dark:text-stone-100">
+              {t("Life Log")}
+            </h3>
+            <p className="mx-auto max-w-lg text-lg font-light text-stone-500 dark:text-stone-400">
+              {locale === "zh" ? "正在加载数据..." : "Loading data..."}
+            </p>
+          </div>
+        </div>
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className={`${i <= 2 ? "col-span-1 md:col-span-2" : "col-span-1"} h-64 animate-pulse rounded-2xl bg-stone-100 dark:bg-stone-800`}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full animate-in fade-in pb-16 duration-700">

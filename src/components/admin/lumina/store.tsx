@@ -339,7 +339,17 @@ type GalleryUpdateInput = GalleryUploadInput & { id: string };
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [theme, setTheme] = useState<Theme>('light');
-    const [language, setLanguage] = useState<Language>('en');
+    const [language, setLanguageState] = useState<Language>('en');
+    const [isHydrated, setIsHydrated] = useState(false);
+
+    // Hydrate language from sessionStorage on mount
+    useEffect(() => {
+        const savedLanguage = sessionStorage.getItem('admin-language');
+        if (savedLanguage === 'zh' || savedLanguage === 'en') {
+            setLanguageState(savedLanguage);
+        }
+        setIsHydrated(true);
+    }, []);
 
     // Apply theme to html
     useEffect(() => {
@@ -354,10 +364,21 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
         setTheme(prev => prev === 'light' ? 'dark' : 'light');
     };
 
+    // Persist language to sessionStorage
+    const setLanguage = (lang: Language) => {
+        setLanguageState(lang);
+        sessionStorage.setItem('admin-language', lang);
+    };
+
     const t = (key: string) => {
         // @ts-ignore
         return TRANSLATIONS[language][key] || key;
     };
+
+    // Prevent flash of wrong language during hydration
+    if (!isHydrated) {
+        return null;
+    }
 
     return (
         <SettingsContext.Provider value={{ theme, toggleTheme, language, setLanguage, t }}>
@@ -867,7 +888,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 }),
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to create post');
+            if (!res.ok) {
+                // Handle both error formats: { error: "..." } and { message: "...", errors: {...} }
+                const errorMsg = data.error || data.message || 'Failed to create post';
+                const validationErrors = data.errors ? Object.values(data.errors).join(', ') : '';
+                throw new Error(validationErrors || errorMsg);
+            }
             setPosts(prev => [mapApiPost(data), ...prev]);
         } catch (error) {
             handleApiError(error, 'posts');
@@ -892,7 +918,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 }),
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to update post');
+            if (!res.ok) {
+                // Handle both error formats: { error: "..." } and { message: "...", errors: {...} }
+                const errorMsg = data.error || data.message || 'Failed to update post';
+                const validationErrors = data.errors ? Object.values(data.errors).join(', ') : '';
+                throw new Error(validationErrors || errorMsg);
+            }
             setPosts(prev => prev.map(p => p.id === updated.id ? mapApiPost(data) : p));
         } catch (error) {
             handleApiError(error, 'posts');
