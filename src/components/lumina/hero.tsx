@@ -199,9 +199,11 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
   const [squares, setSquares] = useState(initialSquares);
 
   // Sync squares when initialSquares changes (e.g., when heroImages prop updates)
-  useEffect(() => {
+  const initialSquaresRef = useRef(initialSquares);
+  if (initialSquaresRef.current !== initialSquares) {
+    initialSquaresRef.current = initialSquares;
     setSquares(initialSquares);
-  }, [initialSquares]);
+  }
 
   // Shuffle animation (only for layouts with 4+ images)
   useEffect(() => {
