@@ -940,17 +940,31 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    const serializeMomentImages = (images?: (string | MomentImage)[]) => (images || []).map(img => (
-        typeof img === 'string'
-            ? { url: img }
-            : {
-                url: img.url,
-                w: img.w,
-                h: img.h,
-                alt: img.alt,
-                previewUrl: img.previewUrl
-            }
-    ));
+    // Validate image URL - reject blob URLs which are temporary browser-only URLs
+    const isValidImageUrl = (url: string): boolean => {
+        if (!url) return false;
+        // Reject blob URLs - they won't work on server
+        if (url.startsWith('blob:')) {
+            console.warn('[Admin] Filtering out blob URL:', url);
+            return false;
+        }
+        // Only allow valid URL patterns
+        return url.startsWith('/') || url.startsWith('http://') || url.startsWith('https://');
+    };
+
+    const serializeMomentImages = (images?: (string | MomentImage)[]) => (images || [])
+        .map(img => (
+            typeof img === 'string'
+                ? { url: img }
+                : {
+                    url: img.url,
+                    w: img.w,
+                    h: img.h,
+                    alt: img.alt,
+                    previewUrl: img.previewUrl
+                }
+        ))
+        .filter(img => isValidImageUrl(img.url));
 
     // Moments
     const addMoment = async (moment: Moment) => {
