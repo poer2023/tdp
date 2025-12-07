@@ -202,18 +202,22 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
               <div className="flex gap-1">
                 <button
                   onClick={handleLike}
-                  className="rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10"
+                  className="group/heart rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10"
                 >
-                  <Heart
-                    size={18}
-                    className={
-                      moment.liked
-                        ? "fill-rose-500 text-rose-500"
-                        : moment.likes > 0
-                          ? "text-rose-500"
-                          : ""
-                    }
-                  />
+                  <motion.div
+                    animate={moment.liked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                  >
+                    <Heart
+                      size={18}
+                      className={`transition-colors duration-200 ${moment.liked
+                          ? "fill-rose-500 text-rose-500"
+                          : moment.likes > 0
+                            ? "text-rose-500 group-hover/heart:fill-rose-200"
+                            : "group-hover/heart:text-rose-400"
+                        }`}
+                    />
+                  </motion.div>
                 </button>
                 <button className="rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10">
                   <MessageCircle size={18} />
