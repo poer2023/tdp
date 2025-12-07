@@ -373,10 +373,10 @@ export function PhotoViewer({
     const fallbackSnapshot =
       storedSnapshot && storedSnapshot.fromSrc
         ? {
-            id: storedSnapshot.fromId || "stored",
-            src: storedSnapshot.fromSrc,
-            alt: storedSnapshot.fromAlt,
-          }
+          id: storedSnapshot.fromId || "stored",
+          src: storedSnapshot.fromSrc,
+          alt: storedSnapshot.fromAlt,
+        }
         : null;
 
     const snapshotToUse =
@@ -837,15 +837,14 @@ export function PhotoViewer({
               <div className="absolute inset-0 overflow-hidden">
                 {slideContext && (
                   <div
-                    className={`pointer-events-none absolute inset-0 transition-transform duration-300 ease-out ${
-                      slideContext.direction === "left"
+                    className={`pointer-events-none absolute inset-0 transition-transform duration-300 ease-out ${slideContext.direction === "left"
                         ? slideContext.phase === "pre"
                           ? "translate-x-0"
                           : "-translate-x-full"
                         : slideContext.phase === "pre"
                           ? "translate-x-0"
                           : "translate-x-full"
-                    }`}
+                      }`}
                     style={{ willChange: "transform" }}
                   >
                     <Image
@@ -859,8 +858,7 @@ export function PhotoViewer({
                   </div>
                 )}
                 <div
-                  className={`absolute inset-0 transition-transform duration-300 ease-out ${
-                    slideContext
+                  className={`absolute inset-0 transition-transform duration-300 ease-out ${slideContext
                       ? slideContext.direction === "left"
                         ? slideContext.phase === "pre"
                           ? "translate-x-full"
@@ -869,7 +867,7 @@ export function PhotoViewer({
                           ? "-translate-x-full"
                           : "translate-x-0"
                       : "translate-x-0"
-                  }`}
+                    }`}
                   style={{ willChange: "transform" }}
                 >
                   <div
@@ -950,14 +948,14 @@ export function PhotoViewer({
         )}
 
         {/* Metadata panel - desktop only */}
-        <aside className="hidden w-full overflow-y-auto border-l border-stone-200 bg-white lg:block lg:max-w-[480px] lg:flex-none lg:basis-[380px] xl:basis-[420px] dark:border-stone-800 dark:bg-[#0b0b0d]">
+        <aside className="hidden w-full overflow-y-auto border-l border-stone-200/80 bg-gradient-to-b from-white to-stone-50/50 lg:block lg:max-w-[480px] lg:flex-none lg:basis-[380px] xl:basis-[420px] dark:border-stone-800/60 dark:from-[#0b0b0d] dark:to-[#0f0f12]">
           <PhotoMetadataPanel image={image} locale={locale} />
         </aside>
       </div>
 
       {/* Bottom thumbnail strip - exclude right sidebar on desktop */}
       {Array.isArray(thumbnails) && thumbnails.length > 0 && (
-        <div className="pointer-events-auto fixed right-0 bottom-0 left-0 z-[61] border-t border-stone-200 bg-white/75 backdrop-blur lg:right-[380px] xl:right-[420px] dark:border-stone-800 dark:bg-stone-900/60">
+        <div className="pointer-events-auto fixed right-0 bottom-0 left-0 z-[61] border-t border-stone-200/60 bg-white/80 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] backdrop-blur-md lg:right-[380px] xl:right-[420px] dark:border-stone-700/50 dark:bg-stone-900/70 dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
           <div className="px-4 py-3">
             <Thumbnails
               images={thumbnails}

@@ -3,6 +3,19 @@ import { render, screen } from "@testing-library/react";
 import { PhotoMetadataPanel } from "../photo-metadata-panel";
 import type { GalleryImage } from "@/lib/gallery";
 
+// Mock next-themes
+vi.mock("next-themes", () => ({
+  useTheme: () => ({ resolvedTheme: "light" }),
+}));
+
+// Mock leaflet
+vi.mock("leaflet", () => ({
+  default: {
+    divIcon: vi.fn(() => ({})),
+  },
+  divIcon: vi.fn(() => ({})),
+}));
+
 // Mock react-leaflet components
 vi.mock("react-leaflet", () => ({
   MapContainer: ({ children, center }: { children: React.ReactNode; center: [number, number] }) => (
@@ -14,6 +27,7 @@ vi.mock("react-leaflet", () => ({
   Marker: ({ position }: { position: [number, number] }) => (
     <div data-testid="marker" data-position={JSON.stringify(position)} />
   ),
+  ZoomControl: () => <div data-testid="zoom-control" />,
 }));
 
 // Mock next/dynamic to synchronously return mocked react-leaflet components
@@ -44,6 +58,11 @@ vi.mock("next/dynamic", () => ({
       );
       TileLayerMock.displayName = "TileLayerMock";
       return TileLayerMock;
+    }
+    if (funcString.includes("ZoomControl")) {
+      const ZoomControlMock = () => <div data-testid="zoom-control" />;
+      ZoomControlMock.displayName = "ZoomControlMock";
+      return ZoomControlMock;
     }
     if (funcString.includes("Marker")) {
       const MarkerMock = ({ position }: { position: [number, number] }) => (
@@ -115,7 +134,7 @@ describe("PhotoMetadataPanel", () => {
   it("should display location map when coordinates are available", () => {
     render(<PhotoMetadataPanel image={baseImage} />);
 
-    expect(screen.getByText("位置信息")).toBeInTheDocument();
+    expect(screen.getByText("位置")).toBeInTheDocument();
     expect(screen.getByTestId("map-container")).toBeInTheDocument();
     expect(screen.getByTestId("marker")).toBeInTheDocument();
   });
@@ -129,7 +148,7 @@ describe("PhotoMetadataPanel", () => {
 
     render(<PhotoMetadataPanel image={imageWithoutLocation} />);
 
-    expect(screen.queryByText("位置信息")).not.toBeInTheDocument();
+    expect(screen.queryByText("位置")).not.toBeInTheDocument();
     expect(screen.queryByTestId("map-container")).not.toBeInTheDocument();
   });
 
@@ -149,12 +168,6 @@ describe("PhotoMetadataPanel", () => {
     render(<PhotoMetadataPanel image={baseImage} />);
 
     expect(screen.getByText("37.774900, -122.419400")).toBeInTheDocument();
-  });
-
-  it("should display file name", () => {
-    render(<PhotoMetadataPanel image={baseImage} />);
-
-    expect(screen.getByText("test-photo.jpg")).toBeInTheDocument();
   });
 
   it("should display file size in MB", () => {
@@ -262,8 +275,8 @@ describe("PhotoMetadataPanel", () => {
 
     render(<PhotoMetadataPanel image={imageWithoutCapturedAt} />);
 
-    // Should still show upload time but not captured time
-    const capturedTimeLabel = screen.queryByText("拍摄时间");
+    // Should still show upload time but not captured time label
+    const capturedTimeLabel = screen.queryByText("拍摄");
     expect(capturedTimeLabel).not.toBeInTheDocument();
   });
 
@@ -277,7 +290,7 @@ describe("PhotoMetadataPanel", () => {
     render(<PhotoMetadataPanel image={livePhotoImage} />);
 
     expect(screen.getByText("Live Photo")).toBeInTheDocument();
-    expect(screen.getByText(/此照片包含动态视频内容/)).toBeInTheDocument();
+    expect(screen.getByText(/此照片包含动态内容/)).toBeInTheDocument();
   });
 
   it("should render download button for Live Photo video", () => {
@@ -306,13 +319,14 @@ describe("PhotoMetadataPanel", () => {
     render(<PhotoMetadataPanel image={baseImage} />);
 
     expect(screen.getByText(/元数据由 EXIF 自动提取/)).toBeInTheDocument();
-    expect(screen.getByText(/OpenStreetMap 逆地理编码服务/)).toBeInTheDocument();
+    expect(screen.getByText(/OSM 逆地理编码/)).toBeInTheDocument();
   });
 
   it("should display storage type in footer", () => {
     render(<PhotoMetadataPanel image={baseImage} />);
 
-    expect(screen.getByText(/存储方式：local/)).toBeInTheDocument();
+    // Storage type is now displayed as a simple span in footer
+    expect(screen.getByText("local")).toBeInTheDocument();
   });
 
   it("should display S3 storage type", () => {
@@ -323,7 +337,7 @@ describe("PhotoMetadataPanel", () => {
 
     render(<PhotoMetadataPanel image={s3Image} />);
 
-    expect(screen.getByText(/存储方式：s3/)).toBeInTheDocument();
+    expect(screen.getByText("s3")).toBeInTheDocument();
   });
 
   it("should not mention geocoding in footer when no location", () => {
@@ -335,7 +349,7 @@ describe("PhotoMetadataPanel", () => {
 
     render(<PhotoMetadataPanel image={imageWithoutLocation} />);
 
-    expect(screen.queryByText(/OpenStreetMap/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/OSM/)).not.toBeInTheDocument();
   });
 
   it("should have proper semantic structure", () => {
@@ -397,17 +411,13 @@ describe("PhotoMetadataPanel", () => {
     render(<PhotoMetadataPanel image={minimalImage} />);
 
     expect(screen.getByText("未命名照片")).toBeInTheDocument();
-    expect(screen.getByText("minimal.jpg")).toBeInTheDocument();
+    // File name is no longer displayed directly in the new UI
+    expect(screen.getByRole("heading", { name: "未命名照片" })).toBeInTheDocument();
   });
 
-  it("should format file name from complex path", () => {
-    const imageWithComplexPath: GalleryImage = {
-      ...baseImage,
-      filePath: "/api/uploads/gallery/subfolder/complex-file-name.heic",
-    };
+  it("should render zoom control on map", () => {
+    render(<PhotoMetadataPanel image={baseImage} />);
 
-    render(<PhotoMetadataPanel image={imageWithComplexPath} />);
-
-    expect(screen.getByText("complex-file-name.heic")).toBeInTheDocument();
+    expect(screen.getByTestId("zoom-control")).toBeInTheDocument();
   });
 });
