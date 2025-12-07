@@ -4,17 +4,22 @@ import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-// GET /api/moments/[id]/comments - 获取评论列表
+// GET /api/moments/[id]/comments - 获取评论列表 (支持分页)
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
+    const cursor = searchParams.get("cursor") || null;
 
     const comments = await prisma.momentComment.findMany({
       where: { momentId: id },
       orderBy: { createdAt: "asc" },
+      take: limit + 1, // Fetch one extra to check if there are more
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       include: {
         author: {
           select: {
@@ -26,7 +31,11 @@ export async function GET(
       },
     });
 
-    return NextResponse.json({ comments });
+    const hasMore = comments.length > limit;
+    const data = hasMore ? comments.slice(0, limit) : comments;
+    const nextCursor = hasMore ? data[data.length - 1]?.id : null;
+
+    return NextResponse.json({ comments: data, nextCursor, hasMore });
   } catch (error) {
     console.error("[Comments API] GET error:", error);
     return NextResponse.json({ error: "Failed to fetch comments" }, { status: 500 });

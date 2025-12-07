@@ -76,7 +76,7 @@ export async function listMoments(options?: {
     authorId: true,
     author: { select: { id: true, name: true, image: true } },
     likeStats: { select: { likeCount: true } },
-    comments: { select: { id: true } },
+    _count: { select: { comments: true } },
   };
 
   if (options?.viewerId) {
@@ -98,13 +98,13 @@ export async function listMoments(options?: {
     const mWithExtras = m as typeof m & {
       likes?: { id: string }[];
       likeStats?: { likeCount: number };
-      comments?: { id: string }[];
+      _count?: { comments: number };
     };
     return {
       ...m,
       images: (m.images as MomentImage[] | null) ?? [],
       likeCount: mWithExtras.likeStats?.likeCount ?? 0,
-      commentsCount: mWithExtras.comments?.length ?? 0,
+      commentsCount: mWithExtras._count?.comments ?? 0,
       likedByViewer: options?.viewerId && Array.isArray(mWithExtras.likes)
         ? mWithExtras.likes.length > 0
         : false,

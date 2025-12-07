@@ -18,27 +18,12 @@ export async function createMomentAction(
 ): Promise<CreateMomentState> {
   const session = await auth();
 
-  // Debug logging for session
-  console.log("🔍 Session debug:", {
-    hasSession: !!session,
-    hasUser: !!session?.user,
-    userId: session?.user?.id,
-    userIdType: typeof session?.user?.id,
-    userEmail: session?.user?.email,
-  });
-
   if (!session?.user?.id) return { status: "error", message: "未登录" };
 
   // Verify user exists in database before proceeding
   const userExists = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, email: true },
-  });
-
-  console.log("🔍 DB User check:", {
-    sessionUserId: session.user.id,
-    dbUser: userExists,
-    userExists: !!userExists,
+    select: { id: true },
   });
 
   if (!userExists) {
