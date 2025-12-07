@@ -1,7 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect } from "react";
 import type { GalleryImage } from "@/lib/gallery";
+import { useTheme } from "next-themes";
+import L from "leaflet";
 
 const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), {
   ssr: false,
@@ -10,6 +13,9 @@ const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLa
   ssr: false,
 });
 const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
+const ZoomControl = dynamic(() => import("react-leaflet").then((mod) => mod.ZoomControl), {
+  ssr: false,
+});
 
 type PhotoMetadataPanelProps = {
   image: GalleryImage;
@@ -35,19 +41,146 @@ function formatDate(dateString: string | null | undefined, locale: string = "zh"
   });
 }
 
+function formatRelativeTime(dateString: string | null | undefined, locale: string = "zh"): string {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return locale === "zh" ? "今天" : "Today";
+  if (diffDays === 1) return locale === "zh" ? "昨天" : "Yesterday";
+  if (diffDays < 7) return locale === "zh" ? `${diffDays} 天前` : `${diffDays} days ago`;
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return locale === "zh" ? `${weeks} 周前` : `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+  }
+  if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return locale === "zh" ? `${months} 个月前` : `${months} month${months > 1 ? "s" : ""} ago`;
+  }
+  const years = Math.floor(diffDays / 365);
+  return locale === "zh" ? `${years} 年前` : `${years} year${years > 1 ? "s" : ""} ago`;
+}
+
+/**
+ * Create custom location marker icon
+ */
+function createLocationIcon(): L.DivIcon {
+  return L.divIcon({
+    className: "location-marker",
+    html: `
+      <div class="location-marker-container">
+        <div class="location-marker-pin">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+        </div>
+        <div class="location-marker-pulse"></div>
+      </div>
+    `,
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+  });
+}
+
+// Map tile URLs
+const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+const DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+
 export function PhotoMetadataPanel({ image, locale = "zh" }: PhotoMetadataPanelProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const hasLocation = image.latitude && image.longitude;
   const fileName = image.filePath.split("/").pop() || (locale === "zh" ? "未知" : "Unknown");
 
+  // Inject custom map styles
+  useEffect(() => {
+    const styleId = "photo-metadata-map-styles";
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = `
+      /* Location marker */
+      .location-marker {
+        background: transparent !important;
+        border: none !important;
+      }
+      .location-marker-container {
+        position: relative;
+        width: 40px;
+        height: 40px;
+      }
+      .location-marker-pin {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 32px;
+        height: 32px;
+        color: #ef4444;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+      }
+      .dark .location-marker-pin {
+        color: #f87171;
+      }
+      .location-marker-pulse {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12px;
+        height: 12px;
+        background: rgba(239, 68, 68, 0.3);
+        border-radius: 50%;
+        animation: pulse 2s ease-out infinite;
+      }
+      @keyframes pulse {
+        0% { transform: translateX(-50%) scale(1); opacity: 1; }
+        100% { transform: translateX(-50%) scale(2.5); opacity: 0; }
+      }
+      
+      /* Zoom control */
+      .metadata-map .leaflet-control-zoom {
+        border: none !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+        border-radius: 8px !important;
+        overflow: hidden;
+        margin: 8px !important;
+      }
+      .metadata-map .leaflet-control-zoom a {
+        width: 28px !important;
+        height: 28px !important;
+        line-height: 28px !important;
+        font-size: 14px !important;
+        color: #44403c !important;
+        background: white !important;
+        border: none !important;
+      }
+      .metadata-map .leaflet-control-zoom a:hover {
+        background: #f5f5f4 !important;
+      }
+      .dark .metadata-map .leaflet-control-zoom a {
+        background: #27272a !important;
+        color: #fafafa !important;
+      }
+      .dark .metadata-map .leaflet-control-zoom a:hover {
+        background: #3f3f46 !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
+
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-5 p-5">
       {/* Title and description */}
       <div className="space-y-2">
-        <h1 className="text-2xl leading-tight font-semibold text-stone-900 dark:text-stone-100">
+        <h1 className="text-xl font-semibold leading-tight text-stone-900 dark:text-stone-100">
           {image.title || (locale === "zh" ? "未命名照片" : "Untitled Photo")}
         </h1>
         {image.description && (
-          <p className="text-sm leading-relaxed text-stone-600 dark:text-stone-300">
+          <p className="text-sm leading-relaxed text-stone-600 dark:text-stone-400">
             {image.description}
           </p>
         )}
@@ -56,33 +189,47 @@ export function PhotoMetadataPanel({ image, locale = "zh" }: PhotoMetadataPanelP
       {/* Location map */}
       {hasLocation && (
         <section className="space-y-3">
-          <h2 className="text-xs font-medium tracking-wider text-stone-500 uppercase">
-            {locale === "zh" ? "位置信息" : "Location"}
-          </h2>
-          <div className="overflow-hidden rounded-lg border border-stone-200 dark:border-stone-800">
-            <div className="h-[200px] w-full">
+          <div className="flex items-center gap-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-rose-100 dark:bg-rose-900/30">
+              <svg className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <h2 className="text-xs font-medium tracking-wider text-stone-500 uppercase dark:text-stone-400">
+              {locale === "zh" ? "位置" : "Location"}
+            </h2>
+          </div>
+          <div className="overflow-hidden rounded-xl border border-stone-200/60 shadow-sm dark:border-stone-700/50">
+            <div className="metadata-map h-[140px] w-full">
               <MapContainer
                 center={[image.latitude!, image.longitude!]}
-                zoom={13}
+                zoom={14}
                 style={{ height: "100%", width: "100%" }}
                 zoomControl={false}
                 attributionControl={false}
+                scrollWheelZoom={true}
+                doubleClickZoom={true}
               >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={[image.latitude!, image.longitude!]} />
+                <TileLayer url={isDark ? DARK_TILES : LIGHT_TILES} />
+                <Marker
+                  position={[image.latitude!, image.longitude!]}
+                  icon={createLocationIcon()}
+                />
+                <ZoomControl position="topright" />
               </MapContainer>
             </div>
           </div>
-          <div className="space-y-1 text-sm">
-            {image.city && image.country && (
-              <p className="text-stone-700 dark:text-stone-300">
-                {image.city}, {image.country}
+          <div className="space-y-1.5 rounded-lg bg-stone-50/80 p-3 dark:bg-stone-800/50">
+            {(image.city || image.country) && (
+              <p className="text-sm font-medium text-stone-700 dark:text-stone-300">
+                {[image.city, image.country].filter(Boolean).join(", ")}
               </p>
             )}
             {image.locationName && (
-              <p className="text-xs text-stone-500 dark:text-stone-500">{image.locationName}</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400">{image.locationName}</p>
             )}
-            <p className="font-mono text-xs text-stone-500 dark:text-stone-600">
+            <p className="font-mono text-[11px] text-stone-400 dark:text-stone-500">
               {image.latitude?.toFixed(6)}, {image.longitude?.toFixed(6)}
             </p>
           </div>
@@ -91,110 +238,125 @@ export function PhotoMetadataPanel({ image, locale = "zh" }: PhotoMetadataPanelP
 
       {/* File information */}
       <section className="space-y-3">
-        <h2 className="text-xs font-medium tracking-wider text-stone-500 uppercase">
-          {locale === "zh" ? "文件信息" : "File Info"}
-        </h2>
-        <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2 text-sm">
-          <dt className="text-stone-500">{locale === "zh" ? "文件名" : "Filename"}</dt>
-          <dd
-            className="line-clamp-2 font-mono text-xs break-all text-stone-700 md:line-clamp-3 dark:text-stone-300"
-            title={fileName}
-          >
-            {fileName}
-          </dd>
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-100 dark:bg-blue-900/30">
+            <svg className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h2 className="text-xs font-medium tracking-wider text-stone-500 uppercase dark:text-stone-400">
+            {locale === "zh" ? "文件信息" : "File Info"}
+          </h2>
+        </div>
+        <div className="rounded-lg bg-stone-50/80 p-3 dark:bg-stone-800/50">
+          <dl className="grid grid-cols-[90px_1fr] gap-x-3 gap-y-2 text-sm">
+            {image.width && image.height && (
+              <>
+                <dt className="text-stone-500 dark:text-stone-400">{locale === "zh" ? "分辨率" : "Resolution"}</dt>
+                <dd className="font-medium text-stone-700 dark:text-stone-300">
+                  {image.width} × {image.height}
+                </dd>
+              </>
+            )}
 
-          <dt className="text-stone-500">{locale === "zh" ? "文件大小" : "Size"}</dt>
-          <dd className="text-stone-700 dark:text-stone-300">{formatFileSize(image.fileSize)}</dd>
+            <dt className="text-stone-500 dark:text-stone-400">{locale === "zh" ? "大小" : "Size"}</dt>
+            <dd className="font-medium text-stone-700 dark:text-stone-300">{formatFileSize(image.fileSize)}</dd>
 
-          {image.width && image.height && (
-            <>
-              <dt className="text-stone-500">{locale === "zh" ? "分辨率" : "Resolution"}</dt>
-              <dd className="text-stone-700 dark:text-stone-300">
-                {image.width} × {image.height}
-              </dd>
-            </>
-          )}
-
-          {image.mimeType && (
-            <>
-              <dt className="text-stone-500">{locale === "zh" ? "格式" : "Format"}</dt>
-              <dd className="font-mono text-xs text-stone-700 uppercase dark:text-stone-300">
-                {image.mimeType.split("/")[1]}
-              </dd>
-            </>
-          )}
-        </dl>
+            {image.mimeType && (
+              <>
+                <dt className="text-stone-500 dark:text-stone-400">{locale === "zh" ? "格式" : "Format"}</dt>
+                <dd className="font-mono text-xs font-medium text-stone-700 uppercase dark:text-stone-300">
+                  {image.mimeType.split("/")[1]}
+                </dd>
+              </>
+            )}
+          </dl>
+        </div>
       </section>
 
       {/* Temporal information */}
       <section className="space-y-3">
-        <h2 className="text-xs font-medium tracking-wider text-stone-500 uppercase">
-          {locale === "zh" ? "时间信息" : "Time"}
-        </h2>
-        <dl className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2 text-sm">
-          {image.capturedAt && (
-            <>
-              <dt className="text-stone-500">{locale === "zh" ? "拍摄时间" : "Captured"}</dt>
-              <dd className="text-stone-700 dark:text-stone-300">
-                {formatDate(image.capturedAt, locale)}
-              </dd>
-            </>
-          )}
-          <dt className="text-stone-500">{locale === "zh" ? "上传时间" : "Uploaded"}</dt>
-          <dd className="text-stone-700 dark:text-stone-300">
-            {formatDate(image.createdAt, locale)}
-          </dd>
-        </dl>
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-100 dark:bg-amber-900/30">
+            <svg className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-xs font-medium tracking-wider text-stone-500 uppercase dark:text-stone-400">
+            {locale === "zh" ? "时间" : "Time"}
+          </h2>
+        </div>
+        <div className="rounded-lg bg-stone-50/80 p-3 dark:bg-stone-800/50">
+          <dl className="grid grid-cols-[90px_1fr] gap-x-3 gap-y-2 text-sm">
+            {image.capturedAt && (
+              <>
+                <dt className="text-stone-500 dark:text-stone-400">{locale === "zh" ? "拍摄" : "Captured"}</dt>
+                <dd className="text-stone-700 dark:text-stone-300">
+                  <span className="font-medium">{formatDate(image.capturedAt, locale)}</span>
+                  <span className="ml-2 text-xs text-stone-400 dark:text-stone-500">
+                    {formatRelativeTime(image.capturedAt, locale)}
+                  </span>
+                </dd>
+              </>
+            )}
+            <dt className="text-stone-500 dark:text-stone-400">{locale === "zh" ? "上传" : "Uploaded"}</dt>
+            <dd className="text-stone-700 dark:text-stone-300">
+              <span className="font-medium">{formatDate(image.createdAt, locale)}</span>
+              <span className="ml-2 text-xs text-stone-400 dark:text-stone-500">
+                {formatRelativeTime(image.createdAt, locale)}
+              </span>
+            </dd>
+          </dl>
+        </div>
       </section>
 
       {/* Live Photo */}
       {image.isLivePhoto && image.livePhotoVideoPath && (
         <section className="space-y-3">
-          <h2 className="text-xs font-medium tracking-wider text-stone-500 uppercase">Live Photo</h2>
-          <p className="text-sm text-stone-600 dark:text-stone-400">
-            {locale === "zh"
-              ? "此照片包含动态视频内容，鼠标悬停在图片上可播放。"
-              : "This photo contains live video content, hover to play."}
-          </p>
-          <a
-            href={image.livePhotoVideoPath}
-            download="live-photo-video.mov"
-            className="inline-flex items-center gap-2 rounded border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-700 transition-colors hover:border-stone-300 hover:text-stone-900 dark:border-stone-700 dark:text-stone-300 dark:hover:border-stone-500 dark:hover:text-stone-100"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              />
-            </svg>
-            {locale === "zh" ? "下载视频" : "Download Video"}
-          </a>
+          <div className="flex items-center gap-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-purple-100 dark:bg-purple-900/30">
+              <svg className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-xs font-medium tracking-wider text-stone-500 uppercase dark:text-stone-400">Live Photo</h2>
+          </div>
+          <div className="rounded-lg bg-stone-50/80 p-3 dark:bg-stone-800/50">
+            <p className="mb-3 text-xs text-stone-500 dark:text-stone-400">
+              {locale === "zh"
+                ? "此照片包含动态内容，悬停预览播放"
+                : "Contains live content, hover to play"}
+            </p>
+            <a
+              href={image.livePhotoVideoPath}
+              download="live-photo-video.mov"
+              className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-all hover:bg-purple-700 hover:shadow active:scale-95"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              {locale === "zh" ? "下载视频" : "Download Video"}
+            </a>
+          </div>
         </section>
       )}
 
-      {/* Technical note */}
-      <footer className="border-t border-stone-200 pt-4 text-xs text-stone-600 dark:border-stone-800">
-        <p>
-          <span className="text-stone-500 dark:text-stone-600">
-            {locale === "zh" ? "元数据由 EXIF 自动提取" : "Metadata extracted from EXIF"}
-          </span>
+      {/* Technical footer */}
+      <footer className="border-t border-stone-200/60 pt-4 dark:border-stone-700/50">
+        <p className="text-[11px] leading-relaxed text-stone-400 dark:text-stone-500">
+          {locale === "zh" ? "元数据由 EXIF 自动提取" : "Metadata extracted from EXIF"}
           {hasLocation && (
-            <span className="text-stone-500 dark:text-stone-600">
+            <span>
               {locale === "zh"
-                ? "，地理位置通过 OpenStreetMap 逆地理编码服务获取"
-                : ", location via OpenStreetMap reverse geocoding"}
+                ? "，位置通过 OSM 逆地理编码获取"
+                : ", location via OSM geocoding"}
             </span>
           )}
-          。
-          <span className="text-stone-500 dark:text-stone-600">
-            {locale === "zh"
-              ? `存储方式：${image.storageType}。`
-              : `Storage: ${image.storageType}.`}
-          </span>
+          {" · "}
+          <span className="font-mono">{image.storageType}</span>
         </p>
       </footer>
     </div>
   );
 }
+
