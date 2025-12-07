@@ -19,21 +19,114 @@ import {
   HardDrive,
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
+import { useTheme } from "next-themes";
 
-// Dynamic import for map components (avoid SSR issues)
-const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), {
-  ssr: false,
-});
-const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), {
-  ssr: false,
-});
-const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
+// Dynamically import the entire map component to avoid SSR issues
+const LocationMap = dynamic(
+  () => import("react-leaflet").then(async (mod) => {
+    const { MapContainer, TileLayer, Marker, ZoomControl } = mod;
+    const L = await import("leaflet");
+
+    // Create a custom icon to avoid the default icon loading issue
+    const customIcon = L.icon({
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
+
+    // Return a wrapper component
+    return function LocationMapInner({
+      lat,
+      lng,
+      isDark,
+      height = "160px",
+      showZoomControl = true
+    }: {
+      lat: number;
+      lng: number;
+      isDark: boolean;
+      height?: string;
+      showZoomControl?: boolean;
+    }) {
+      const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+      const DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+
+      return (
+        <MapContainer
+          center={[lat, lng]}
+          zoom={13}
+          style={{ height, width: "100%" }}
+          zoomControl={false}
+          attributionControl={false}
+          scrollWheelZoom={true}
+          doubleClickZoom={true}
+        >
+          <TileLayer url={isDark ? DARK_TILES : LIGHT_TILES} />
+          <Marker position={[lat, lng]} icon={customIcon} />
+          {showZoomControl && <ZoomControl position="topright" />}
+        </MapContainer>
+      );
+    };
+  }),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center bg-stone-100 dark:bg-stone-800">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
+      </div>
+    )
+  }
+);
+
+
 
 // Thumbnail dimensions
 const THUMB_FULL_WIDTH = 120;
 const THUMB_COLLAPSED_WIDTH = 35;
 const THUMB_GAP = 2;
 const THUMB_MARGIN = 2;
+
+// Memoized thumbnail item component - uses CSS transitions for better performance
+const ThumbnailItem = React.memo(function ThumbnailItem({
+  item,
+  index,
+  isActive,
+  onClick,
+}: {
+  item: LuminaGalleryItem;
+  index: number;
+  isActive: boolean;
+  onClick: (index: number) => void;
+}) {
+  const handleClick = useCallback(() => onClick(index), [onClick, index]);
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`
+        relative h-full shrink-0 overflow-hidden rounded-lg
+        transition-all duration-200 ease-out
+        ${isActive
+          ? "w-[60px] opacity-100 scale-105"
+          : "w-8 opacity-50 grayscale hover:opacity-80 hover:grayscale-0"
+        }
+      `}
+      style={{ willChange: isActive ? 'auto' : 'opacity, filter' }}
+    >
+      <img
+        src={item.microThumbPath || item.smallThumbPath || item.thumbnail || item.url}
+        alt={item.title}
+        className="h-full w-full object-cover"
+        draggable={false}
+        loading="lazy"
+      />
+    </button>
+  );
+});
 
 // Original image loading state
 type OriginalLoadState = {
@@ -116,9 +209,33 @@ function formatProgress(loaded: number, total: number | null): string {
   return ` ${pct}%`;
 }
 
+function formatRelativeTime(dateString: string | null | undefined, locale: string = "zh"): string {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return locale === "zh" ? "今天" : "Today";
+  if (diffDays === 1) return locale === "zh" ? "昨天" : "Yesterday";
+  if (diffDays < 7) return locale === "zh" ? `${diffDays} 天前` : `${diffDays} days ago`;
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return locale === "zh" ? `${weeks} 周前` : `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+  }
+  if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return locale === "zh" ? `${months} 个月前` : `${months} month${months > 1 ? "s" : ""} ago`;
+  }
+  const years = Math.floor(diffDays / 365);
+  return locale === "zh" ? `${years} 年前` : `${years} year${years > 1 ? "s" : ""} ago`;
+}
+
 export function LuminaGallery({ items }: LuminaGalleryProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [selectedItem, setSelectedItem] = useState<LuminaGalleryItem | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -143,6 +260,50 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
 
   // Thumbnails ref for scrolling
   const thumbnailsRef = useRef<HTMLDivElement>(null);
+
+  // Inject custom map styles
+  useEffect(() => {
+    const styleId = "lumina-gallery-map-styles";
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = `
+      /* Lumina Gallery Map Controls - Dark */
+      .lumina-map .leaflet-control-zoom {
+        border: none !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+        border-radius: 8px !important;
+        overflow: hidden;
+        margin: 8px !important;
+      }
+      .lumina-map .leaflet-control-zoom a {
+        width: 28px !important;
+        height: 28px !important;
+        line-height: 28px !important;
+        font-size: 14px !important;
+        border: none !important;
+        transition: background 0.15s ease;
+      }
+      /* Dark theme controls */
+      .dark .lumina-map .leaflet-control-zoom a {
+        color: #fafafa !important;
+        background: #27272a !important;
+      }
+      .dark .lumina-map .leaflet-control-zoom a:hover {
+        background: #3f3f46 !important;
+      }
+      /* Light theme controls */
+      .lumina-map .leaflet-control-zoom a {
+        color: #44403c !important;
+        background: #ffffff !important;
+      }
+      .lumina-map .leaflet-control-zoom a:hover {
+        background: #f5f5f4 !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
 
   // Image container ref for wheel zoom
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -231,7 +392,9 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
     setCurrentIndex(targetIndex);
     setZoomLevel(1);
     // Reset slide direction after animation
-    setTimeout(() => setSlideDirection(null), 300);
+    requestAnimationFrame(() => {
+      setTimeout(() => setSlideDirection(null), 250);
+    });
   }, [items]);
 
   const handleNext = useCallback((e?: React.MouseEvent) => {
@@ -271,6 +434,30 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
       });
     }
   }, [currentIndex, selectedItem]);
+
+  // Preload adjacent images
+  useEffect(() => {
+    if (!selectedItem || items.length === 0) return;
+
+    const preloadImage = (src: string | undefined) => {
+      if (!src) return;
+      const img = new Image();
+      img.src = src;
+    };
+
+    const prevIdx = (currentIndex - 1 + items.length) % items.length;
+    const nextIdx = (currentIndex + 1) % items.length;
+    const prevItem = items[prevIdx];
+    const nextItem = items[nextIdx];
+
+    if (prevItem) {
+      preloadImage(prevItem.mediumPath || prevItem.thumbnail || prevItem.url);
+    }
+    if (nextItem) {
+      preloadImage(nextItem.mediumPath || nextItem.thumbnail || nextItem.url);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, selectedItem, items.length]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -396,17 +583,7 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
     };
   }, []);
 
-  // Fix Leaflet default marker icon issue
-  useEffect(() => {
-    import("leaflet").then((L) => {
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
-    });
-  }, []);
+
 
   return (
     <div className="w-full">
@@ -449,27 +626,27 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
 
       {/* Lightbox Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 z-[70] flex flex-col bg-black/95">
+        <div className={`fixed inset-0 z-[70] flex flex-col backdrop-blur-sm ${isDark ? 'bg-[#09090b]/95' : 'bg-[#fafaf9]/95'}`}>
           {/* Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 z-[80] p-2 text-white/50 transition-colors hover:text-white"
+            className={`absolute top-6 right-6 z-[80] p-2 transition-all duration-300 hover:rotate-90 ${isDark ? 'text-stone-500 hover:text-white' : 'text-stone-400 hover:text-stone-900'}`}
           >
-            <X size={32} />
+            <X size={24} />
           </button>
 
           {/* Navigation Arrows - Fixed position at modal level */}
           <button
             onClick={handlePrev}
-            className="fixed left-4 top-1/2 z-[80] hidden -translate-y-1/2 p-4 text-white/30 transition-colors hover:text-white lg:block"
+            className={`fixed left-6 top-1/2 z-[80] hidden -translate-y-1/2 rounded-full p-3 transition-all duration-300 lg:block ${isDark ? 'bg-black/20 text-white/30 hover:bg-black/40 hover:text-white hover:scale-110' : 'bg-white/40 text-stone-400 hover:bg-white/80 hover:text-stone-900 hover:scale-110 hover:shadow-lg'}`}
           >
-            <ChevronLeft size={48} />
+            <ChevronLeft size={32} />
           </button>
           <button
             onClick={handleNext}
-            className="fixed top-1/2 z-[80] hidden -translate-y-1/2 p-4 text-white/30 transition-colors hover:text-white lg:block lg:right-[calc(380px+1rem)] xl:right-[calc(420px+1rem)]"
+            className={`fixed top-1/2 z-[80] hidden -translate-y-1/2 rounded-full p-3 transition-all duration-300 lg:block lg:right-[calc(380px+2rem)] xl:right-[calc(420px+2rem)] ${isDark ? 'bg-black/20 text-white/30 hover:bg-black/40 hover:text-white hover:scale-110' : 'bg-white/40 text-stone-400 hover:bg-white/80 hover:text-stone-900 hover:scale-110 hover:shadow-lg'}`}
           >
-            <ChevronRight size={48} />
+            <ChevronRight size={32} />
           </button>
 
           {/* Main Layout */}
@@ -477,7 +654,7 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
             {/* Main Content Area (Image/Video) */}
             <div
               ref={imageContainerRef}
-              className="relative flex flex-1 items-center justify-center overflow-hidden bg-black pb-24 lg:pb-28"
+              className={`relative flex flex-1 items-center justify-center overflow-hidden pb-24 lg:pb-28 ${isDark ? 'bg-black' : 'bg-stone-100'}`}
               onClick={handleClose}
             >
               {/* Image with slide animation */}
@@ -557,46 +734,51 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
             </div>
 
             {/* Desktop Sidebar Details Panel */}
-            <aside className="hidden w-full flex-col overflow-y-auto border-l border-stone-800 bg-stone-900 lg:flex lg:max-w-[480px] lg:flex-none lg:basis-[380px] xl:basis-[420px]">
-              <div className="flex-1 overflow-y-auto p-6">
+            <aside className={`relative hidden w-full flex-col overflow-y-auto border-l lg:flex lg:max-w-[400px] lg:flex-none lg:basis-[360px] xl:basis-[400px] ${isDark ? 'border-[#27272a] bg-[#09090b]' : 'border-stone-200 bg-[#fafaf9]'}`}>
+              {/* Noise Texture */}
+              <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.15]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacit='1'/%3E%3C/svg%3E")` }} />
+
+              <div className="relative z-10 flex-1 overflow-y-auto p-6">
                 {/* Title and Description */}
-                <div className="mb-6">
-                  <h2 className="mb-2 font-serif text-2xl text-white">{selectedItem.title}</h2>
+                <div className="mb-8">
+                  <h2 className={`mb-3 font-serif text-2xl font-medium leading-tight ${isDark ? 'text-stone-100' : 'text-stone-900'}`}>{selectedItem.title}</h2>
                   {selectedItem.description && (
-                    <p className="text-sm leading-relaxed text-stone-400">
+                    <div className={`relative pl-4 text-sm leading-relaxed ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>
+                      <span className={`absolute left-0 top-0 h-full w-[2px] rounded-full ${isDark ? 'bg-stone-800' : 'bg-stone-300'}`} />
                       {selectedItem.description}
-                    </p>
+                    </div>
                   )}
                 </div>
 
                 {/* Location Map */}
                 {selectedItem.latitude && selectedItem.longitude && (
-                  <section className="mb-6">
-                    <h3 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-stone-500">
-                      <MapPin size={14} /> {t("Location")}
+                  <section className="mb-8">
+                    <h3 className={`mb-3 text-xs font-bold uppercase tracking-wider ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+                      {t("Location")}
                     </h3>
-                    <div className="overflow-hidden rounded-lg border border-stone-800">
-                      <div className="h-[180px] w-full">
-                        <MapContainer
-                          center={[selectedItem.latitude, selectedItem.longitude]}
-                          zoom={13}
-                          style={{ height: "100%", width: "100%" }}
-                          zoomControl={false}
-                          attributionControl={false}
-                        >
-                          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                          <Marker position={[selectedItem.latitude, selectedItem.longitude]} />
-                        </MapContainer>
-                      </div>
+
+                    <div className="lumina-map mb-3 h-[160px] w-full overflow-hidden rounded-xl grayscale-[0.2] transition-all duration-500 hover:grayscale-0">
+                      <LocationMap
+                        lat={selectedItem.latitude}
+                        lng={selectedItem.longitude}
+                        isDark={isDark}
+                        height="160px"
+                        showZoomControl={true}
+                      />
                     </div>
-                    <div className="mt-2 space-y-1 text-sm">
+
+                    <div className="space-y-1">
                       {selectedItem.city && selectedItem.country && (
-                        <p className="text-stone-300">{selectedItem.city}, {selectedItem.country}</p>
+                        <p className={`text-sm font-medium ${isDark ? 'text-stone-200' : 'text-stone-800'}`}>
+                          {selectedItem.city}, {selectedItem.country}
+                        </p>
                       )}
-                      {selectedItem.locationName && (
-                        <p className="text-xs text-stone-500">{selectedItem.locationName}</p>
+                      {(selectedItem.locationName || (!selectedItem.city && !selectedItem.country)) && (
+                        <p className={`text-xs ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>
+                          {selectedItem.locationName || "Unknown Location"}
+                        </p>
                       )}
-                      <p className="font-mono text-xs text-stone-600">
+                      <p className={`font-mono text-[10px] ${isDark ? 'text-stone-600' : 'text-stone-400'}`}>
                         {selectedItem.latitude.toFixed(6)}, {selectedItem.longitude.toFixed(6)}
                       </p>
                     </div>
@@ -604,90 +786,104 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
                 )}
 
                 {/* File Info */}
-                <section className="mb-6">
-                  <h3 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-stone-500">
-                    <FileText size={14} /> {t("FileInfo")}
+                <section className="mb-8">
+                  <h3 className={`mb-3 text-xs font-bold uppercase tracking-wider ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+                    {t("FileInfo")}
                   </h3>
-                  <dl className="grid grid-cols-[100px_1fr] gap-x-3 gap-y-2 text-sm">
-                    {selectedItem.width && selectedItem.height && (
-                      <>
-                        <dt className="text-stone-500">{t("Resolution")}</dt>
-                        <dd className="text-stone-300">{selectedItem.width} × {selectedItem.height}</dd>
-                      </>
-                    )}
-                    {selectedItem.fileSize && (
-                      <>
-                        <dt className="text-stone-500">{t("Size")}</dt>
-                        <dd className="text-stone-300">{formatFileSize(selectedItem.fileSize)}</dd>
-                      </>
-                    )}
-                    {selectedItem.mimeType && (
-                      <>
-                        <dt className="text-stone-500">{t("Format")}</dt>
-                        <dd className="font-mono text-xs uppercase text-stone-300">
-                          {selectedItem.mimeType.split("/")[1]}
-                        </dd>
-                      </>
-                    )}
-                  </dl>
+                  <div className="pl-1">
+                    <dl className="grid grid-cols-[90px_1fr] gap-x-3 gap-y-3 text-sm">
+                      {selectedItem.width && selectedItem.height && (
+                        <>
+                          <dt className={isDark ? 'text-stone-500' : 'text-stone-500'}>{t("Resolution")}</dt>
+                          <dd className={`font-mono text-xs font-medium ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>{selectedItem.width} × {selectedItem.height}</dd>
+                        </>
+                      )}
+                      {selectedItem.fileSize && (
+                        <>
+                          <dt className={isDark ? 'text-stone-500' : 'text-stone-500'}>{t("Size")}</dt>
+                          <dd className={`font-mono text-xs font-medium ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>{formatFileSize(selectedItem.fileSize)}</dd>
+                        </>
+                      )}
+                      {selectedItem.mimeType && (
+                        <>
+                          <dt className={isDark ? 'text-stone-500' : 'text-stone-500'}>{t("Format")}</dt>
+                          <dd className={`font-mono text-xs font-medium uppercase ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>
+                            {selectedItem.mimeType.split("/")[1]}
+                          </dd>
+                        </>
+                      )}
+                    </dl>
+                  </div>
                 </section>
 
                 {/* Time Info */}
-                <section className="mb-6">
-                  <h3 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-stone-500">
-                    <Clock size={14} /> {t("TimeInfo")}
+                <section className="mb-8">
+                  <h3 className={`mb-3 text-xs font-bold uppercase tracking-wider ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+                    {t("TimeInfo")}
                   </h3>
-                  <dl className="grid grid-cols-[100px_1fr] gap-x-3 gap-y-2 text-sm">
-                    {selectedItem.capturedAt && (
-                      <>
-                        <dt className="text-stone-500">{t("Captured")}</dt>
-                        <dd className="text-stone-300">{formatDate(selectedItem.capturedAt, locale)}</dd>
-                      </>
-                    )}
-                    {selectedItem.createdAt && (
-                      <>
-                        <dt className="text-stone-500">{t("Uploaded")}</dt>
-                        <dd className="text-stone-300">{formatDate(selectedItem.createdAt, locale)}</dd>
-                      </>
-                    )}
-                  </dl>
+                  <div className="pl-1">
+                    <dl className="space-y-4 text-sm">
+                      {selectedItem.capturedAt && (
+                        <div className="relative border-l-2 border-stone-200 pl-3 dark:border-stone-800">
+                          <dt className={`text-xs ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>{t("Captured")}</dt>
+                          <dd className={`mt-0.5 ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>
+                            <span className="block font-medium">{formatDate(selectedItem.capturedAt, locale)}</span>
+                            <span className={`text-xs ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
+                              {formatRelativeTime(selectedItem.capturedAt, locale)}
+                            </span>
+                          </dd>
+                        </div>
+                      )}
+                      {selectedItem.createdAt && (
+                        <div className="relative border-l-2 border-stone-200 pl-3 dark:border-stone-800">
+                          <dt className={`text-xs ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>{t("Uploaded")}</dt>
+                          <dd className={`mt-0.5 ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>
+                            <span className="block font-medium">{formatDate(selectedItem.createdAt, locale)}</span>
+                            <span className={`text-xs ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
+                              {formatRelativeTime(selectedItem.createdAt, locale)}
+                            </span>
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                  </div>
                 </section>
 
                 {/* EXIF Data */}
                 {selectedItem.exif && (
-                  <section className="mb-6">
-                    <h3 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-stone-500">
-                      <Camera size={14} /> EXIF
+                  <section className="mb-8">
+                    <h3 className={`mb-3 text-xs font-bold uppercase tracking-wider ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+                      EXIF
                     </h3>
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-3 text-sm">
+                    <div className="grid grid-cols-2 gap-px bg-stone-100 p-px dark:bg-[#27272a]">
                       {selectedItem.exif.camera && (
-                        <div>
-                          <span className="block text-[10px] uppercase text-stone-600">{t("Camera")}</span>
-                          <span className="text-stone-300">{selectedItem.exif.camera}</span>
+                        <div className={`col-span-2 p-3 ${isDark ? 'bg-[#09090b]' : 'bg-[#fafaf9]'}`}>
+                          <span className={`block text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>{t("Camera")}</span>
+                          <span className={`${isDark ? 'text-stone-200' : 'text-stone-800'}`}>{selectedItem.exif.camera}</span>
                         </div>
                       )}
                       {selectedItem.exif.lens && (
-                        <div>
-                          <span className="block text-[10px] uppercase text-stone-600">{t("Lens")}</span>
-                          <span className="text-stone-300">{selectedItem.exif.lens}</span>
+                        <div className={`col-span-2 p-3 ${isDark ? 'bg-[#09090b]' : 'bg-[#fafaf9]'}`}>
+                          <span className={`block text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>{t("Lens")}</span>
+                          <span className={`${isDark ? 'text-stone-200' : 'text-stone-800'}`}>{selectedItem.exif.lens}</span>
                         </div>
                       )}
                       {selectedItem.exif.aperture && (
-                        <div>
-                          <span className="block text-[10px] uppercase text-stone-600">{t("Aperture")}</span>
-                          <span className="text-stone-300">{selectedItem.exif.aperture}</span>
+                        <div className={`p-3 ${isDark ? 'bg-[#09090b]' : 'bg-[#fafaf9]'}`}>
+                          <span className={`block text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>{t("Aperture")}</span>
+                          <span className={`font-mono ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>{selectedItem.exif.aperture}</span>
                         </div>
                       )}
                       {selectedItem.exif.iso && (
-                        <div>
-                          <span className="block text-[10px] uppercase text-stone-600">{t("ISO")}</span>
-                          <span className="text-stone-300">{selectedItem.exif.iso}</span>
+                        <div className={`p-3 ${isDark ? 'bg-[#09090b]' : 'bg-[#fafaf9]'}`}>
+                          <span className={`block text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>{t("ISO")}</span>
+                          <span className={`font-mono ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>{selectedItem.exif.iso}</span>
                         </div>
                       )}
                       {selectedItem.exif.shutter && (
-                        <div>
-                          <span className="block text-[10px] uppercase text-stone-600">{t("Shutter")}</span>
-                          <span className="text-stone-300">{selectedItem.exif.shutter}</span>
+                        <div className={`p-3 ${isDark ? 'bg-[#09090b]' : 'bg-[#fafaf9]'}`}>
+                          <span className={`block text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>{t("Shutter")}</span>
+                          <span className={`font-mono ${isDark ? 'text-stone-300' : 'text-stone-700'}`}>{selectedItem.exif.shutter}</span>
                         </div>
                       )}
                     </div>
@@ -696,54 +892,55 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
 
                 {/* Live Photo */}
                 {selectedItem.isLivePhoto && selectedItem.livePhotoVideoPath && (
-                  <section className="mb-6">
-                    <h3 className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-stone-500">
-                      <Play size={14} /> {t("LivePhoto")}
+                  <section className="mb-8">
+                    <h3 className={`mb-3 text-xs font-bold uppercase tracking-wider ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+                      {t("LivePhoto")}
                     </h3>
-                    <p className="mb-3 text-sm text-stone-400">{t("LivePhotoHint")}</p>
-                    <a
-                      href={selectedItem.livePhotoVideoPath}
-                      download="live-photo-video.mov"
-                      className="inline-flex items-center gap-2 rounded border border-stone-700 px-3 py-1.5 text-xs font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-white"
-                    >
-                      <HardDrive size={14} />
-                      {locale === "zh" ? "下载视频" : "Download Video"}
-                    </a>
+                    <div className="pl-1">
+                      <p className={`mb-4 text-xs ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>{t("LivePhotoHint")}</p>
+                      <a
+                        href={selectedItem.livePhotoVideoPath}
+                        download="live-photo-video.mov"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-purple-700 hover:shadow-md active:scale-95"
+                      >
+                        <HardDrive size={16} />
+                        {locale === "zh" ? "下载视频" : "Download Video"}
+                      </a>
+                    </div>
                   </section>
                 )}
               </div>
 
               {/* Footer */}
-              <div className="border-t border-stone-800 px-6 py-4 text-xs text-stone-600">
-                <div className="flex justify-between">
+              <div className={`relative z-10 mt-auto px-6 py-4 text-xs font-medium uppercase tracking-wider ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
+                <div className="flex items-center justify-between">
                   <span>{selectedItem.date}</span>
-                  <span>{currentIndex + 1} / {items.length}</span>
+                  <span className="font-mono">{currentIndex + 1} / {items.length}</span>
                 </div>
               </div>
             </aside>
 
             {/* Mobile Bottom Drawer */}
             <div
-              className={`fixed inset-x-0 bottom-0 z-[75] transform transition-transform duration-300 ease-out lg:hidden ${drawerOpen ? "translate-y-0" : "translate-y-[calc(100%-120px)]"
-                }`}
+              className={`fixed inset-x-0 bottom-0 z-[75] transform transition-transform duration-300 ease-out lg:hidden ${drawerOpen ? "translate-y-0" : "translate-y-[calc(100%-120px)]"}`}
             >
               {/* Drawer Handle */}
               <button
                 onClick={() => setDrawerOpen(!drawerOpen)}
-                className="mx-auto flex w-full items-center justify-center border-t border-stone-800 bg-stone-900 py-2"
+                className={`mx-auto flex w-full items-center justify-center border-t py-2 ${isDark ? 'border-stone-800 bg-stone-900' : 'border-stone-200 bg-white'}`}
               >
                 <ChevronUp
                   size={20}
-                  className={`text-stone-500 transition-transform duration-300 ${drawerOpen ? "rotate-180" : ""}`}
+                  className={`transition-transform duration-300 ${drawerOpen ? "rotate-180" : ""} ${isDark ? 'text-stone-500' : 'text-stone-400'}`}
                 />
               </button>
 
               {/* Drawer Content */}
-              <div className="max-h-[70vh] overflow-y-auto bg-stone-900 px-4 pb-4">
+              <div className={`max-h-[70vh] overflow-y-auto px-4 pb-4 ${isDark ? 'bg-stone-900' : 'bg-white'}`}>
                 {/* Title Preview (always visible) */}
                 <div className="mb-4">
-                  <h2 className="font-serif text-xl text-white">{selectedItem.title}</h2>
-                  <p className="text-xs text-stone-500">{selectedItem.date}</p>
+                  <h2 className={`font-serif text-xl ${isDark ? 'text-white' : 'text-stone-900'}`}>{selectedItem.title}</h2>
+                  <p className={`text-xs ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>{selectedItem.date}</p>
                 </div>
 
                 {drawerOpen && (
@@ -757,18 +954,15 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
                     {/* Location Map (Mobile) */}
                     {selectedItem.latitude && selectedItem.longitude && (
                       <section className="mb-4">
-                        <div className="overflow-hidden rounded-lg border border-stone-800">
-                          <div className="h-[150px] w-full">
-                            <MapContainer
-                              center={[selectedItem.latitude, selectedItem.longitude]}
-                              zoom={12}
-                              style={{ height: "100%", width: "100%" }}
-                              zoomControl={false}
-                              attributionControl={false}
-                            >
-                              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                              <Marker position={[selectedItem.latitude, selectedItem.longitude]} />
-                            </MapContainer>
+                        <div className="overflow-hidden rounded-xl border border-stone-700/50">
+                          <div className="lumina-map h-[120px] w-full">
+                            <LocationMap
+                              lat={selectedItem.latitude}
+                              lng={selectedItem.longitude}
+                              isDark={true}
+                              height="120px"
+                              showZoomControl={false}
+                            />
                           </div>
                         </div>
                         {(selectedItem.city || selectedItem.locationName) && (
@@ -808,56 +1002,37 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
             </div>
           </div>
 
-          {/* Bottom Thumbnail Strip */}
-          <div className="fixed inset-x-0 bottom-0 z-[72] border-t border-stone-800 bg-stone-900/90 backdrop-blur lg:right-[380px] xl:right-[420px]">
-            <div
-              ref={thumbnailsRef}
-              className="overflow-x-auto px-4 py-3"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            >
-              <style>{`
-                .overflow-x-auto::-webkit-scrollbar {
-                  display: none;
-                }
-              `}</style>
-              <div className="flex h-16 gap-0.5" style={{ width: "fit-content" }}>
-                {items.map((item, i) => (
-                  <motion.button
-                    key={item.id}
-                    onClick={() => handleThumbnailClick(i)}
-                    initial={false}
-                    animate={i === currentIndex ? "active" : "inactive"}
-                    variants={{
-                      active: {
-                        width: THUMB_FULL_WIDTH,
-                        marginLeft: THUMB_MARGIN,
-                        marginRight: THUMB_MARGIN,
-                      },
-                      inactive: {
-                        width: THUMB_COLLAPSED_WIDTH,
-                        marginLeft: 0,
-                        marginRight: 0,
-                      },
-                    }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className={`relative h-full shrink-0 overflow-hidden rounded ${i === currentIndex ? "ring-2 ring-white" : "opacity-60 hover:opacity-100"
-                      }`}
-                  >
-                    <img
-                      src={item.smallThumbPath || item.microThumbPath || item.thumbnail || item.url}
-                      alt={item.title}
-                      className="pointer-events-none h-full w-full select-none object-cover"
-                      draggable={false}
-                      loading="lazy"
+          {/* Floating Thumbnail Strip */}
+          <div className="fixed inset-x-0 bottom-6 z-[72] flex justify-center pointer-events-none lg:right-[380px] xl:right-[420px]">
+            <div className="pointer-events-auto mx-4 transition-all duration-300">
+              <div
+                ref={thumbnailsRef}
+                className="flex max-w-[80vw] overflow-x-auto p-2 lg:max-w-[600px]"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                <style>{`
+                    .overflow-x-auto::-webkit-scrollbar {
+                      display: none;
+                    }
+                  `}</style>
+                <div className="flex h-12 gap-1.5 px-2" style={{ width: "fit-content" }}>
+                  {items.map((item, i) => (
+                    <ThumbnailItem
+                      key={item.id}
+                      item={item}
+                      index={i}
+                      isActive={i === currentIndex}
+                      onClick={handleThumbnailClick}
                     />
-                  </motion.button>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        </div >
+      )
+      }
+    </div >
   );
 }
 

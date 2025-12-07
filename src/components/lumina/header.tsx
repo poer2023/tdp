@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @next/next/no-img-element */
 
-import React, { useState, useEffect, useRef, startTransition } from "react";
+import React, { useState, useEffect, useRef, startTransition, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -10,6 +10,16 @@ import { Menu, X, LogOut, LayoutDashboard, Moon, Sun, Languages, Search } from "
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
 import { useTheme } from "next-themes";
+
+// Safe session hook that handles missing SessionProvider
+function useSafeSession() {
+  try {
+    return useSession();
+  } catch {
+    // Return a mock session state when SessionProvider is missing
+    return { data: null, status: "unauthenticated" as const, update: async () => null };
+  }
+}
 
 interface NavLink {
   label: string;
@@ -28,7 +38,7 @@ export function LuminaHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { data: session } = useSession();
+  const { data: session } = useSafeSession();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
