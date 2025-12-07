@@ -92,14 +92,13 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
     : `bg-white dark:bg-[#141416]/80 backdrop-blur-xl border ${getGradient(moment.id)}`;
 
   return (
-    <div className="mb-8 break-inside-avoid" style={{ perspective: "1000px" }}>
+    <div className="mb-8 break-inside-avoid md:[perspective:1000px]">
       <motion.div
         ref={ref}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={onClick}
         style={{
-          transformStyle: "preserve-3d",
           rotateX,
           rotateY,
         }}
@@ -108,7 +107,7 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.5 }}
         whileTap={{ scale: 0.98 }}
-        className={`group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-lg transition-shadow duration-500 hover:shadow-2xl ${bgStyle}`}
+        className={`group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-lg transition-shadow duration-500 hover:shadow-2xl [transform-style:flat] md:[transform-style:preserve-3d] ${bgStyle}`}
       >
         {/* 0. Mobile Only: Shimmer Effect */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden md:hidden">
@@ -152,8 +151,8 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                   width={40}
                   height={40}
                   className={`h-10 w-10 rounded-full object-cover border ${hasImages
-                      ? "border-white/20"
-                      : "border-stone-200 dark:border-[#2a2a2e]"
+                    ? "border-white/20"
+                    : "border-stone-200 dark:border-[#2a2a2e]"
                     }`}
                 />
               ) : (
@@ -241,7 +240,7 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
           animation: shimmer 3s infinite;
         }
       `}</style>
-    </div>
+    </div >
   );
 }
 
