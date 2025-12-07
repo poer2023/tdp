@@ -198,21 +198,28 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
 
   const [squares, setSquares] = useState(initialSquares);
 
+  // Sync squares when initialSquares changes (e.g., when heroImages prop updates)
+  useEffect(() => {
+    setSquares(initialSquares);
+  }, [initialSquares]);
+
   // Shuffle animation (only for layouts with 4+ images)
   useEffect(() => {
-    if (squares.length < 4) return;
+    // Check length inside effect to avoid dependency on changing value
+    if (initialSquares.length < 4) return;
 
     const shuffleSquares = () => {
       setSquares((prev) => shuffle(prev));
       timeoutRef.current = setTimeout(shuffleSquares, 3000);
     };
 
-    shuffleSquares();
+    // Start shuffle after initial delay
+    timeoutRef.current = setTimeout(shuffleSquares, 3000);
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [squares.length]);
+  }, [initialSquares.length]);
 
   // Handle empty state
   if (squares.length === 0) {

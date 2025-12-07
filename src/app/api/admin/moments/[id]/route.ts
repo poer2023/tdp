@@ -22,14 +22,37 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Content is required" }, { status: 400 });
     }
 
+    // Validate and filter images - reject blob URLs which are temporary browser-only URLs
     const images = Array.isArray(body.images)
-      ? body.images.map((img: any) => ({
-          url: typeof img?.url === "string" ? img.url : "",
-          w: typeof img?.w === "number" ? img.w : null,
-          h: typeof img?.h === "number" ? img.h : null,
-          alt: typeof img?.alt === "string" ? img.alt : null,
-          previewUrl: typeof img?.previewUrl === "string" ? img.previewUrl : null,
-        }))
+      ? body.images
+          .map((img: any) => ({
+            url: typeof img?.url === "string" ? img.url : "",
+            w: typeof img?.w === "number" ? img.w : null,
+            h: typeof img?.h === "number" ? img.h : null,
+            alt: typeof img?.alt === "string" ? img.alt : null,
+            previewUrl: typeof img?.previewUrl === "string" ? img.previewUrl : null,
+          }))
+          .filter((img: { url: string; w: number | null; h: number | null; alt: string | null; previewUrl: string | null }) => {
+            // Reject blob URLs - they are temporary browser URLs that won't work on server
+            if (img.url.startsWith("blob:")) {
+              console.warn("[Admin] Rejected blob URL in moment images:", img.url);
+              return false;
+            }
+            // Reject empty URLs
+            if (!img.url) {
+              return false;
+            }
+            // Only allow valid URL patterns
+            const isValidUrl =
+              img.url.startsWith("/") || // Relative URLs (local storage)
+              img.url.startsWith("http://") ||
+              img.url.startsWith("https://");
+            if (!isValidUrl) {
+              console.warn("[Admin] Rejected invalid URL in moment images:", img.url);
+              return false;
+            }
+            return true;
+          })
       : [];
 
     const updated = await prisma.moment.update({
