@@ -36,6 +36,7 @@ export interface FeedMoment {
   tags: string[];
   likes: number;
   liked?: boolean;
+  author?: { name: string | null; image: string | null };
   sortKey?: number;
 }
 

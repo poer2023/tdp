@@ -21,6 +21,7 @@ export function ProfileWidget({
 }: ProfileWidgetProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
+  const [isFlipping, setIsFlipping] = React.useState(false);
 
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
@@ -42,59 +43,98 @@ export function ProfileWidget({
   // Fallback avatar using initials
   const initials = name.slice(0, 2).toUpperCase();
 
+  const handleAvatarHover = () => {
+    if (!isFlipping) {
+      setIsFlipping(true);
+    }
+  };
+
   return (
-    <div className="group relative mb-6 overflow-hidden rounded-2xl border border-stone-200 bg-white p-6 text-center shadow-sm dark:border-[#27272a] dark:bg-[#141416]">
-      {/* Decor */}
-      <div className="pointer-events-none absolute top-0 left-0 h-24 w-full bg-gradient-to-b from-stone-100 to-transparent dark:from-[#1f1f23]/60" />
+    <>
+      <style jsx global>{`
+        @keyframes border-spin {
+          100% {
+            transform: rotate(-360deg);
+          }
+        }
+        @keyframes flip-y {
+          0% {
+            transform: rotateY(0);
+          }
+          100% {
+            transform: rotateY(360deg);
+          }
+        }
+        .animate-flip-y {
+          animation: flip-y 1s ease-in-out forwards;
+        }
+      `}</style>
+      <div className="group relative mb-6 rounded-2xl transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl">
+        {/* Border Marquee Effect (Dual Neon Beams with Glow) */}
+        <div className="absolute -inset-[2px] overflow-hidden rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+          <div className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] opacity-100 blur-[2px] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0%,transparent_40%,#00ffff_50%,transparent_60%,transparent_90%,#ff00ff_100%)] dark:bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0%,transparent_40%,#00ffff_50%,transparent_60%,transparent_90%,#ff00ff_100%)]" />
+        </div>
 
-      <div className="relative mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl transition-transform duration-500 group-hover:scale-105 dark:border-[#0a0a0b] dark:bg-[#27272a]">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={name}
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              // Hide the broken image and show fallback
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sage-400 to-sage-600 text-2xl font-bold text-white">
-            {initials}
+        {/* Main Card Content */}
+        <div className="relative overflow-hidden rounded-2xl border border-stone-200 bg-white p-6 text-center dark:border-[#27272a] dark:bg-[#141416]">
+          {/* Decor */}
+          <div className="pointer-events-none absolute top-0 left-0 h-24 w-full bg-gradient-to-b from-stone-100 to-transparent dark:from-[#1f1f23]/60" />
+
+          <div
+            className={`relative mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl dark:border-[#0a0a0b] dark:bg-[#27272a] ${isFlipping ? "animate-flip-y" : ""
+              }`}
+            style={{ perspective: "1000px" }}
+            onMouseEnter={handleAvatarHover}
+            onAnimationEnd={() => setIsFlipping(false)}
+          >
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={name}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sage-400 to-sage-600 text-2xl font-bold text-white">
+                {initials}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      <h3 className="mb-1 font-serif text-2xl font-bold text-stone-900 dark:text-stone-100">
-        {name}
-      </h3>
-      <div className="mb-4 flex items-center justify-center gap-2">
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sage-500" />
-        <p className="text-xs font-bold uppercase tracking-widest text-stone-500 dark:text-stone-400">
-          {displayTitle}
-        </p>
-      </div>
+          <h3 className="mb-1 font-serif text-2xl font-bold text-stone-900 dark:text-stone-100">
+            {name}
+          </h3>
+          <div className="mb-4 flex items-center justify-center gap-2">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sage-500" />
+            <p className="text-xs font-bold uppercase tracking-widest text-stone-500 dark:text-stone-400">
+              {displayTitle}
+            </p>
+          </div>
 
-      <p className="mx-auto mb-6 max-w-[240px] font-serif text-sm leading-relaxed text-stone-600 dark:text-stone-400">
-        {displayBio}
-      </p>
+          <p className="mx-auto mb-6 max-w-[240px] font-serif text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+            {displayBio}
+          </p>
 
-      {/* Social Dock */}
-      <div className="mb-6 flex justify-center gap-3">
-        <SocialBtn icon={<Github size={18} />} label="Github" href="https://github.com" />
-        <SocialBtn
-          icon={<MessageCircle size={18} />}
-          label="WeChat"
-          color="hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/20"
-        />
-        <SocialBtn icon={<Twitter size={18} />} label="X" href="https://twitter.com" />
-        <SocialBtn
-          icon={<Compass size={18} />}
-          label="RedNote"
-          color="hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/20"
-        />
-        <SocialBtn icon={<Mail size={18} />} label="Email" href="mailto:contact@example.com" />
+          {/* Social Dock */}
+          <div className="mb-6 flex justify-center gap-3">
+            <SocialBtn icon={<Github size={18} />} label="Github" href="https://github.com" />
+            <SocialBtn
+              icon={<MessageCircle size={18} />}
+              label="WeChat"
+              color="hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/20"
+            />
+            <SocialBtn icon={<Twitter size={18} />} label="X" href="https://twitter.com" />
+            <SocialBtn
+              icon={<Compass size={18} />}
+              label="RedNote"
+              color="hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/20"
+            />
+            <SocialBtn icon={<Mail size={18} />} label="Email" href="mailto:contact@example.com" />
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

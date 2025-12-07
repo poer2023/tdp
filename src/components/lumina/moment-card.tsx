@@ -15,6 +15,7 @@ interface Moment {
   tags: string[];
   likes: number;
   liked?: boolean;
+  author?: { name: string | null; image: string | null };
 }
 
 interface MomentCardProps {
@@ -144,28 +145,40 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
           {/* Header */}
           <div className="mb-4 flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full border ${
-                  hasImages
+              {moment.author?.image ? (
+                <Image
+                  src={moment.author.image}
+                  alt={moment.author.name || "Author"}
+                  width={40}
+                  height={40}
+                  className={`h-10 w-10 rounded-full object-cover border ${hasImages
+                      ? "border-white/20"
+                      : "border-stone-200 dark:border-[#2a2a2e]"
+                    }`}
+                />
+              ) : (
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full border ${hasImages
                     ? "border-white/20 bg-white/10 text-white backdrop-blur-md"
                     : "border-stone-200 bg-stone-100 text-stone-600 dark:border-[#2a2a2e] dark:bg-[#1f1f23] dark:text-stone-300"
-                }`}
-              >
-                <span className="font-serif font-bold">L</span>
-              </div>
+                    }`}
+                >
+                  <span className="font-serif font-bold">
+                    {moment.author?.name?.[0]?.toUpperCase() || "?"}
+                  </span>
+                </div>
+              )}
               <div>
                 <p
-                  className={`text-xs font-bold uppercase tracking-wider ${hasImages ? "text-white/90" : "text-stone-500 dark:text-stone-400"}`}
+                  className={`text-xs font-medium ${hasImages ? "text-white/90" : "text-stone-700 dark:text-stone-300"}`}
+                >
+                  {moment.author?.name || "Anonymous"}
+                </p>
+                <p
+                  className={`text-[10px] ${hasImages ? "text-white/70" : "text-stone-500 dark:text-stone-400"}`}
                 >
                   {moment.date}
                 </p>
-                {moment.tags.length > 0 && (
-                  <p
-                    className={`text-[10px] ${hasImages ? "text-sage-300" : "text-sage-600 dark:text-sage-400"}`}
-                  >
-                    #{moment.tags[0]}
-                  </p>
-                )}
               </div>
             </div>
             {/* Visual flair icon */}
@@ -182,11 +195,10 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
 
             {/* Actions Bar */}
             <div
-              className={`flex items-center justify-between rounded-2xl p-2 backdrop-blur-md transition-all duration-300 ${
-                hasImages
-                  ? "border border-white/10 bg-white/10 text-white hover:bg-white/20"
-                  : "border border-stone-200 bg-stone-100/50 text-stone-600 hover:bg-stone-100 dark:border-[#2a2a2e] dark:bg-[#1f1f23]/50 dark:text-stone-400 dark:hover:bg-[#27272a]"
-              }`}
+              className={`flex items-center justify-between rounded-2xl p-2 backdrop-blur-md transition-all duration-300 ${hasImages
+                ? "border border-white/10 bg-white/10 text-white hover:bg-white/20"
+                : "border border-stone-200 bg-stone-100/50 text-stone-600 hover:bg-stone-100 dark:border-[#2a2a2e] dark:bg-[#1f1f23]/50 dark:text-stone-400 dark:hover:bg-[#27272a]"
+                }`}
             >
               <div className="flex gap-1">
                 <button

@@ -132,8 +132,8 @@ type TransformOptions = {
 type ServeFileResult =
   | NextResponse
   | {
-      toResponse: () => NextResponse;
-    };
+    toResponse: () => NextResponse;
+  };
 
 function parseTransformOptions(url: URL): TransformOptions {
   const width = Number.parseInt(url.searchParams.get("w") ?? "", 10);
@@ -168,7 +168,8 @@ async function applyTransform(
   options: TransformOptions
 ): Promise<{ buffer: Buffer; mime: string }> {
   const qual = options.quality && options.quality <= 100 ? options.quality : undefined;
-  let pipeline = sharp(buffer, { failOnError: false });
+  let pipeline = sharp(buffer, { failOnError: false })
+    .rotate(); // Auto-apply EXIF orientation
 
   if (options.width || options.height) {
     pipeline = pipeline.resize(options.width, options.height, {
@@ -281,9 +282,9 @@ async function serveFile(
 
   const { buffer, responseMime } = shouldApplyTransform
     ? await applyTransform(originalBuffer, mime, transformOptions).then((result) => ({
-        buffer: result.buffer,
-        responseMime: result.mime,
-      }))
+      buffer: result.buffer,
+      responseMime: result.mime,
+    }))
     : { buffer: originalBuffer, responseMime: mime };
 
   const uint8 = new Uint8Array(buffer);

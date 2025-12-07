@@ -10,7 +10,7 @@ type LocalImage = { file: File; url: string };
 
 // Inner component that uses useSearchParams - must be wrapped in Suspense
 function MomentComposerCore() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -21,6 +21,12 @@ function MomentComposerCore() {
   const formRef = useRef<HTMLFormElement>(null);
   const [text, setText] = useState("");
   const [images, setImages] = useState<LocalImage[]>([]);
+
+  // Check if user is admin
+  const isAdmin = session?.user?.role === "ADMIN";
+
+  // Hide on admin routes
+  const isAdminRoute = pathname?.startsWith("/admin");
 
   useEffect(() => {
     const handler = () => setOpen(true);
@@ -47,19 +53,21 @@ function MomentComposerCore() {
           scroll: false,
         });
       }
-    } catch {}
+    } catch { }
   }
 
-  // Global shortcuts: Cmd/Ctrl+J to open; drag files to open & attach
+  // Global shortcuts: Cmd/Ctrl+J to open (admin only); drag files to open & attach
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
-        startTransition(() => setOpen(true));
+        if (isAdmin) {
+          startTransition(() => setOpen(true));
+        }
       }
     };
     const onDrop = (e: DragEvent) => {
-      if (!e.dataTransfer) return;
+      if (!isAdmin || !e.dataTransfer) return;
       const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith("image/"));
       if (!files.length) return;
       e.preventDefault();
@@ -73,6 +81,7 @@ function MomentComposerCore() {
       });
     };
     const onDragOver = (e: DragEvent) => {
+      if (!isAdmin) return;
       if (Array.from(e.dataTransfer?.items || []).some((i) => i.type.startsWith("image/"))) {
         e.preventDefault();
       }
@@ -85,7 +94,7 @@ function MomentComposerCore() {
       window.removeEventListener("drop", onDrop);
       window.removeEventListener("dragover", onDragOver);
     };
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     if (state.status === "success") {
@@ -101,36 +110,43 @@ function MomentComposerCore() {
     }
   }, [state]);
 
+  // Don't render anything if not admin or on admin routes
+  if (!isAdmin || isAdminRoute) return null;
+
   return (
     <>
-      {/* FAB */}
+      {/* FAB - Admin only */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed right-5 bottom-5 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg md:hidden"
-        aria-label="Add moment"
+        className="fixed right-5 bottom-5 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg transition-all duration-200 hover:scale-105 hover:bg-stone-800 active:scale-95 md:hidden dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
+        aria-label="新建瞬间"
       >
-        +
+        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M12 5v14m-7-7h14" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
 
       {/* Modal Dialog */}
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
           onClick={close}
         >
           <div
-            className="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-2xl dark:bg-[#0b0b0d]"
+            className="w-full max-w-lg rounded-2xl border border-stone-200 bg-white p-5 shadow-2xl dark:border-stone-800 dark:bg-[#141416]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100">新建瞬间</h3>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-stone-900 dark:text-stone-100">新建瞬间</h3>
               <button
                 onClick={close}
-                className="rounded p-1 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800"
+                className="rounded-full p-1.5 text-stone-500 transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
                 aria-label="关闭"
               >
-                ×
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
             </div>
             {status !== "authenticated" ? (
@@ -148,7 +164,7 @@ function MomentComposerCore() {
             ) : (
               <form
                 ref={formRef}
-                className="space-y-3"
+                className="space-y-4"
                 onSubmit={async (e) => {
                   e.preventDefault();
                   const fd = new FormData();
@@ -173,27 +189,29 @@ function MomentComposerCore() {
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   placeholder="此刻…"
-                  className="h-28 w-full resize-none rounded-lg border border-stone-300 bg-white p-2 text-sm outline-none focus:border-blue-500 dark:border-stone-700 dark:bg-stone-900"
+                  className="h-32 w-full resize-none rounded-xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-900 outline-none transition-colors focus:border-stone-400 focus:bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 dark:focus:border-stone-500 dark:focus:bg-stone-800"
                 />
                 {/* Images preview grid */}
                 {images.length > 0 && (
                   <div className="grid grid-cols-3 gap-2">
                     {images.map((im, idx) => (
-                      <div key={idx} className="relative overflow-hidden rounded-lg">
+                      <div key={idx} className="relative aspect-square overflow-hidden rounded-xl">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={im.url} alt="preview" className="h-24 w-full object-cover" />
+                        <img src={im.url} alt="preview" className="h-full w-full object-cover" />
                         <div className="absolute top-1 right-1 flex gap-1">
                           <button
                             type="button"
-                            className="rounded bg-black/40 px-1 text-[10px] text-white"
+                            className="rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-black/80"
                             onClick={() => setImages((arr) => arr.filter((_, i) => i !== idx))}
                           >
-                            ×
+                            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
                           </button>
                           {idx > 0 && (
                             <button
                               type="button"
-                              className="rounded bg-black/40 px-1 text-[10px] text-white"
+                              className="rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-black/80"
                               onClick={() =>
                                 setImages((arr) => {
                                   const a = arr.slice();
@@ -210,7 +228,7 @@ function MomentComposerCore() {
                           {idx < images.length - 1 && (
                             <button
                               type="button"
-                              className="rounded bg-black/40 px-1 text-[10px] text-white"
+                              className="rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-black/80"
                               onClick={() =>
                                 setImages((arr) => {
                                   const a = arr.slice();
@@ -231,7 +249,7 @@ function MomentComposerCore() {
                 )}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium hover:bg-stone-50 dark:border-stone-700 dark:hover:bg-stone-800">
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700">
                       <input
                         type="file"
                         name="images"
@@ -248,11 +266,16 @@ function MomentComposerCore() {
                           )
                         }
                       />
-                      📷 添加图片
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="M21 15l-5-5L5 21" />
+                      </svg>
+                      添加图片
                     </label>
                     <select
                       name="visibility"
-                      className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs dark:border-stone-700 dark:bg-stone-900"
+                      className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
                     >
                       <option value="PUBLIC">公开</option>
                       <option value="UNLISTED">未收录</option>
@@ -262,31 +285,39 @@ function MomentComposerCore() {
                   <button
                     type="submit"
                     disabled={pending || (!text && images.length === 0)}
-                    className="inline-flex items-center rounded-lg bg-stone-900 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900"
+                    className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
                   >
+                    {pending && (
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    )}
                     {pending ? "发布中…" : "发布"}
                   </button>
                 </div>
                 {/* Advanced options: tags, location, schedule */}
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <div className="space-y-2 border-t border-stone-200 pt-3 dark:border-stone-700">
                   <input
                     name="tags"
                     placeholder="标签（逗号分隔，最多5个）"
-                    className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs dark:border-stone-700 dark:bg-stone-900"
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700 outline-none transition-colors focus:border-stone-400 focus:bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:focus:border-stone-500"
                   />
-                  <input
-                    name="locationName"
-                    placeholder="地点（可选）"
-                    className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs dark:border-stone-700 dark:bg-stone-900"
-                  />
-                  <input
-                    type="datetime-local"
-                    name="scheduledAt"
-                    className="rounded-lg border border-stone-300 bg-white px-2 py-1 text-xs dark:border-stone-700 dark:bg-stone-900"
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      name="locationName"
+                      placeholder="地点（可选）"
+                      className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700 outline-none transition-colors focus:border-stone-400 focus:bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:focus:border-stone-500"
+                    />
+                    <input
+                      type="datetime-local"
+                      name="scheduledAt"
+                      className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700 outline-none transition-colors focus:border-stone-400 focus:bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:focus:border-stone-500"
+                    />
+                  </div>
                 </div>
                 {state.status === "error" && (
-                  <p className="text-xs text-red-600">{state.message}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400">{state.message}</p>
                 )}
               </form>
             )}

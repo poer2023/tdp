@@ -57,9 +57,9 @@ export async function convertHEICToJPEG(
     let pipeline = sharp(buffer, {
       // 确保可以读取 HEIF 格式
       failOnError: false,
-    });
+    }).rotate(); // Auto-apply EXIF orientation
 
-    // 提取元数据
+    // 提取元数据 (after rotation to get correct dimensions)
     const metadata = await pipeline.metadata();
 
     // 调整大小（如果指定）

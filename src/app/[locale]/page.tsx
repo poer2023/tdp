@@ -91,6 +91,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       tags: moment.tags || [],
       likes: moment.likeCount ?? 0,
       liked: Boolean(moment.likedByViewer),
+      author: moment.author ? { name: moment.author.name, image: moment.author.image } : undefined,
       sortKey: createdAt.getTime(),
     };
   });

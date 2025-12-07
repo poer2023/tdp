@@ -33,9 +33,11 @@ export async function generateThumbnails(
   const cfg = { ...DEFAULT_CONFIG, ...config };
 
   // Process all sizes in parallel for performance
+  // Note: .rotate() auto-applies EXIF orientation metadata
   const [micro, small, medium] = await Promise.all([
     // Micro: 64x64 for film strip
     sharp(imageBuffer)
+      .rotate() // Auto-apply EXIF orientation
       .resize(cfg.micro, cfg.micro, {
         fit: "cover",
         position: "center",
@@ -45,6 +47,7 @@ export async function generateThumbnails(
 
     // Small: 480px width for gallery masonry
     sharp(imageBuffer)
+      .rotate() // Auto-apply EXIF orientation
       .resize(cfg.small, null, {
         fit: "inside",
         withoutEnlargement: true,
@@ -54,6 +57,7 @@ export async function generateThumbnails(
 
     // Medium: 1200px width for detail viewer
     sharp(imageBuffer)
+      .rotate() // Auto-apply EXIF orientation
       .resize(cfg.medium, null, {
         fit: "inside",
         withoutEnlargement: true,

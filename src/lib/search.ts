@@ -58,34 +58,50 @@ export async function searchPosts(
   const limit = options?.limit ?? 10;
   const locale = options?.locale;
 
+  // Try full-text search first (using GIN index)
   try {
-    // Try full-text search first (using GIN index)
     const sanitized = sanitizeQuery(q);
     const localeFilter = locale ? Prisma.sql`AND p.locale = ${locale}` : Prisma.empty;
 
-    // Try using pre-computed searchVector column if exists, fallback to on-the-fly calculation
-    const results = await prisma.$queryRaw<
-      Array<{
-        id: string;
-        title: string;
-        slug: string;
-        excerpt: string;
-        publishedAt: Date | null;
-        locale: string;
-        authorName: string | null;
-        rank: number;
-      }>
-    >`
-      SELECT
-        p.id,
-        p.title,
-        p.slug,
-        p.excerpt,
-        p."publishedAt",
-        p.locale,
-        u.name as "authorName",
-        ts_rank(
-          COALESCE(
+    // Only try full-text if sanitized query is valid
+    if (sanitized && sanitized.length > 0) {
+      const results = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          title: string;
+          slug: string;
+          excerpt: string;
+          publishedAt: Date | null;
+          locale: string;
+          authorName: string | null;
+          rank: number;
+        }>
+      >`
+        SELECT
+          p.id,
+          p.title,
+          p.slug,
+          p.excerpt,
+          p."publishedAt",
+          p.locale,
+          u.name as "authorName",
+          ts_rank(
+            COALESCE(
+              p."searchVector",
+              to_tsvector('simple',
+                COALESCE(p.title, '') || ' ' ||
+                COALESCE(p.excerpt, '') || ' ' ||
+                COALESCE(p.content, '') || ' ' ||
+                COALESCE(p.tags, '')
+              )
+            ),
+            to_tsquery('simple', ${sanitized})
+          ) as rank
+        FROM "Post" p
+        LEFT JOIN "User" u ON p."authorId" = u.id
+        WHERE p.status = 'PUBLISHED'
+          ${localeFilter}
+          AND COALESCE(
             p."searchVector",
             to_tsvector('simple',
               COALESCE(p.title, '') || ' ' ||
@@ -93,39 +109,30 @@ export async function searchPosts(
               COALESCE(p.content, '') || ' ' ||
               COALESCE(p.tags, '')
             )
-          ),
-          to_tsquery('simple', ${sanitized})
-        ) as rank
-      FROM "Post" p
-      LEFT JOIN "User" u ON p."authorId" = u.id
-      WHERE p.status = 'PUBLISHED'
-        ${localeFilter}
-        AND COALESCE(
-          p."searchVector",
-          to_tsvector('simple',
-            COALESCE(p.title, '') || ' ' ||
-            COALESCE(p.excerpt, '') || ' ' ||
-            COALESCE(p.content, '') || ' ' ||
-            COALESCE(p.tags, '')
-          )
-        ) @@ to_tsquery('simple', ${sanitized})
-      ORDER BY rank DESC, p."publishedAt" DESC NULLS LAST
-      LIMIT ${limit}
-    `;
+          ) @@ to_tsquery('simple', ${sanitized})
+        ORDER BY rank DESC, p."publishedAt" DESC NULLS LAST
+        LIMIT ${limit}
+      `;
 
-    if (results.length > 0) {
-      return results.map((p) => ({
-        id: p.id,
-        title: p.title,
-        slug: p.slug,
-        excerpt: p.excerpt,
-        publishedAt: p.publishedAt ? p.publishedAt.toISOString() : null,
-        locale: p.locale as "EN" | "ZH",
-        authorName: p.authorName,
-      }));
+      if (results.length > 0) {
+        return results.map((p) => ({
+          id: p.id,
+          title: p.title,
+          slug: p.slug,
+          excerpt: p.excerpt,
+          publishedAt: p.publishedAt ? p.publishedAt.toISOString() : null,
+          locale: p.locale as "EN" | "ZH",
+          authorName: p.authorName,
+        }));
+      }
     }
+  } catch (error) {
+    console.error("Full-text search failed:", error);
+  }
 
-    // Fallback: fuzzy matching if no exact matches (using trigram similarity)
+  // Try fuzzy matching using pg_trgm similarity
+  try {
+    const localeFilter = locale ? Prisma.sql`AND p.locale = ${locale}` : Prisma.empty;
     const fuzzyResults = await prisma.$queryRaw<
       Array<{
         id: string;
@@ -155,26 +162,30 @@ export async function searchPosts(
       WHERE p.status = 'PUBLISHED'
         ${localeFilter}
         AND (
-          similarity(p.title, ${q}) > 0.3
-          OR similarity(p.content, ${q}) > 0.2
+          similarity(p.title, ${q}) > 0.15
+          OR similarity(p.content, ${q}) > 0.1
         )
       ORDER BY similarity DESC, p."publishedAt" DESC NULLS LAST
       LIMIT ${limit}
     `;
 
-    return fuzzyResults.map((p) => ({
-      id: p.id,
-      title: p.title,
-      slug: p.slug,
-      excerpt: p.excerpt,
-      publishedAt: p.publishedAt ? p.publishedAt.toISOString() : null,
-      locale: p.locale as "EN" | "ZH",
-      authorName: p.authorName,
-    }));
+    if (fuzzyResults.length > 0) {
+      return fuzzyResults.map((p) => ({
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        excerpt: p.excerpt,
+        publishedAt: p.publishedAt ? p.publishedAt.toISOString() : null,
+        locale: p.locale as "EN" | "ZH",
+        authorName: p.authorName,
+      }));
+    }
   } catch (error) {
-    // Fallback to LIKE search if full-text search fails
-    console.error("Full-text search failed, falling back to LIKE:", error);
+    console.error("Fuzzy search failed:", error);
+  }
 
+  // Final fallback: LIKE search (always works, no extension required)
+  try {
     const posts = await prisma.post.findMany({
       where: {
         status: PostStatus.PUBLISHED,
@@ -208,6 +219,9 @@ export async function searchPosts(
       locale: p.locale as "EN" | "ZH",
       authorName: p.author?.name ?? null,
     }));
+  } catch (error) {
+    console.error("LIKE search failed:", error);
+    return [];
   }
 }
 

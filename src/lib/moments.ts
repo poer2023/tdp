@@ -24,6 +24,7 @@ export type MomentListItem = {
   tags: string[];
   lang: string;
   authorId: string;
+  author: { id: string; name: string | null; image: string | null };
   likeCount: number;
   commentsCount?: number;
   likedByViewer?: boolean;
@@ -73,6 +74,7 @@ export async function listMoments(options?: {
     tags: true,
     lang: true,
     authorId: true,
+    author: { select: { id: true, name: true, image: true } },
     likeStats: { select: { likeCount: true } },
     comments: { select: { id: true } },
   };
@@ -119,6 +121,9 @@ export async function getMomentByIdOrSlug(idOrSlug: string) {
         { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
         { OR: [{ status: "PUBLISHED" }, { status: "SCHEDULED", scheduledAt: { lte: now } }] },
       ],
+    },
+    include: {
+      author: { select: { id: true, name: true, image: true } },
     },
   });
   if (!m) return null;

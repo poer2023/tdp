@@ -79,10 +79,10 @@ export async function createMomentAction(
   const locLng = parseFloat((formData.get("locationLng") as string) || "");
   const location = locName
     ? {
-        name: locName,
-        lat: isFinite(locLat) ? locLat : undefined,
-        lng: isFinite(locLng) ? locLng : undefined,
-      }
+      name: locName,
+      lat: isFinite(locLat) ? locLat : undefined,
+      lng: isFinite(locLng) ? locLng : undefined,
+    }
     : null;
   // Schedule
   const scheduledAtStr = (formData.get("scheduledAt") as string | null) || "";
@@ -105,18 +105,19 @@ export async function createMomentAction(
           let h: number | null = null;
           let previewUrl: string | undefined = undefined;
           try {
-            const img = sharp(buf);
+            const img = sharp(buf).rotate(); // Auto-apply EXIF orientation
             const meta = await img.metadata();
             w = meta.width ?? null;
             h = meta.height ?? null;
             const resized = await img
+              .clone() // Clone since we already used img for metadata
               .resize({ width: 1280, withoutEnlargement: true })
               .webp({ quality: 82 })
               .toBuffer();
             const previewKey = `${base}.webp`;
             const previewPath = await storage.upload(resized, previewKey, "image/webp");
             previewUrl = storage.getPublicUrl(previewPath);
-          } catch {}
+          } catch { }
           return { url: storage.getPublicUrl(path), w, h, previewUrl } as MomentImage & {
             previewUrl?: string;
           };
