@@ -9,7 +9,7 @@
  * 运行方式：npx tsx scripts/fix-moment-image-orientation.ts
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import sharp from "sharp";
 
 const prisma = new PrismaClient();
@@ -94,7 +94,7 @@ async function main() {
     const moments = await prisma.moment.findMany({
         where: {
             images: {
-                not: null,
+                not: Prisma.JsonNull,
             },
         },
         select: {
@@ -171,7 +171,7 @@ async function main() {
         if (needsUpdate) {
             await prisma.moment.update({
                 where: { id: moment.id },
-                data: { images: updatedImages as unknown as Record<string, unknown>[] },
+                data: { images: updatedImages as unknown as Prisma.InputJsonValue },
             });
         }
     }
