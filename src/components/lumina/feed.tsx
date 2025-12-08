@@ -277,6 +277,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
                     tags: item.tags,
                     likes: item.likes,
                     liked: item.liked,
+                    author: item.author,
                   }}
                   onClick={() => setSelectedMoment(item)}
                   onLike={() => handleMomentLike(item.id)}

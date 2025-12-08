@@ -169,9 +169,8 @@ export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProp
       onClick={handleBackdropClick}
     >
       <div
-        className={`animate-in zoom-in-95 relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300 md:flex-row dark:bg-stone-900 ${
-          hasImages ? "max-w-4xl" : "max-w-xl"
-        }`}
+        className={`animate-in zoom-in-95 relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300 md:flex-row dark:bg-stone-900 ${hasImages ? "max-w-4xl" : "max-w-xl"
+          }`}
       >
         {/* Close button for Mobile (Absolute) */}
         <button
@@ -206,11 +205,23 @@ export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProp
           {/* Header */}
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-stone-100 bg-white p-4 md:p-6 dark:border-stone-800 dark:bg-stone-900">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sage-100 to-stone-200 font-serif font-bold text-stone-600 dark:from-stone-800 dark:to-stone-700 dark:text-stone-300">
-                L
-              </div>
+              {moment.author?.image ? (
+                <Image
+                  src={moment.author.image}
+                  alt={moment.author.name || "Author"}
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-sage-100 to-stone-200 font-serif font-bold text-stone-600 dark:from-stone-800 dark:to-stone-700 dark:text-stone-300">
+                  {moment.author?.name?.[0]?.toUpperCase() || "?"}
+                </div>
+              )}
               <div>
-                <h3 className="text-sm font-bold text-stone-800 dark:text-stone-100">Lumina</h3>
+                <h3 className="text-sm font-bold text-stone-800 dark:text-stone-100">
+                  {moment.author?.name || "Anonymous"}
+                </h3>
                 <span className="flex items-center gap-1 text-xs text-stone-400">
                   <Calendar size={10} /> {moment.date}
                 </span>
@@ -229,9 +240,8 @@ export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProp
             {/* Moment Content */}
             <div className="p-4 md:p-6">
               <p
-                className={`whitespace-pre-wrap font-serif leading-relaxed text-stone-800 dark:text-stone-200 ${
-                  hasImages ? "text-base md:text-lg" : "text-lg md:text-xl"
-                }`}
+                className={`whitespace-pre-wrap font-serif leading-relaxed text-stone-800 dark:text-stone-200 ${hasImages ? "text-base md:text-lg" : "text-lg md:text-xl"
+                  }`}
               >
                 {moment.content}
               </p>
@@ -309,9 +319,8 @@ export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProp
             <div className="flex items-center gap-4 border-b border-stone-100 p-4 dark:border-stone-800">
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
-                  liked ? "text-rose-500" : "text-stone-400 hover:text-rose-500"
-                }`}
+                className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${liked ? "text-rose-500" : "text-stone-400 hover:text-rose-500"
+                  }`}
               >
                 <Heart size={20} className={liked ? "fill-current" : ""} />
                 <span>
