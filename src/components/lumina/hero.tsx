@@ -22,11 +22,11 @@ export interface HeroImageItem {
   type: "gallery" | "moment" | "post";
 }
 
-interface LuminaHeroProps {
+interface ZhiHeroProps {
   heroImages?: HeroImageItem[];
 }
 
-export function LuminaHero({ heroImages = DEFAULT_HERO_IMAGES }: LuminaHeroProps) {
+export function ZhiHero({ heroImages = DEFAULT_HERO_IMAGES }: ZhiHeroProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
 
@@ -267,4 +267,4 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
   );
 }
 
-export default LuminaHero;
+export default ZhiHero;

@@ -8,12 +8,12 @@ interface SEOProps {
 
 const SEO: React.FC<SEOProps> = ({ title, description }) => {
   const { t } = useSettings();
-  
+
   useEffect(() => {
     // Translate the title part if needed, or keep as is
     const translatedTitle = t(title);
-    document.title = `${translatedTitle} | Lumina Space`;
-    
+    document.title = `${translatedTitle} | Zhi Space`;
+
     // Update meta description if provided
     if (description) {
       let metaDescription = document.querySelector('meta[name="description"]');

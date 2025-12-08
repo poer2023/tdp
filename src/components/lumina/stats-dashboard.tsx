@@ -89,7 +89,7 @@ interface StatsData {
   currentGame?: { name: string; progress: number };
 }
 
-interface LuminaStatsDashboardProps {
+interface ZhiStatsDashboardProps {
   stats?: StatsData;
   highlights?: StatCardData[];
 }
@@ -128,10 +128,10 @@ const defaultStats: StatsData = {
   currentGame: undefined,
 };
 
-export function LuminaStatsDashboard({
+export function ZhiStatsDashboard({
   stats: initialStats,
   highlights,
-}: LuminaStatsDashboardProps) {
+}: ZhiStatsDashboardProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
   const [animationTrigger, setAnimationTrigger] = useState(0);
@@ -652,4 +652,4 @@ export function LuminaStatsDashboard({
   );
 }
 
-export default LuminaStatsDashboard;
+export default ZhiStatsDashboard;

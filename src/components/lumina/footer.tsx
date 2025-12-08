@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
 
-export function LuminaFooter() {
+export function ZhiFooter() {
   const pathname = usePathname();
   const router = useRouter();
   const locale = getLocaleFromPathname(pathname) ?? "en";
@@ -119,4 +119,4 @@ export function LuminaFooter() {
   );
 }
 
-export default LuminaFooter;
+export default ZhiFooter;

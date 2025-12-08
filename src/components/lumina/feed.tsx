@@ -3,10 +3,10 @@
 import React, { useState, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { Loader2, ArrowDown } from "lucide-react";
-import { LuminaPostCard } from "./post-card";
-import { LuminaMomentCard } from "./moment-card";
-import { LuminaMomentDetail } from "./moment-detail";
-import { LuminaShareCard } from "./share-card";
+import { ZhiPostCard } from "./post-card";
+import { ZhiMomentCard } from "./moment-card";
+import { ZhiMomentDetail } from "./moment-detail";
+import { ZhiShareCard } from "./share-card";
 import { getLocaleFromPathname } from "@/lib/i18n";
 
 export type FeedFilter = "All" | "Articles" | "Moments" | "Curated";
@@ -56,7 +56,7 @@ export interface FeedCurated {
 
 export type FeedItem = FeedPost | FeedMoment | FeedCurated;
 
-interface LuminaFeedProps {
+interface ZhiFeedProps {
   initialItems: FeedItem[];
   onPostClick?: (post: FeedPost) => void;
   onMomentLike?: (id: string) => Promise<void> | void;
@@ -64,7 +64,7 @@ interface LuminaFeedProps {
 
 const ITEMS_PER_PAGE = 12;
 
-export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFeedProps) {
+export function ZhiFeed({ initialItems, onPostClick, onMomentLike }: ZhiFeedProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
 
@@ -215,7 +215,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
     <>
       {/* Moment Detail Modal */}
       {selectedMoment && (
-        <LuminaMomentDetail
+        <ZhiMomentDetail
           moment={selectedMoment}
           onClose={() => setSelectedMoment(null)}
           onLike={handleMomentLike}
@@ -252,7 +252,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
           {visibleItems.map((item) => (
             <React.Fragment key={item.id}>
               {item.type === "article" ? (
-                <LuminaPostCard
+                <ZhiPostCard
                   post={{
                     id: item.id,
                     title: item.title,
@@ -268,7 +268,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
                   onLike={handlePostLike}
                 />
               ) : item.type === "moment" ? (
-                <LuminaMomentCard
+                <ZhiMomentCard
                   moment={{
                     id: item.id,
                     content: item.content,
@@ -283,7 +283,7 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
                   onLike={() => handleMomentLike(item.id)}
                 />
               ) : (
-                <LuminaShareCard
+                <ZhiShareCard
                   item={{
                     id: item.id,
                     title: item.title,
@@ -329,4 +329,4 @@ export function LuminaFeed({ initialItems, onPostClick, onMomentLike }: LuminaFe
   );
 }
 
-export default LuminaFeed;
+export default ZhiFeed;

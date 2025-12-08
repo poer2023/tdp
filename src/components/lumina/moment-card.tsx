@@ -24,7 +24,7 @@ interface MomentCardProps {
   onLike?: (id: string) => void;
 }
 
-export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
+export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const hasImages = moment.images && moment.images.length > 0;
@@ -211,10 +211,10 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                     <Heart
                       size={18}
                       className={`transition-colors duration-200 ${moment.liked
-                          ? "fill-rose-500 text-rose-500"
-                          : moment.likes > 0
-                            ? "text-rose-500 group-hover/heart:fill-rose-200"
-                            : "group-hover/heart:text-rose-400"
+                        ? "fill-rose-500 text-rose-500"
+                        : moment.likes > 0
+                          ? "text-rose-500 group-hover/heart:fill-rose-200"
+                          : "group-hover/heart:text-rose-400"
                         }`}
                     />
                   </motion.div>
@@ -248,4 +248,4 @@ export function LuminaMomentCard({ moment, onClick, onLike }: MomentCardProps) {
   );
 }
 
-export default LuminaMomentCard;
+export default ZhiMomentCard;

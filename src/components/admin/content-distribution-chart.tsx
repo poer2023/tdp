@@ -16,7 +16,7 @@ type ContentDistributionChartProps = {
   locale: AdminLocale;
 };
 
-// Colors matching Lumina and stats cards
+// Colors matching Zhi and stats cards
 const CHART_COLORS = {
   posts: "#f97316",    // orange-500
   moments: "#3b82f6",  // blue-500

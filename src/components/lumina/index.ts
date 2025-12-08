@@ -1,28 +1,28 @@
-// Lumina Design System Components
-export { LuminaHeader } from "./header";
-export { LuminaFooter } from "./footer";
-export { LuminaHero } from "./hero";
+// Zhi Design System Components
+export { ZhiHeader } from "./header";
+export { ZhiFooter } from "./footer";
+export { ZhiHero } from "./hero";
 
 // Card Components
-export { LuminaPostCard } from "./post-card";
-export { LuminaMomentCard } from "./moment-card";
-export { LuminaMomentDetail } from "./moment-detail";
-export { LuminaShareCard } from "./share-card";
+export { ZhiPostCard } from "./post-card";
+export { ZhiMomentCard } from "./moment-card";
+export { ZhiMomentDetail } from "./moment-detail";
+export { ZhiShareCard } from "./share-card";
 
 // Widgets
 export { ProfileWidget, CompactStatusWidget } from "./side-widgets";
 
 // Feed
-export { LuminaFeed, type FeedItem, type FeedPost, type FeedMoment, type FeedCurated, type FeedFilter } from "./feed";
+export { ZhiFeed, type FeedItem, type FeedPost, type FeedMoment, type FeedCurated, type FeedFilter } from "./feed";
 
 // Pages
-export { LuminaHomePage } from "./home-page";
+export { ZhiHomePage } from "./home-page";
 
 // Gallery
-export { LuminaGallery, type LuminaGalleryItem } from "./gallery";
+export { ZhiGallery, type ZhiGalleryItem } from "./gallery";
 
 // Projects
-export { LuminaProjects, type LuminaProject } from "./projects";
+export { ZhiProjects, type ZhiProject } from "./projects";
 
 // Stats Dashboard
-export { LuminaStatsDashboard } from "./stats-dashboard";
+export { ZhiStatsDashboard } from "./stats-dashboard";

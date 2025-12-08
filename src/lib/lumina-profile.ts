@@ -1,11 +1,11 @@
-export type LuminaProfile = {
+export type ZhiProfile = {
   name: string;
   title: string;
   bio: string;
   avatarUrl?: string;
 };
 
-const profileConfig: Record<"en" | "zh", LuminaProfile> = {
+const profileConfig: Record<"en" | "zh", ZhiProfile> = {
   en: {
     name: "Zhi",
     title: "Product & Engineering",
@@ -18,6 +18,6 @@ const profileConfig: Record<"en" | "zh", LuminaProfile> = {
   },
 };
 
-export function getLuminaProfile(locale: "en" | "zh"): LuminaProfile {
+export function getZhiProfile(locale: "en" | "zh"): ZhiProfile {
   return profileConfig[locale] ?? profileConfig.en;
 }

@@ -1,4 +1,4 @@
-# Admin 页面样式迁移方案 (Lumina → TDP)
+# Admin 页面样式迁移方案 (Zhi → TDP)
 
 **创建日期**: 2025-12-03
 **状态**: 已批准，待实施
@@ -8,19 +8,19 @@
 
 ## 一、项目背景
 
-**源项目**: `/Users/wanghao/Project/lumina---personal-blog` (React 19 + Vite SPA)
+**源项目**: `/Users/wanghao/Project/Zhi---personal-blog` (React 19 + Vite SPA)
 **目标项目**: `/Users/wanghao/Project/tdp` (Next.js 16 App Router)
 
 ### 用户需求确认
-- [x] **全部迁移** Lumina 独有的功能模块 (Moments, Projects, Curated, Hero Images, Life Log Data)
+- [x] **全部迁移** Zhi 独有的功能模块 (Moments, Projects, Curated, Hero Images, Life Log Data)
 - [x] **保留** TDP 移动端底部标签栏 (BottomTabBar)
-- [x] **适配 Lumina 风格** 重新设计 TDP 独有页面 (Sync, Tools, Export/Import)
+- [x] **适配 Zhi 风格** 重新设计 TDP 独有页面 (Sync, Tools, Export/Import)
 
 ---
 
 ## 二、架构差异对比
 
-| 方面 | Lumina | TDP |
+| 方面 | Zhi | TDP |
 |------|--------|-----|
 | 框架 | React 19 + Vite (SPA) | Next.js 16 + React 19 |
 | 路由 | 单页面 + 12个标签页切换 | App Router 多页面 |
@@ -33,9 +33,9 @@
 
 ## 三、功能模块迁移清单
 
-### 需要新增的功能 (来自 Lumina)
+### 需要新增的功能 (来自 Zhi)
 
-| 功能 | Lumina 位置 | 迁移优先级 | 说明 |
+| 功能 | Zhi 位置 | 迁移优先级 | 说明 |
 |------|-------------|------------|------|
 | **Moments (瞬间)** | Tab + CRUD | P1 | TDP 有数据模型，缺 Admin UI |
 | **Projects (项目)** | Tab + CRUD | P1 | 完全新增 |
@@ -48,11 +48,11 @@
 
 | 页面 | 当前状态 | 目标 |
 |------|----------|------|
-| Overview | 基础样式 | 采用 Lumina 卡片布局 |
+| Overview | 基础样式 | 采用 Zhi 卡片布局 |
 | Posts | 表格样式 | 采用 RichPostItem 卡片 |
-| Gallery | 网格样式 | 采用 Lumina 上传区 |
-| Friends | 卡片样式 | 采用 Lumina 友链卡片 |
-| Subscriptions | 卡片样式 | 采用 Lumina 订阅卡片 |
+| Gallery | 网格样式 | 采用 Zhi 上传区 |
+| Friends | 卡片样式 | 采用 Zhi 友链卡片 |
+| Subscriptions | 卡片样式 | 采用 Zhi 订阅卡片 |
 | Credentials | 列表样式 | 采用平台彩色卡片 |
 | Analytics | 基础图表 | 增加 KPI + 流量图表 |
 | Sync Dashboard | 基础样式 | 采用终端风格日志 |
@@ -64,18 +64,18 @@
 
 ### 阶段 1: 基础组件扩展 (Day 1)
 
-**文件**: `src/components/admin/lumina-shared.tsx`
+**文件**: `src/components/admin/Zhi-shared.tsx`
 
 新增组件:
-- `LuminaInput` - 输入框 (sage-500 焦点边框)
-- `LuminaTextArea` - 文本域
-- `LuminaEditForm` - 编辑表单容器
-- `LuminaDataSection` - 数据区块
-- `LuminaImageUploadArea` - 图片上传区
-- `LuminaRichPostItem` - 文章卡片
-- `LuminaRichMomentItem` - 瞬间卡片
-- `LuminaStatCard` - KPI 卡片
-- `LuminaChartCard` - 图表容器
+- `ZhiInput` - 输入框 (sage-500 焦点边框)
+- `ZhiTextArea` - 文本域
+- `ZhiEditForm` - 编辑表单容器
+- `ZhiDataSection` - 数据区块
+- `ZhiImageUploadArea` - 图片上传区
+- `ZhiRichPostItem` - 文章卡片
+- `ZhiRichMomentItem` - 瞬间卡片
+- `ZhiStatCard` - KPI 卡片
+- `ZhiChartCard` - 图表容器
 
 关键样式模式:
 ```css
@@ -329,16 +329,16 @@ src/components/admin/
 - 统一编辑/删除按钮样式
 
 #### Gallery 页面
-- 采用 Lumina ImageUploadArea 样式
+- 采用 Zhi ImageUploadArea 样式
 - 增强批量上传体验
 
 #### Friends 页面
-- 采用 Lumina 友链卡片样式
+- 采用 Zhi 友链卡片样式
 - 添加背景装饰图标
 - 状态徽章 (active/banned)
 
 #### Subscriptions 页面
-- 采用 Lumina 订阅卡片样式
+- 采用 Zhi 订阅卡片样式
 - 价格+货币显示
 - 不活跃订阅半透明
 
@@ -402,11 +402,11 @@ src/components/admin/
 | 文件 | 修改内容 |
 |------|----------|
 | `prisma/schema.prisma` | 新增 7 个数据模型 |
-| `src/components/admin/lumina-shared.tsx` | 新增 10+ 组件 |
+| `src/components/admin/Zhi-shared.tsx` | 新增 10+ 组件 |
 | `src/components/admin/admin-nav.tsx` | 重构导航分组 |
 | `src/components/admin/bottom-tab-bar.tsx` | 添加 5 个新项 |
 | `src/lib/admin-translations.ts` | 添加 ~20 个翻译键 |
-| `src/app/admin/page.tsx` | 采用 Lumina 布局 |
+| `src/app/admin/page.tsx` | 采用 Zhi 布局 |
 | `src/app/admin/posts/page.tsx` | 卡片列表样式 |
 | `src/app/admin/gallery/page.tsx` | 上传区样式 |
 | `src/app/admin/friends/page.tsx` | 友链卡片样式 |
@@ -423,7 +423,7 @@ src/components/admin/
 
 ## 七、技术注意事项
 
-1. **图片上传**: 复用 TDP 现有的 `/api/admin/gallery/upload`，适配 Lumina 的 ImageUploadArea 组件
+1. **图片上传**: 复用 TDP 现有的 `/api/admin/gallery/upload`，适配 Zhi 的 ImageUploadArea 组件
 
 2. **表单处理**: 使用 React Hook Form + Server Actions
 
@@ -433,17 +433,17 @@ src/components/admin/
 
 5. **拖拽排序**: Hero Images 需要安装 `@dnd-kit/core`
 
-6. **图表**: 需要安装 `recharts`，参考 Lumina 的 AreaChart/PieChart 配置
+6. **图表**: 需要安装 `recharts`，参考 Zhi 的 AreaChart/PieChart 配置
 
 ---
 
 ## 八、参考文件
 
-**Lumina 核心文件** (样式提取源):
-- `/Users/wanghao/Project/lumina---personal-blog /components/AdminDashboard.tsx` (1675行)
+**Zhi 核心文件** (样式提取源):
+- `/Users/wanghao/Project/Zhi---personal-blog /components/AdminDashboard.tsx` (1675行)
 
 **TDP 核心文件** (需修改):
-- `/Users/wanghao/Project/tdp/src/components/admin/lumina-shared.tsx`
+- `/Users/wanghao/Project/tdp/src/components/admin/Zhi-shared.tsx`
 - `/Users/wanghao/Project/tdp/src/components/admin/admin-nav.tsx`
 - `/Users/wanghao/Project/tdp/prisma/schema.prisma`
 - `/Users/wanghao/Project/tdp/src/app/globals.css`

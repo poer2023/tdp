@@ -97,7 +97,7 @@ const ThumbnailItem = React.memo(function ThumbnailItem({
   isActive,
   onClick,
 }: {
-  item: LuminaGalleryItem;
+  item: ZhiGalleryItem;
   index: number;
   isActive: boolean;
   onClick: (index: number) => void;
@@ -135,7 +135,7 @@ type OriginalLoadState = {
   totalBytes: number | null;
 };
 
-export interface LuminaGalleryItem {
+export interface ZhiGalleryItem {
   id: string;
   type: "image" | "video";
   url: string;
@@ -171,8 +171,8 @@ export interface LuminaGalleryItem {
   storageType?: string;
 }
 
-interface LuminaGalleryProps {
-  items: LuminaGalleryItem[];
+interface ZhiGalleryProps {
+  items: ZhiGalleryItem[];
 }
 
 // Helper functions
@@ -231,12 +231,12 @@ function formatRelativeTime(dateString: string | null | undefined, locale: strin
   return locale === "zh" ? `${years} 年前` : `${years} year${years > 1 ? "s" : ""} ago`;
 }
 
-export function LuminaGallery({ items }: LuminaGalleryProps) {
+export function ZhiGallery({ items }: ZhiGalleryProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-  const [selectedItem, setSelectedItem] = useState<LuminaGalleryItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ZhiGalleryItem | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -263,21 +263,21 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
 
   // Inject custom map styles
   useEffect(() => {
-    const styleId = "lumina-gallery-map-styles";
+    const styleId = "Zhi-gallery-map-styles";
     if (document.getElementById(styleId)) return;
 
     const style = document.createElement("style");
     style.id = styleId;
     style.textContent = `
-      /* Lumina Gallery Map Controls - Dark */
-      .lumina-map .leaflet-control-zoom {
+      /* Zhi Gallery Map Controls - Dark */
+      .Zhi-map .leaflet-control-zoom {
         border: none !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
         border-radius: 8px !important;
         overflow: hidden;
         margin: 8px !important;
       }
-      .lumina-map .leaflet-control-zoom a {
+      .Zhi-map .leaflet-control-zoom a {
         width: 28px !important;
         height: 28px !important;
         line-height: 28px !important;
@@ -286,19 +286,19 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
         transition: background 0.15s ease;
       }
       /* Dark theme controls */
-      .dark .lumina-map .leaflet-control-zoom a {
+      .dark .Zhi-map .leaflet-control-zoom a {
         color: #fafafa !important;
         background: #27272a !important;
       }
-      .dark .lumina-map .leaflet-control-zoom a:hover {
+      .dark .Zhi-map .leaflet-control-zoom a:hover {
         background: #3f3f46 !important;
       }
       /* Light theme controls */
-      .lumina-map .leaflet-control-zoom a {
+      .Zhi-map .leaflet-control-zoom a {
         color: #44403c !important;
         background: #ffffff !important;
       }
-      .lumina-map .leaflet-control-zoom a:hover {
+      .Zhi-map .leaflet-control-zoom a:hover {
         background: #f5f5f4 !important;
       }
     `;
@@ -358,7 +358,7 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
     return translations[locale]?.[key] || key;
   };
 
-  const handleOpen = useCallback((item: LuminaGalleryItem) => {
+  const handleOpen = useCallback((item: ZhiGalleryItem) => {
     const idx = items.findIndex((i) => i.id === item.id);
     setSelectedItem(item);
     setCurrentIndex(idx >= 0 ? idx : 0);
@@ -757,7 +757,7 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
                       {t("Location")}
                     </h3>
 
-                    <div className="lumina-map mb-3 h-[160px] w-full overflow-hidden rounded-xl grayscale-[0.2] transition-all duration-500 hover:grayscale-0">
+                    <div className="Zhi-map mb-3 h-[160px] w-full overflow-hidden rounded-xl grayscale-[0.2] transition-all duration-500 hover:grayscale-0">
                       <LocationMap
                         lat={selectedItem.latitude}
                         lng={selectedItem.longitude}
@@ -955,7 +955,7 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
                     {selectedItem.latitude && selectedItem.longitude && (
                       <section className="mb-4">
                         <div className="overflow-hidden rounded-xl border border-stone-700/50">
-                          <div className="lumina-map h-[120px] w-full">
+                          <div className="Zhi-map h-[120px] w-full">
                             <LocationMap
                               lat={selectedItem.latitude}
                               lng={selectedItem.longitude}
@@ -1036,4 +1036,4 @@ export function LuminaGallery({ items }: LuminaGalleryProps) {
   );
 }
 
-export default LuminaGallery;
+export default ZhiGallery;

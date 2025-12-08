@@ -14,7 +14,7 @@ import { motion, useInView, useSpring, useTransform } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { getLocaleFromPathname } from "@/lib/i18n";
 
-export interface LuminaProject {
+export interface ZhiProject {
   id: string;
   year: string;
   role: string;
@@ -29,7 +29,7 @@ export interface LuminaProject {
 }
 
 interface ProjectSlideProps {
-  project: LuminaProject;
+  project: ZhiProject;
   index: number;
   total: number;
 }
@@ -263,11 +263,11 @@ function ProjectSlide({ project, index, total: _total }: ProjectSlideProps) {
   );
 }
 
-interface LuminaProjectsProps {
-  projects: LuminaProject[];
+interface ZhiProjectsProps {
+  projects: ZhiProject[];
 }
 
-export function LuminaProjects({ projects }: LuminaProjectsProps) {
+export function ZhiProjects({ projects }: ZhiProjectsProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
 
@@ -330,4 +330,4 @@ export function LuminaProjects({ projects }: LuminaProjectsProps) {
   );
 }
 
-export default LuminaProjects;
+export default ZhiProjects;

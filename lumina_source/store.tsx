@@ -12,7 +12,7 @@ const TRANSLATIONS = {
     'Moments': 'Moments',
     'Gallery': 'Gallery',
     'Life Log': 'Life Log',
-    'Dashboard': 'Life Log', 
+    'Dashboard': 'Life Log',
     'Projects': 'Projects',
     'Login': 'Login',
     'Logout': 'Logout',
@@ -26,7 +26,7 @@ const TRANSLATIONS = {
     'min read': 'min read',
     'Just now': 'Just now',
     'Welcome Back': 'Welcome Back',
-    'Join Lumina': 'Join Lumina',
+    'Join Zhi': 'Join Zhi',
     'Sign In': 'Sign In',
     'Create Account': 'Create Account',
     'Username': 'Username',
@@ -100,7 +100,7 @@ const TRANSLATIONS = {
     'min read': '分钟阅读',
     'Just now': '刚刚',
     'Welcome Back': '欢迎回来',
-    'Join Lumina': '加入 Lumina',
+    'Join Zhi': '加入 Zhi',
     'Sign In': '登录',
     'Create Account': '创建账户',
     'Username': '用户名',
@@ -218,68 +218,68 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Initialize user from localStorage
   const [user, setUser] = useState<User | null>(() => {
     try {
-        const savedUser = localStorage.getItem('lumina_user');
-        return savedUser ? JSON.parse(savedUser) : null;
+      const savedUser = localStorage.getItem('Zhi_user');
+      return savedUser ? JSON.parse(savedUser) : null;
     } catch (e) {
-        return null;
+      return null;
     }
   });
 
   // Initialize Friend Code from localStorage
   const [friendCode, setFriendCode] = useState<string | null>(() => {
-      try {
-          return localStorage.getItem('lumina_friend_code');
-      } catch (e) {
-          return null;
-      }
+    try {
+      return localStorage.getItem('Zhi_friend_code');
+    } catch (e) {
+      return null;
+    }
   });
-  
+
   // Mock User Database
   const [users, setUsers] = useState<Map<string, string>>(new Map([
-      ['admin', 'lumina123'],
-      ['visitor', 'visitor123']
+    ['admin', 'Zhi123'],
+    ['visitor', 'visitor123']
   ]));
 
   const login = (u: string, p: string) => {
     if (users.has(u) && users.get(u) === p) {
-      const newUser: User = { 
-          username: u, 
-          role: u === 'admin' ? 'admin' : 'user' 
+      const newUser: User = {
+        username: u,
+        role: u === 'admin' ? 'admin' : 'user'
       };
       setUser(newUser);
       // Persist to localStorage
-      localStorage.setItem('lumina_user', JSON.stringify(newUser));
+      localStorage.setItem('Zhi_user', JSON.stringify(newUser));
       return true;
     }
     return false;
   };
 
   const register = (u: string, p: string) => {
-      if (users.has(u)) return false;
-      const newUsers = new Map(users);
-      newUsers.set(u, p);
-      setUsers(newUsers);
-      
-      const newUser: User = { username: u, role: 'user' };
-      setUser(newUser);
-      localStorage.setItem('lumina_user', JSON.stringify(newUser));
-      return true;
-    }
+    if (users.has(u)) return false;
+    const newUsers = new Map(users);
+    newUsers.set(u, p);
+    setUsers(newUsers);
+
+    const newUser: User = { username: u, role: 'user' };
+    setUser(newUser);
+    localStorage.setItem('Zhi_user', JSON.stringify(newUser));
+    return true;
+  }
 
   const loginAsFriend = (code: string) => {
-      setFriendCode(code);
-      localStorage.setItem('lumina_friend_code', code);
+    setFriendCode(code);
+    localStorage.setItem('Zhi_friend_code', code);
   };
 
   const logout = () => {
-      setUser(null);
-      // We purposefully don't clear friendCode on regular logout, 
-      // but if we wanted a "Full Reset" we could.
-      // For now, let's keep friend identity persistent even if admin logs out.
-      // Uncomment below to clear friend identity on logout:
-      // setFriendCode(null);
-      // localStorage.removeItem('lumina_friend_code');
-      localStorage.removeItem('lumina_user');
+    setUser(null);
+    // We purposefully don't clear friendCode on regular logout, 
+    // but if we wanted a "Full Reset" we could.
+    // For now, let's keep friend identity persistent even if admin logs out.
+    // Uncomment below to clear friend identity on logout:
+    // setFriendCode(null);
+    // localStorage.removeItem('Zhi_friend_code');
+    localStorage.removeItem('Zhi_user');
   };
 
   return (
@@ -309,7 +309,7 @@ interface DataContextType {
   routineData: RoutineData[];
   stepsData: StepData[];
   heroImages: string[];
-  
+
   // Traffic Stats
   trafficData: TrafficData[];
   sourceData: SourceData[];
@@ -321,12 +321,12 @@ interface DataContextType {
   subscriptions: Subscription[];
   credentials: Credential[];
   syncJobs: SyncJob[];
-  
+
   // --- CRUD Actions ---
   addPost: (post: BlogPost) => void;
   updatePost: (post: BlogPost) => void;
   deletePost: (id: string) => void;
-  
+
   addMoment: (moment: Moment) => void;
   updateMoment: (moment: Moment) => void;
   deleteMoment: (id: string) => void;
@@ -365,7 +365,7 @@ interface DataContextType {
   updateRoutineData: (data: RoutineData[]) => void;
   updateStepsData: (data: StepData[]) => void;
   updateHeroImages: (images: string[]) => void;
-  
+
   // Social Actions
   toggleLike: (id: string, type: 'article' | 'moment' | 'share') => void;
   addComment: (id: string, type: 'article' | 'moment', text: string, username: string) => void;
@@ -444,51 +444,51 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const deleteCredential = (id: string) => setCredentials(credentials.filter(c => c.id !== id));
 
   const triggerSync = async (credentialId: string) => {
-      // 1. Find credential
-      const cred = credentials.find(c => c.id === credentialId);
-      if (!cred) return;
+    // 1. Find credential
+    const cred = credentials.find(c => c.id === credentialId);
+    if (!cred) return;
 
-      // 2. Create running job
-      const jobId = Math.random().toString(36).substr(2, 9);
-      const newJob: SyncJob = {
-          id: jobId,
-          credentialId: cred.id,
-          platform: cred.platform,
-          status: 'running',
-          itemsProcessed: 0,
-          durationMs: 0,
-          timestamp: new Date().toISOString(),
-          logs: ['Starting sync job...', `Connecting to ${cred.platform}...`]
-      };
-      setSyncJobs(prev => [newJob, ...prev]);
+    // 2. Create running job
+    const jobId = Math.random().toString(36).substr(2, 9);
+    const newJob: SyncJob = {
+      id: jobId,
+      credentialId: cred.id,
+      platform: cred.platform,
+      status: 'running',
+      itemsProcessed: 0,
+      durationMs: 0,
+      timestamp: new Date().toISOString(),
+      logs: ['Starting sync job...', `Connecting to ${cred.platform}...`]
+    };
+    setSyncJobs(prev => [newJob, ...prev]);
 
-      // 3. Simulate delay and result
-      const delay = Math.floor(Math.random() * 2000) + 1000;
-      await new Promise(resolve => setTimeout(resolve, delay));
-      
-      const success = Math.random() > 0.2; // 80% success chance
-      
-      // 4. Update job and credential
-      const completedJob: SyncJob = {
-          ...newJob,
-          status: success ? 'success' : 'failed',
-          itemsProcessed: success ? Math.floor(Math.random() * 50) : 0,
-          durationMs: delay,
-          logs: [
-              ...newJob.logs, 
-              success ? 'Data fetched successfully.' : 'Connection timeout.',
-              success ? `Processed ${Math.floor(Math.random() * 50)} items.` : 'Retrying failed.',
-              `Job finished with status: ${success ? 'SUCCESS' : 'FAILED'}`
-          ]
-      };
-      setSyncJobs(prev => prev.map(j => j.id === jobId ? completedJob : j));
-      
-      updateCredential({
-          ...cred,
-          lastSync: 'Just now',
-          status: success ? 'active' : 'error',
-          failureCount: success ? 0 : cred.failureCount + 1
-      });
+    // 3. Simulate delay and result
+    const delay = Math.floor(Math.random() * 2000) + 1000;
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    const success = Math.random() > 0.2; // 80% success chance
+
+    // 4. Update job and credential
+    const completedJob: SyncJob = {
+      ...newJob,
+      status: success ? 'success' : 'failed',
+      itemsProcessed: success ? Math.floor(Math.random() * 50) : 0,
+      durationMs: delay,
+      logs: [
+        ...newJob.logs,
+        success ? 'Data fetched successfully.' : 'Connection timeout.',
+        success ? `Processed ${Math.floor(Math.random() * 50)} items.` : 'Retrying failed.',
+        `Job finished with status: ${success ? 'SUCCESS' : 'FAILED'}`
+      ]
+    };
+    setSyncJobs(prev => prev.map(j => j.id === jobId ? completedJob : j));
+
+    updateCredential({
+      ...cred,
+      lastSync: 'Just now',
+      status: success ? 'active' : 'error',
+      failureCount: success ? 0 : cred.failureCount + 1
+    });
   };
 
   // Stats Data Setters
@@ -502,48 +502,48 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Social Operations
   const toggleLike = (id: string, type: 'article' | 'moment' | 'share') => {
-      if (type === 'article') {
-          setPosts(posts.map(p => p.id === id ? { ...p, likes: p.likes + 1 } : p));
-      } else if (type === 'moment') {
-          setMoments(moments.map(m => m.id === id ? { ...m, likes: m.likes + 1 } : m));
-      } else if (type === 'share') {
-          setShareItems(shareItems.map(s => s.id === id ? { ...s, likes: s.likes + 1 } : s));
-      }
+    if (type === 'article') {
+      setPosts(posts.map(p => p.id === id ? { ...p, likes: p.likes + 1 } : p));
+    } else if (type === 'moment') {
+      setMoments(moments.map(m => m.id === id ? { ...m, likes: m.likes + 1 } : m));
+    } else if (type === 'share') {
+      setShareItems(shareItems.map(s => s.id === id ? { ...s, likes: s.likes + 1 } : s));
+    }
   };
 
   const addComment = (id: string, type: 'article' | 'moment', text: string, username: string) => {
-      const newComment = {
-          id: Math.random().toString(36).substr(2, 9),
-          username,
-          content: text,
-          date: new Date().toLocaleDateString()
-      };
+    const newComment = {
+      id: Math.random().toString(36).substr(2, 9),
+      username,
+      content: text,
+      date: new Date().toLocaleDateString()
+    };
 
-      if (type === 'article') {
-          setPosts(posts.map(p => p.id === id ? { ...p, comments: [...p.comments, newComment] } : p));
-      } else {
-          setMoments(moments.map(m => m.id === id ? { ...m, comments: [...m.comments, newComment] } : m));
-      }
+    if (type === 'article') {
+      setPosts(posts.map(p => p.id === id ? { ...p, comments: [...p.comments, newComment] } : p));
+    } else {
+      setMoments(moments.map(m => m.id === id ? { ...m, comments: [...m.comments, newComment] } : m));
+    }
   };
 
   const convertCurrency = (amount: number, from: string) => {
-      const rates: {[key: string]: number} = {
-          'CNY': 1,
-          'USD': 7.2,
-          'JPY': 0.05,
-          'HKD': 0.92
-      };
-      const rate = rates[from] || 1;
-      return amount * rate;
+    const rates: { [key: string]: number } = {
+      'CNY': 1,
+      'USD': 7.2,
+      'JPY': 0.05,
+      'HKD': 0.92
+    };
+    const rate = rates[from] || 1;
+    return amount * rate;
   }
 
   return (
     <DataContext.Provider value={{
-      posts, moments, shareItems, projects, galleryItems, 
+      posts, moments, shareItems, projects, galleryItems,
       movieData, gameData, skillData, photoStats, routineData, stepsData, heroImages,
       trafficData, sourceData, pageVisitData, deviceData,
       friends, subscriptions, credentials, syncJobs,
-      
+
       addPost, updatePost, deletePost,
       addMoment, updateMoment, deleteMoment,
       addProject, updateProject, deleteProject,
@@ -554,7 +554,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       addSubscription, updateSubscription, deleteSubscription,
       addCredential, updateCredential, deleteCredential, triggerSync,
 
-      updateMovieData, updateGameData, updateSkillData, 
+      updateMovieData, updateGameData, updateSkillData,
       updatePhotoStats, updateRoutineData, updateStepsData, updateHeroImages,
 
       toggleLike, addComment, convertCurrency

@@ -34,7 +34,7 @@ const NAV_LINKS: NavLink[] = [
   { label: "Life Log", labelZh: "生活日志", path: "/about/live" },
 ];
 
-export function LuminaHeader() {
+export function ZhiHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -373,5 +373,5 @@ export function LuminaHeader() {
   );
 }
 
-export default LuminaHeader;
+export default ZhiHeader;
 

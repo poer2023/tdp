@@ -2,14 +2,14 @@
 
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { LuminaHero, type HeroImageItem } from "./hero";
-import { LuminaFeed } from "./feed";
+import { ZhiHero, type HeroImageItem } from "./hero";
+import { ZhiFeed } from "./feed";
 import type { FeedItem, FeedPost } from "./feed";
 import { ProfileWidget, CompactStatusWidget } from "./side-widgets";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
 
-interface LuminaHomePageProps {
+interface ZhiHomePageProps {
   feedItems: FeedItem[];
   heroImages?: HeroImageItem[];
   profileData?: {
@@ -20,7 +20,7 @@ interface LuminaHomePageProps {
   };
 }
 
-export function LuminaHomePage({ feedItems, heroImages, profileData }: LuminaHomePageProps) {
+export function ZhiHomePage({ feedItems, heroImages, profileData }: ZhiHomePageProps) {
   const pathname = usePathname();
   const router = useRouter();
   const locale = getLocaleFromPathname(pathname) ?? "en";
@@ -45,14 +45,14 @@ export function LuminaHomePage({ feedItems, heroImages, profileData }: LuminaHom
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-[#0a0a0b]">
       {/* Hero Section */}
-      <LuminaHero heroImages={heroImages} />
+      <ZhiHero heroImages={heroImages} />
 
       {/* Main Content */}
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
         <div className="flex flex-col gap-12 lg:flex-row">
           {/* Left Column: Feed (2/3 width) */}
           <div className="w-full lg:w-2/3">
-            <LuminaFeed
+            <ZhiFeed
               initialItems={feedItems}
               onPostClick={handlePostClick}
             />
@@ -80,4 +80,4 @@ export function LuminaHomePage({ feedItems, heroImages, profileData }: LuminaHom
   );
 }
 
-export default LuminaHomePage;
+export default ZhiHomePage;

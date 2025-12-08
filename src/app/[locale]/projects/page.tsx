@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { LuminaHeader, LuminaFooter, LuminaProjects } from "@/components/lumina";
-import type { LuminaProject } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter, ZhiProjects } from "@/components/lumina";
+import type { ZhiProject } from "@/components/lumina";
 import { aboutContent, resolveAboutLocale } from "@/lib/about-content";
 
 // Revalidate every 60 seconds
@@ -23,12 +23,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-// Convert about-content projects to Lumina project format
+// Convert about-content projects to Zhi project format
 function toProjectItem(
   project: { period: string; title: string; description: string; image: string; stack: string[] },
   index: number,
   locale: string
-): LuminaProject {
+): ZhiProject {
   // Extract year from period (e.g., "2024 · Hikari Loom" -> "2024")
   const year = project.period.split("·")[0]?.trim() || "2024";
   return {
@@ -43,9 +43,9 @@ function toProjectItem(
     features:
       project.stack.length > 2
         ? [
-            locale === "zh" ? "现代技术栈" : "Modern Tech Stack",
-            locale === "zh" ? "响应式设计" : "Responsive Design",
-          ]
+          locale === "zh" ? "现代技术栈" : "Modern Tech Stack",
+          locale === "zh" ? "响应式设计" : "Responsive Design",
+        ]
         : undefined,
   };
 }
@@ -55,16 +55,16 @@ export default async function LocalizedProjectsPage({ params }: PageProps) {
   const l = resolveAboutLocale(locale);
   const data = aboutContent[l];
 
-  // Convert about page projects to Lumina format
-  const projects: LuminaProject[] = data.projects.map((p, i) => toProjectItem(p, i, l));
+  // Convert about page projects to Zhi format
+  const projects: ZhiProject[] = data.projects.map((p, i) => toProjectItem(p, i, l));
 
   return (
     <>
-      <LuminaHeader />
+      <ZhiHeader />
       <main className="bg-stone-50 dark:bg-stone-950">
-        <LuminaProjects projects={projects} />
+        <ZhiProjects projects={projects} />
       </main>
-      <LuminaFooter />
+      <ZhiFooter />
     </>
   );
 }

@@ -24,7 +24,7 @@ interface PostCardProps {
   onLike?: (id: string) => void;
 }
 
-export function LuminaPostCard({ post, onClick, onLike }: PostCardProps) {
+export function ZhiPostCard({ post, onClick, onLike }: PostCardProps) {
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -96,4 +96,4 @@ export function LuminaPostCard({ post, onClick, onLike }: PostCardProps) {
   );
 }
 
-export default LuminaPostCard;
+export default ZhiPostCard;

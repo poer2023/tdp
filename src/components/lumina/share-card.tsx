@@ -26,7 +26,7 @@ interface ShareCardProps {
   onLike?: (id: string) => void;
 }
 
-export function LuminaShareCard({ item, onLike }: ShareCardProps) {
+export function ZhiShareCard({ item, onLike }: ShareCardProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -127,9 +127,8 @@ export function LuminaShareCard({ item, onLike }: ShareCardProps) {
               </div>
               <button
                 onClick={handleLike}
-                className={`relative z-10 flex cursor-pointer items-center gap-1 text-xs transition-colors hover:text-rose-500 ${
-                  item.likes > 0 ? "text-rose-500" : "text-stone-400"
-                }`}
+                className={`relative z-10 flex cursor-pointer items-center gap-1 text-xs transition-colors hover:text-rose-500 ${item.likes > 0 ? "text-rose-500" : "text-stone-400"
+                  }`}
               >
                 <Heart size={12} className={item.likes > 0 ? "fill-current" : ""} />
                 <span>{item.likes}</span>
@@ -142,4 +141,4 @@ export function LuminaShareCard({ item, onLike }: ShareCardProps) {
   );
 }
 
-export default LuminaShareCard;
+export default ZhiShareCard;

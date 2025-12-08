@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { LuminaChartCard } from "./lumina-shared";
+import { ZhiChartCard } from "./lumina-shared";
 
 type TrafficKpi = {
   label: string;
@@ -164,11 +164,10 @@ export function TrafficCharts({
                 {kpi.deltaLabel && (
                   <div className="mt-2 flex items-center gap-1">
                     <span
-                      className={`text-xs font-medium ${
-                        kpi.positive
+                      className={`text-xs font-medium ${kpi.positive
                           ? "text-emerald-600 dark:text-emerald-400"
                           : "text-rose-600 dark:text-rose-400"
-                      }`}
+                        }`}
                     >
                       {kpi.deltaLabel}
                     </span>
@@ -186,7 +185,7 @@ export function TrafficCharts({
       {/* Traffic Overview and Acquisition Charts */}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <LuminaChartCard title={trendTitle} description="近期访问走势">
+          <ZhiChartCard title={trendTitle} description="近期访问走势">
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={trendData}>
@@ -219,10 +218,10 @@ export function TrafficCharts({
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </LuminaChartCard>
+          </ZhiChartCard>
         </div>
 
-        <LuminaChartCard title="来源分布" description="各渠道流量占比">
+        <ZhiChartCard title="来源分布" description="各渠道流量占比">
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -251,12 +250,12 @@ export function TrafficCharts({
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </LuminaChartCard>
+        </ZhiChartCard>
       </div>
 
       {/* Top Pages and Device Breakdown */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <LuminaChartCard title="热门页面" description="访问量最高的 5 个页面">
+        <ZhiChartCard title="热门页面" description="访问量最高的 5 个页面">
           <div className="space-y-3">
             {topPages.map((page, idx) => (
               <div
@@ -280,9 +279,9 @@ export function TrafficCharts({
               </div>
             ))}
           </div>
-        </LuminaChartCard>
+        </ZhiChartCard>
 
-        <LuminaChartCard title="设备分布" description="不同设备类型的访问量">
+        <ZhiChartCard title="设备分布" description="不同设备类型的访问量">
           <div className="space-y-4 pt-2">
             {deviceBreakdown.map((device) => (
               <div key={device.label}>
@@ -308,7 +307,7 @@ export function TrafficCharts({
               </div>
             ))}
           </div>
-        </LuminaChartCard>
+        </ZhiChartCard>
       </div>
     </div>
   );

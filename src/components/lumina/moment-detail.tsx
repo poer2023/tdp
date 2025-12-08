@@ -25,7 +25,7 @@ interface MomentDetailProps {
   onLike?: (id: string) => Promise<{ liked: boolean; likeCount: number } | void> | void;
 }
 
-export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProps) {
+export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
   const hasImages = moment.images && moment.images.length > 0;
@@ -354,4 +354,4 @@ export function LuminaMomentDetail({ moment, onClose, onLike }: MomentDetailProp
   );
 }
 
-export default LuminaMomentDetail;
+export default ZhiMomentDetail;

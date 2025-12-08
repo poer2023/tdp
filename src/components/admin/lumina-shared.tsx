@@ -10,7 +10,7 @@ function cn(...classes: Array<string | false | null | undefined>) {
 // ============================================================================
 // NavBtn - 侧边栏导航按钮
 // ============================================================================
-interface LuminaNavBtnProps {
+interface ZhiNavBtnProps {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
@@ -18,7 +18,7 @@ interface LuminaNavBtnProps {
   href?: string;
 }
 
-export function LuminaNavBtn({ active, onClick, icon, label, href }: LuminaNavBtnProps) {
+export function ZhiNavBtn({ active, onClick, icon, label, href }: ZhiNavBtnProps) {
   const className = cn(
     "w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium",
     active
@@ -42,9 +42,9 @@ export function LuminaNavBtn({ active, onClick, icon, label, href }: LuminaNavBt
 }
 
 // ============================================================================
-// SectionContainer - 区块容器（Lumina 风格）
+// SectionContainer - 区块容器（Zhi 风格）
 // ============================================================================
-interface LuminaSectionContainerProps {
+interface ZhiSectionContainerProps {
   title: string;
   onAdd?: () => void;
   addLabel?: string;
@@ -52,13 +52,13 @@ interface LuminaSectionContainerProps {
   className?: string;
 }
 
-export function LuminaSectionContainer({
+export function ZhiSectionContainer({
   title,
   onAdd,
   addLabel = "Add New",
   children,
   className = "",
-}: LuminaSectionContainerProps) {
+}: ZhiSectionContainerProps) {
   return (
     <div className={cn("max-w-5xl mx-auto animate-in fade-in duration-500 pb-10", className)}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -83,7 +83,7 @@ export function LuminaSectionContainer({
 // ============================================================================
 // EditForm - 编辑表单模态框
 // ============================================================================
-interface LuminaEditFormProps {
+interface ZhiEditFormProps {
   title: string;
   description?: string;
   children: React.ReactNode;
@@ -95,7 +95,7 @@ interface LuminaEditFormProps {
   className?: string;
 }
 
-export function LuminaEditForm({
+export function ZhiEditForm({
   title,
   description,
   children,
@@ -105,7 +105,7 @@ export function LuminaEditForm({
   cancelLabel = "Cancel",
   footer,
   className,
-}: LuminaEditFormProps) {
+}: ZhiEditFormProps) {
   return (
     <div
       className={cn(
@@ -148,7 +148,7 @@ export function LuminaEditForm({
 // ============================================================================
 // Input - 文本输入组件
 // ============================================================================
-type LuminaInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+type ZhiInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
   description?: string;
   error?: string;
@@ -156,8 +156,8 @@ type LuminaInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   inputClassName?: string;
 };
 
-export const LuminaInput = React.forwardRef<HTMLInputElement, LuminaInputProps>(
-  function LuminaInput(
+export const ZhiInput = React.forwardRef<HTMLInputElement, ZhiInputProps>(
+  function ZhiInput(
     { label, description, error, hint, className, inputClassName, ...inputProps },
     ref
   ) {
@@ -194,7 +194,7 @@ export const LuminaInput = React.forwardRef<HTMLInputElement, LuminaInputProps>(
 // ============================================================================
 // TextArea - 多行文本组件
 // ============================================================================
-type LuminaTextAreaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+type ZhiTextAreaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   label?: string;
   description?: string;
   error?: string;
@@ -202,8 +202,8 @@ type LuminaTextAreaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   textareaClassName?: string;
 };
 
-export const LuminaTextArea = React.forwardRef<HTMLTextAreaElement, LuminaTextAreaProps>(
-  function LuminaTextArea(
+export const ZhiTextArea = React.forwardRef<HTMLTextAreaElement, ZhiTextAreaProps>(
+  function ZhiTextArea(
     { label, description, error, hint, className, textareaClassName, ...textareaProps },
     ref
   ) {
@@ -240,7 +240,7 @@ export const LuminaTextArea = React.forwardRef<HTMLTextAreaElement, LuminaTextAr
 // ============================================================================
 // Select - 下拉选择组件
 // ============================================================================
-type LuminaSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
+type ZhiSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   label?: string;
   description?: string;
   error?: string;
@@ -248,8 +248,8 @@ type LuminaSelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
   selectClassName?: string;
 };
 
-export const LuminaSelect = React.forwardRef<HTMLSelectElement, LuminaSelectProps>(
-  function LuminaSelect(
+export const ZhiSelect = React.forwardRef<HTMLSelectElement, ZhiSelectProps>(
+  function ZhiSelect(
     { label, description, error, options, className, selectClassName, ...selectProps },
     ref
   ) {
@@ -287,7 +287,7 @@ export const LuminaSelect = React.forwardRef<HTMLSelectElement, LuminaSelectProp
 // ============================================================================
 // ActionBtn - 操作按钮
 // ============================================================================
-interface LuminaActionBtnProps {
+interface ZhiActionBtnProps {
   children?: React.ReactNode;
   icon?: React.ReactNode;
   onClick?: () => void;
@@ -299,7 +299,7 @@ interface LuminaActionBtnProps {
   type?: "button" | "submit";
 }
 
-export function LuminaActionBtn({
+export function ZhiActionBtn({
   children,
   icon,
   onClick,
@@ -309,7 +309,7 @@ export function LuminaActionBtn({
   className = "",
   disabled = false,
   type = "button",
-}: LuminaActionBtnProps) {
+}: ZhiActionBtnProps) {
   // 如果只有 icon 没有 children，则是图标按钮
   if (icon && !children) {
     const iconBtnClass = cn(
@@ -372,7 +372,7 @@ export function LuminaActionBtn({
 // ============================================================================
 // IconBtn - 图标按钮（用于列表项操作）
 // ============================================================================
-interface LuminaIconBtnProps {
+interface ZhiIconBtnProps {
   icon: React.ReactNode;
   onClick?: () => void;
   href?: string;
@@ -382,7 +382,7 @@ interface LuminaIconBtnProps {
   disabled?: boolean;
 }
 
-export function LuminaIconBtn({
+export function ZhiIconBtn({
   icon,
   onClick,
   href,
@@ -390,7 +390,7 @@ export function LuminaIconBtn({
   title,
   className = "",
   disabled = false,
-}: LuminaIconBtnProps) {
+}: ZhiIconBtnProps) {
   const baseStyles = "p-2 rounded-lg transition-colors inline-flex items-center justify-center";
 
   const variantStyles = {
@@ -422,19 +422,19 @@ export function LuminaIconBtn({
 // ============================================================================
 // ListContainer - 列表容器
 // ============================================================================
-interface LuminaListContainerProps {
+interface ZhiListContainerProps {
   children: React.ReactNode;
   className?: string;
 }
 
-export function LuminaListContainer({ children, className = "" }: LuminaListContainerProps) {
+export function ZhiListContainer({ children, className = "" }: ZhiListContainerProps) {
   return <div className={cn("grid gap-3", className)}>{children}</div>;
 }
 
 // ============================================================================
 // ListItem - 列表项组件
 // ============================================================================
-interface LuminaListItemProps {
+interface ZhiListItemProps {
   title: string;
   subtitle?: string;
   image?: string;
@@ -448,7 +448,7 @@ interface LuminaListItemProps {
   children?: React.ReactNode;
 }
 
-export function LuminaListItem({
+export function ZhiListItem({
   title,
   subtitle,
   image,
@@ -460,7 +460,7 @@ export function LuminaListItem({
   href,
   onClick,
   children,
-}: LuminaListItemProps) {
+}: ZhiListItemProps) {
   const content = (
     <>
       {image && (
@@ -483,8 +483,8 @@ export function LuminaListItem({
       </div>
       {actions || (
         <div className="flex gap-2">
-          {onEdit && <LuminaIconBtn icon={<EditIcon />} onClick={onEdit} />}
-          {onDelete && <LuminaIconBtn icon={<TrashIcon />} onClick={onDelete} variant="danger" />}
+          {onEdit && <ZhiIconBtn icon={<EditIcon />} onClick={onEdit} />}
+          {onDelete && <ZhiIconBtn icon={<TrashIcon />} onClick={onDelete} variant="danger" />}
         </div>
       )}
     </>
@@ -518,12 +518,12 @@ export function LuminaListItem({
 // ============================================================================
 // Badge - 状态标签
 // ============================================================================
-interface LuminaBadgeProps {
+interface ZhiBadgeProps {
   children: React.ReactNode;
   variant?: "default" | "success" | "warning" | "error" | "info";
 }
 
-export function LuminaBadge({ children, variant = "default" }: LuminaBadgeProps) {
+export function ZhiBadge({ children, variant = "default" }: ZhiBadgeProps) {
   const variantStyles = {
     default: "bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400",
     success: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400",
@@ -547,14 +547,14 @@ export function LuminaBadge({ children, variant = "default" }: LuminaBadgeProps)
 // ============================================================================
 // EmptyState - 空状态
 // ============================================================================
-interface LuminaEmptyStateProps {
+interface ZhiEmptyStateProps {
   icon?: React.ReactNode;
   title: string;
   description?: string;
   action?: React.ReactNode;
 }
 
-export function LuminaEmptyState({ icon, title, description, action }: LuminaEmptyStateProps) {
+export function ZhiEmptyState({ icon, title, description, action }: ZhiEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 bg-stone-50 px-6 py-12 text-center dark:border-stone-700 dark:bg-stone-900/50">
       {icon && <div className="mb-4 text-stone-400 dark:text-stone-500">{icon}</div>}
@@ -570,7 +570,7 @@ export function LuminaEmptyState({ icon, title, description, action }: LuminaEmp
 // ============================================================================
 // DataSection - 数据区块
 // ============================================================================
-type LuminaDataSectionProps = {
+type ZhiDataSectionProps = {
   title?: string;
   description?: string;
   icon?: React.ReactNode;
@@ -579,14 +579,14 @@ type LuminaDataSectionProps = {
   className?: string;
 };
 
-export function LuminaDataSection({
+export function ZhiDataSection({
   title,
   description,
   icon,
   action,
   children,
   className,
-}: LuminaDataSectionProps) {
+}: ZhiDataSectionProps) {
   return (
     <div
       className={cn(
@@ -613,7 +613,7 @@ export function LuminaDataSection({
 // ============================================================================
 // ImageUploadArea - 图片上传区域
 // ============================================================================
-type LuminaImageUploadAreaProps = {
+type ZhiImageUploadAreaProps = {
   queue: Array<{ file: File; preview: string }>;
   onDrop: (e: React.DragEvent) => void;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -628,7 +628,7 @@ type LuminaImageUploadAreaProps = {
   setManualUrl?: (v: string) => void;
 };
 
-export function LuminaImageUploadArea({
+export function ZhiImageUploadArea({
   queue,
   onDrop,
   onFileSelect,
@@ -641,7 +641,7 @@ export function LuminaImageUploadArea({
   onRemoveExisting,
   manualUrl = "",
   setManualUrl,
-}: LuminaImageUploadAreaProps) {
+}: ZhiImageUploadAreaProps) {
   return (
     <div className="space-y-4">
       <div
@@ -667,8 +667,8 @@ export function LuminaImageUploadArea({
         />
 
         {queue.length === 0 &&
-        !currentImageUrl &&
-        (!existingImages || existingImages.length === 0) ? (
+          !currentImageUrl &&
+          (!existingImages || existingImages.length === 0) ? (
           <>
             <div className="w-10 h-10 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center text-stone-500 mb-3 pointer-events-none">
               <UploadCloud size={20} />
@@ -692,7 +692,7 @@ export function LuminaImageUploadArea({
             <span className="text-[10px] text-stone-400 font-bold uppercase">或</span>
             <div className="h-px bg-stone-200 dark:bg-stone-800 flex-1" />
           </div>
-          <LuminaInput
+          <ZhiInput
             value={manualUrl}
             onChange={(e) => setManualUrl(e.target.value)}
             placeholder="输入图片 URL..."
@@ -756,7 +756,7 @@ export function LuminaImageUploadArea({
 // ============================================================================
 // RichPostItem - 文章卡片
 // ============================================================================
-type LuminaRichPostItemProps = {
+type ZhiRichPostItemProps = {
   title: string;
   excerpt?: string;
   imageUrl?: string;
@@ -769,7 +769,7 @@ type LuminaRichPostItemProps = {
   onDelete: () => void;
 };
 
-export function LuminaRichPostItem({
+export function ZhiRichPostItem({
   title,
   excerpt,
   imageUrl,
@@ -780,7 +780,7 @@ export function LuminaRichPostItem({
   tags = [],
   onEdit,
   onDelete,
-}: LuminaRichPostItemProps) {
+}: ZhiRichPostItemProps) {
   return (
     <div className="group bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 flex gap-4 transition-all hover:border-stone-300 dark:hover:border-stone-600">
       <div className="w-24 h-24 flex-shrink-0 bg-stone-200 dark:bg-stone-800 rounded-lg overflow-hidden relative">
@@ -833,8 +833,8 @@ export function LuminaRichPostItem({
       </div>
 
       <div className="flex flex-col justify-center gap-2 border-l border-stone-100 dark:border-stone-800 pl-4 ml-2">
-        <LuminaActionBtn icon={<EditIcon size={16} />} onClick={onEdit} />
-        <LuminaActionBtn icon={<TrashIcon size={16} />} onClick={onDelete} variant="danger" />
+        <ZhiActionBtn icon={<EditIcon size={16} />} onClick={onEdit} />
+        <ZhiActionBtn icon={<TrashIcon size={16} />} onClick={onDelete} variant="danger" />
       </div>
     </div>
   );
@@ -843,7 +843,7 @@ export function LuminaRichPostItem({
 // ============================================================================
 // RichMomentItem - 动态卡片
 // ============================================================================
-type LuminaRichMomentItemProps = {
+type ZhiRichMomentItemProps = {
   content: string;
   images?: string[];
   tags?: string[];
@@ -852,14 +852,14 @@ type LuminaRichMomentItemProps = {
   onDelete: () => void;
 };
 
-export function LuminaRichMomentItem({
+export function ZhiRichMomentItem({
   content,
   images = [],
   tags = [],
   date,
   onEdit,
   onDelete,
-}: LuminaRichMomentItemProps) {
+}: ZhiRichMomentItemProps) {
   return (
     <div className="group bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 transition-all hover:border-stone-300 dark:hover:border-stone-600">
       <div className="flex justify-between items-start mb-3">
@@ -875,8 +875,8 @@ export function LuminaRichMomentItem({
           ))}
         </div>
         <div className="flex gap-2">
-          <LuminaActionBtn icon={<EditIcon size={14} />} onClick={onEdit} />
-          <LuminaActionBtn icon={<TrashIcon size={14} />} onClick={onDelete} variant="danger" />
+          <ZhiActionBtn icon={<EditIcon size={14} />} onClick={onEdit} />
+          <ZhiActionBtn icon={<TrashIcon size={14} />} onClick={onDelete} variant="danger" />
         </div>
       </div>
       <p className="text-stone-800 dark:text-stone-200 text-sm mb-3 line-clamp-3 font-serif">
@@ -901,7 +901,7 @@ export function LuminaRichMomentItem({
 // ============================================================================
 // StatCard - 统计卡片
 // ============================================================================
-type LuminaStatCardProps = {
+type ZhiStatCardProps = {
   label: string;
   value: string | number;
   change?: string;
@@ -909,13 +909,13 @@ type LuminaStatCardProps = {
   iconColor?: string;
 };
 
-export function LuminaStatCard({
+export function ZhiStatCard({
   label,
   value,
   change,
   icon,
   iconColor = "bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400",
-}: LuminaStatCardProps) {
+}: ZhiStatCardProps) {
   const isPositive = change?.startsWith("+");
   const isNegative = change?.startsWith("-");
 
@@ -945,7 +945,7 @@ export function LuminaStatCard({
 // ============================================================================
 // ChartCard - 图表卡片
 // ============================================================================
-type LuminaChartCardProps = {
+type ZhiChartCardProps = {
   title: string;
   description?: string;
   icon?: React.ReactNode;
@@ -955,7 +955,7 @@ type LuminaChartCardProps = {
   className?: string;
 };
 
-export function LuminaChartCard({
+export function ZhiChartCard({
   title,
   description,
   icon,
@@ -963,7 +963,7 @@ export function LuminaChartCard({
   children,
   footer,
   className,
-}: LuminaChartCardProps) {
+}: ZhiChartCardProps) {
   return (
     <div
       className={cn(
@@ -993,7 +993,7 @@ export function LuminaChartCard({
 // ============================================================================
 // Checkbox - 复选框组件
 // ============================================================================
-interface LuminaCheckboxProps {
+interface ZhiCheckboxProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label?: string;
@@ -1001,13 +1001,13 @@ interface LuminaCheckboxProps {
   disabled?: boolean;
 }
 
-export function LuminaCheckbox({
+export function ZhiCheckbox({
   checked,
   onChange,
   label,
   className = "",
   disabled = false,
-}: LuminaCheckboxProps) {
+}: ZhiCheckboxProps) {
   return (
     <label className={cn("flex items-center gap-2 cursor-pointer", className)}>
       <input

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { listGalleryImages } from "@/lib/gallery";
 import type { GalleryCategory, GalleryImage } from "@/lib/gallery";
-import { LuminaHeader, LuminaFooter, LuminaGallery } from "@/components/lumina";
-import type { LuminaGalleryItem } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter, ZhiGallery } from "@/components/lumina";
+import type { ZhiGalleryItem } from "@/components/lumina";
 import { GalleryCategoryTabs } from "@/components/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
 
@@ -14,8 +14,8 @@ type PageProps = {
   searchParams: Promise<{ category?: string }>;
 };
 
-// Convert database gallery image to Lumina gallery item format
-function toGalleryItem(image: GalleryImage, locale: string): LuminaGalleryItem {
+// Convert database gallery image to Zhi gallery item format
+function toGalleryItem(image: GalleryImage, locale: string): ZhiGalleryItem {
   const dateStr = new Date(image.createdAt).toLocaleDateString(
     locale === "zh" ? "zh-CN" : "en-US",
     {
@@ -72,12 +72,12 @@ export default async function LocalizedGalleryPage({ params, searchParams }: Pag
   const images = await listGalleryImages(undefined, currentCategory);
   const imagesWithLocation = images.filter((img) => img.latitude && img.longitude);
 
-  // Convert to Lumina gallery format
-  const galleryItems: LuminaGalleryItem[] = images.map((img) => toGalleryItem(img, l));
+  // Convert to Zhi gallery format
+  const galleryItems: ZhiGalleryItem[] = images.map((img) => toGalleryItem(img, l));
 
   return (
     <>
-      <LuminaHeader />
+      <ZhiHeader />
       <main className="min-h-screen bg-stone-50 dark:bg-stone-950">
         {/* Header Section */}
         <div className="mx-auto max-w-6xl px-4 py-8 text-center md:py-12">
@@ -116,7 +116,7 @@ export default async function LocalizedGalleryPage({ params, searchParams }: Pag
           </div>
 
           {/* Gallery Grid */}
-          <LuminaGallery items={galleryItems} />
+          <ZhiGallery items={galleryItems} />
 
           {/* Footer Info */}
           {images.length > 0 && (
@@ -142,7 +142,7 @@ export default async function LocalizedGalleryPage({ params, searchParams }: Pag
           )}
         </div>
       </main>
-      <LuminaFooter />
+      <ZhiFooter />
     </>
   );
 }
