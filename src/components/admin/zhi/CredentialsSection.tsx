@@ -7,6 +7,7 @@ import type { Credential, SyncJob } from './types';
 import {
     ListContainer, EditForm, Input, ActionBtn
 } from './AdminComponents';
+import { useAdminLocale } from './useAdminLocale';
 
 // Toast notification component
 interface ToastProps {
@@ -37,6 +38,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
 
 export const CredentialsSection: React.FC = () => {
     const { credentials, addCredential, updateCredential, deleteCredential, triggerSync, syncJobs, loading } = useData();
+    const { t } = useAdminLocale();
     const [editingCredential, setEditingCredential] = useState<Partial<Credential> | null>(null);
     const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
     const [validatingIds, setValidatingIds] = useState<Set<string>>(new Set());
@@ -183,25 +185,25 @@ export const CredentialsSection: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div>
-                    <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100">Credentials & Sync</h2>
-                    <p className="text-sm text-stone-500 mt-1">Manage API credentials and synchronize data from external platforms</p>
+                    <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100">{t('credentialsTitle')}</h2>
+                    <p className="text-sm text-stone-500 mt-1">{t('credentialsDescription')}</p>
                 </div>
                 <div className="flex gap-2">
                     <button
                         onClick={handleRefresh}
                         disabled={isRefreshing}
                         className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors disabled:opacity-50"
-                        title="Refresh credentials list"
+                        title={t('refresh')}
                     >
                         <RotateCcw size={16} className={isRefreshing ? 'animate-spin' : ''} />
-                        Refresh
+                        {t('refresh')}
                     </button>
                     <button
                         onClick={() => setEditingCredential({})}
                         className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:opacity-90 transition-opacity"
                     >
                         <Key size={16} />
-                        Add Credential
+                        {t('addCredential')}
                     </button>
                 </div>
             </div>
@@ -263,15 +265,15 @@ export const CredentialsSection: React.FC = () => {
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
-                            <div className="text-xs text-stone-500 uppercase font-bold mb-1">Total Credentials</div>
+                            <div className="text-xs text-stone-500 uppercase font-bold mb-1">{t('totalCredentials')}</div>
                             <div className="text-2xl font-bold text-stone-900 dark:text-stone-100">{credentials.length}</div>
                         </div>
                         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
-                            <div className="text-xs text-stone-500 uppercase font-bold mb-1">Active</div>
+                            <div className="text-xs text-stone-500 uppercase font-bold mb-1">{t('activeStatus')}</div>
                             <div className="text-2xl font-bold text-emerald-600">{credentials.filter(c => c.status === 'active').length}</div>
                         </div>
                         <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
-                            <div className="text-xs text-stone-500 uppercase font-bold mb-1">Needs Attention</div>
+                            <div className="text-xs text-stone-500 uppercase font-bold mb-1">{t('needsAttention')}</div>
                             <div className="text-2xl font-bold text-rose-600">{credentials.filter(c => c.status === 'error').length}</div>
                         </div>
                     </div>
@@ -284,8 +286,8 @@ export const CredentialsSection: React.FC = () => {
                     ) : credentials.length === 0 ? (
                         <div className="text-center py-12 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800">
                             <Key size={48} className="mx-auto mb-3 text-stone-300 dark:text-stone-600" />
-                            <p className="text-stone-500">No credentials configured</p>
-                            <p className="text-sm text-stone-400 mt-1">Add a credential to start syncing data</p>
+                            <p className="text-stone-500">{t('noCredentialsConfigured')}</p>
+                            <p className="text-sm text-stone-400 mt-1">{t('addCredentialToSync')}</p>
                         </div>
                     ) : (
                         <ListContainer>

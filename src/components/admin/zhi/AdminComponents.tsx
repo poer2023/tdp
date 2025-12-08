@@ -325,38 +325,40 @@ export const OverviewSection: React.FC<{
     shareItems: ShareItem[],
     onQuickAction: (tab: Tab) => void
 }> = ({ posts, moments, galleryItems, projects, shareItems: _shareItems, onQuickAction }) => {
+    const { t } = useAdminLocale();
+
     const stats = [
-        { label: 'Articles', value: posts.length, icon: FileText, color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' },
-        { label: 'Moments', value: moments.length, icon: ImageIcon, color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' },
-        { label: 'Photos', value: galleryItems.length, icon: Camera, color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' },
-        { label: 'Projects', value: projects.length, icon: Briefcase, color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' },
+        { label: t('articles'), value: posts.length, icon: FileText, color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' },
+        { label: t('moments'), value: moments.length, icon: ImageIcon, color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' },
+        { label: t('photos'), value: galleryItems.length, icon: Camera, color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' },
+        { label: t('projects'), value: projects.length, icon: Briefcase, color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' },
     ];
 
     const chartData = [
-        { name: 'Articles', count: posts.length },
-        { name: 'Moments', count: moments.length },
-        { name: 'Photos', count: galleryItems.length },
-        { name: 'Projects', count: projects.length },
+        { name: t('articles'), count: posts.length },
+        { name: t('moments'), count: moments.length },
+        { name: t('photos'), count: galleryItems.length },
+        { name: t('projects'), count: projects.length },
     ];
 
     const recentActivity = [
-        ...posts.slice(0, 2).map(p => ({ type: 'Article', title: p.title, date: p.date, icon: FileText })),
-        ...moments.slice(0, 2).map(m => ({ type: 'Moment', title: m.content.substring(0, 30) + '...', date: m.date, icon: ImageIcon })),
+        ...posts.slice(0, 2).map(p => ({ type: t('post'), title: p.title, date: p.date, icon: FileText })),
+        ...moments.slice(0, 2).map(m => ({ type: t('moment'), title: m.content.substring(0, 30) + '...', date: m.date, icon: ImageIcon })),
     ].slice(0, 4);
 
     return (
         <div className="max-w-6xl mx-auto animate-in fade-in space-y-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">Dashboard Overview</h2>
-                    <p className="text-stone-500 dark:text-stone-400">Welcome back. Here is what&apos;s happening today.</p>
+                    <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">{t('dashboardOverview')}</h2>
+                    <p className="text-stone-500 dark:text-stone-400">{t('welcomeBack')}</p>
                 </div>
                 <div className="flex gap-3">
                     <button onClick={() => onQuickAction('posts')} className="px-4 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
-                        New Article
+                        {t('newArticleBtn')}
                     </button>
                     <button onClick={() => onQuickAction('moments')} className="px-4 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-sm font-medium hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors">
-                        New Moment
+                        {t('newMomentBtn')}
                     </button>
                 </div>
             </div>
@@ -379,7 +381,7 @@ export const OverviewSection: React.FC<{
                 <div className="lg:col-span-2 bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="font-bold text-lg text-stone-800 dark:text-stone-100 flex items-center gap-2">
-                            <PieIcon size={18} /> Content Distribution
+                            <PieIcon size={18} /> {t('contentDistribution')}
                         </h3>
                     </div>
                     <div className="h-64 w-full">
@@ -404,7 +406,7 @@ export const OverviewSection: React.FC<{
                 <div className="space-y-6">
                     <div className="bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
                         <h3 className="font-bold text-lg text-stone-800 dark:text-stone-100 mb-4 flex items-center gap-2">
-                            <Clock size={18} /> Recent Items
+                            <Clock size={18} /> {t('recentItems')}
                         </h3>
                         <div className="space-y-4">
                             {recentActivity.map((item, idx) => (
@@ -423,21 +425,21 @@ export const OverviewSection: React.FC<{
 
                     <div className="bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
                         <h3 className="font-bold text-lg text-stone-800 dark:text-stone-100 mb-4 flex items-center gap-2">
-                            <ShieldCheck size={18} /> System Status
+                            <ShieldCheck size={18} /> {t('systemStatus')}
                         </h3>
                         <div className="space-y-3">
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-stone-500 dark:text-stone-400 flex items-center gap-2"><Globe size={14} /> Website</span>
-                                <span className="text-emerald-500 font-bold flex items-center gap-1"><Check size={12} /> Live</span>
+                                <span className="text-stone-500 dark:text-stone-400 flex items-center gap-2"><Globe size={14} /> {t('website')}</span>
+                                <span className="text-emerald-500 font-bold flex items-center gap-1"><Check size={12} /> {t('live')}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-stone-500 dark:text-stone-400 flex items-center gap-2"><Database size={14} /> Database</span>
-                                <span className="text-emerald-500 font-bold flex items-center gap-1"><Check size={12} /> Connected</span>
+                                <span className="text-stone-500 dark:text-stone-400 flex items-center gap-2"><Database size={14} /> {t('database')}</span>
+                                <span className="text-emerald-500 font-bold flex items-center gap-1"><Check size={12} /> {t('connected')}</span>
                             </div>
                             <div className="w-full bg-stone-100 dark:bg-stone-800 h-1.5 rounded-full mt-2 overflow-hidden">
                                 <div className="bg-emerald-500 w-full h-full rounded-full"></div>
                             </div>
-                            <p className="text-[10px] text-stone-400 text-center mt-1">All systems operational</p>
+                            <p className="text-[10px] text-stone-400 text-center mt-1">{t('allSystemsOperational')}</p>
                         </div>
                     </div>
                 </div>
@@ -452,21 +454,22 @@ export const TrafficStatsSection: React.FC<{
     pageVisitData: PageVisitData[],
     deviceData: DeviceData[]
 }> = ({ trafficData, sourceData, pageVisitData, deviceData }) => {
+    const { t } = useAdminLocale();
     const totalVisits = trafficData.reduce((acc, curr) => acc + curr.visits, 0);
     const totalUnique = trafficData.reduce((acc, curr) => acc + curr.unique, 0);
 
     const kpiCards = [
-        { label: 'Total Visits (30d)', value: totalVisits.toLocaleString(), change: '+12.5%', icon: Users, color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
-        { label: 'Unique Visitors', value: totalUnique.toLocaleString(), change: '+8.2%', icon: MousePointer, color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
-        { label: 'Avg. Duration', value: '2m 45s', change: '-1.2%', icon: Clock, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
-        { label: 'Bounce Rate', value: '42.3%', change: '-0.5%', icon: Activity, color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
+        { label: t('totalVisits30d'), value: totalVisits.toLocaleString(), change: '+12.5%', icon: Users, color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
+        { label: t('uniqueVisitors'), value: totalUnique.toLocaleString(), change: '+8.2%', icon: MousePointer, color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
+        { label: t('avgDuration'), value: '2m 45s', change: '-1.2%', icon: Clock, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
+        { label: t('bounceRate'), value: '42.3%', change: '-0.5%', icon: Activity, color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
     ];
 
     return (
         <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
             <div>
-                <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">Traffic Analytics</h2>
-                <p className="text-stone-500 dark:text-stone-400">Insights into your audience growth and behavior.</p>
+                <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">{t('analyticsTitle')}</h2>
+                <p className="text-stone-500 dark:text-stone-400">{t('insightsDescription')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -489,7 +492,7 @@ export const TrafficStatsSection: React.FC<{
             <div className="bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="font-bold text-lg text-stone-800 dark:text-stone-100 flex items-center gap-2">
-                        <TrendingUp size={18} /> Traffic Overview
+                        <TrendingUp size={18} /> {t('trafficOverview')}
                     </h3>
                 </div>
                 <div className="h-80 w-full">
@@ -521,7 +524,7 @@ export const TrafficStatsSection: React.FC<{
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
                     <h3 className="font-bold text-lg text-stone-800 dark:text-stone-100 mb-6 flex items-center gap-2">
-                        <Globe size={18} /> Acquisition
+                        <Globe size={18} /> {t('acquisition')}
                     </h3>
                     <div className="h-64 w-full relative">
                         <ResponsiveContainer width="100%" height="100%">
@@ -547,7 +550,7 @@ export const TrafficStatsSection: React.FC<{
 
                 <div className="lg:col-span-2 bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
                     <h3 className="font-bold text-lg text-stone-800 dark:text-stone-100 mb-6 flex items-center gap-2">
-                        <FileText size={18} /> Top Pages
+                        <FileText size={18} /> {t('topPages')}
                     </h3>
                     <div className="space-y-4">
                         {pageVisitData.map((page, idx) => (
@@ -572,7 +575,7 @@ export const TrafficStatsSection: React.FC<{
 
             <div className="bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
                 <h3 className="font-bold text-lg text-stone-800 dark:text-stone-100 mb-6 flex items-center gap-2">
-                    <Smartphone size={18} /> Device Breakdown
+                    <Smartphone size={18} /> {t('deviceBreakdown')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {deviceData.map((device, idx) => (
