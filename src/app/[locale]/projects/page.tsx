@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { ZhiHeader, ZhiFooter, ZhiProjects } from "@/components/lumina";
-import type { ZhiProject } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter, ZhiProjects } from "@/components/zhi";
+import type { ZhiProject } from "@/components/zhi";
 import { aboutContent, resolveAboutLocale } from "@/lib/about-content";
 
 // Revalidate every 60 seconds

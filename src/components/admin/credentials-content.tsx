@@ -17,7 +17,7 @@ import {
   ZhiListContainer,
   ZhiBadge,
   ZhiEmptyState,
-} from "./lumina-shared";
+} from "./zhi-shared";
 
 type Credential = {
   id: string;

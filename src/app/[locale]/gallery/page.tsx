@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { listGalleryImages } from "@/lib/gallery";
 import type { GalleryCategory, GalleryImage } from "@/lib/gallery";
-import { ZhiHeader, ZhiFooter, ZhiGallery } from "@/components/lumina";
-import type { ZhiGalleryItem } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter, ZhiGallery } from "@/components/zhi";
+import type { ZhiGalleryItem } from "@/components/zhi";
 import { GalleryCategoryTabs } from "@/components/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
 

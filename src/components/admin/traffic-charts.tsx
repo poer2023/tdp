@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { ZhiChartCard } from "./lumina-shared";
+import { ZhiChartCard } from "./zhi-shared";
 
 type TrafficKpi = {
   label: string;

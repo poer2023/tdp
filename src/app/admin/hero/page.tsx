@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
-import { SettingsProvider, DataProvider } from '@/components/admin/lumina/store';
-import AdminShell from '@/components/admin/lumina/AdminShell';
-import HeroSection from '@/components/admin/lumina/HeroSection';
+import { SettingsProvider, DataProvider } from '@/components/admin/zhi/store';
+import AdminShell from '@/components/admin/zhi/AdminShell';
+import HeroSection from '@/components/admin/zhi/HeroSection';
 
 export default async function HeroPage() {
     const session = await auth();

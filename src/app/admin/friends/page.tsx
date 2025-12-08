@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
-import { SettingsProvider, DataProvider } from '@/components/admin/lumina/store';
-import AdminShell from '@/components/admin/lumina/AdminShell';
-import FriendsSection from '@/components/admin/lumina/FriendsSection';
+import { SettingsProvider, DataProvider } from '@/components/admin/zhi/store';
+import AdminShell from '@/components/admin/zhi/AdminShell';
+import FriendsSection from '@/components/admin/zhi/FriendsSection';
 
 export default async function FriendsPage() {
     const session = await auth();

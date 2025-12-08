@@ -11,7 +11,7 @@ import { LikeButton } from "@/components/like-button";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { cache } from "react";
 import { Container } from "@/components/ui/container";
-import { ZhiHeader, ZhiFooter } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 
 // Ensure Node.js runtime for Prisma
 export const runtime = "nodejs";

@@ -10,7 +10,7 @@ import { SearchResultSkeleton } from "@/components/search/search-skeleton";
 import { SearchEmptyState } from "@/components/search/search-empty-state";
 import { addToSearchHistory } from "@/lib/search-history";
 import type { SearchResult, GallerySearchResult, MomentSearchResult } from "@/lib/search";
-import { ZhiHeader, ZhiFooter } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 import { localePath } from "@/lib/locale-path";
 
 type SearchResults = {

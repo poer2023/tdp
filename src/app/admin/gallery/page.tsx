@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
-import { SettingsProvider, DataProvider } from '@/components/admin/lumina/store';
-import AdminShell from '@/components/admin/lumina/AdminShell';
-import GallerySection from '@/components/admin/lumina/GallerySection';
+import { SettingsProvider, DataProvider } from '@/components/admin/zhi/store';
+import AdminShell from '@/components/admin/zhi/AdminShell';
+import GallerySection from '@/components/admin/zhi/GallerySection';
 
 export default async function GalleryPage() {
     const session = await auth();

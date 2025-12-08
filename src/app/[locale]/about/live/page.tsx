@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ZhiHeader, ZhiFooter, ZhiStatsDashboard } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter, ZhiStatsDashboard } from "@/components/zhi";
 
 type PageProps = {
   params: Promise<{ locale: string }>;

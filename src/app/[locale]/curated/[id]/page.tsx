@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import prisma from "@/lib/prisma";
-import { ZhiHeader, ZhiFooter } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 import CuratedDetailContent from "./curated-detail-content";
 
 export const runtime = "nodejs";
