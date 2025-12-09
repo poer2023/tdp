@@ -264,7 +264,28 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
     // Complete sync log with results
     if (syncLogId && syncResult) {
-      await completeSyncLog(syncLogId, syncResult);
+      // For Steam, use mediaSync result which matches SyncResult type
+      // For other platforms, syncResult directly matches SyncResult
+      if ('mediaSync' in syncResult) {
+        // Steam combined result - use mediaSync for logging
+        await completeSyncLog(syncLogId, syncResult.mediaSync);
+      } else if ('itemsTotal' in syncResult) {
+        // Standard media sync result (BILIBILI, DOUBAN, GITHUB)
+        await completeSyncLog(syncLogId, syncResult);
+      } else {
+        // Gaming sync result (HOYOVERSE) - convert to compatible format
+        await completeSyncLog(syncLogId, {
+          platform: String(syncResult.platform).toLowerCase(),
+          success: syncResult.success,
+          itemsTotal: syncResult.gamesUpdated ?? 0,
+          itemsSuccess: syncResult.gamesUpdated ?? 0,
+          itemsFailed: 0,
+          itemsNew: syncResult.gamesUpdated ?? 0,
+          itemsExisting: 0,
+          duration: 0,
+          error: syncResult.error,
+        });
+      }
     }
 
     return NextResponse.json({

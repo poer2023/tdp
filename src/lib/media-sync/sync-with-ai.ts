@@ -59,54 +59,57 @@ export async function syncWithAI<T extends (config: any, credentialId?: string) 
                 console.log(`[${platform}] Requesting AI diagnosis...`);
 
                 aiDiagnosis = await diagnoseError(
+                    new Error(errorMessage),
                     platform,
-                    errorMessage,
-                    '' // HTML snapshot if available
+                    {} // additional context
                 );
 
-                // Log AI diagnosis to database
-                const diagnosisLog = await logAIDiagnosis({
-                    platform,
-                    errorType: 'Sync Failure',
-                    errorMessage,
-                    aiReason: aiDiagnosis.reason,
-                    aiSolution: aiDiagnosis.solution,
-                    canAutoFix: aiDiagnosis.canAutoFix || false,
-                    confidence: aiDiagnosis.confidence || 0.8,
-                    credentialId,
-                });
+                // Only log and attempt auto-fix if AI diagnosis succeeded
+                if (aiDiagnosis) {
+                    // Log AI diagnosis to database
+                    const diagnosisLog = await logAIDiagnosis({
+                        platform,
+                        errorType: 'Sync Failure',
+                        errorMessage,
+                        aiReason: aiDiagnosis.reason,
+                        aiSolution: aiDiagnosis.solution,
+                        canAutoFix: aiDiagnosis.canAutoFix || false,
+                        confidence: aiDiagnosis.confidence || 0.8,
+                        credentialId,
+                    });
 
-                diagnosisLogId = diagnosisLog.id;
-                console.log(`[${platform}] AI diagnosis logged: ${diagnosisLogId}`);
+                    diagnosisLogId = diagnosisLog.id;
+                    console.log(`[${platform}] AI diagnosis logged: ${diagnosisLogId}`);
 
-                // Attempt auto-fix if enabled and possible
-                if (enableAutoFix && aiDiagnosis.canAutoFix) {
-                    console.log(`[${platform}] Attempting auto-fix...`);
+                    // Attempt auto-fix if enabled and possible
+                    if (enableAutoFix && aiDiagnosis.canAutoFix) {
+                        console.log(`[${platform}] Attempting auto-fix...`);
 
-                    try {
-                        // TODO: Implement actual auto-fix logic based on error type
-                        // For now, we just log that we would attempt it
+                        try {
+                            // TODO: Implement actual auto-fix logic based on error type
+                            // For now, we just log that we would attempt it
 
-                        await updateAutoFixStatus(diagnosisLogId, {
-                            autoFixApplied: true,
-                            autoFixSuccess: false, // Would be true if fix works
-                            autoFixDetails: {
-                                attemptedAt: new Date().toISOString(),
-                                note: 'Auto-fix infrastructure ready, specific platform fixes pending',
-                            },
-                        });
+                            await updateAutoFixStatus(diagnosisLogId, {
+                                autoFixApplied: true,
+                                autoFixSuccess: false, // Would be true if fix works
+                                autoFixDetails: {
+                                    attemptedAt: new Date().toISOString(),
+                                    note: 'Auto-fix infrastructure ready, specific platform fixes pending',
+                                },
+                            });
 
-                        console.log(`[${platform}] Auto-fix attempt recorded`);
-                    } catch (fixError) {
-                        console.error(`[${platform}] Auto-fix failed:', fixError`);
+                            console.log(`[${platform}] Auto-fix attempt recorded`);
+                        } catch (fixError) {
+                            console.error(`[${platform}] Auto-fix failed:`, fixError);
 
-                        await updateAutoFixStatus(diagnosisLogId, {
-                            autoFixApplied: true,
-                            autoFixSuccess: false,
-                            autoFixDetails: {
-                                error: fixError instanceof Error ? fixError.message : String(fixError),
-                            },
-                        });
+                            await updateAutoFixStatus(diagnosisLogId, {
+                                autoFixApplied: true,
+                                autoFixSuccess: false,
+                                autoFixDetails: {
+                                    error: fixError instanceof Error ? fixError.message : String(fixError),
+                                },
+                            });
+                        }
                     }
                 }
             } catch (aiError) {

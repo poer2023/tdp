@@ -215,8 +215,8 @@ export default function MediaStoragePage() {
     );
 }
 
-function StatCard({ title, count, color, icon }: any) {
-    const colorClasses = {
+function StatCard({ title, count, color, icon }: { title: string; count: number; color: 'stone' | 'pink' | 'green' | 'blue'; icon?: React.ReactNode }) {
+    const colorClasses: Record<'stone' | 'pink' | 'green' | 'blue', string> = {
         stone: 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300',
         pink: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
         green: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',

@@ -24,9 +24,9 @@ export async function POST(request: NextRequest) {
                 }
 
                 const diagnosis = await diagnoseError(
+                    new Error(error),
                     platform,
-                    error,
-                    html || '<html>Sample HTML for testing</html>'
+                    html ? { html: html.substring(0, 2000) } : undefined
                 );
 
                 return NextResponse.json({
@@ -44,7 +44,11 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
-                const selectors = await generateSelectors(platform, html);
+                const selectors = await generateSelectors(
+                    platform,
+                    html,
+                    ['title', 'link', 'watchedAt', 'cover', 'progress'] // target fields
+                );
 
                 return NextResponse.json({
                     success: true,
@@ -61,10 +65,25 @@ export async function POST(request: NextRequest) {
                     );
                 }
 
+                // Note: suggestFix requires SyncErrorDiagnosis, not raw error string
+                // We need to first diagnose, then suggest fix
+                const diagnosis = await diagnoseError(
+                    new Error(error),
+                    platform,
+                    html ? { html } : undefined
+                );
+
+                if (!diagnosis) {
+                    return NextResponse.json({
+                        success: false,
+                        action: 'suggest',
+                        error: 'Unable to diagnose error first',
+                    });
+                }
+
                 const suggestion = await suggestFix(
                     platform,
-                    error,
-                    html || ''
+                    diagnosis
                 );
 
                 return NextResponse.json({

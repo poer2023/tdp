@@ -187,7 +187,7 @@ type ApiSubscription = {
     notes?: string | null;
 };
 
-export function mapToPrismaCredentialPlatform(key: string): CredentialPlatform {
+export function mapToPrismaCredentialPlatform(key: string): string {
     const lower = key.toLowerCase();
     if (lower === 'steam') return 'STEAM';
     if (lower === 'hoyoverse' || lower === 'mihoyo') return 'HOYOVERSE';
@@ -198,7 +198,7 @@ export function mapToPrismaCredentialPlatform(key: string): CredentialPlatform {
     if (lower === 'github') return 'GITHUB';
     if (lower === 'jellyfin') return 'JELLYFIN';
     if (lower === 'deepseek') return 'DEEPSEEK';
-    return key as CredentialPlatform;
+    return key;
 }
 
 const platformToUi = (platform: string): Platform => {

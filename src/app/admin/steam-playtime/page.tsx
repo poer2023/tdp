@@ -72,7 +72,7 @@ export default function SteamPlaytimePage() {
             for (let i = 0; i < 30; i++) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = date.toISOString().split('T')[0] ?? '';
 
                 const dayRes = await fetch(`/api/admin/steam/playtime-history?steamId=${steamId}&type=summary&date=${date.toISOString()}`);
                 const dayData = await dayRes.json();
@@ -81,7 +81,7 @@ export default function SteamPlaytimePage() {
                     const totalMinutes = dayData.data.reduce((sum: number, game: PlaytimeGame) =>
                         sum + (game.dailyDelta || 0), 0
                     );
-                    if (totalMinutes > 0) {
+                    if (totalMinutes > 0 && dateStr) {
                         trend.push({ date: dateStr, totalMinutes });
                     }
                 }

@@ -681,10 +681,8 @@ export const TrafficStatsSection: React.FC<{
                     <div className="h-52 w-full relative">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                {/* @ts-ignore */}
                                 <Pie
-                                    activeIndex={activeIndex}
-                                    activeShape={renderActiveShape}
+                                    {...{ activeIndex, activeShape: renderActiveShape } as any}
                                     data={processedSourceData.display}
                                     cx="50%"
                                     cy="50%"
