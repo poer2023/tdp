@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { listGalleryImages } from "@/lib/gallery";
+import { listGalleryImagesWithLocation } from "@/lib/gallery";
 import { GalleryMapWrapper } from "@/components/gallery-map-wrapper";
 
-export const revalidate = 0;
+export const revalidate = 300;
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -12,8 +12,7 @@ export default async function LocalizedGalleryMapPage({ params }: PageProps) {
   const { locale } = await params;
   const l = locale === "zh" ? "zh" : "en";
 
-  const images = await listGalleryImages();
-  const imagesWithLocation = images.filter((img) => img.latitude && img.longitude);
+  const imagesWithLocation = await listGalleryImagesWithLocation();
 
   return (
     <div className="mx-auto max-w-[1200px] space-y-8 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-12 md:px-8 md:py-16">
@@ -50,7 +49,7 @@ export default async function LocalizedGalleryMapPage({ params }: PageProps) {
       </nav>
 
       {/* Map container */}
-      <GalleryMapWrapper images={images} locale={l} />
+      <GalleryMapWrapper images={imagesWithLocation} locale={l} />
 
       {/* Footer */}
       <footer className="border-t border-stone-200 pt-6 text-xs leading-relaxed text-stone-500 dark:border-stone-800 dark:text-stone-400">

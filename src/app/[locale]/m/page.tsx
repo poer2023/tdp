@@ -2,7 +2,7 @@ import { listMoments } from "@/lib/moments";
 import { auth } from "@/auth";
 import { ParticlesMomentsContent } from "./particles-moments-content";
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -24,7 +24,7 @@ export default async function LocalizedMomentsPage({ params }: Props) {
     }
   }
 
-  const moments = await listMoments({ limit: 20, tag: null, q: null });
+  const moments = await listMoments({ limit: 24, tag: null, q: null });
 
   return <ParticlesMomentsContent moments={moments} locale={l} isAdmin={isAdmin} />;
 }

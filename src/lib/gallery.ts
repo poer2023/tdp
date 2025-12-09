@@ -194,6 +194,24 @@ export type UpdateGalleryImageInput = {
   capturedAt?: Date | null;
 };
 
+export type GalleryLocationImage = {
+  id: string;
+  title: string | null;
+  description: string | null;
+  latitude: number;
+  longitude: number;
+  locationName: string | null;
+  city: string | null;
+  country: string | null;
+  capturedAt: string | null;
+  microThumbPath: string | null;
+  smallThumbPath: string | null;
+  mediumPath: string | null;
+  filePath: string;
+  isLivePhoto: boolean;
+  createdAt: string;
+};
+
 export async function updateGalleryImage(
   id: string,
   input: UpdateGalleryImageInput
@@ -358,6 +376,41 @@ export async function getAdjacentImageIds(id: string): Promise<{
       };
     },
     "gallery:getAdjacentImageIds"
+  );
+}
+
+export async function listGalleryImagesWithLocation(limit?: number): Promise<GalleryLocationImage[]> {
+  return withDbFallback(
+    async () => {
+      const images = await prisma.galleryImage.findMany({
+        where: { latitude: { not: null }, longitude: { not: null } },
+        orderBy: { createdAt: "desc" },
+        ...(typeof limit === "number" ? { take: limit } : {}),
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          latitude: true,
+          longitude: true,
+          locationName: true,
+          city: true,
+          country: true,
+          capturedAt: true,
+          microThumbPath: true,
+          smallThumbPath: true,
+          mediumPath: true,
+          filePath: true,
+          isLivePhoto: true,
+          createdAt: true,
+        },
+      });
+      return images.map((img) => ({
+        ...img,
+        capturedAt: img.capturedAt?.toISOString() ?? null,
+        createdAt: img.createdAt.toISOString(),
+      }));
+    },
+    async () => []
   );
 }
 

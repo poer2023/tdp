@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
-import { listPublishedPosts } from "@/lib/posts";
+import { listPublishedPostSummaries } from "@/lib/posts";
 import { listMoments } from "@/lib/moments";
 import { listHeroImages } from "@/lib/hero";
 import { ZhiHomePage } from "@/components/zhi";
@@ -32,12 +32,12 @@ export default async function LocalizedHomePage({ params }: PageProps) {
 
   // Fetch data for homepage
   const [posts, moments, heroImageUrls, curatedItems] = await Promise.all([
-    listPublishedPosts(),
-    listMoments({ limit: 20, visibility: "PUBLIC", viewerId }),
+    listPublishedPostSummaries({ limit: 20 }),
+    listMoments({ limit: 12, visibility: "PUBLIC", viewerId }),
     listHeroImages(),
     prisma.shareItem.findMany({
       orderBy: { createdAt: "desc" },
-      take: 20,
+      take: 12,
     }),
   ]);
 
@@ -50,8 +50,8 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       day: "numeric",
     });
 
-    // Calculate read time (rough estimate: 200 words per minute)
-    const wordCount = post.content.split(/\s+/).length;
+    // Estimate read time using excerpt length (content未加载以减轻payload)
+    const wordCount = Math.max(30, (post.excerpt || post.title).split(/\s+/).length * 2);
     const readTime = Math.max(1, Math.ceil(wordCount / 200));
 
     return {

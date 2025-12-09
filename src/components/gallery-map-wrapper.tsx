@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { GalleryImage } from "@/lib/gallery";
+import type { GalleryLocationImage } from "@/lib/gallery";
 
 const GalleryMap = dynamic(() => import("@/components/gallery-map").then((mod) => mod.GalleryMap), {
   ssr: false,
@@ -13,7 +13,7 @@ const GalleryMap = dynamic(() => import("@/components/gallery-map").then((mod) =
 });
 
 type GalleryMapWrapperProps = {
-  images: GalleryImage[];
+  images: GalleryLocationImage[];
   locale?: "zh" | "en";
 };
 

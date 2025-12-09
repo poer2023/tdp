@@ -5,13 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { localePath } from "@/lib/locale-path";
 import "leaflet/dist/leaflet.css";
-import type { GalleryImage } from "@/lib/gallery";
+import type { GalleryLocationImage } from "@/lib/gallery";
 import { useEffect, useMemo } from "react";
 import L from "leaflet";
 import { useTheme } from "next-themes";
 
 interface GalleryMapProps {
-  images: GalleryImage[];
+  images: GalleryLocationImage[];
   locale?: "zh" | "en";
 }
 

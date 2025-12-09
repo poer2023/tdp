@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decode } from "next-auth/jwt";
-import { pinyin } from "pinyin-pro";
 
 // Unified middleware
 // - Adds `x-pathname` header for locale detection in layout
@@ -44,9 +43,10 @@ export async function middleware(request: NextRequest) {
       const decoded = decodeURIComponent(rawSlug);
       // If slug contains CJK characters, redirect to pinyin slug
       if (/[\u4e00-\u9fa5]/.test(decoded)) {
-        // Basic slugify using pinyin-pro and ASCII cleanup
+        // Basic slugify using pinyin-pro and ASCII cleanup (lazy-loaded to keep middleware lean)
         let ascii = decoded;
         try {
+          const { pinyin } = await import("pinyin-pro");
           ascii =
             (pinyin(decoded, { toneType: "none", type: "string", v: true }) as string) || decoded;
         } catch {

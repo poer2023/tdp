@@ -1,115 +1,25 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { headers, cookies } from "next/headers";
 import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
-import { MomentComposerBottomSheet } from "@/components/moments/moment-composer";
-import { getHtmlLang, getLocaleFromPathname } from "@/lib/i18n";
+import { getHtmlLang } from "@/lib/i18n";
 import { HtmlLangSync } from "@/components/html-lang-sync";
-import { auth } from "@/auth";
 import { ConfirmProvider } from "@/hooks/use-confirm";
+import { MomentComposerLoader } from "@/components/moments/moment-composer-loader";
+
+export const dynamic = "force-static";
 
 const geistSans = localFont({
-  src: [
-    {
-      path: "../../public/fonts/geist-sans/Geist-Thin.woff2",
-      weight: "100",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-UltraLight.woff2",
-      weight: "200",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-SemiBold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-Black.woff2",
-      weight: "800",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-UltraBlack.woff2",
-      weight: "900",
-      style: "normal",
-    },
-  ],
+  src: [{ path: "../../public/fonts/geist-sans/Geist-Variable.woff2", weight: "100 900" }],
   variable: "--font-geist-sans",
+  display: "swap",
 });
 
 const geistMono = localFont({
-  src: [
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Thin.woff2",
-      weight: "100",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-UltraLight.woff2",
-      weight: "200",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-SemiBold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Black.woff2",
-      weight: "800",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-UltraBlack.woff2",
-      weight: "900",
-      style: "normal",
-    },
-  ],
+  src: [{ path: "../../public/fonts/geist-mono/GeistMono-Variable.woff2", weight: "100 900" }],
   variable: "--font-geist-mono",
+  display: "swap",
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -141,29 +51,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // Get current pathname to determine locale
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || "/";
-  const headerLocale = headersList.get("x-locale") as "zh" | "en" | null;
-  // Fallback to cookie in case middleware header is unavailable in client navigations
-  const cookieStore = await cookies();
-  const cookieLocale = (cookieStore.get("x-locale")?.value as "zh" | "en" | undefined) || undefined;
-  const locale = headerLocale ?? getLocaleFromPathname(pathname) ?? cookieLocale;
-  const htmlLang = getHtmlLang(locale);
-
-  // 尝试获取 session,如果失败则返回 null
-  let session = null;
-  try {
-    session = await auth();
-  } catch (error) {
-    // 在开发环境忽略认证错误
-    if (process.env.NODE_ENV === "development") {
-      console.warn("Auth error (ignored in development):", error);
-    } else {
-      throw error;
-    }
-  }
-
-  const isAdminRoute = pathname.startsWith("/admin");
+  // 默认语言；客户端使用 HtmlLangSync 根据路径同步 lang
+  const htmlLang = getHtmlLang("en");
 
   return (
     <html lang={htmlLang} suppressHydrationWarning>
@@ -180,7 +69,7 @@ export default async function RootLayout({
         {/* Keep <html lang> consistent on client navigations */}
         <HtmlLangSync />
         <ThemeProvider>
-          <SessionProvider session={session}>
+          <SessionProvider session={null}>
             <ConfirmProvider>
               {/* Skip to content link for accessibility */}
               <a
@@ -194,8 +83,8 @@ export default async function RootLayout({
                 {children}
               </main>
 
-              {/* Global mobile composer FAB (hidden on admin) */}
-              {!isAdminRoute && <MomentComposerBottomSheet />}
+              {/* Global mobile composer FAB (hidden on admin via client check) */}
+              <MomentComposerLoader />
             </ConfirmProvider>
           </SessionProvider>
         </ThemeProvider>

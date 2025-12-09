@@ -25,6 +25,7 @@ export type PublicPost = {
 };
 
 export type PostSummary = Pick<PublicPost, "id" | "title" | "slug" | "status">;
+export type PublicPostSummary = Omit<PublicPost, "content">;
 
 export type RecentActivity = {
   type: "post" | "gallery";
@@ -61,15 +62,68 @@ type PostWithAuthor = Prisma.PostGetPayload<{ include: { author: true } }>;
 
 const SKIP_DB = shouldSkipDb();
 
-export async function listPublishedPosts(): Promise<PublicPost[]> {
+export async function listPublishedPosts(options?: { limit?: number }): Promise<PublicPost[]> {
   return withDbFallback(
     async () => {
       const posts = await prisma.post.findMany({
         where: { status: PostStatus.PUBLISHED },
         include: { author: true },
         orderBy: { publishedAt: "desc" },
+        ...(options?.limit ? { take: options.limit } : {}),
       });
       return posts.map(toPublicPost);
+    },
+    async () => []
+  );
+}
+
+export async function listPublishedPostSummaries(options?: {
+  limit?: number;
+}): Promise<PublicPostSummary[]> {
+  return withDbFallback(
+    async () => {
+      const posts = await prisma.post.findMany({
+        where: { status: PostStatus.PUBLISHED },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          coverImagePath: true,
+          tags: true,
+          status: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          locale: true,
+          viewCount: true,
+          author: { select: { id: true, name: true, image: true } },
+        },
+        orderBy: { publishedAt: "desc" },
+        ...(options?.limit ? { take: options.limit } : {}),
+      });
+
+      return posts.map((post) => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        coverImagePath: post.coverImagePath,
+        tags: parseTags(post.tags),
+        status: post.status,
+        publishedAt: post.publishedAt ? post.publishedAt.toISOString() : null,
+        createdAt: post.createdAt.toISOString(),
+        updatedAt: post.updatedAt.toISOString(),
+        locale: post.locale,
+        viewCount: post.viewCount || 0,
+        author: post.author
+          ? {
+              id: post.author.id,
+              name: post.author.name,
+              image: post.author.image,
+            }
+          : null,
+      }));
     },
     async () => []
   );
