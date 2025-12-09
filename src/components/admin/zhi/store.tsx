@@ -358,15 +358,22 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     // Always start with 'en' on both server and client to avoid hydration mismatch
     const [language, setLanguageState] = useState<Language>('en');
     // Track if we've hydrated to avoid flash
-    const [isHydrated, setIsHydrated] = useState(false);
+    const [_isHydrated, setIsHydrated] = useState(false);
 
     // Read saved language from sessionStorage AFTER hydration
+    // Using a callback ref pattern instead of synchronous setState in effect
     useEffect(() => {
+        // Schedule the state update for the next tick to avoid cascading renders
         const savedLanguage = sessionStorage.getItem('admin-language');
-        if (savedLanguage === 'zh' || savedLanguage === 'en') {
-            setLanguageState(savedLanguage);
-        }
-        setIsHydrated(true);
+        const updateLanguage = () => {
+            if (savedLanguage === 'zh' || savedLanguage === 'en') {
+                setLanguageState(savedLanguage);
+            }
+            setIsHydrated(true);
+        };
+        // Use requestAnimationFrame to defer state updates
+        const rafId = requestAnimationFrame(updateLanguage);
+        return () => cancelAnimationFrame(rafId);
     }, []);
 
     // Apply theme to html

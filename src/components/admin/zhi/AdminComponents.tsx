@@ -488,7 +488,7 @@ export const TrafficStatsSection: React.FC<{
                 if (name.startsWith('/')) return name;
                 // Otherwise return as is
                 return name;
-            } catch (e) {
+            } catch (_e) {
                 return name;
             }
         };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Film, Book, Gamepad2, Search, Filter } from 'lucide-react';
+import { Film, Book, Gamepad2, Search } from 'lucide-react';
 
 interface MediaItem {
     id: string;

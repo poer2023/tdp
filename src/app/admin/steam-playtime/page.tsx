@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Gamepad2, TrendingUp, Clock, Zap, Calendar } from 'lucide-react';
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -38,28 +39,7 @@ export default function SteamPlaytimePage() {
         fetchCredentials();
     }, []);
 
-    useEffect(() => {
-        if (steamId) {
-            fetchPlaytimeData();
-        }
-    }, [steamId]);
-
-    const fetchCredentials = async () => {
-        try {
-            const response = await fetch('/api/admin/credentials?platform=STEAM');
-            const data = await response.json();
-            if (data.credentials && data.credentials.length > 0) {
-                const steamCred = data.credentials[0];
-                setCredentialId(steamCred.id);
-                const metadata = steamCred.metadata as { steamId?: string } | null;
-                setSteamId(metadata?.steamId || '');
-            }
-        } catch (error) {
-            console.error('Failed to fetch credentials:', error);
-        }
-    };
-
-    const fetchPlaytimeData = async () => {
+    const fetchPlaytimeData = useCallback(async () => {
         setLoading(true);
         try {
             // Fetch today's summary
@@ -88,10 +68,6 @@ export default function SteamPlaytimePage() {
             }
 
             // Fetch 30-day trend (aggregated daily total)
-            const trendStart = new Date();
-            trendStart.setDate(trendStart.getDate() - 30);
-
-            // We'll fetch summary for each of the last 30 days
             const trend: DailyTrend[] = [];
             for (let i = 0; i < 30; i++) {
                 const date = new Date();
@@ -117,7 +93,30 @@ export default function SteamPlaytimePage() {
         } finally {
             setLoading(false);
         }
+    }, [steamId]);
+
+    useEffect(() => {
+        if (steamId) {
+            fetchPlaytimeData();
+        }
+    }, [steamId, fetchPlaytimeData]);
+
+    const fetchCredentials = async () => {
+        try {
+            const response = await fetch('/api/admin/credentials?platform=STEAM');
+            const data = await response.json();
+            if (data.credentials && data.credentials.length > 0) {
+                const steamCred = data.credentials[0];
+                setCredentialId(steamCred.id);
+                const metadata = steamCred.metadata as { steamId?: string } | null;
+                setSteamId(metadata?.steamId || '');
+            }
+        } catch (error) {
+            console.error('Failed to fetch credentials:', error);
+        }
     };
+
+    // fetchPlaytimeData moved above useEffect via useCallback
 
     const handleRefresh = async () => {
         if (!credentialId) {
@@ -269,10 +268,13 @@ export default function SteamPlaytimePage() {
                                     className="flex items-start gap-3 p-4 border border-stone-200 dark:border-stone-800 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-800/50 hover:border-blue-500 transition cursor-pointer"
                                 >
                                     {game.gameCover && (
-                                        <img
+                                        <Image
                                             src={game.gameCover}
                                             alt={game.gameName}
+                                            width={48}
+                                            height={48}
                                             className="w-12 h-12 rounded object-cover"
+                                            unoptimized
                                         />
                                     )}
                                     <div className="flex-1 min-w-0">

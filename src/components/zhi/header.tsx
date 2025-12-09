@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @next/next/no-img-element */
 
-import React, { useState, useEffect, useRef, startTransition, useMemo } from "react";
+import React, { useState, useEffect, useRef, startTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";

@@ -8,14 +8,10 @@ import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
   X,
-  Camera,
-  MapPin,
   Play,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
-  FileText,
-  Clock,
   HardDrive,
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
@@ -456,7 +452,7 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
     if (nextItem) {
       preloadImage(nextItem.mediumPath || nextItem.thumbnail || nextItem.url);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [currentIndex, selectedItem, items.length]);
 
   // Handle keyboard navigation

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft, Calendar, TrendingUp, Clock } from 'lucide-react';
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -40,26 +41,7 @@ export default function GameDetailPage() {
         fetchSteamId();
     }, []);
 
-    useEffect(() => {
-        if (steamId && gameId) {
-            fetchGameData();
-        }
-    }, [steamId, gameId]);
-
-    const fetchSteamId = async () => {
-        try {
-            const response = await fetch('/api/admin/credentials?platform=STEAM');
-            const data = await response.json();
-            if (data.credentials && data.credentials.length > 0) {
-                const metadata = data.credentials[0].metadata as { steamId?: string } | null;
-                setSteamId(metadata?.steamId || '');
-            }
-        } catch (error) {
-            console.error('Failed to fetch credentials:', error);
-        }
-    };
-
-    const fetchGameData = async () => {
+    const fetchGameData = useCallback(async () => {
         setLoading(true);
         try {
             // Fetch last 30 days history
@@ -101,7 +83,28 @@ export default function GameDetailPage() {
         } finally {
             setLoading(false);
         }
+    }, [steamId, gameId]);
+
+    useEffect(() => {
+        if (steamId && gameId) {
+            fetchGameData();
+        }
+    }, [steamId, gameId, fetchGameData]);
+
+    const fetchSteamId = async () => {
+        try {
+            const response = await fetch('/api/admin/credentials?platform=STEAM');
+            const data = await response.json();
+            if (data.credentials && data.credentials.length > 0) {
+                const metadata = data.credentials[0].metadata as { steamId?: string } | null;
+                setSteamId(metadata?.steamId || '');
+            }
+        } catch (error) {
+            console.error('Failed to fetch credentials:', error);
+        }
     };
+
+    // fetchGameData moved above useEffect via useCallback
 
     const formatMinutes = (minutes: number) => {
         const hours = Math.floor(minutes / 60);
@@ -131,10 +134,13 @@ export default function GameDetailPage() {
                     {gameDetail && (
                         <div className="flex items-start gap-4">
                             {gameDetail.gameCover && (
-                                <img
+                                <Image
                                     src={gameDetail.gameCover}
                                     alt={gameDetail.gameName}
+                                    width={80}
+                                    height={80}
                                     className="w-20 h-20 rounded-lg object-cover"
+                                    unoptimized
                                 />
                             )}
                             <div>

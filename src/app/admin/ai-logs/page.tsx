@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Brain, RefreshCw, TrendingUp, AlertCircle, Wrench, DollarSign } from 'lucide-react';
+import { Brain, RefreshCw, TrendingUp, Wrench, DollarSign } from 'lucide-react';
 
 interface AIDiagnosisLog {
     id: string;
@@ -31,7 +31,7 @@ export default function AIDiagnosisLogsPage() {
     const [logs, setLogs] = useState<AIDiagnosisLog[]>([]);
     const [stats, setStats] = useState<AIStats | null>(null);
     const [loading, setLoading] = useState(true);
-    const [selectedLog, setSelectedLog] = useState<AIDiagnosisLog | null>(null);
+    const [_selectedLog, setSelectedLog] = useState<AIDiagnosisLog | null>(null);
 
     useEffect(() => {
         fetchLogsAndStats();
@@ -163,8 +163,8 @@ export default function AIDiagnosisLogsPage() {
                                             )}
                                             {log.autoFixApplied && (
                                                 <span className={`px-2 py-1 rounded text-xs font-medium ${log.autoFixSuccess
-                                                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                                                        : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300'
+                                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                                                    : 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300'
                                                     }`}>
                                                     {log.autoFixSuccess ? '修复成功' : '修复失败'}
                                                 </span>
