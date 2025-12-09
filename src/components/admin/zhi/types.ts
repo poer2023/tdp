@@ -269,7 +269,8 @@ export type Platform =
   | 'Spotify'
   | 'Nintendo'
   | 'Hoyoverse'
-  | 'Jellyfin';
+  | 'Jellyfin'
+  | 'DeepSeek';
 
 export interface Credential {
   id: string;

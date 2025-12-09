@@ -219,7 +219,7 @@ export const CredentialsSection: React.FC = () => {
                                 onChange={e => setEditingCredential({ ...editingCredential, platform: e.target.value as Credential['platform'] })}
                                 className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100"
                             >
-                                <option value="">Select Platform</option>
+                                <option value="" disabled>Select Platform</option>
                                 <option value="Steam">Steam</option>
                                 <option value="Bilibili">Bilibili</option>
                                 <option value="Douban">Douban</option>
@@ -228,6 +228,7 @@ export const CredentialsSection: React.FC = () => {
                                 <option value="Nintendo">Nintendo</option>
                                 <option value="Hoyoverse">Hoyoverse</option>
                                 <option value="Jellyfin">Jellyfin</option>
+                                <option value="DeepSeek">DeepSeek</option>
                             </select>
                         </div>
                         <Input label="Display Name" value={editingCredential.name || ''} onChange={v => setEditingCredential({ ...editingCredential, name: v })} />
@@ -345,19 +346,21 @@ export const CredentialsSection: React.FC = () => {
                                                         )}
                                                     </button>
 
-                                                    {/* Sync Button */}
-                                                    <button
-                                                        onClick={() => handleTriggerSync(c.id, c.platform)}
-                                                        disabled={isSyncing || c.status === 'error'}
-                                                        className="p-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-lg text-stone-600 dark:text-stone-300 transition-colors disabled:opacity-50"
-                                                        title={c.status === 'error' ? 'Validate credential first' : 'Trigger Sync'}
-                                                    >
-                                                        {isSyncing ? (
-                                                            <Loader2 size={16} className="animate-spin" />
-                                                        ) : (
-                                                            <RefreshCw size={16} />
-                                                        )}
-                                                    </button>
+                                                    {/* Sync Button - Hide for AI service platforms like DeepSeek */}
+                                                    {c.platform !== 'DeepSeek' && (
+                                                        <button
+                                                            onClick={() => handleTriggerSync(c.id, c.platform)}
+                                                            disabled={isSyncing || c.status === 'error'}
+                                                            className="p-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-lg text-stone-600 dark:text-stone-300 transition-colors disabled:opacity-50"
+                                                            title={c.status === 'error' ? 'Validate credential first' : 'Trigger Sync'}
+                                                        >
+                                                            {isSyncing ? (
+                                                                <Loader2 size={16} className="animate-spin" />
+                                                            ) : (
+                                                                <RefreshCw size={16} />
+                                                            )}
+                                                        </button>
+                                                    )}
 
                                                     <ActionBtn onClick={() => setEditingCredential(c)} icon={<Edit2 size={16} />} />
                                                     <ActionBtn onClick={() => handleDelete(c.id, c.platform)} icon={<Trash2 size={16} />} danger />

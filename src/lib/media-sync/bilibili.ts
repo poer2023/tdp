@@ -108,21 +108,47 @@ export function normalizeBilibiliItem(item: BilibiliHistoryItem) {
   const progressPercent =
     item.duration > 0 && item.progress > 0 ? Math.round((item.progress / item.duration) * 100) : 0;
 
+  // Better type detection:
+  // - Check if it's part of a series/collection based on videos count
+  // - Most Bilibili content with videos=1 is actually single video content
+  // - Only mark as "series" if it has multiple parts (videos > 1)
+  const contentType = item.videos && item.videos > 1 ? "series" : "video";
+
+  // Ensure we have valid timestamps
+  // view_at is the Unix timestamp when the video was watched
+  const watchedAtTimestamp = item.view_at * 1000; // Convert to milliseconds
+  const watchedDate = new Date(watchedAtTimestamp);
+
+  // Validate the date is reasonable (not in future, not too far in past)
+  const now = Date.now();
+  const tenYearsAgo = now - (10 * 365 * 24 * 60 * 60 * 1000);
+  const isValidDate = watchedAtTimestamp > tenYearsAgo && watchedAtTimestamp <= now;
+
   return {
     platform: "BILIBILI" as const,
-    externalId: item.kid.toString(), // Use kid as unique ID
-    type: (item.videos > 1 ? "series" : "movie") as "movie" | "series",
+    externalId: item.history?.bvid || item.kid.toString(), // Prefer bvid, fallback to kid
+    type: contentType,
     title: item.title,
     cover: item.cover,
     url: `https://www.bilibili.com/video/${item.history.bvid}`,
-    watchedAt: new Date(item.view_at * 1000),
+    watchedAt: isValidDate ? watchedDate : new Date(), // Use current time if invalid
     progress: Math.min(progressPercent, 100),
     duration: Math.round(item.duration / 60), // Convert to minutes
+    rating: null, // Bilibili doesn't provide ratings in history
+    season: item.videos > 1 ? 1 : null, // Mark as season 1 if multi-part
+    episode: item.history?.page || null, // Which part/episode was watched
     metadata: {
       author: item.author_name,
+      authorMid: item.author_mid,
       bvid: item.history.bvid,
-      videos: item.videos,
-      page: item.history.page,
+      oid: item.history.oid,
+      cid: item.history.cid,
+      videos: item.videos, // Total number of parts
+      page: item.history.page, // Current part number
+      kid: item.kid, // Bilibili's unique history ID
+      viewAtRaw: item.view_at, // Store raw timestamp for debugging
+      progressSeconds: item.progress, // Raw progress in seconds
+      durationSeconds: item.duration, // Raw duration in seconds
     },
   };
 }

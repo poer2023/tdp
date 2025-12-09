@@ -118,11 +118,12 @@ export function CredentialForm({ action, locale, credential }: CredentialFormPro
             {t(locale, "selectPlatform")}
           </option>
           <option value="STEAM">{t(locale, "steam")}</option>
-          <option value="GITHUB">GitHub</option>
+          <option value="GITHUB">{t(locale, "github")}</option>
           <option value="BILIBILI">{t(locale, "bilibili")}</option>
           <option value="DOUBAN">{t(locale, "douban")}</option>
           <option value="HOYOVERSE">{t(locale, "hoyoverse")}</option>
           <option value="JELLYFIN">{t(locale, "jellyfin")}</option>
+          <option value="DEEPSEEK">{t(locale, "deepseek")}</option>
         </select>
       </div>
 

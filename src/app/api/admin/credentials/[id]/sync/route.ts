@@ -9,8 +9,11 @@ import { getGamingSyncService } from "@/lib/gaming/sync-service";
 import { syncBilibili, syncDouban, syncSteam, syncGitHub } from "@/lib/media-sync";
 import { decryptCredential, isEncrypted } from "@/lib/encryption";
 import { CredentialPlatform } from "@prisma/client";
+import { startSyncLog, completeSyncLog } from "@/lib/sync-logger";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  let syncLogId: string | undefined;
+
   try {
     const { id } = await context.params;
 
@@ -29,6 +32,14 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         { status: 400 }
       );
     }
+
+    // Start sync log
+    const syncLog = await startSyncLog({
+      credentialId: id,
+      platform: credential.platform,
+      triggerType: 'MANUAL', // User clicked sync button
+    });
+    syncLogId = syncLog.id;
 
     // Trigger sync based on platform
     let syncResult;
@@ -251,12 +262,38 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         );
     }
 
+    // Complete sync log with results
+    if (syncLogId && syncResult) {
+      await completeSyncLog(syncLogId, syncResult);
+    }
+
     return NextResponse.json({
       success: true,
       syncResult,
+      syncLogId, // Include log ID in response
     });
   } catch (error) {
     console.error("Sync trigger error:", error);
+
+    // Mark sync log as failed if we have a log ID
+    if (syncLogId) {
+      try {
+        await completeSyncLog(syncLogId, {
+          platform: 'unknown',
+          success: false,
+          itemsTotal: 0,
+          itemsSuccess: 0,
+          itemsFailed: 0,
+          itemsNew: 0,
+          itemsExisting: 0,
+          duration: 0,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      } catch (logError) {
+        console.error("Failed to update sync log:", logError);
+      }
+    }
+
     return NextResponse.json(
       {
         error: "Failed to trigger sync",

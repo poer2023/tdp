@@ -487,6 +487,48 @@ export const PLATFORM_CONFIGS: Record<CredentialPlatform, PlatformConfig> = {
       ],
     },
   },
+
+  [CredentialPlatform.DEEPSEEK]: {
+    type: CredentialType.API_KEY,
+    fields: [
+      {
+        name: "apiKey",
+        label: {
+          en: "DeepSeek API Key",
+          zh: "DeepSeek API 密钥",
+        },
+        type: "password",
+        placeholder: {
+          en: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          zh: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        },
+        required: true,
+        validate: (value) => value.startsWith("sk-") && value.length >= 40,
+        helperText: {
+          en: "API key starting with 'sk-'",
+          zh: "以 'sk-' 开头的 API 密钥",
+        },
+      },
+    ],
+    instructions: {
+      en: [
+        "Visit https://platform.deepseek.com/api_keys",
+        "Log in or create a DeepSeek account",
+        "Click 'Create API Key'",
+        "Enter a name for your API key (e.g., 'TDP Sync Assistant')",
+        "Copy the generated API key immediately (shown only once)",
+        "Note: DeepSeek API is very cost-effective (¥0.14/M tokens)",
+      ],
+      zh: [
+        "访问 https://platform.deepseek.com/api_keys",
+        "登录或创建 DeepSeek 账号",
+        "点击【创建 API 密钥】",
+        "为 API 密钥输入名称（例如【TDP 同步助手】）",
+        "立即复制生成的 API 密钥（仅显示一次）",
+        "注意：DeepSeek API 成本极低（¥0.14/百万tokens）",
+      ],
+    },
+  },
 };
 
 /**
@@ -559,6 +601,12 @@ export function assembleCredentialData(
         },
       };
 
+    case CredentialPlatform.DEEPSEEK:
+      return {
+        type: config.type,
+        value: formValues.apiKey || "",
+      };
+
     default:
       throw new Error(`Unknown platform: ${platform}`);
   }
@@ -601,7 +649,13 @@ export function extractCredentialFormValues(
         serverUrl: (credential.metadata as { jellyfinUrl?: string })?.jellyfinUrl || "",
       };
 
+    case CredentialPlatform.DEEPSEEK:
+      return {
+        apiKey: credential.value,
+      };
+
     default:
       return {};
   }
 }
+

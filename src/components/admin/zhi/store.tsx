@@ -187,6 +187,20 @@ type ApiSubscription = {
     notes?: string | null;
 };
 
+export function mapToPrismaCredentialPlatform(key: string): CredentialPlatform {
+    const lower = key.toLowerCase();
+    if (lower === 'steam') return 'STEAM';
+    if (lower === 'hoyoverse' || lower === 'mihoyo') return 'HOYOVERSE';
+    if (lower === 'bilibili' || lower === 'bili') return 'BILIBILI';
+    if (lower === 'douban') return 'DOUBAN';
+    if (key === 'spotify') return 'SPOTIFY'; // Assuming CredentialPlatform has SPOTIFY
+    if (key === 'nintendo') return 'NINTENDO'; // Assuming CredentialPlatform has NINTENDO
+    if (lower === 'github') return 'GITHUB';
+    if (lower === 'jellyfin') return 'JELLYFIN';
+    if (lower === 'deepseek') return 'DEEPSEEK';
+    return key as CredentialPlatform;
+}
+
 const platformToUi = (platform: string): Platform => {
     const key = platform.toLowerCase();
     if (key === 'steam') return 'Steam';
@@ -197,6 +211,7 @@ const platformToUi = (platform: string): Platform => {
     if (key === 'nintendo') return 'Nintendo';
     if (key === 'hoyoverse') return 'Hoyoverse';
     if (key === 'jellyfin') return 'Jellyfin';
+    if (key === 'deepseek') return 'DeepSeek';
     return (platform || 'Unknown') as Platform;
 };
 
@@ -211,6 +226,7 @@ const platformToApi = (platform?: Platform | string) => {
         case 'nintendo': return 'NINTENDO';
         case 'hoyoverse': return 'HOYOVERSE';
         case 'jellyfin': return 'JELLYFIN';
+        case 'deepseek': return 'DEEPSEEK';
         default: return (platform ?? '').toUpperCase();
     }
 };
@@ -339,17 +355,19 @@ type GalleryUpdateInput = GalleryUploadInput & { id: string };
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [theme, setTheme] = useState<Theme>('light');
-    // Always start with 'en' to avoid SSR hydration mismatch
-    const [language, setLanguageState] = useState<Language>(() => {
-        // Lazy initialization: read from sessionStorage on client-side only
-        if (typeof window !== 'undefined') {
-            const savedLanguage = sessionStorage.getItem('admin-language');
-            if (savedLanguage === 'zh' || savedLanguage === 'en') {
-                return savedLanguage;
-            }
+    // Always start with 'en' on both server and client to avoid hydration mismatch
+    const [language, setLanguageState] = useState<Language>('en');
+    // Track if we've hydrated to avoid flash
+    const [isHydrated, setIsHydrated] = useState(false);
+
+    // Read saved language from sessionStorage AFTER hydration
+    useEffect(() => {
+        const savedLanguage = sessionStorage.getItem('admin-language');
+        if (savedLanguage === 'zh' || savedLanguage === 'en') {
+            setLanguageState(savedLanguage);
         }
-        return 'en';
-    });
+        setIsHydrated(true);
+    }, []);
 
     // Apply theme to html
     useEffect(() => {
@@ -481,7 +499,7 @@ interface DataContextType {
     refreshGallery: () => Promise<void>;
     refreshHeroImages: () => Promise<void>;
     refreshFriends: () => Promise<void>;
-    refreshAnalytics: () => Promise<void>;
+    refreshAnalytics: (period?: '7d' | '30d' | '90d' | 'all') => Promise<void>;
     refreshLifeData: () => Promise<void>;
 
     // Utils
@@ -758,11 +776,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    const refreshAnalytics = async () => {
+    const refreshAnalytics = async (period: '7d' | '30d' | '90d' | 'all' = '30d') => {
         setLoadingFor('analytics', true);
         setErrorFor('analytics', null);
         try {
-            const res = await fetch('/api/admin/analytics/overview', { cache: 'no-store' });
+            const res = await fetch(`/api/admin/analytics/overview?period=${period}`, { cache: 'no-store' });
             const data = await res.json();
             if (res.ok) {
                 if (Array.isArray(data.trafficData)) setTrafficData(data.trafficData);

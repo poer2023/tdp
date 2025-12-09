@@ -446,6 +446,66 @@ async function validateGitHubCredential(value: string): Promise<ValidationResult
 }
 
 /**
+ * Validate DeepSeek API Key
+ */
+async function validateDeepSeekCredential(value: string): Promise<ValidationResult> {
+  try {
+    // DeepSeek API keys should start with "sk-"
+    if (!value || !value.startsWith("sk-")) {
+      return {
+        isValid: false,
+        error: "Invalid DeepSeek API Key format (must start with sk-)",
+      };
+    }
+
+    // Test API call with a minimal chat completion request
+    const response = await fetch("https://api.deepseek.com/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${value}`,
+      },
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: "test" }],
+        max_tokens: 1, // Minimal tokens to save cost
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        isValid: false,
+        error: `DeepSeek API returned ${response.status}: ${errorData.error?.message || response.statusText}`,
+      };
+    }
+
+    const data = await response.json();
+    if (data.id && data.choices) {
+      return {
+        isValid: true,
+        message: "DeepSeek API Key is valid",
+        metadata: {
+          model: data.model,
+          testSuccessful: true,
+        },
+      };
+    }
+
+    return {
+      isValid: false,
+      error: "Invalid DeepSeek API response",
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      error: error instanceof Error ? error.message : "Unknown error validating DeepSeek credential",
+    };
+  }
+}
+
+/**
  * Main validation function
  */
 export async function validateCredential(
@@ -471,6 +531,9 @@ export async function validateCredential(
 
     case CredentialPlatform.GITHUB:
       return validateGitHubCredential(value);
+
+    case CredentialPlatform.DEEPSEEK:
+      return validateDeepSeekCredential(value);
 
     default:
       return {

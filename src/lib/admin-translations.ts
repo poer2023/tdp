@@ -126,6 +126,13 @@ export const adminTranslations = {
     dailyAverage: "Daily average",
     trendChart: "7-Day Trend",
     topPages: "Top Pages",
+    topPagesDetail: "Page Visit Details",
+    searchPages: "Search pages...",
+    othersCount: "Others",
+    last7Days: "7 Days",
+    last30Days: "30 Days",
+    last90Days: "90 Days",
+    allTime: "All Time",
     languageDistribution: "Language Distribution",
     noDataYet: "No data yet",
     uniqueVisitors: "unique visitors",
@@ -219,6 +226,7 @@ export const adminTranslations = {
     bilibili: "Bilibili",
     douban: "Douban",
     jellyfin: "Jellyfin",
+    deepseek: "DeepSeek",
 
     // Credential Form
     enterCredentialName: "Enter credential name",
@@ -614,6 +622,13 @@ export const adminTranslations = {
     dailyAverage: "每日平均",
     trendChart: "7天访问趋势",
     topPages: "热门页面",
+    topPagesDetail: "页面访问详情",
+    searchPages: "搜索页面...",
+    othersCount: "其他",
+    last7Days: "近 7 天",
+    last30Days: "近 30 天",
+    last90Days: "近 90 天",
+    allTime: "全部",
     languageDistribution: "语言分布",
     noDataYet: "暂无数据",
     uniqueVisitors: "独立访客",
@@ -707,6 +722,7 @@ export const adminTranslations = {
     bilibili: "哔哩哔哩",
     douban: "豆瓣",
     jellyfin: "Jellyfin",
+    deepseek: "DeepSeek",
 
     // Credential Form
     enterCredentialName: "输入凭据名称",
