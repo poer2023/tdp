@@ -11,7 +11,7 @@ import { LikeButton } from "@/components/like-button";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { cache } from "react";
 import { Container } from "@/components/ui/container";
-import { LuminaHeader, LuminaFooter } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 
 // Ensure Node.js runtime for Prisma
 export const runtime = "nodejs";
@@ -144,7 +144,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
 
   return (
     <>
-      <LuminaHeader />
+      <ZhiHeader />
       <main>
         <Container width="reading" padding="px-4 py-8 sm:px-6 sm:py-12 md:py-16">
           <article>
@@ -154,50 +154,50 @@ export default async function LocalizedPostPage({ params }: PageProps) {
               dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
             />
 
-          {/* Header */}
-          <header className="mb-8 sm:mb-10 md:mb-12">
-            <h1 className="text-4xl leading-tight font-bold text-stone-900 md:text-5xl dark:text-stone-100">
-              {post.title}
-            </h1>
+            {/* Header */}
+            <header className="mb-8 sm:mb-10 md:mb-12">
+              <h1 className="text-4xl leading-tight font-bold text-stone-900 md:text-5xl dark:text-stone-100">
+                {post.title}
+              </h1>
 
-            <div className="mt-6 flex items-center gap-4 text-sm text-stone-600 dark:text-stone-400">
-              {post.author?.name && <span>{post.author.name}</span>}
-              {post.publishedAt && (
-                <time dateTime={post.publishedAt.toISOString()}>
-                  {new Date(post.publishedAt).toLocaleDateString(l === "zh" ? "zh-CN" : "en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </time>
-              )}
-              {post.tags && <span className="text-blue-600 dark:text-blue-400">{post.tags}</span>}
+              <div className="mt-6 flex items-center gap-4 text-sm text-stone-600 dark:text-stone-400">
+                {post.author?.name && <span>{post.author.name}</span>}
+                {post.publishedAt && (
+                  <time dateTime={post.publishedAt.toISOString()}>
+                    {new Date(post.publishedAt).toLocaleDateString(l === "zh" ? "zh-CN" : "en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                )}
+                {post.tags && <span className="text-blue-600 dark:text-blue-400">{post.tags}</span>}
+              </div>
+
+              {/* Language Switcher */}
+              <div className="mt-6">
+                <LanguageSwitcher
+                  currentLocale={postLocale}
+                  currentSlug={post.slug}
+                  groupId={post.groupId}
+                />
+              </div>
+            </header>
+
+            {post.coverImagePath && (
+              <div className="relative mb-8 aspect-video sm:mb-10 md:mb-12">
+                <Image
+                  src={post.coverImagePath}
+                  alt={post.title}
+                  fill
+                  className="rounded-lg object-cover"
+                />
+              </div>
+            )}
+
+            <div className="prose prose-zinc dark:prose-invert max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
             </div>
-
-            {/* Language Switcher */}
-            <div className="mt-6">
-              <LanguageSwitcher
-                currentLocale={postLocale}
-                currentSlug={post.slug}
-                groupId={post.groupId}
-              />
-            </div>
-          </header>
-
-          {post.coverImagePath && (
-            <div className="relative mb-8 aspect-video sm:mb-10 md:mb-12">
-              <Image
-                src={post.coverImagePath}
-                alt={post.title}
-                fill
-                className="rounded-lg object-cover"
-              />
-            </div>
-          )}
-
-          <div className="prose prose-zinc dark:prose-invert max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
-          </div>
 
             <footer className="mt-8 flex items-center justify-between border-t border-stone-200 pt-6 sm:mt-12 sm:pt-8 md:mt-16 dark:border-stone-800">
               <Link href={`/${l}/posts`} className="text-blue-600 hover:underline dark:text-blue-400">
@@ -208,7 +208,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
           </article>
         </Container>
       </main>
-      <LuminaFooter />
+      <ZhiFooter />
     </>
   );
 }

@@ -3,11 +3,11 @@ import { auth } from "@/auth";
 import { listPublishedPosts } from "@/lib/posts";
 import { listMoments } from "@/lib/moments";
 import { listHeroImages } from "@/lib/hero";
-import { LuminaHomePage } from "@/components/lumina";
-import { LuminaHeader, LuminaFooter } from "@/components/lumina";
-import type { FeedItem, FeedPost, FeedMoment, FeedCurated } from "@/components/lumina";
-import type { HeroImageItem } from "@/components/lumina/hero";
-import { getLuminaProfile } from "@/lib/lumina-profile";
+import { ZhiHomePage } from "@/components/zhi";
+import { ZhiHeader, ZhiFooter } from "@/components/zhi";
+import type { FeedItem, FeedPost, FeedMoment, FeedCurated } from "@/components/zhi";
+import type { HeroImageItem } from "@/components/zhi/hero";
+import { getZhiProfile } from "@/lib/zhi-profile";
 import prisma from "@/lib/prisma";
 
 // Incremental Static Regeneration for localized homepage
@@ -138,15 +138,15 @@ export default async function LocalizedHomePage({ params }: PageProps) {
 
   return (
     <>
-      <LuminaHeader />
+      <ZhiHeader />
       <main>
-        <LuminaHomePage
+        <ZhiHomePage
           feedItems={feedItems}
           heroImages={heroImages.length > 0 ? heroImages : undefined}
-          profileData={getLuminaProfile(locale === "zh" ? "zh" : "en")}
+          profileData={getZhiProfile(locale === "zh" ? "zh" : "en")}
         />
       </main>
-      <LuminaFooter />
+      <ZhiFooter />
     </>
   );
 }

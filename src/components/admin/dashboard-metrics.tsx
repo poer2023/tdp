@@ -1,7 +1,7 @@
 /**
  * Dashboard Metrics Component
  *
- * Displays metric cards for admin dashboard - Lumina style.
+ * Displays metric cards for admin dashboard - Zhi style.
  * Separated for dynamic loading and error isolation.
  *
  * @see docs/modular-development-playbook.md

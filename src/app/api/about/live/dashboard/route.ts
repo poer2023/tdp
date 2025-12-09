@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 /**
- * Dashboard Stats Data structure for LuminaStatsDashboard
+ * Dashboard Stats Data structure for ZhiStatsDashboard
  */
 export interface DashboardStatsData {
   photoCount: number;

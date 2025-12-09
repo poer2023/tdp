@@ -13,7 +13,7 @@ export const NAV_LINKS = [
 export const PROJECTS: Project[] = [
   {
     id: 'p1',
-    title: 'Lumina Blog System',
+    title: 'Zhi Blog System',
     description: 'A minimalist personal blog platform built with React and Tailwind CSS. Features dark mode, masonry layout, and interactive data visualization for quantified self tracking.',
     imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1469&q=80',
     technologies: ['React', 'TypeScript', 'Tailwind', 'Recharts'],
@@ -24,14 +24,14 @@ export const PROJECTS: Project[] = [
     role: 'Design & Dev',
     year: '2023',
     features: [
-        'Responsive Masonry Grid Layout',
-        'Custom Interactive Data Charts',
-        'Dark/Light Mode with Persistance',
-        'Optimized Animations'
+      'Responsive Masonry Grid Layout',
+      'Custom Interactive Data Charts',
+      'Dark/Light Mode with Persistance',
+      'Optimized Animations'
     ],
     stats: [
-        { label: 'Performance', value: '99' },
-        { label: 'Components', value: '45+' }
+      { label: 'Performance', value: '99' },
+      { label: 'Components', value: '45+' }
     ]
   },
   {
@@ -45,14 +45,14 @@ export const PROJECTS: Project[] = [
     role: 'Frontend Lead',
     year: '2022',
     features: [
-        'Spotify Premium Integration',
-        'Customizable Timer Intervals',
-        'Task Management Board',
-        'Weekly Productivity Reports'
+      'Spotify Premium Integration',
+      'Customizable Timer Intervals',
+      'Task Management Board',
+      'Weekly Productivity Reports'
     ],
     stats: [
-        { label: 'Users', value: '2.5k' },
-        { label: 'Sessions', value: '12k' }
+      { label: 'Users', value: '2.5k' },
+      { label: 'Sessions', value: '12k' }
     ]
   },
   {
@@ -66,54 +66,54 @@ export const PROJECTS: Project[] = [
     role: 'Data Engineer',
     year: '2023',
     features: [
-        'Batch EXIF Extraction',
-        'Interactive Focal Length Heatmaps',
-        'ISO & Shutter Speed Analysis',
-        'Export Reports to PDF'
+      'Batch EXIF Extraction',
+      'Interactive Focal Length Heatmaps',
+      'ISO & Shutter Speed Analysis',
+      'Export Reports to PDF'
     ],
     stats: [
-        { label: 'Processed', value: '50k+' },
-        { label: 'Accuracy', value: '100%' }
+      { label: 'Processed', value: '50k+' },
+      { label: 'Accuracy', value: '100%' }
     ]
   }
 ];
 
 export const SHARE_ITEMS: ShareItem[] = [
-    {
-        id: 's1',
-        title: 'Linear - The issue tracker I dream of',
-        description: 'The attention to detail in Linear’s UI/UX is simply unmatched. It makes project management feel like playing a video game.',
-        url: 'https://linear.app',
-        domain: 'linear.app',
-        imageUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80',
-        date: '2 hours ago',
-        tags: ['Design', 'Tools'],
-        type: 'share',
-        likes: 12
-    },
-    {
-        id: 's2',
-        title: 'Josh Comeau\'s CSS Blog',
-        description: 'Whenever I struggle with CSS, I check if Josh has written about it. The interactive examples are gold.',
-        url: 'https://joshwcomeau.com',
-        domain: 'joshwcomeau.com',
-        date: 'Nov 14, 2023',
-        tags: ['Dev', 'Learning'],
-        type: 'share',
-        likes: 45
-    },
-    {
-        id: 's3',
-        title: 'Analogue Pocket',
-        description: 'Finally got my hands on this. The screen is absolutely gorgeous for retro gaming.',
-        url: 'https://analogue.co',
-        domain: 'analogue.co',
-        imageUrl: 'https://images.unsplash.com/photo-1555864326-5cf22ef123cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1471&q=80',
-        date: 'Nov 10, 2023',
-        tags: ['Gadget', 'Gaming'],
-        type: 'share',
-        likes: 89
-    }
+  {
+    id: 's1',
+    title: 'Linear - The issue tracker I dream of',
+    description: 'The attention to detail in Linear’s UI/UX is simply unmatched. It makes project management feel like playing a video game.',
+    url: 'https://linear.app',
+    domain: 'linear.app',
+    imageUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80',
+    date: '2 hours ago',
+    tags: ['Design', 'Tools'],
+    type: 'share',
+    likes: 12
+  },
+  {
+    id: 's2',
+    title: 'Josh Comeau\'s CSS Blog',
+    description: 'Whenever I struggle with CSS, I check if Josh has written about it. The interactive examples are gold.',
+    url: 'https://joshwcomeau.com',
+    domain: 'joshwcomeau.com',
+    date: 'Nov 14, 2023',
+    tags: ['Dev', 'Learning'],
+    type: 'share',
+    likes: 45
+  },
+  {
+    id: 's3',
+    title: 'Analogue Pocket',
+    description: 'Finally got my hands on this. The screen is absolutely gorgeous for retro gaming.',
+    url: 'https://analogue.co',
+    domain: 'analogue.co',
+    imageUrl: 'https://images.unsplash.com/photo-1555864326-5cf22ef123cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1471&q=80',
+    date: 'Nov 10, 2023',
+    tags: ['Gadget', 'Gaming'],
+    type: 'share',
+    likes: 89
+  }
 ];
 
 export const BLOG_POSTS: BlogPost[] = [
@@ -156,7 +156,7 @@ export const BLOG_POSTS: BlogPost[] = [
     type: 'article',
     likes: 102,
     comments: [
-        { id: 'c2', username: 'tech_enthusiast', content: 'The latency improvements are game changing!', date: 'Oct 21, 2023' }
+      { id: 'c2', username: 'tech_enthusiast', content: 'The latency improvements are game changing!', date: 'Oct 21, 2023' }
     ]
   },
   {
@@ -183,7 +183,7 @@ export const BLOG_POSTS: BlogPost[] = [
     likes: 56,
     comments: []
   },
-    {
+  {
     id: '8',
     title: 'Switching to Linux for Daily Driving',
     excerpt: 'My experience moving from macOS to Arch Linux. The customization is endless, but so is the configuration.',
@@ -198,50 +198,50 @@ export const BLOG_POSTS: BlogPost[] = [
 ];
 
 export const MOMENTS: Moment[] = [
-    {
-        id: 'm1',
-        content: 'Just finished "Oppenheimer". The sound design is absolutely terrifying and brilliant. Nolan does it again. 🎬',
-        date: '2 hours ago',
-        tags: ['Movie', 'Thoughts'],
-        type: 'moment',
-        likes: 15,
-        comments: []
-    },
-    {
-        id: 'm2',
-        content: 'Golden hour hit differently today. Walking through the old town district.',
-        images: [
-            'https://picsum.photos/600/600?random=10',
-            'https://picsum.photos/600/600?random=11',
-            'https://picsum.photos/600/600?random=12'
-        ],
-        date: 'Yesterday',
-        tags: ['Photography', 'City'],
-        type: 'moment',
-        likes: 34,
-        comments: [
-             { id: 'm_c1', username: 'sarah_p', content: 'Great shots! What camera do you use?', date: 'Yesterday' }
-        ]
-    },
-    {
-        id: 'm3',
-        content: 'New mechanical keyboard arrived! The thock sound is incredibly satisfying. Keychron Q1 Pro.',
-        images: ['https://picsum.photos/800/400?random=13'],
-        date: 'Nov 12, 2023',
-        tags: ['Gadgets', 'Setup'],
-        type: 'moment',
-        likes: 22,
-        comments: []
-    },
-    {
-        id: 'm4',
-        content: 'Trying to center a div in 2023 is still harder than it should be. #css #webdev',
-        date: 'Nov 08, 2023',
-        tags: ['DevRant'],
-        type: 'moment',
-        likes: 41,
-        comments: []
-    }
+  {
+    id: 'm1',
+    content: 'Just finished "Oppenheimer". The sound design is absolutely terrifying and brilliant. Nolan does it again. 🎬',
+    date: '2 hours ago',
+    tags: ['Movie', 'Thoughts'],
+    type: 'moment',
+    likes: 15,
+    comments: []
+  },
+  {
+    id: 'm2',
+    content: 'Golden hour hit differently today. Walking through the old town district.',
+    images: [
+      'https://picsum.photos/600/600?random=10',
+      'https://picsum.photos/600/600?random=11',
+      'https://picsum.photos/600/600?random=12'
+    ],
+    date: 'Yesterday',
+    tags: ['Photography', 'City'],
+    type: 'moment',
+    likes: 34,
+    comments: [
+      { id: 'm_c1', username: 'sarah_p', content: 'Great shots! What camera do you use?', date: 'Yesterday' }
+    ]
+  },
+  {
+    id: 'm3',
+    content: 'New mechanical keyboard arrived! The thock sound is incredibly satisfying. Keychron Q1 Pro.',
+    images: ['https://picsum.photos/800/400?random=13'],
+    date: 'Nov 12, 2023',
+    tags: ['Gadgets', 'Setup'],
+    type: 'moment',
+    likes: 22,
+    comments: []
+  },
+  {
+    id: 'm4',
+    content: 'Trying to center a div in 2023 is still harder than it should be. #css #webdev',
+    date: 'Nov 08, 2023',
+    tags: ['DevRant'],
+    type: 'moment',
+    likes: 41,
+    comments: []
+  }
 ]
 
 // --- Gallery Data ---
@@ -292,7 +292,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     date: '2023-10-12',
     exif: { camera: 'Leica Q2', lens: '28mm', aperture: 'f/1.7', iso: '400', shutter: '1/125s' }
   },
-   {
+  {
     id: 'g6',
     type: 'image',
     url: 'https://images.unsplash.com/photo-1531297461136-82af022f0b91?ixlib=rb-4.0.3&auto=format&fit=crop&w=1374&q=80',
@@ -326,13 +326,13 @@ export const ROUTINE_DATA: RoutineData[] = [
 ];
 
 export const STEPS_DATA: StepData[] = [
-    { day: 'Mon', steps: 6500 },
-    { day: 'Tue', steps: 8200 },
-    { day: 'Wed', steps: 5800 },
-    { day: 'Thu', steps: 11000 },
-    { day: 'Fri', steps: 9500 },
-    { day: 'Sat', steps: 15000 },
-    { day: 'Sun', steps: 4000 },
+  { day: 'Mon', steps: 6500 },
+  { day: 'Tue', steps: 8200 },
+  { day: 'Wed', steps: 5800 },
+  { day: 'Thu', steps: 11000 },
+  { day: 'Fri', steps: 9500 },
+  { day: 'Sat', steps: 15000 },
+  { day: 'Sun', steps: 4000 },
 ];
 
 export const MOVIE_DATA: MovieData[] = [
@@ -354,85 +354,85 @@ export const GAME_GENRE_DATA: GameGenreData[] = [
 ];
 
 export const SKILLS_DATA: SkillData[] = [
-    { name: 'Product Vision', level: 85 },
-    { name: 'React/Frontend', level: 70 },
-    { name: 'Photography', level: 60 },
-    { name: 'Data Analysis', level: 75 },
+  { name: 'Product Vision', level: 85 },
+  { name: 'React/Frontend', level: 70 },
+  { name: 'Photography', level: 60 },
+  { name: 'Data Analysis', level: 75 },
 ];
 
 export const PHOTO_WALL_IMAGES = [
-    'https://picsum.photos/400/400?random=101',
-    'https://picsum.photos/400/400?random=102',
-    'https://picsum.photos/400/400?random=103',
-    'https://picsum.photos/400/400?random=104',
-    'https://picsum.photos/400/400?random=105',
-    'https://picsum.photos/400/400?random=106',
-    'https://picsum.photos/400/400?random=107',
-    'https://picsum.photos/400/400?random=108',
-    'https://picsum.photos/400/400?random=109',
-    'https://picsum.photos/400/400?random=110',
-    'https://picsum.photos/400/400?random=111',
-    'https://picsum.photos/400/400?random=112',
+  'https://picsum.photos/400/400?random=101',
+  'https://picsum.photos/400/400?random=102',
+  'https://picsum.photos/400/400?random=103',
+  'https://picsum.photos/400/400?random=104',
+  'https://picsum.photos/400/400?random=105',
+  'https://picsum.photos/400/400?random=106',
+  'https://picsum.photos/400/400?random=107',
+  'https://picsum.photos/400/400?random=108',
+  'https://picsum.photos/400/400?random=109',
+  'https://picsum.photos/400/400?random=110',
+  'https://picsum.photos/400/400?random=111',
+  'https://picsum.photos/400/400?random=112',
 ];
 
 // --- Traffic Data Mocks ---
 export const TRAFFIC_DATA: TrafficData[] = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (29 - i));
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-    const base = isWeekend ? 300 : 500;
-    const random = Math.floor(Math.random() * 200);
-    const visits = base + random;
-    return {
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        visits: visits,
-        unique: Math.floor(visits * 0.75),
-    };
+  const date = new Date();
+  date.setDate(date.getDate() - (29 - i));
+  const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+  const base = isWeekend ? 300 : 500;
+  const random = Math.floor(Math.random() * 200);
+  const visits = base + random;
+  return {
+    date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    visits: visits,
+    unique: Math.floor(visits * 0.75),
+  };
 });
 
 export const SOURCE_DATA: SourceData[] = [
-    { name: 'Search', value: 45, color: '#57534e' }, // Stone 600
-    { name: 'Direct', value: 25, color: '#78716c' }, // Stone 500
-    { name: 'Social', value: 20, color: '#a8a29e' }, // Stone 400
-    { name: 'Referral', value: 10, color: '#d6d3d1' }, // Stone 300
+  { name: 'Search', value: 45, color: '#57534e' }, // Stone 600
+  { name: 'Direct', value: 25, color: '#78716c' }, // Stone 500
+  { name: 'Social', value: 20, color: '#a8a29e' }, // Stone 400
+  { name: 'Referral', value: 10, color: '#d6d3d1' }, // Stone 300
 ];
 
 export const PAGE_VISIT_DATA: PageVisitData[] = [
-    { path: '/blog/exploring-gemini-2-5', title: 'Exploring Gemini 2.5 Flash', visits: 1245 },
-    { path: '/gallery', title: 'Gallery', visits: 856 },
-    { path: '/projects/lumina', title: 'Project: Lumina Blog', visits: 645 },
-    { path: '/', title: 'Home', visits: 3421 },
-    { path: '/about', title: 'About Me', visits: 220 },
-    { path: '/blog/sunday-morning', title: 'Sunday Morning Rituals', visits: 189 },
-].sort((a,b) => b.visits - a.visits);
+  { path: '/blog/exploring-gemini-2-5', title: 'Exploring Gemini 2.5 Flash', visits: 1245 },
+  { path: '/gallery', title: 'Gallery', visits: 856 },
+  { path: '/projects/Zhi', title: 'Project: Zhi Blog', visits: 645 },
+  { path: '/', title: 'Home', visits: 3421 },
+  { path: '/about', title: 'About Me', visits: 220 },
+  { path: '/blog/sunday-morning', title: 'Sunday Morning Rituals', visits: 189 },
+].sort((a, b) => b.visits - a.visits);
 
 export const DEVICE_DATA: DeviceData[] = [
-    { name: 'Desktop', value: 58, color: '#44403c' },
-    { name: 'Mobile', value: 35, color: '#a8a29e' },
-    { name: 'Tablet', value: 7, color: '#e7e5e4' },
+  { name: 'Desktop', value: 58, color: '#44403c' },
+  { name: 'Mobile', value: 35, color: '#a8a29e' },
+  { name: 'Tablet', value: 7, color: '#e7e5e4' },
 ];
 
 // --- FRIENDS MOCK DATA ---
 export const FRIENDS_DATA: Friend[] = [
-    { id: 'f1', name: 'Alice Guo', accessCode: 'a8s7d6', note: 'Colleague from Tencent', tags: ['Work', 'Close'], status: 'active', createdAt: '2023-01-12', validUntil: '2025-01-01' },
-    { id: 'f2', name: 'Bob Chen', accessCode: '123xyz', note: 'University Classmate', tags: ['School', 'Close'], status: 'active', createdAt: '2023-03-05' },
-    { id: 'f3', name: 'Charlie', accessCode: 'hidden', note: 'Met at conference', tags: ['Network'], status: 'banned', createdAt: '2023-06-20' },
+  { id: 'f1', name: 'Alice Guo', accessCode: 'a8s7d6', note: 'Colleague from Tencent', tags: ['Work', 'Close'], status: 'active', createdAt: '2023-01-12', validUntil: '2025-01-01' },
+  { id: 'f2', name: 'Bob Chen', accessCode: '123xyz', note: 'University Classmate', tags: ['School', 'Close'], status: 'active', createdAt: '2023-03-05' },
+  { id: 'f3', name: 'Charlie', accessCode: 'hidden', note: 'Met at conference', tags: ['Network'], status: 'banned', createdAt: '2023-06-20' },
 ];
 
 // --- SUBSCRIPTIONS MOCK DATA ---
 export const SUBSCRIPTIONS_DATA: Subscription[] = [
-    { id: 'sub1', name: 'ChatGPT Plus', price: 20, currency: 'USD', cycle: 'monthly', category: 'AI Tools', active: true, nextBilling: '2023-11-25' },
-    { id: 'sub2', name: 'Netflix', price: 1800, currency: 'JPY', cycle: 'monthly', category: 'Entertainment', active: true, nextBilling: '2023-11-15' },
-    { id: 'sub3', name: 'Vercel Pro', price: 20, currency: 'USD', cycle: 'monthly', category: 'Hosting', active: true, nextBilling: '2023-11-01' },
-    { id: 'sub4', name: 'Midjourney', price: 10, currency: 'USD', cycle: 'monthly', category: 'AI Tools', active: false, description: 'Paused for now' },
-    { id: 'sub5', name: 'Adobe Creative Cloud', price: 280, currency: 'HKD', cycle: 'monthly', category: 'Software', active: true },
-    { id: 'sub6', name: 'Domain Renewal', price: 12, currency: 'USD', cycle: 'yearly', category: 'Hosting', active: true, nextBilling: '2024-05-12' },
+  { id: 'sub1', name: 'ChatGPT Plus', price: 20, currency: 'USD', cycle: 'monthly', category: 'AI Tools', active: true, nextBilling: '2023-11-25' },
+  { id: 'sub2', name: 'Netflix', price: 1800, currency: 'JPY', cycle: 'monthly', category: 'Entertainment', active: true, nextBilling: '2023-11-15' },
+  { id: 'sub3', name: 'Vercel Pro', price: 20, currency: 'USD', cycle: 'monthly', category: 'Hosting', active: true, nextBilling: '2023-11-01' },
+  { id: 'sub4', name: 'Midjourney', price: 10, currency: 'USD', cycle: 'monthly', category: 'AI Tools', active: false, description: 'Paused for now' },
+  { id: 'sub5', name: 'Adobe Creative Cloud', price: 280, currency: 'HKD', cycle: 'monthly', category: 'Software', active: true },
+  { id: 'sub6', name: 'Domain Renewal', price: 12, currency: 'USD', cycle: 'yearly', category: 'Hosting', active: true, nextBilling: '2024-05-12' },
 ];
 
 // --- CREDENTIALS MOCK DATA ---
 export const CREDENTIALS_DATA: Credential[] = [
-    { id: 'cr1', platform: 'Bilibili', name: 'Main Account', identifier: 'sessdata_******', type: 'cookie', status: 'active', lastSync: '10 mins ago', failureCount: 0 },
-    { id: 'cr2', platform: 'Douban', name: 'Movie Tracker', identifier: 'dbcl2_******', type: 'cookie', status: 'expired', lastSync: '2 days ago', failureCount: 3 },
-    { id: 'cr3', platform: 'Steam', name: 'Gaming', identifier: 'steam_api_key_******', type: 'api_key', status: 'active', lastSync: '1 hour ago', failureCount: 0 },
-    { id: 'cr4', platform: 'GitHub', name: 'Personal Access Token', identifier: 'ghp_******', type: 'token', status: 'active', lastSync: '5 mins ago', failureCount: 0 },
+  { id: 'cr1', platform: 'Bilibili', name: 'Main Account', identifier: 'sessdata_******', type: 'cookie', status: 'active', lastSync: '10 mins ago', failureCount: 0 },
+  { id: 'cr2', platform: 'Douban', name: 'Movie Tracker', identifier: 'dbcl2_******', type: 'cookie', status: 'expired', lastSync: '2 days ago', failureCount: 3 },
+  { id: 'cr3', platform: 'Steam', name: 'Gaming', identifier: 'steam_api_key_******', type: 'api_key', status: 'active', lastSync: '1 hour ago', failureCount: 0 },
+  { id: 'cr4', platform: 'GitHub', name: 'Personal Access Token', identifier: 'ghp_******', type: 'token', status: 'active', lastSync: '5 mins ago', failureCount: 0 },
 ];

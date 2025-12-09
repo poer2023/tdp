@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
-import { SettingsProvider, DataProvider } from '@/components/admin/lumina/store';
-import AdminShell from '@/components/admin/lumina/AdminShell';
-import CredentialsSection from '@/components/admin/lumina/CredentialsSection';
+import { SettingsProvider, DataProvider } from '@/components/admin/zhi/store';
+import AdminShell from '@/components/admin/zhi/AdminShell';
+import CredentialsSection from '@/components/admin/zhi/CredentialsSection';
 
 export default async function CredentialsPage() {
     const session = await auth();

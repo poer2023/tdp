@@ -1,6 +1,6 @@
-import AdminShell from '@/components/admin/lumina/AdminShell';
-import AdminOverviewContent from "@/components/admin/lumina/AdminOverviewContent";
-import { SettingsProvider, DataProvider } from '@/components/admin/lumina/store';
+import AdminShell from '@/components/admin/zhi/AdminShell';
+import AdminOverviewContent from "@/components/admin/zhi/AdminOverviewContent";
+import { SettingsProvider, DataProvider } from '@/components/admin/zhi/store';
 import { auth } from "@/auth";
 
 export default async function AdminPage() {

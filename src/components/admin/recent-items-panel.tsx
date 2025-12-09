@@ -28,7 +28,7 @@ function safeDate(value: Date | string | number | null | undefined): Date {
 }
 
 export function RecentItemsPanel({ recentPosts, recentUploads, locale }: RecentItemsPanelProps) {
-  // Aggregate and sort recent activity (matches Lumina pattern)
+  // Aggregate and sort recent activity (matches Zhi pattern)
   const recentActivity: RecentItem[] = [
     ...recentPosts.slice(0, 2).map(post => ({
       id: post.id,

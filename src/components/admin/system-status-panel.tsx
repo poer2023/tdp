@@ -8,7 +8,7 @@ type SystemStatusPanelProps = {
 };
 
 export function SystemStatusPanel({ locale }: SystemStatusPanelProps) {
-  // Static operational status - matches Lumina approach
+  // Static operational status - matches Zhi approach
   // Future enhancement: Replace with real health check data from API
 
   return (

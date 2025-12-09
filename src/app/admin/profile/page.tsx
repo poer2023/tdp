@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
-import AdminShell from "@/components/admin/lumina/AdminShell";
-import ProfilePage from "@/components/admin/lumina/ProfilePage";
-import { DataProvider, SettingsProvider } from "@/components/admin/lumina/store";
+import AdminShell from "@/components/admin/zhi/AdminShell";
+import ProfilePage from "@/components/admin/zhi/ProfilePage";
+import { DataProvider, SettingsProvider } from "@/components/admin/zhi/store";
 
 export default async function ProfileRoutePage() {
   const session = await auth();

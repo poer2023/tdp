@@ -92,7 +92,7 @@ export function PhotoMetadataPanel({ image, locale = "zh" }: PhotoMetadataPanelP
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const hasLocation = image.latitude && image.longitude;
-  const fileName = image.filePath.split("/").pop() || (locale === "zh" ? "未知" : "Unknown");
+  const _fileName = image.filePath.split("/").pop() || (locale === "zh" ? "未知" : "Unknown");
 
   // Inject custom map styles
   useEffect(() => {

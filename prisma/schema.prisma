@@ -219,28 +219,28 @@ model PhotoStats {
 
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model Moment {
-  id               String           @id @default(cuid())
+  id               String               @id @default(cuid())
   authorId         String
   content          String
   images           Json?
-  visibility       MomentVisibility @default(PUBLIC)
-  slug             String?          @unique
+  visibility       MomentVisibility     @default(PUBLIC)
+  slug             String?              @unique
   tags             String[]
   location         Json?
-  lang             String           @default("en-US")
-  status           MomentStatus     @default(PUBLISHED)
+  lang             String               @default("en-US")
+  status           MomentStatus         @default(PUBLISHED)
   scheduledAt      DateTime?
   replyToId        String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
   deletedAt        DateTime?
-  friendVisibility FriendVisibility @default(PUBLIC)
+  friendVisibility FriendVisibility     @default(PUBLIC)
   friendId         String?
   happenedAt       DateTime?
-  author           User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  replyTo          Moment?          @relation("MomentThread", fields: [replyToId], references: [id])
-  replies          Moment[]         @relation("MomentThread")
-  friend           Friend?          @relation("FriendPrivateMoments", fields: [friendId], references: [id])
+  author           User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replyTo          Moment?              @relation("MomentThread", fields: [replyToId], references: [id])
+  replies          Moment[]             @relation("MomentThread")
+  friend           Friend?              @relation("FriendPrivateMoments", fields: [friendId], references: [id])
   comments         MomentComment[]
   likes            MomentLike[]
   likeStats        MomentLikeAggregate?
@@ -327,13 +327,13 @@ model DailyStats {
 }
 
 model PageView {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   path      String
   locale    String?
   referer   String?
   userAgent String?
   device    DeviceType @default(UNKNOWN)
-  createdAt DateTime @default(now())
+  createdAt DateTime   @default(now())
 
   @@index([createdAt])
   @@index([path])
@@ -431,16 +431,17 @@ model SyncJob {
 }
 
 model Game {
-  id           String            @id @default(cuid())
-  platformId   String
-  platform     GamePlatform
-  name         String
-  nameZh       String?
-  cover        String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  achievements GameAchievement[]
-  sessions     GameSession[]
+  id                String                 @id @default(cuid())
+  platformId        String
+  platform          GamePlatform
+  name              String
+  nameZh            String?
+  cover             String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  achievements      GameAchievement[]
+  sessions          GameSession[]
+  playtimeSnapshots GamePlaytimeSnapshot[] // Daily playtime tracking
 
   @@unique([platform, platformId])
   @@index([platform])
@@ -493,6 +494,24 @@ model SteamProfile {
   updatedAt   DateTime @updatedAt
 }
 
+/// Track daily playtime snapshots for Steam games
+model GamePlaytimeSnapshot {
+  id         String   @id @default(cuid())
+  gameId     String // Reference to Game
+  steamId    String // Steam user ID
+  playtime   Int // Total playtime in minutes at snapshot time
+  snapshotAt DateTime // Snapshot date (normalized to start of day)
+  dailyDelta Int? // Difference from previous day in minutes
+  createdAt  DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, steamId, snapshotAt])
+  @@index([gameId, snapshotAt])
+  @@index([steamId, snapshotAt])
+  @@index([snapshotAt])
+}
+
 model HoyoProfile {
   id         String   @id @default(cuid())
   uid        String   @unique
@@ -535,16 +554,78 @@ model ExternalCredential {
   updatedAt       DateTime
 
   // New fields for sync automation
-  autoSync      Boolean   @default(false)
+  autoSync      Boolean      @default(false)
   syncFrequency String? // daily, weekly, manual
   nextCheckAt   DateTime?
-
   // Relations
-  syncJobs SyncJobLog[] @relation("CredentialSyncJobs")
+  syncJobs      SyncJobLog[] @relation("CredentialSyncJobs")
+  syncLogs      SyncLog[]
 
   @@index([lastValidatedAt])
   @@index([platform, isValid])
   @@index([nextCheckAt])
+  @@index([autoSync])
+}
+
+/// Credential Sync Log
+/// Records all sync operations for auditing and monitoring
+model SyncLog {
+  id String @id @default(cuid())
+
+  // Sync Metadata
+  credentialId String?
+  credential   ExternalCredential? @relation(fields: [credentialId], references: [id], onDelete: SetNull)
+
+  platform    String // e.g., "BILIBILI", "DOUBAN", "STEAM"
+  triggerType SyncTriggerType @default(MANUAL) // Manual vs Auto
+
+  // Sync Configuration
+  syncConfig Json? // Config used for this sync
+
+  // Sync Results
+  status  SyncStatus @default(RUNNING)
+  success Boolean    @default(false)
+
+  itemsTotal    Int @default(0)
+  itemsSuccess  Int @default(0)
+  itemsFailed   Int @default(0)
+  itemsNew      Int @default(0)
+  itemsUpdated  Int @default(0)
+  itemsExisting Int @default(0)
+
+  // Performance & Errors
+  duration     Int? // milliseconds
+  errorMessage String? @db.Text
+  errorStack   String? @db.Text
+
+  // AI Assistance
+  aiDiagnosisId String? // Link to AI diagnosis if error occurred
+  aiAssisted    Boolean @default(false)
+
+  // Timestamps
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([platform, createdAt])
+  @@index([credentialId, createdAt])
+  @@index([status])
+  @@index([triggerType])
+}
+
+enum SyncTriggerType {
+  MANUAL // User clicked sync button
+  AUTO // Scheduled auto-sync
+  VALIDATION // Triggered during credential validation
+  API // Triggered via API call
+}
+
+enum SyncStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  TIMEOUT
+  CANCELLED
 }
 
 model SyncJobLog {
@@ -722,6 +803,7 @@ enum CredentialPlatform {
   DOUBAN
   JELLYFIN
   GITHUB
+  DEEPSEEK
 }
 
 enum CredentialType {
@@ -786,4 +868,41 @@ enum MonitorStatus {
   DOWN
   PENDING
   MAINTENANCE
+}
+
+/// AI Diagnosis Log
+/// Records all AI-powered diagnostics and auto-fix attempts
+model AIDiagnosisLog {
+  id String @id @default(cuid())
+
+  // Platform & Error Details
+  platform     String // e.g., "Bilibili", "Douban"
+  errorType    String // e.g., "CSS Selector Not Found", "API Timeout"
+  errorMessage String  @db.Text
+  htmlSnapshot String? @db.Text // Optional HTML for context
+
+  // AI Diagnosis Result
+  aiReason   String  @db.Text
+  aiSolution String  @db.Text
+  canAutoFix Boolean @default(false)
+  confidence Float // 0.0 to 1.0
+
+  // Auto-Fix Status
+  autoFixApplied Boolean  @default(false)
+  autoFixSuccess Boolean?
+  autoFixDetails Json? // e.g., { "oldSelector": ".video-item", "newSelector": ".new-video-card" }
+
+  // Cost Tracking
+  tokensUsed Int? // Total tokens consumed
+  costYuan   Float? // Cost in CNY (¥)
+
+  // Metadata
+  credentialId String? // Related credential if any
+  syncJobId    String? // Related sync job if any
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([platform, createdAt])
+  @@index([canAutoFix, autoFixApplied])
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LuminaHeader, LuminaFooter, LuminaStatsDashboard } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter, ZhiStatsDashboard } from "@/components/zhi";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -22,11 +22,11 @@ export default async function LiveDashboardPage({ params }: PageProps) {
 
   return (
     <>
-      <LuminaHeader />
+      <ZhiHeader />
       <main className="min-h-screen bg-stone-50 dark:bg-stone-950">
-        <LuminaStatsDashboard />
+        <ZhiStatsDashboard />
       </main>
-      <LuminaFooter />
+      <ZhiFooter />
     </>
   );
 }

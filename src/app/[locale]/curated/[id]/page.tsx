@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import prisma from "@/lib/prisma";
-import { LuminaHeader, LuminaFooter } from "@/components/lumina";
+import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 import CuratedDetailContent from "./curated-detail-content";
 
 export const runtime = "nodejs";
@@ -81,7 +81,7 @@ export default async function CuratedDetailPage({ params }: PageProps) {
 
   return (
     <>
-      <LuminaHeader />
+      <ZhiHeader />
       <main className="min-h-screen bg-stone-50 dark:bg-[#0a0a0b]">
         <CuratedDetailContent
           item={{
@@ -109,7 +109,7 @@ export default async function CuratedDetailPage({ params }: PageProps) {
           locale={locale as "en" | "zh"}
         />
       </main>
-      <LuminaFooter />
+      <ZhiFooter />
     </>
   );
 }

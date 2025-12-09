@@ -1,7 +1,7 @@
 /**
  * Dashboard Activity Component
  *
- * Displays enhanced activity section for admin dashboard with Lumina-style layout:
+ * Displays enhanced activity section for admin dashboard with Zhi-style layout:
  * - Left: Content Distribution Chart (2/3 width on lg+)
  * - Right: Recent Items + System Status (1/3 width on lg+)
  *
@@ -69,7 +69,7 @@ export function DashboardActivity({
         {t(locale, "recentActivity")}
       </h2>
 
-      {/* Lumina-style 3-panel layout: 2/3 chart + 1/3 panels */}
+      {/* Zhi-style 3-panel layout: 2/3 chart + 1/3 panels */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left: Content Distribution Chart (2/3 width on lg+) */}
         <ContentDistributionChart
