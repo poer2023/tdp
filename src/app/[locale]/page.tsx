@@ -10,10 +10,12 @@ import type { HeroImageItem } from "@/components/zhi/hero";
 import { getZhiProfile } from "@/lib/zhi-profile";
 import prisma from "@/lib/prisma";
 
-// Incremental Static Regeneration for localized homepage
+// Force dynamic rendering in CI (no DB available); still node runtime.
 export const runtime = "nodejs";
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const dynamicParams = false;
+export const dynamicIO = true;
 
 type PageProps = {
   params: Promise<{ locale: string }>;

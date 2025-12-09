@@ -2,7 +2,9 @@ import Link from "next/link";
 import { listGalleryImagesWithLocation } from "@/lib/gallery";
 import { GalleryMapWrapper } from "@/components/gallery-map-wrapper";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const dynamicIO = true;
 
 type PageProps = {
   params: Promise<{ locale: string }>;

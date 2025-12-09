@@ -6,8 +6,10 @@ import type { ZhiGalleryItem } from "@/components/zhi";
 import { GalleryCategoryTabs } from "@/components/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
 
-// Revalidate every 60 seconds - gallery doesn't change frequently
-export const revalidate = 60;
+// Force dynamic to avoid DB during build pipelines without DATABASE_URL
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const dynamicIO = true;
 
 type PageProps = {
   params: Promise<{ locale: string }>;

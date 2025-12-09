@@ -3,7 +3,9 @@ import { localePath } from "@/lib/locale-path";
 import { Container } from "@/components/ui/container";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
+export const dynamicIO = true;
 
 type Props = {
   params: Promise<{ locale: string }>;
