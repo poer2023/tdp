@@ -1,6 +1,7 @@
 import LocalizedMomentsPage from "../[locale]/m/page";
 
-// Match the localized page's ISR setting (no revalidation)
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type PageProps = {

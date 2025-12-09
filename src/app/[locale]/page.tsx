@@ -152,7 +152,3 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     </>
   );
 }
-
-export function generateStaticParams() {
-  return [{ locale: "en" }, { locale: "zh" }];
-}

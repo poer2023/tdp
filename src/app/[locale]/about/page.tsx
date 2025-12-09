@@ -3,6 +3,10 @@ import { aboutContent, aboutLayoutClass, resolveAboutLocale } from "@/lib/about-
 import { ParticlesAboutContent } from "./particles-about-content";
 import { getLiveHighlightsData } from "@/lib/about-live";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type PageProps = {
   params: Promise<{ locale: string }>;
 };
@@ -34,8 +38,4 @@ export default async function LocalizedAboutPage({ params }: PageProps) {
       initialHighlights={initialHighlights}
     />
   );
-}
-
-export function generateStaticParams() {
-  return [{ locale: "en" }, { locale: "zh" }];
 }

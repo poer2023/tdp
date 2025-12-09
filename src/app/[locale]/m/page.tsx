@@ -2,7 +2,9 @@ import { listMoments } from "@/lib/moments";
 import { auth } from "@/auth";
 import { ParticlesMomentsContent } from "./particles-moments-content";
 
-export const revalidate = 60;
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -27,8 +29,4 @@ export default async function LocalizedMomentsPage({ params }: Props) {
   const moments = await listMoments({ limit: 24, tag: null, q: null });
 
   return <ParticlesMomentsContent moments={moments} locale={l} isAdmin={isAdmin} />;
-}
-
-export function generateStaticParams() {
-  return [{ locale: "en" }, { locale: "zh" }];
 }
