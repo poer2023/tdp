@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
 import { PhotoMetadataPanel } from "../photo-metadata-panel";
 import type { GalleryImage } from "@/lib/gallery";
 
@@ -86,6 +87,7 @@ describe("PhotoMetadataPanel", () => {
     description: "This is a test photo description",
     filePath: "/uploads/test-photo.jpg",
     postId: null,
+    category: "ORIGINAL",
     createdAt: "2024-01-15T10:30:00Z",
     latitude: 37.7749,
     longitude: -122.4194,
