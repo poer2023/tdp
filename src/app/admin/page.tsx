@@ -2,16 +2,21 @@ import AdminShell from '@/components/admin/zhi/AdminShell';
 import AdminOverviewContent from "@/components/admin/zhi/AdminOverviewContent";
 import { SettingsProvider, DataProvider } from '@/components/admin/zhi/store';
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
 export default async function AdminPage() {
   const session = await auth();
 
-  // Layout已验证session，这里使用!断言安全
+  // Defensive check - layout should handle this, but just in case
+  if (!session?.user) {
+    redirect("/login?callbackUrl=/admin");
+  }
+
   const user = {
-    username: session!.user.name ?? session!.user.email ?? "Admin",
-    email: session!.user.email ?? "",
-    role: session!.user.role,
-    image: session!.user.image ?? undefined,
+    username: session.user.name ?? session.user.email ?? "Admin",
+    email: session.user.email ?? "",
+    role: session.user.role,
+    image: session.user.image ?? undefined,
   };
 
   return (

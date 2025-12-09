@@ -138,12 +138,18 @@ export const authConfig: NextAuthConfig = {
       }
       return session;
     },
-    async signIn({ user }) {
-      if (!user?.email || !user?.id) {
+    async signIn({ user, account }) {
+      // For OAuth (Google), email is required but id may not exist on first login
+      // The adapter will create the user after signIn succeeds
+      if (!user?.email) {
         return false;
       }
 
-      await syncUserRole(user.id, user.email);
+      // Only sync role if user.id exists (returning user)
+      // For new users, role sync happens in createUser event
+      if (user.id) {
+        await syncUserRole(user.id, user.email);
+      }
       return true;
     },
   },
