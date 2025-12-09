@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { decode } from "next-auth/jwt";
+import { auth } from "@/auth";
 
 // Unified middleware
 // - Adds `x-pathname` header for locale detection in layout
@@ -88,39 +88,19 @@ export async function middleware(request: NextRequest) {
 
   // Protect admin routes
   if (pathname.startsWith("/admin")) {
-    const sessionCookie =
-      request.cookies.get("next-auth.session-token") ??
-      request.cookies.get("__Secure-next-auth.session-token") ??
-      request.cookies.get("authjs.session-token") ??
-      request.cookies.get("__Secure-authjs.session-token") ??
-      request.cookies.get("__Host-authjs.session-token") ??
-      null;
-    const sessionToken = sessionCookie?.value ?? null;
-    const sessionSalt = sessionCookie?.name ?? "authjs.session-token";
-    let role: string | null = null;
+    // Use NextAuth auth() for consistent cookie/secret handling
+    const session = await auth();
+    const role = (session?.user as { role?: string } | undefined)?.role ?? null;
 
-    if (sessionToken) {
-      try {
-        const decoded = await decode({
-          token: sessionToken,
-          secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "",
-          salt: sessionSalt,
-        });
-        role = (decoded?.role as string | undefined) ?? null;
-      } catch {
-        role = null;
-      }
-    }
-
-    // Unauthenticated → redirect to login (tests accept 302 here)
-    if (!sessionToken) {
+    // Unauthenticated → redirect to login
+    if (!session) {
       const redirectUrl = new URL("/login", request.nextUrl.origin);
       const q = searchParams.toString();
       redirectUrl.searchParams.set("callbackUrl", `${pathname}${q ? `?${q}` : ""}`);
       return NextResponse.redirect(redirectUrl, { status: 302 });
     }
 
-    // Authenticated but not ADMIN → return 403 (tests expect 401/403)
+    // Authenticated but not ADMIN → return 403
     if (role !== "ADMIN") {
       const forbiddenHtml = `<!DOCTYPE html><html lang="${currentLocale}">
         <head>
@@ -161,7 +141,7 @@ export async function middleware(request: NextRequest) {
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
-  } catch {}
+  } catch { }
   return res;
 }
 

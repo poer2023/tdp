@@ -8,7 +8,7 @@ import { HtmlLangSync } from "@/components/html-lang-sync";
 import { ConfirmProvider } from "@/hooks/use-confirm";
 import { MomentComposerLoader } from "@/components/moments/moment-composer-loader";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 const geistSans = localFont({
   src: [{ path: "../../public/fonts/geist-sans/Geist-Variable.woff2", weight: "100 900" }],
