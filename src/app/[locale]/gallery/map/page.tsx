@@ -66,14 +66,7 @@ export default async function LocalizedGalleryMapPage({ params }: PageProps) {
                 OpenStreetMap
               </a>{" "}
               提供。
-              {imagesWithLocation.length > 0 && (
-                <>
-                  共 {imagesWithLocation.length} 张照片包含地理位置信息
-                  {images.length > imagesWithLocation.length &&
-                    `（${images.length - imagesWithLocation.length} 张无位置数据）`}
-                  。
-                </>
-              )}
+              {imagesWithLocation.length > 0 && <>共 {imagesWithLocation.length} 张照片包含地理位置信息。</>}
               GPS 坐标从 EXIF 元数据自动提取，精度取决于拍摄设备。
             </>
           ) : (
@@ -89,14 +82,7 @@ export default async function LocalizedGalleryMapPage({ params }: PageProps) {
               </a>
               .
               {imagesWithLocation.length > 0 && (
-                <>
-                  {" "}
-                  {imagesWithLocation.length} photo{imagesWithLocation.length !== 1 ? "s" : ""} with
-                  location data
-                  {images.length > imagesWithLocation.length &&
-                    ` (${images.length - imagesWithLocation.length} without)`}
-                  .
-                </>
+                <> {imagesWithLocation.length} photo{imagesWithLocation.length !== 1 ? "s" : ""} with location data.</>
               )}{" "}
               GPS coordinates extracted from EXIF metadata, accuracy depends on capture device.
             </>

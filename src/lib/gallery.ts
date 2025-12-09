@@ -405,8 +405,20 @@ export async function listGalleryImagesWithLocation(limit?: number): Promise<Gal
         },
       });
       return images.map((img) => ({
-        ...img,
+        id: img.id,
+        title: img.title,
+        description: img.description,
+        latitude: img.latitude as number,
+        longitude: img.longitude as number,
+        locationName: img.locationName,
+        city: img.city,
+        country: img.country,
         capturedAt: img.capturedAt?.toISOString() ?? null,
+        microThumbPath: img.microThumbPath,
+        smallThumbPath: img.smallThumbPath,
+        mediumPath: img.mediumPath,
+        filePath: img.filePath,
+        isLivePhoto: img.isLivePhoto,
         createdAt: img.createdAt.toISOString(),
       }));
     },
