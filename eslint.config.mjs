@@ -19,6 +19,7 @@ const customIgnores = [
   "test-results/**",
   "coverage/**",
   "Zhi_source/**",
+  "lumina_source/**", // Exclude lumina_source from linting (legacy code)
 ];
 
 export default [
