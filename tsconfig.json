@@ -57,6 +57,7 @@
     "e2e/**",
     "scripts/**",
     "Zhi_source/**",
+    "lumina_source/**",
     "playwright.config.ts",
     "playwright.critical.config.ts"
   ],
