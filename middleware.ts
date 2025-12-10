@@ -9,6 +9,9 @@ import { auth } from "@/auth";
 //   · English is default (no /en prefix). Keep `/` and child paths as English.
 //   · Chinese uses /zh prefix, only when user explicitly switches.
 //   · Redirect legacy `/en` URLs to prefix-free equivalents.
+//
+// NOTE: Chinese slug to pinyin conversion is handled server-side in the page/API routes,
+// not in middleware, because pinyin-pro requires Node.js runtime (uses 'stream' module).
 
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
@@ -31,47 +34,6 @@ export async function middleware(request: NextRequest) {
   const currentLocale = pathname.startsWith("/zh") ? "zh" : "en";
   requestHeaders.set("x-pathname", pathname);
   requestHeaders.set("x-locale", currentLocale);
-
-  // Handle Chinese slug redirects (PostAlias-like behavior) for posts
-  // Matches: /posts/:slug or /zh/posts/:slug
-  const postPathMatch = pathname.match(/^\/(zh\/)?posts\/([^/]+)$/);
-  if (postPathMatch) {
-    const hasZhPrefix = Boolean(postPathMatch[1]);
-    const rawSlug = postPathMatch[2] || "";
-
-    try {
-      const decoded = decodeURIComponent(rawSlug);
-      // If slug contains CJK characters, redirect to pinyin slug
-      if (/[\u4e00-\u9fa5]/.test(decoded)) {
-        // Basic slugify using pinyin-pro and ASCII cleanup (lazy-loaded to keep middleware lean)
-        let ascii = decoded;
-        try {
-          const { pinyin } = await import("pinyin-pro");
-          ascii =
-            (pinyin(decoded, { toneType: "none", type: "string", v: true }) as string) || decoded;
-        } catch {
-          ascii = decoded;
-        }
-        const normalized = ascii
-          .toLowerCase()
-          .normalize("NFKD")
-          .replace(/[^\w\s-]/g, "")
-          .trim()
-          .replace(/\s+/g, "-")
-          .replace(/-+/g, "-");
-
-        if (normalized && normalized !== rawSlug) {
-          const newPath = hasZhPrefix ? `/zh/posts/${normalized}` : `/posts/${normalized}`;
-          const redirectUrl = new URL(newPath, request.nextUrl.origin);
-          // Preserve query parameters
-          searchParams.forEach((value, key) => redirectUrl.searchParams.set(key, value));
-          return NextResponse.redirect(redirectUrl, { status: 301 });
-        }
-      }
-    } catch {
-      // If decode fails, continue without redirect
-    }
-  }
 
   const friendStoryMatch = pathname.match(/^\/(zh\/)?m\/friends\/([^/]+)$/);
   if (friendStoryMatch && friendStoryMatch[2]) {
