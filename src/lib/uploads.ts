@@ -19,7 +19,7 @@ const ALLOWED_MIME_TYPES = new Set([
   "video/mp4", // Live Photo alternative
 ]);
 
-export type UploadCategory = "covers" | "gallery";
+export type UploadCategory = "covers" | "gallery" | "avatars";
 
 export async function persistUploadedFile(file: File, category: UploadCategory): Promise<string> {
   if (!file.size) {

@@ -229,10 +229,7 @@ export const AdminShell: React.FC<AdminShellProps> = ({ user, children, pageTitl
             `}>
                 <div className="p-6 flex flex-col gap-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-stone-900 font-bold font-serif">L</div>
-                            <h1 className="text-xl font-bold text-white tracking-tight">ZHI CMS</h1>
-                        </div>
+                        <h1 className="text-xl font-bold text-white tracking-tight">ZHI CMS</h1>
                         <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-stone-400"><X /></button>
                     </div>
 

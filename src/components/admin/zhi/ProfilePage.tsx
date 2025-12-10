@@ -15,7 +15,12 @@ type ProfilePageProps = {
 export function ProfilePage({ user }: ProfilePageProps) {
   const [displayName, setDisplayName] = useState(user.username);
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(user.image ?? undefined);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [googleAvatarUrl, setGoogleAvatarUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [fetchingGoogleAvatar, setFetchingGoogleAvatar] = useState(false);
 
   const initials =
     user.username?.trim()?.[0]?.toUpperCase() ||
@@ -25,24 +30,107 @@ export function ProfilePage({ user }: ProfilePageProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Store the file for upload
+    setAvatarFile(file);
+    setGoogleAvatarUrl(null); // Clear Google avatar URL when uploading new file
+
+    // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
       const result = typeof reader.result === "string" ? reader.result : undefined;
       setAvatarPreview(result);
       setStatus(null);
+      setIsError(false);
     };
     reader.readAsDataURL(file);
   };
 
-  const handleUseGoogleAvatar = () => {
-    setAvatarPreview(user.image ?? undefined);
+  const handleUseGoogleAvatar = async () => {
+    setFetchingGoogleAvatar(true);
     setStatus(null);
+    setIsError(false);
+
+    try {
+      const res = await fetch("/api/admin/profile/google-avatar");
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "获取失败");
+      }
+
+      console.log("Google avatar API response:", data);
+      setAvatarPreview(data.avatarUrl);
+      setAvatarFile(null); // Clear any pending upload
+      setGoogleAvatarUrl(data.avatarUrl); // Store the fetched Google avatar URL
+      setStatus("已获取谷歌头像，请点击保存");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "获取谷歌头像失败";
+      setStatus(message);
+      setIsError(true);
+    } finally {
+      setFetchingGoogleAvatar(false);
+    }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 这里可接入后端 API 保存头像与姓名
-    setStatus("已保存（本地示例），接入后端后可持久化。");
+    setSaving(true);
+    setStatus(null);
+    setIsError(false);
+
+    try {
+      const formData = new FormData();
+      let hasChanges = false;
+
+      // Check if name changed
+      if (displayName.trim() !== user.username) {
+        formData.append("name", displayName.trim());
+        hasChanges = true;
+      }
+
+      // Check if avatar changed
+      if (avatarFile) {
+        formData.append("avatar", avatarFile);
+        hasChanges = true;
+      } else if (googleAvatarUrl) {
+        formData.append("avatarUrl", googleAvatarUrl);
+        hasChanges = true;
+      }
+
+      if (!hasChanges) {
+        setStatus("没有更改需要保存");
+        setSaving(false);
+        return;
+      }
+
+      const res = await fetch("/api/admin/profile", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "保存失败");
+      }
+
+      // Update state with saved values
+      if (data.avatarUrl) {
+        setAvatarPreview(data.avatarUrl);
+      }
+      setAvatarFile(null);
+      setGoogleAvatarUrl(null);
+
+      setStatus("保存成功！");
+      setIsError(false);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "保存失败，请重试";
+      setStatus(message);
+      setIsError(true);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -57,7 +145,13 @@ export function ProfilePage({ user }: ProfilePageProps) {
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <div className="relative h-20 w-20 overflow-hidden rounded-full border border-stone-200 bg-stone-100 shadow-sm dark:border-stone-700 dark:bg-stone-800">
               {avatarPreview ? (
-                <Image src={avatarPreview} alt="avatar" fill className="object-cover" />
+                <Image
+                  src={avatarPreview}
+                  alt="avatar"
+                  fill
+                  className="object-cover"
+                  unoptimized={avatarPreview.startsWith("http") || avatarPreview.startsWith("data:")}
+                />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-stone-500">
                   {initials}
@@ -120,24 +214,33 @@ export function ProfilePage({ user }: ProfilePageProps) {
           <div className="flex gap-3 pt-6 mt-2 border-t border-stone-100 dark:border-stone-800">
             <button
               type="submit"
-              className="flex-1 cursor-pointer bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-6 py-2.5 rounded-lg font-bold hover:opacity-90 transition-opacity"
+              disabled={saving}
+              className="flex-1 cursor-pointer bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-6 py-2.5 rounded-lg font-bold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              保存
+              {saving ? "保存中..." : "保存"}
             </button>
             <button
               type="button"
+              disabled={saving}
               onClick={() => {
                 setDisplayName(user.username);
                 setAvatarPreview(user.image ?? undefined);
+                setAvatarFile(null);
+                setGoogleAvatarUrl(null);
                 setStatus(null);
+                setIsError(false);
               }}
-              className="flex-1 cursor-pointer bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 px-6 py-2.5 rounded-lg font-medium hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+              className="flex-1 cursor-pointer bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 px-6 py-2.5 rounded-lg font-medium hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               重置
             </button>
           </div>
 
-          {status && <p className="text-sm text-emerald-600 dark:text-emerald-400">{status}</p>}
+          {status && (
+            <p className={`text-sm ${isError ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+              {status}
+            </p>
+          )}
         </form>
       </div>
     </div>
@@ -145,4 +248,3 @@ export function ProfilePage({ user }: ProfilePageProps) {
 }
 
 export default ProfilePage;
-
