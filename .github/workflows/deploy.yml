@@ -69,6 +69,9 @@ jobs:
       # Maintenance API token for post-deploy tasks
       MAINTENANCE_API_TOKEN: ${{ secrets.MAINTENANCE_API_TOKEN }}
 
+      # Apple Health steps sync token
+      ENV_HEALTH_SYNC_TOKEN: ${{ secrets.ENV_HEALTH_SYNC_TOKEN }}
+
     steps:
       - name: Verify CI and Docker Build Status
         shell: bash
@@ -190,7 +193,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
-          envs: GHCR_USERNAME,GHCR_TOKEN,GIT_URL,BRANCH,PROJECT_DIR,ENV_CREDENTIAL_ENCRYPTION_KEY,ENV_DATABASE_URL,ENV_NEXTAUTH_SECRET,ENV_NEXTAUTH_URL,ENV_GOOGLE_CLIENT_ID,ENV_GOOGLE_CLIENT_SECRET,ENV_ADMIN_EMAILS,ENV_MAX_UPLOAD_SIZE_MB,ENV_ADMIN_API_KEY,ENV_CRON_SECRET,ENV_FRIEND_JWT_SECRET,ENV_FEATURE_ADMIN_CREDENTIALS,ENV_FEATURE_ADMIN_ANALYTICS,ENV_FEATURE_ADMIN_GALLERY,ENV_FEATURE_ADMIN_POSTS,ENV_FEATURE_ADMIN_SYNC,ENV_FEATURE_ADMIN_EXPORT,ENV_FEATURE_ADMIN_DASHBOARD
+          envs: GHCR_USERNAME,GHCR_TOKEN,GIT_URL,BRANCH,PROJECT_DIR,ENV_CREDENTIAL_ENCRYPTION_KEY,ENV_DATABASE_URL,ENV_NEXTAUTH_SECRET,ENV_NEXTAUTH_URL,ENV_GOOGLE_CLIENT_ID,ENV_GOOGLE_CLIENT_SECRET,ENV_ADMIN_EMAILS,ENV_MAX_UPLOAD_SIZE_MB,ENV_ADMIN_API_KEY,ENV_CRON_SECRET,ENV_FRIEND_JWT_SECRET,ENV_FEATURE_ADMIN_CREDENTIALS,ENV_FEATURE_ADMIN_ANALYTICS,ENV_FEATURE_ADMIN_GALLERY,ENV_FEATURE_ADMIN_POSTS,ENV_FEATURE_ADMIN_SYNC,ENV_FEATURE_ADMIN_EXPORT,ENV_FEATURE_ADMIN_DASHBOARD,ENV_HEALTH_SYNC_TOKEN
           script: |
             # Be strict on errors but do not fail on unset vars to simplify secret handling
             set -eo pipefail
@@ -301,6 +304,9 @@ jobs:
 
               printf '%s\n' "# 朋友认证 JWT 密钥"
               printf '%s\n\n' "FRIEND_JWT_SECRET=${ENV_FRIEND_JWT_SECRET}"
+
+              printf '%s\n' "# Apple Health 步数同步 Token"
+              printf '%s\n\n' "HEALTH_SYNC_TOKEN=${ENV_HEALTH_SYNC_TOKEN}"
 
               printf '%s\n' "# ============================================================================"
               printf '%s\n' "# Feature Flags (default from GitHub Secrets, can override on server)"
