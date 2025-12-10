@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/auth";
+import { decode } from "next-auth/jwt";
 
 // Unified middleware
 // - Adds `x-pathname` header for locale detection in layout
@@ -50,12 +50,33 @@ export async function middleware(request: NextRequest) {
 
   // Protect admin routes
   if (pathname.startsWith("/admin")) {
-    // Use NextAuth auth() for consistent cookie/secret handling
-    const session = await auth();
-    const role = (session?.user as { role?: string } | undefined)?.role ?? null;
+    // Use JWT decode for Edge Runtime compatibility (do not import auth.ts which uses Node.js modules)
+    const sessionCookie =
+      request.cookies.get("next-auth.session-token") ??
+      request.cookies.get("__Secure-next-auth.session-token") ??
+      request.cookies.get("authjs.session-token") ??
+      request.cookies.get("__Secure-authjs.session-token") ??
+      request.cookies.get("__Host-authjs.session-token") ??
+      null;
+    const sessionToken = sessionCookie?.value ?? null;
+    const sessionSalt = sessionCookie?.name ?? "authjs.session-token";
+    let role: string | null = null;
+
+    if (sessionToken) {
+      try {
+        const decoded = await decode({
+          token: sessionToken,
+          secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "",
+          salt: sessionSalt,
+        });
+        role = (decoded?.role as string | undefined) ?? null;
+      } catch {
+        role = null;
+      }
+    }
 
     // Unauthenticated → redirect to login
-    if (!session) {
+    if (!sessionToken) {
       const redirectUrl = new URL("/login", request.nextUrl.origin);
       const q = searchParams.toString();
       redirectUrl.searchParams.set("callbackUrl", `${pathname}${q ? `?${q}` : ""}`);
