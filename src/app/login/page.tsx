@@ -10,7 +10,7 @@ export default async function LoginPage({
 }) {
   const session = await auth();
   const sp = await searchParams;
-  const callbackUrl = sp.callbackUrl ?? "/admin";
+  const callbackUrl = sp.callbackUrl ?? "/";
 
   // If user is already authenticated, redirect to the callback URL
   if (session?.user) {

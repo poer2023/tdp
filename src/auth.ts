@@ -110,6 +110,8 @@ export const authConfig: NextAuthConfig = {
       if (user?.id) {
         mutableToken.id = user.id;
         mutableToken.email = user.email ?? mutableToken.email;
+        mutableToken.picture = user.image ?? mutableToken.picture;
+        mutableToken.name = user.name ?? mutableToken.name;
         mutableToken.roleSynced = false;
       }
 
@@ -120,9 +122,12 @@ export const authConfig: NextAuthConfig = {
       if (mutableToken.id && mutableToken.roleSynced !== true) {
         const dbUser = await prisma.user.findUnique({
           where: { id: mutableToken.id as string },
-          select: { role: true },
+          select: { role: true, image: true, name: true },
         });
         mutableToken.role = dbUser?.role ?? UserRole.READER;
+        // Sync image and name from database in case they were updated
+        if (dbUser?.image) mutableToken.picture = dbUser.image;
+        if (dbUser?.name) mutableToken.name = dbUser.name;
         mutableToken.roleSynced = true;
       } else if (!mutableToken.role) {
         mutableToken.role = UserRole.READER;
@@ -135,6 +140,9 @@ export const authConfig: NextAuthConfig = {
         // These fields are declared in module augmentation under types/next-auth.d.ts
         session.user.id = token.id as string;
         session.user.role = (token.role ?? UserRole.READER) as UserRole;
+        // Pass image and name from token to session
+        if (token.picture) session.user.image = token.picture as string;
+        if (token.name) session.user.name = token.name as string;
       }
       return session;
     },
