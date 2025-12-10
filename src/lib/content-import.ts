@@ -2,8 +2,8 @@ import { PostLocale, PostStatus, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { parseMarkdown, validateFrontmatter } from "@/lib/content-export";
 import { serializeTags } from "@/lib/posts";
-import { pinyin } from "pinyin-pro";
 import JSZip from "jszip";
+import { toPinyinString } from "@/lib/pinyin";
 
 export type ImportResult = {
   dryRun: boolean;
@@ -230,10 +230,18 @@ async function findExistingPost(
  * Generate unique pinyin slug for Chinese text
  */
 async function generatePinyinSlug(title: string, locale: PostLocale): Promise<string> {
-  const pinyinText = pinyin(title, {
-    toneType: "none",
-    separator: "-",
-  });
+  let pinyinText = title;
+  try {
+    pinyinText = await toPinyinString(title, {
+      toneType: "none",
+      separator: "-",
+      type: "string",
+      v: true,
+    });
+  } catch {
+    // Fallback to original title if pinyin conversion fails (should not happen in Node runtime)
+    pinyinText = title;
+  }
 
   let baseSlug = pinyinText
     .toLowerCase()

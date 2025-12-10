@@ -1,7 +1,7 @@
 import { PostLocale, PostStatus, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { pinyin } from "pinyin-pro";
 import { shouldSkipDb, withDbFallback } from "@/lib/utils/db-fallback";
+import { toPinyinString } from "@/lib/pinyin";
 
 export type PublicPost = {
   id: string;
@@ -289,7 +289,7 @@ export function serializeTags(tags?: string[]): string | null {
 }
 
 async function createUniqueSlug(title: string, locale: PostLocale = PostLocale.EN): Promise<string> {
-  const base = slugify(title);
+  const base = await slugify(title);
   let candidate = base || `post-${Date.now()}`;
   let suffix = 2;
 
@@ -308,18 +308,18 @@ async function createUniqueSlug(title: string, locale: PostLocale = PostLocale.E
   }
 }
 
-function slugify(input: string): string {
+async function slugify(input: string): Promise<string> {
   const text = String(input || "");
 
   // 将中文转换为拼音（无声调），其他字符保留，随后统一做 URL 安全清洗
   let converted = text;
   try {
     // pinyin-pro: 输出为字符串，使用 v 代替 ü，移除音调
-    converted = pinyin(text, {
+    converted = await toPinyinString(text, {
       toneType: "none",
       type: "string",
       v: true,
-    }) as string;
+    });
   } catch {
     // 如果转换失败，回退到原始文本
     converted = text;

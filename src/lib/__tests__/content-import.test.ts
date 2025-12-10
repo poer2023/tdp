@@ -302,10 +302,13 @@ status: "PUBLISHED"
       });
 
       expect(result.summary.created).toBe(1);
-      expect(pinyin).toHaveBeenCalledWith("测试文章", {
-        toneType: "none",
-        separator: "-",
-      });
+      expect(pinyin).toHaveBeenCalledWith(
+        "测试文章",
+        expect.objectContaining({
+          toneType: "none",
+          separator: "-",
+        })
+      );
       expect(result.details[0].post?.slug).toBe("ce-shi-wen-zhang");
     });
 
