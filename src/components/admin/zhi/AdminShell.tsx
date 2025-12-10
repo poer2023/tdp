@@ -4,6 +4,7 @@ import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 import {
     LayoutTemplate, Home, FileText, Image as ImageIcon,
     Briefcase, Link2, Camera, Layers, Users, CreditCard,
@@ -322,14 +323,7 @@ export const AdminShell: React.FC<AdminShellProps> = ({ user, children, pageTitl
                                 </button>
                                 <div className="border-t border-stone-700" />
                                 <button
-                                    onClick={async () => {
-                                        await fetch('/api/auth/signout', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' }
-                                        });
-                                        router.push('/login');
-                                        router.refresh();
-                                    }}
+                                    onClick={() => signOut({ callbackUrl: '/login' })}
                                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-rose-400 hover:bg-stone-700 transition-colors"
                                 >
                                     <LogOut size={16} />

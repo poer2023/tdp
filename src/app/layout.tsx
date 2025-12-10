@@ -69,7 +69,7 @@ export default async function RootLayout({
         {/* Keep <html lang> consistent on client navigations */}
         <HtmlLangSync />
         <ThemeProvider>
-          <SessionProvider session={null}>
+          <SessionProvider>
             <ConfirmProvider>
               {/* Skip to content link for accessibility */}
               <a
