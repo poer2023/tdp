@@ -82,7 +82,11 @@ interface StatsData {
   photoCount: number;
   photosByMonth: { day: string; count: number }[];
   routineData: { name: string; value: number; color: string }[];
-  stepsData: { day: string; steps: number }[];
+  stepsData: {
+    entries: { day: string; dayNum: number; steps: number }[];
+    startDate: string;
+    endDate: string;
+  };
   movieCount: number;
   movieData: { month: string; movies: number }[];
   skillData: { name: string; level: number }[];
@@ -113,15 +117,19 @@ const defaultStats: StatsData = {
     { name: "Exercise", value: 1, color: "#ef4444" },
     { name: "Other", value: 4, color: "#a8a29e" },
   ],
-  stepsData: [
-    { day: "M", steps: 0 },
-    { day: "T", steps: 0 },
-    { day: "W", steps: 0 },
-    { day: "T", steps: 0 },
-    { day: "F", steps: 0 },
-    { day: "S", steps: 0 },
-    { day: "S", steps: 0 },
-  ],
+  stepsData: {
+    entries: [
+      { day: "M", dayNum: 1, steps: 0 },
+      { day: "T", dayNum: 2, steps: 0 },
+      { day: "W", dayNum: 3, steps: 0 },
+      { day: "T", dayNum: 4, steps: 0 },
+      { day: "F", dayNum: 5, steps: 0 },
+      { day: "S", dayNum: 6, steps: 0 },
+      { day: "S", dayNum: 7, steps: 0 },
+    ],
+    startDate: "",
+    endDate: "",
+  },
   movieCount: 0,
   movieData: [],
   skillData: [],
@@ -215,7 +223,7 @@ export function ZhiStatsDashboard({
   };
 
   const avgSteps = Math.round(
-    stats.stepsData.reduce((acc, curr) => acc + curr.steps, 0) / stats.stepsData.length
+    stats.stepsData.entries.reduce((acc: number, curr: { steps: number }) => acc + curr.steps, 0) / (stats.stepsData.entries.length || 1)
   );
 
   // Loading skeleton
@@ -556,14 +564,16 @@ export function ZhiStatsDashboard({
               <span className="block text-xl font-bold text-stone-800 dark:text-stone-100">
                 {avgSteps.toLocaleString()}
               </span>
-              <span className="text-[10px] text-sage-600 dark:text-sage-400">
-                {t("Avg. Steps")}
-              </span>
+              {stats.stepsData.startDate && stats.stepsData.endDate && (
+                <span className="block text-[10px] text-sage-600 dark:text-sage-400">
+                  {stats.stepsData.startDate} - {stats.stepsData.endDate}
+                </span>
+              )}
             </div>
           </div>
           <div className="h-24 w-full">
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <BarChart data={stats.stepsData}>
+              <BarChart data={stats.stepsData.entries}>
                 <Tooltip
                   cursor={{ fill: "transparent" }}
                   contentStyle={{
@@ -572,6 +582,24 @@ export function ZhiStatsDashboard({
                     boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
                     backgroundColor: "#fff",
                     color: "#333",
+                    padding: "8px 12px",
+                  }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length > 0) {
+                      const data = payload[0]?.payload as { dayNum: number; steps: number } | undefined;
+                      if (!data) return null;
+                      return (
+                        <div className="rounded-lg bg-white px-3 py-2 shadow-lg dark:bg-stone-800">
+                          <p className="text-sm font-medium text-stone-600 dark:text-stone-300">
+                            {data.dayNum}
+                          </p>
+                          <p className="text-lg font-bold text-sage-600">
+                            {data.steps.toLocaleString()}
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
                   }}
                 />
                 <Bar dataKey="steps" fill="#5c9c6d" radius={[4, 4, 4, 4]} barSize={8} />

@@ -8,7 +8,11 @@ export interface DashboardStatsData {
   photoCount: number;
   photosByWeek: { day: string; count: number }[];
   routineData: { name: string; value: number; color: string }[];
-  stepsData: { day: string; steps: number }[];
+  stepsData: {
+    entries: { day: string; dayNum: number; steps: number }[];
+    startDate: string;
+    endDate: string;
+  };
   movieCount: number;
   movieData: { month: string; movies: number }[];
   skillData: { name: string; level: number }[];
@@ -296,7 +300,11 @@ function buildSkillData(
 /**
  * Get steps data from database (last 7 days)
  */
-async function getStepsDataFromDB(): Promise<Array<{ day: string; steps: number }>> {
+async function getStepsDataFromDB(): Promise<{
+  entries: Array<{ day: string; dayNum: number; steps: number }>;
+  startDate: string;
+  endDate: string;
+}> {
   try {
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -310,27 +318,58 @@ async function getStepsDataFromDB(): Promise<Array<{ day: string; steps: number 
       take: 7,
     });
 
+    // Map to day abbreviations and numbers (1=Mon, 7=Sun for Chinese convention)
+    const dayNames = ["S", "M", "T", "W", "T", "F", "S"];
+    // Convert JS day (0=Sun) to Chinese convention (7=Sun, 1=Mon)
+    const getDayNum = (jsDay: number): number => (jsDay === 0 ? 7 : jsDay);
+
     if (stepsRecords.length === 0) {
       // Return placeholder if no data
-      return [
-        { day: "M", steps: 0 },
-        { day: "T", steps: 0 },
-        { day: "W", steps: 0 },
-        { day: "T", steps: 0 },
-        { day: "F", steps: 0 },
-        { day: "S", steps: 0 },
-        { day: "S", steps: 0 },
-      ];
+      const formatDate = (d: Date): string => {
+        const month = d.getMonth() + 1;
+        const day = d.getDate();
+        return `${month}/${day}`;
+      };
+      return {
+        entries: [
+          { day: "M", dayNum: 1, steps: 0 },
+          { day: "T", dayNum: 2, steps: 0 },
+          { day: "W", dayNum: 3, steps: 0 },
+          { day: "T", dayNum: 4, steps: 0 },
+          { day: "F", dayNum: 5, steps: 0 },
+          { day: "S", dayNum: 6, steps: 0 },
+          { day: "S", dayNum: 7, steps: 0 },
+        ],
+        startDate: formatDate(sevenDaysAgo),
+        endDate: formatDate(now),
+      };
     }
 
-    // Map to day abbreviations
-    const dayNames = ["S", "M", "T", "W", "T", "F", "S"];
-    return stepsRecords.map((record) => ({
-      day: dayNames[record.date.getDay()] || "?",
-      steps: record.steps,
-    }));
+    // Get date range from actual records
+    const firstDate = stepsRecords[0]?.date;
+    const lastDate = stepsRecords[stepsRecords.length - 1]?.date;
+
+    const formatDate = (d: Date): string => {
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+      return `${month}/${day}`;
+    };
+
+    return {
+      entries: stepsRecords.map((record) => ({
+        day: dayNames[record.date.getDay()] || "?",
+        dayNum: getDayNum(record.date.getDay()),
+        steps: record.steps,
+      })),
+      startDate: firstDate ? formatDate(firstDate) : "",
+      endDate: lastDate ? formatDate(lastDate) : "",
+    };
   } catch (error) {
     console.error("[Dashboard API] Error fetching steps data:", error);
-    return [];
+    return {
+      entries: [],
+      startDate: "",
+      endDate: "",
+    };
   }
 }
