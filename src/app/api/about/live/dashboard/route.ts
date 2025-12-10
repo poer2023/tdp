@@ -81,16 +81,8 @@ export async function GET() {
       { name: "Other", value: 4, color: "#a8a29e" },
     ];
 
-    // Build steps data (placeholder - could be from Apple Health sync in future)
-    const stepsData = [
-      { day: "M", steps: 8500 },
-      { day: "T", steps: 6200 },
-      { day: "W", steps: 9100 },
-      { day: "T", steps: 7800 },
-      { day: "F", steps: 11200 },
-      { day: "S", steps: 15600 },
-      { day: "S", steps: 12300 },
-    ];
+    // Build steps data from database (last 7 days)
+    const stepsData = await getStepsDataFromDB();
 
     const data: DashboardStatsData = {
       photoCount,
@@ -301,3 +293,44 @@ function buildSkillData(
   }));
 }
 
+/**
+ * Get steps data from database (last 7 days)
+ */
+async function getStepsDataFromDB(): Promise<Array<{ day: string; steps: number }>> {
+  try {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    sevenDaysAgo.setUTCHours(0, 0, 0, 0);
+
+    const stepsRecords = await prisma.stepsData.findMany({
+      where: {
+        date: { gte: sevenDaysAgo },
+      },
+      orderBy: { date: "asc" },
+      take: 7,
+    });
+
+    if (stepsRecords.length === 0) {
+      // Return placeholder if no data
+      return [
+        { day: "M", steps: 0 },
+        { day: "T", steps: 0 },
+        { day: "W", steps: 0 },
+        { day: "T", steps: 0 },
+        { day: "F", steps: 0 },
+        { day: "S", steps: 0 },
+        { day: "S", steps: 0 },
+      ];
+    }
+
+    // Map to day abbreviations
+    const dayNames = ["S", "M", "T", "W", "T", "F", "S"];
+    return stepsRecords.map((record) => ({
+      day: dayNames[record.date.getDay()] || "?",
+      steps: record.steps,
+    }));
+  } catch (error) {
+    console.error("[Dashboard API] Error fetching steps data:", error);
+    return [];
+  }
+}
