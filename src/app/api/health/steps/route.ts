@@ -35,18 +35,34 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
 
+        // Debug log to see what iOS Shortcuts is sending
+        console.log("[Health Steps] Received body:", JSON.stringify(body, null, 2));
+
         // Handle both single entry and batch formats
         let entries: Array<{ date: string; steps: number }> = [];
 
         if (body.days && Array.isArray(body.days)) {
             // Batch format: { days: [{ date, steps }, ...] }
-            entries = body.days;
-        } else if (body.date && typeof body.steps === "number") {
+            entries = body.days.map((d: { date: string; steps: string | number }) => ({
+                date: String(d.date),
+                steps: Number(d.steps) || 0,
+            }));
+        } else if (body.date !== undefined && body.steps !== undefined) {
             // Single format: { date, steps }
-            entries = [{ date: body.date, steps: body.steps }];
+            // Handle steps as string or number
+            const stepsValue = Number(body.steps);
+            if (isNaN(stepsValue)) {
+                console.error("[Health Steps] Invalid steps value:", body.steps);
+                return NextResponse.json(
+                    { error: "Invalid steps value", received: body },
+                    { status: 400 }
+                );
+            }
+            entries = [{ date: String(body.date), steps: stepsValue }];
         } else {
+            console.error("[Health Steps] Invalid format received:", body);
             return NextResponse.json(
-                { error: "Invalid format. Expected { date, steps } or { days: [...] }" },
+                { error: "Invalid format. Expected { date, steps } or { days: [...] }", received: body },
                 { status: 400 }
             );
         }
