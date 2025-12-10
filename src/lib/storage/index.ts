@@ -1,12 +1,11 @@
 import { LocalStorage } from "./local-storage";
 import { S3Storage } from "./s3-storage";
 import type { StorageProvider, StorageType } from "./types";
+import { getStorageConfig } from "./config";
 
 export function getStorageProvider(type?: StorageType): StorageProvider {
-  const envType = (process.env.STORAGE_TYPE || process.env.STORAGE_DRIVER) as
-    | StorageType
-    | undefined;
-  const storageType = type || envType || "local";
+  const config = getStorageConfig();
+  const storageType = type || config.storageType || "local";
 
   switch (storageType) {
     case "s3":
@@ -19,3 +18,4 @@ export function getStorageProvider(type?: StorageType): StorageProvider {
 }
 
 export * from "./types";
+export { getStorageConfig } from "./config";

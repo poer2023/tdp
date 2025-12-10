@@ -1,45 +1,66 @@
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import type { StorageProvider } from "./types";
+import { getStorageConfig, isS3ConfigComplete, type StorageConfigData } from "./config";
 
+/**
+ * S3Storage with lazy initialization
+ * Creates S3 client on first use, allowing hot config changes
+ */
 export class S3Storage implements StorageProvider {
-  private client: S3Client;
-  private bucket: string;
+  private client: S3Client | null = null;
+  private bucket: string = "";
   private cdnUrl: string | undefined;
+  private lastConfigHash: string = "";
 
-  constructor() {
-    const endpoint = process.env.S3_ENDPOINT;
-    const region = process.env.S3_REGION || "auto";
-    const accessKeyId = process.env.S3_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
-    const bucket = process.env.S3_BUCKET;
-    const forcePathStyle =
-      process.env.S3_FORCE_PATH_STYLE === "1" || process.env.S3_FORCE_PATH_STYLE === "true";
+  /**
+   * Get or create S3 client, refreshing if config has changed
+   */
+  private getClient(): { client: S3Client; bucket: string; cdnUrl?: string } {
+    const config = getStorageConfig();
+    const configHash = JSON.stringify(config);
 
-    if (!endpoint || !accessKeyId || !secretAccessKey || !bucket) {
-      throw new Error("S3 configuration is incomplete. Please check environment variables.");
+    // Check if we need to create/refresh the client
+    if (!this.client || configHash !== this.lastConfigHash) {
+      if (!isS3ConfigComplete(config)) {
+        throw new Error("S3 configuration is incomplete. Please configure storage in Admin > Storage.");
+      }
+
+      const endpoint = config.endpoint!;
+      const region = config.region || "auto";
+      const accessKeyId = config.accessKeyId!;
+      const secretAccessKey = config.secretAccessKey!;
+      const bucket = config.bucket!;
+      const forcePathStyle =
+        process.env.S3_FORCE_PATH_STYLE === "1" || process.env.S3_FORCE_PATH_STYLE === "true";
+
+      this.client = new S3Client({
+        endpoint,
+        region,
+        forcePathStyle,
+        credentials: {
+          accessKeyId,
+          secretAccessKey,
+        },
+      });
+      this.bucket = bucket;
+      this.cdnUrl = config.cdnUrl || undefined;
+      this.lastConfigHash = configHash;
+
+      console.log(`[S3Storage] Client initialized/refreshed - bucket: ${bucket}, CDN: ${this.cdnUrl || 'none'}`);
     }
 
-    this.client = new S3Client({
-      endpoint,
-      region,
-      forcePathStyle,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
-    });
-    this.bucket = bucket;
-    // Backward compatibility: support S3_PUBLIC_BASE_URL as alias
-    this.cdnUrl = process.env.S3_CDN_URL || process.env.S3_PUBLIC_BASE_URL || undefined;
+    return { client: this.client, bucket: this.bucket, cdnUrl: this.cdnUrl };
   }
 
   async upload(buffer: Buffer, filename: string, mimeType: string): Promise<string> {
+    const { client, bucket } = this.getClient();
     const key = `gallery/${filename}`;
+
     const upload = new Upload({
-      client: this.client,
+      client,
       params: {
-        Bucket: this.bucket,
+        Bucket: bucket,
         Key: key,
         Body: buffer,
         ContentType: mimeType,
@@ -48,18 +69,21 @@ export class S3Storage implements StorageProvider {
     });
 
     await upload.done();
+    console.log(`[S3Storage] Uploaded: ${key}`);
     return key;
   }
 
   async uploadBatch(
     files: { buffer: Buffer; filename: string; mimeType: string }[]
   ): Promise<string[]> {
+    const { client, bucket } = this.getClient();
+
     const uploads = files.map((file) => {
       const key = `gallery/${file.filename}`;
       return new Upload({
-        client: this.client,
+        client,
         params: {
-          Bucket: this.bucket,
+          Bucket: bucket,
           Key: key,
           Body: file.buffer,
           ContentType: file.mimeType,
@@ -67,7 +91,10 @@ export class S3Storage implements StorageProvider {
         },
       })
         .done()
-        .then(() => key);
+        .then(() => {
+          console.log(`[S3Storage] Batch uploaded: ${key}`);
+          return key;
+        });
     });
 
     return Promise.all(uploads);
@@ -75,21 +102,25 @@ export class S3Storage implements StorageProvider {
 
   async delete(key: string): Promise<void> {
     try {
-      await this.client.send(
+      const { client, bucket } = this.getClient();
+      await client.send(
         new DeleteObjectCommand({
-          Bucket: this.bucket,
+          Bucket: bucket,
           Key: key,
         })
       );
+      console.log(`[S3Storage] Deleted: ${key}`);
     } catch (error) {
       console.error("Failed to delete from S3:", error);
     }
   }
 
   getPublicUrl(key: string): string {
-    if (this.cdnUrl) {
-      return `${this.cdnUrl}/${key}`;
+    const { bucket, cdnUrl } = this.getClient();
+    if (cdnUrl) {
+      return `${cdnUrl}/${key}`;
     }
-    return `${process.env.S3_ENDPOINT}/${this.bucket}/${key}`;
+    const config = getStorageConfig();
+    return `${config.endpoint}/${bucket}/${key}`;
   }
 }

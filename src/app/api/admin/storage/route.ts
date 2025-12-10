@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getStorageProvider } from "@/lib/storage";
+import { getStorageConfig, isS3ConfigComplete } from "@/lib/storage/config";
 import { ListObjectsV2Command, S3Client, HeadBucketCommand } from "@aws-sdk/client-s3";
 
 /**
@@ -14,12 +14,15 @@ export async function GET() {
     }
 
     try {
-        const storageType = (process.env.STORAGE_TYPE || process.env.STORAGE_DRIVER || "local") as string;
+        const config = getStorageConfig();
+        const storageType = config.storageType;
 
         if (storageType === "local") {
             // For local storage, we don't have a listing API yet
             return NextResponse.json({
                 provider: "local",
+                configured: true,
+                accessible: true,
                 message: "Local storage listing not implemented. Use R2/S3 for full management features.",
                 files: [],
                 stats: {
@@ -31,37 +34,36 @@ export async function GET() {
         }
 
         // For S3/R2 storage
-        const endpoint = process.env.S3_ENDPOINT;
-        const accessKeyId = process.env.S3_ACCESS_KEY_ID;
-        const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
-        const bucket = process.env.S3_BUCKET;
-        const region = process.env.S3_REGION || "auto";
-        const cdnUrl = process.env.S3_CDN_URL || process.env.S3_PUBLIC_BASE_URL;
-
-        if (!endpoint || !accessKeyId || !secretAccessKey || !bucket) {
+        if (!isS3ConfigComplete(config)) {
             return NextResponse.json({
                 provider: storageType,
                 configured: false,
-                message: "Storage not properly configured. Please set S3/R2 environment variables.",
+                message: "Storage not properly configured. Please configure in Admin > Storage.",
                 files: [],
                 stats: { totalFiles: 0, totalSize: 0, byType: {} },
             });
         }
 
+        const { endpoint, accessKeyId, secretAccessKey, bucket, region, cdnUrl } = config;
+
         const client = new S3Client({
-            endpoint,
-            region,
-            credentials: { accessKeyId, secretAccessKey },
+            endpoint: endpoint!,
+            region: region || "auto",
+            credentials: { accessKeyId: accessKeyId!, secretAccessKey: secretAccessKey! },
         });
 
         // Check bucket access
         try {
-            await client.send(new HeadBucketCommand({ Bucket: bucket }));
+            await client.send(new HeadBucketCommand({ Bucket: bucket! }));
         } catch {
             return NextResponse.json({
                 provider: storageType,
                 configured: true,
                 accessible: false,
+                bucket,
+                region,
+                endpoint,
+                cdnUrl,
                 message: "Cannot access bucket. Please check credentials and bucket name.",
                 files: [],
                 stats: { totalFiles: 0, totalSize: 0, byType: {} },
@@ -81,7 +83,7 @@ export async function GET() {
 
         do {
             const command = new ListObjectsV2Command({
-                Bucket: bucket,
+                Bucket: bucket!,
                 ContinuationToken: continuationToken,
                 MaxKeys: 1000,
             });
