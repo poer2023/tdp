@@ -119,17 +119,23 @@ export const authConfig: NextAuthConfig = {
         mutableToken.roleSynced = false;
       }
 
-      if (mutableToken.id && mutableToken.roleSynced !== true) {
+      // Always fetch user data from database to ensure image is synced
+      // This handles cases where JWT was created before image sync was added
+      if (mutableToken.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: mutableToken.id as string },
           select: { role: true, image: true, name: true },
         });
-        mutableToken.role = dbUser?.role ?? UserRole.READER;
-        // Sync image and name from database in case they were updated
-        if (dbUser?.image) mutableToken.picture = dbUser.image;
-        if (dbUser?.name) mutableToken.name = dbUser.name;
-        mutableToken.roleSynced = true;
-      } else if (!mutableToken.role) {
+
+        if (dbUser) {
+          mutableToken.role = dbUser.role ?? UserRole.READER;
+          // Always sync image and name from database
+          mutableToken.picture = dbUser.image ?? mutableToken.picture;
+          mutableToken.name = dbUser.name ?? mutableToken.name;
+        }
+      }
+
+      if (!mutableToken.role) {
         mutableToken.role = UserRole.READER;
       }
 
