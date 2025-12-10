@@ -10,6 +10,7 @@ export function getStorageProvider(type?: StorageType): StorageProvider {
 
   switch (storageType) {
     case "s3":
+    case "r2":
       return new S3Storage();
     case "local":
     default:

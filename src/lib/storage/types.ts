@@ -5,4 +5,4 @@ export interface StorageProvider {
   getPublicUrl(path: string): string;
 }
 
-export type StorageType = "local" | "s3";
+export type StorageType = "local" | "s3" | "r2";

@@ -1,0 +1,37 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { getStorageProvider } from "@/lib/storage";
+
+/**
+ * DELETE /api/admin/storage/[...key]
+ * Delete a file from storage
+ */
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: Promise<{ key: string[] }> }
+) {
+    const session = await auth();
+    if (!session?.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const { key } = await params;
+        const fileKey = key.join("/");
+
+        if (!fileKey) {
+            return NextResponse.json({ error: "File key is required" }, { status: 400 });
+        }
+
+        const storage = getStorageProvider();
+        await storage.delete(fileKey);
+
+        return NextResponse.json({ success: true, deleted: fileKey });
+    } catch (error) {
+        console.error("[Storage API] Delete error:", error);
+        return NextResponse.json(
+            { error: "Failed to delete file" },
+            { status: 500 }
+        );
+    }
+}
