@@ -128,6 +128,8 @@ export async function GET() {
             accessible: true,
             bucket,
             cdnUrl,
+            region,
+            endpoint,
             files: files.slice(0, 200), // Limit to 200 files for response
             stats,
         });

@@ -9,7 +9,7 @@ import {
     LayoutTemplate, Home, FileText, Image as ImageIcon,
     Briefcase, Link2, Camera, Layers, Users, CreditCard,
     Key, LogOut, Menu, X, Database, TrendingUp, Sun, Moon,
-    CheckCircle2, AlertCircle, Languages, UserCircle, ChevronUp
+    CheckCircle2, AlertCircle, Languages, UserCircle, ChevronUp, HardDrive
 } from 'lucide-react';
 import { useSettings } from './store';
 import { adminTranslations, type AdminLocale } from '@/lib/admin-translations';
@@ -49,6 +49,7 @@ const systemNavItems: NavItem[] = [
     { id: 'friends', href: '/admin/friends', icon: <Users size={18} />, labelKey: 'friends' },
     { id: 'subscriptions', href: '/admin/subscriptions', icon: <CreditCard size={18} />, labelKey: 'subscriptions' },
     { id: 'credentials', href: '/admin/credentials', icon: <Key size={18} />, labelKey: 'credentials' },
+    { id: 'storage', href: '/admin/storage', icon: <HardDrive size={18} />, labelKey: 'storage' },
 ];
 
 const NavLink: React.FC<{ item: NavItem; isActive: boolean; locale: AdminLocale }> = ({ item, isActive, locale }) => {
@@ -122,6 +123,7 @@ export const AdminShell: React.FC<AdminShellProps> = ({ user, children, pageTitl
         'Subscriptions': { en: 'Subscriptions', zh: '订阅管理' },
         'Credentials & Sync': { en: 'Credentials & Sync', zh: '凭据与同步' },
         'Profile': { en: 'Profile', zh: '个人信息' },
+        'Storage': { en: 'Storage', zh: '存储管理' },
     };
 
     const pageDescriptionTranslations: Record<string, { en: string; zh: string }> = {
@@ -137,6 +139,7 @@ export const AdminShell: React.FC<AdminShellProps> = ({ user, children, pageTitl
         'Manage your service subscriptions': { en: 'Manage your service subscriptions', zh: '管理您的服务订阅' },
         'Manage API credentials and sync settings': { en: 'Manage API credentials and sync settings', zh: '管理 API 凭据和同步设置' },
         'Manage profile and avatar': { en: 'Manage profile and avatar', zh: '管理个人信息与头像' },
+        'Manage file storage and R2/S3 configuration': { en: 'Manage file storage and R2/S3 configuration', zh: '管理文件存储和 R2/S3 配置' },
     };
 
     const translatedTitle = pageTitleTranslations[pageTitle]?.[adminLocale] || pageTitle;
