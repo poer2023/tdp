@@ -2,6 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock modules - must be hoisted before imports
 vi.mock("fs/promises");
+vi.mock("fs", () => ({
+  existsSync: vi.fn(() => false), // Prevent reading .storage-config.json
+  readFileSync: vi.fn(() => "{}"),
+}));
 vi.mock("@aws-sdk/client-s3");
 vi.mock("@aws-sdk/lib-storage");
 
@@ -240,24 +244,37 @@ describe("S3Storage", () => {
       expect(() => new S3Storage()).not.toThrow();
     });
 
-    it("should throw error when S3_ENDPOINT is missing", () => {
+    // With lazy initialization, constructor no longer throws - errors occur on first operation
+    it("should throw error on first operation when S3_ENDPOINT is missing", async () => {
       delete process.env.S3_ENDPOINT;
-      expect(() => new S3Storage()).toThrow("S3 configuration is incomplete");
+      const storage = new S3Storage();
+      await expect(storage.upload(Buffer.from("test"), "test.jpg", "image/jpeg")).rejects.toThrow(
+        "S3 configuration is incomplete"
+      );
     });
 
-    it("should throw error when S3_ACCESS_KEY_ID is missing", () => {
+    it("should throw error on first operation when S3_ACCESS_KEY_ID is missing", async () => {
       delete process.env.S3_ACCESS_KEY_ID;
-      expect(() => new S3Storage()).toThrow("S3 configuration is incomplete");
+      const storage = new S3Storage();
+      await expect(storage.upload(Buffer.from("test"), "test.jpg", "image/jpeg")).rejects.toThrow(
+        "S3 configuration is incomplete"
+      );
     });
 
-    it("should throw error when S3_SECRET_ACCESS_KEY is missing", () => {
+    it("should throw error on first operation when S3_SECRET_ACCESS_KEY is missing", async () => {
       delete process.env.S3_SECRET_ACCESS_KEY;
-      expect(() => new S3Storage()).toThrow("S3 configuration is incomplete");
+      const storage = new S3Storage();
+      await expect(storage.upload(Buffer.from("test"), "test.jpg", "image/jpeg")).rejects.toThrow(
+        "S3 configuration is incomplete"
+      );
     });
 
-    it("should throw error when S3_BUCKET is missing", () => {
+    it("should throw error on first operation when S3_BUCKET is missing", async () => {
       delete process.env.S3_BUCKET;
-      expect(() => new S3Storage()).toThrow("S3 configuration is incomplete");
+      const storage = new S3Storage();
+      await expect(storage.upload(Buffer.from("test"), "test.jpg", "image/jpeg")).rejects.toThrow(
+        "S3 configuration is incomplete"
+      );
     });
 
     it("should use 'auto' as default region", () => {
@@ -305,7 +322,7 @@ describe("S3Storage", () => {
     it("should handle deletion errors gracefully", async () => {
       const storage = new S3Storage();
       mockS3Send.mockRejectedValue(new Error("Network error"));
-      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
       await expect(storage.delete("gallery/test.jpg")).resolves.toBeUndefined();
       expect(consoleErrorSpy).toHaveBeenCalledWith("Failed to delete from S3:", expect.any(Error));
