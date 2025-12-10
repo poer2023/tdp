@@ -79,3 +79,4 @@ scripts/test-api-data-fetch.ts
 scripts/trigger-github-sync.ts
 scripts/validate-all-credentials.ts
 scripts/validate-credentials-direct.ts
+.storage-config.json
