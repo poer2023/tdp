@@ -60,14 +60,12 @@ COPY --from=builder --chown=node:node /app/public ./public
 # Copy production dependencies for the Next.js standalone server and Prisma CLI
 COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 
-# Bring over dev-only tooling that is still required at runtime
-# tsx requires esbuild as a dependency - copy from builder with pnpm structure
-# Use --link to preserve symlinks for pnpm's node_modules structure
-COPY --from=builder --chown=node:node /app/node_modules/.pnpm/tsx@* ./node_modules/.pnpm/
-COPY --from=builder --chown=node:node /app/node_modules/.pnpm/esbuild@* ./node_modules/.pnpm/
-COPY --from=builder --chown=node:node /app/node_modules/@esbuild ./node_modules/@esbuild
+# Bring over dev-only tooling that is still required at runtime (tsx for scripts)
+# Copy the entire .pnpm store entries that tsx and esbuild need
+# pnpm uses symlinks, so we need to copy both the actual module and its dependencies
+COPY --from=builder --chown=node:node /app/node_modules/.pnpm ./node_modules/.pnpm
 COPY --from=builder --chown=node:node /app/node_modules/tsx ./node_modules/tsx
-COPY --from=builder --chown=node:node /app/node_modules/esbuild ./node_modules/esbuild
+COPY --from=builder --chown=node:node /app/node_modules/.bin ./node_modules/.bin
 
 # Copy prisma schema for migrations
 COPY --chown=node:node prisma ./prisma
