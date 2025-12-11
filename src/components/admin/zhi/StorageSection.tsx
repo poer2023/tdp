@@ -390,7 +390,33 @@ export const StorageSection: React.FC = () => {
                                         <input
                                             type="url"
                                             value={config.endpoint}
-                                            onChange={(e) => setConfig({ ...config, endpoint: e.target.value })}
+                                            onChange={(e) => {
+                                                let value = e.target.value.trim();
+
+                                                // Auto-parse: if URL contains path after domain, extract it as bucket
+                                                // e.g., https://xxx.r2.cloudflarestorage.com/blog-media -> extract "blog-media"
+                                                try {
+                                                    if (value && (value.includes('cloudflarestorage.com/') || value.includes('amazonaws.com/'))) {
+                                                        const url = new URL(value);
+                                                        const pathParts = url.pathname.split('/').filter(Boolean);
+                                                        if (pathParts.length > 0) {
+                                                            const extractedBucket = pathParts[0];
+                                                            // Remove the path from endpoint
+                                                            const cleanEndpoint = `${url.protocol}//${url.host}`;
+                                                            setConfig({
+                                                                ...config,
+                                                                endpoint: cleanEndpoint,
+                                                                bucket: extractedBucket || config.bucket || ''
+                                                            });
+                                                            return;
+                                                        }
+                                                    }
+                                                } catch {
+                                                    // Not a valid URL yet, continue
+                                                }
+
+                                                setConfig({ ...config, endpoint: value });
+                                            }}
                                             placeholder={config.storageType === 'r2'
                                                 ? 'https://<account-id>.r2.cloudflarestorage.com'
                                                 : 'https://s3.amazonaws.com'}
@@ -398,7 +424,7 @@ export const StorageSection: React.FC = () => {
                                         />
                                         {config.storageType === 'r2' && (
                                             <p className="text-xs text-stone-400 mt-1.5">
-                                                📍 Cloudflare Dashboard → R2 → Overview 复制 Account ID
+                                                📍 直接粘贴 R2 控制台的 S3 API URL（自动提取 Bucket 名称）
                                             </p>
                                         )}
                                     </div>

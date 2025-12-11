@@ -45,10 +45,31 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         console.error("[Storage Test] Error:", error);
-        const message = error instanceof Error ? error.message : "Connection failed";
+
+        // Extract more useful error information
+        let message = "Connection failed";
+        let errorCode = "UNKNOWN";
+
+        if (error instanceof Error) {
+            message = error.message;
+            // AWS SDK errors often have a 'name' or 'Code' property
+            const awsError = error as Error & { Code?: string; name?: string; $metadata?: { httpStatusCode?: number } };
+            if (awsError.Code) {
+                errorCode = awsError.Code;
+            } else if (awsError.name && awsError.name !== 'Error') {
+                errorCode = awsError.name;
+            }
+
+            // Add status code if available
+            if (awsError.$metadata?.httpStatusCode) {
+                message = `[HTTP ${awsError.$metadata.httpStatusCode}] ${message}`;
+            }
+        }
+
         return NextResponse.json({
             success: false,
-            error: message
+            error: message,
+            errorCode,
         }, { status: 400 });
     }
 }
