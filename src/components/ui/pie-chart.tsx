@@ -59,7 +59,9 @@ function ChartContainer({
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>{children}</RechartsPrimitive.ResponsiveContainer>
+        <RechartsPrimitive.ResponsiveContainer width="100%" height="100%" minHeight={150} minWidth={150}>
+          {children}
+        </RechartsPrimitive.ResponsiveContainer>
       </div>
     </ChartContext.Provider>
   );
@@ -80,11 +82,11 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
             ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
-  .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join("\n")}
+                .map(([key, itemConfig]) => {
+                  const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+                  return color ? `  --color-${key}: ${color};` : null;
+                })
+                .join("\n")}
 }
 `
           )
@@ -209,7 +211,7 @@ function ChartTooltipContent({
                           indicator === "dot" && "h-2.5 w-2.5",
                           indicator === "line" && "w-1",
                           indicator === "dashed" &&
-                            "w-0 border-[1.5px] border-dashed bg-transparent",
+                          "w-0 border-[1.5px] border-dashed bg-transparent",
                           nestLabel && indicator === "dashed" && "my-0.5"
                         )}
                         style={
