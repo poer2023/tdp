@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import fs from "fs/promises";
-import path from "path";
+import prisma from "@/lib/prisma";
 
-const CONFIG_FILE = path.join(process.cwd(), ".storage-config.json");
+const STORAGE_CONFIG_KEY = "storage_config";
 
 interface StorageConfig {
     storageType: 'local' | 'r2' | 's3';
@@ -15,24 +14,36 @@ interface StorageConfig {
     cdnUrl?: string;
 }
 
-async function readConfig(): Promise<StorageConfig | null> {
+async function readConfigFromDB(): Promise<StorageConfig | null> {
     try {
-        const data = await fs.readFile(CONFIG_FILE, 'utf-8');
-        return JSON.parse(data);
+        const record = await prisma.siteConfig.findUnique({
+            where: { key: STORAGE_CONFIG_KEY },
+        });
+        if (!record) return null;
+        return JSON.parse(record.value) as StorageConfig;
     } catch {
         return null;
     }
 }
 
-async function writeConfig(config: StorageConfig): Promise<void> {
-    await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
+async function writeConfigToDB(config: StorageConfig): Promise<void> {
+    await prisma.siteConfig.upsert({
+        where: { key: STORAGE_CONFIG_KEY },
+        update: {
+            value: JSON.stringify(config),
+            updatedAt: new Date(),
+        },
+        create: {
+            key: STORAGE_CONFIG_KEY,
+            value: JSON.stringify(config),
+            encrypted: true, // Mark as sensitive
+        },
+    });
 }
 
 /**
  * POST /api/admin/storage/config
- * Save storage configuration to local JSON file
- * Note: Environment variables take precedence if set.
- * This config file is used as a fallback/override mechanism.
+ * Save storage configuration to database
  */
 export async function POST(request: Request) {
     const session = await auth();
@@ -54,12 +65,11 @@ export async function POST(request: Request) {
             cdnUrl: storageType === 'local' ? undefined : cdnUrl,
         };
 
-        await writeConfig(configData);
+        await writeConfigToDB(configData);
 
         return NextResponse.json({
             success: true,
-            message: "Configuration saved. Server restart required for changes to take effect.",
-            note: "For production, set these as environment variables in your deployment platform."
+            message: "配置已保存到数据库，无需重启服务器。",
         });
     } catch (error) {
         console.error("[Storage Config] Error:", error);
@@ -81,32 +91,27 @@ export async function GET() {
 
     try {
         // First check environment variables (they take precedence)
-        const envConfig = {
-            storageType: process.env.STORAGE_TYPE || process.env.STORAGE_DRIVER || 'local',
-            endpoint: process.env.S3_ENDPOINT || '',
-            region: process.env.S3_REGION || 'auto',
-            bucket: process.env.S3_BUCKET || '',
-            cdnUrl: process.env.S3_CDN_URL || '',
-            accessKeyId: process.env.S3_ACCESS_KEY_ID ? '••••••••' + (process.env.S3_ACCESS_KEY_ID.slice(-4) || '') : '',
-        };
-
-        // Check if env vars are configured
         if (process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID) {
             return NextResponse.json({
-                ...envConfig,
+                storageType: process.env.STORAGE_TYPE || process.env.STORAGE_DRIVER || 'r2',
+                endpoint: process.env.S3_ENDPOINT || '',
+                region: process.env.S3_REGION || 'auto',
+                bucket: process.env.S3_BUCKET || '',
+                cdnUrl: process.env.S3_CDN_URL || '',
+                accessKeyId: '••••••••' + (process.env.S3_ACCESS_KEY_ID?.slice(-4) || ''),
                 secretAccessKey: '',
                 source: 'environment',
             });
         }
 
-        // Fall back to file config
-        const fileConfig = await readConfig();
-        if (fileConfig) {
+        // Fall back to database config
+        const dbConfig = await readConfigFromDB();
+        if (dbConfig) {
             return NextResponse.json({
-                ...fileConfig,
-                accessKeyId: fileConfig.accessKeyId ? '••••••••' + fileConfig.accessKeyId.slice(-4) : '',
+                ...dbConfig,
+                accessKeyId: dbConfig.accessKeyId ? '••••••••' + dbConfig.accessKeyId.slice(-4) : '',
                 secretAccessKey: '',
-                source: 'file',
+                source: 'database',
             });
         }
 

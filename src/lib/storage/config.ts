@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import prisma from "@/lib/prisma";
 
 export interface StorageConfigData {
     storageType: "local" | "r2" | "s3";
@@ -11,46 +10,97 @@ export interface StorageConfigData {
     cdnUrl?: string;
 }
 
-const CONFIG_FILE = path.join(process.cwd(), ".storage-config.json");
+const STORAGE_CONFIG_KEY = "storage_config";
+
+// Cache to avoid repeated DB queries in the same request
+let cachedConfig: StorageConfigData | null = null;
+let cacheTime = 0;
+const CACHE_TTL = 60 * 1000; // 1 minute
+
+/**
+ * Read storage configuration from database
+ */
+async function readConfigFromDB(): Promise<StorageConfigData | null> {
+    try {
+        const record = await prisma.siteConfig.findUnique({
+            where: { key: STORAGE_CONFIG_KEY },
+        });
+        if (!record) return null;
+        return JSON.parse(record.value) as StorageConfigData;
+    } catch (error) {
+        console.log("[Storage] Failed to read config from database:", error);
+        return null;
+    }
+}
 
 /**
  * Read storage configuration from config file or environment variables
- * Priority: Config file > Environment variables > Defaults
+ * Priority: Environment variables > Database > Defaults
  */
 export function getStorageConfig(): StorageConfigData {
-    // Try to read from config file first
-    try {
-        if (fs.existsSync(CONFIG_FILE)) {
-            const data = fs.readFileSync(CONFIG_FILE, "utf-8");
-            const config = JSON.parse(data) as StorageConfigData;
+    // First check environment variables (they always take precedence)
+    const envType = (process.env.STORAGE_TYPE || process.env.STORAGE_DRIVER) as StorageConfigData["storageType"] | undefined;
 
-            // If config file has valid R2/S3 settings, use them
-            if (config.storageType && config.storageType !== "local") {
-                if (config.endpoint && config.accessKeyId && config.secretAccessKey && config.bucket) {
-                    console.log(`[Storage] Using config from file: ${config.storageType}`);
-                    return config;
-                }
-            } else if (config.storageType === "local") {
-                console.log("[Storage] Using local storage from config file");
-                return { storageType: "local" };
-            }
-        }
-    } catch (error) {
-        console.log("[Storage] No config file found or invalid, falling back to env vars");
+    if (process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY && process.env.S3_BUCKET) {
+        console.log("[Storage] Using config from environment variables");
+        return {
+            storageType: envType || "r2",
+            endpoint: process.env.S3_ENDPOINT,
+            region: process.env.S3_REGION || "auto",
+            accessKeyId: process.env.S3_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+            bucket: process.env.S3_BUCKET,
+            cdnUrl: process.env.S3_CDN_URL || process.env.S3_PUBLIC_BASE_URL,
+        };
     }
 
-    // Fall back to environment variables
-    const envType = (process.env.STORAGE_TYPE || process.env.STORAGE_DRIVER || "local") as StorageConfigData["storageType"];
+    // For synchronous compatibility, return cached config or defaults
+    // Database config is loaded asynchronously via getStorageConfigAsync
+    if (cachedConfig && Date.now() - cacheTime < CACHE_TTL) {
+        return cachedConfig;
+    }
 
-    return {
-        storageType: envType,
-        endpoint: process.env.S3_ENDPOINT,
-        region: process.env.S3_REGION || "auto",
-        accessKeyId: process.env.S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-        bucket: process.env.S3_BUCKET,
-        cdnUrl: process.env.S3_CDN_URL || process.env.S3_PUBLIC_BASE_URL,
-    };
+    // Return local as default (async loading will update cache)
+    return { storageType: "local" };
+}
+
+/**
+ * Async version - reads from database if not in environment
+ */
+export async function getStorageConfigAsync(): Promise<StorageConfigData> {
+    // First check environment variables
+    const envType = (process.env.STORAGE_TYPE || process.env.STORAGE_DRIVER) as StorageConfigData["storageType"] | undefined;
+
+    if (process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY && process.env.S3_BUCKET) {
+        return {
+            storageType: envType || "r2",
+            endpoint: process.env.S3_ENDPOINT,
+            region: process.env.S3_REGION || "auto",
+            accessKeyId: process.env.S3_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+            bucket: process.env.S3_BUCKET,
+            cdnUrl: process.env.S3_CDN_URL || process.env.S3_PUBLIC_BASE_URL,
+        };
+    }
+
+    // Try database
+    const dbConfig = await readConfigFromDB();
+    if (dbConfig && dbConfig.storageType !== "local") {
+        if (dbConfig.endpoint && dbConfig.accessKeyId && dbConfig.secretAccessKey && dbConfig.bucket) {
+            console.log(`[Storage] Using config from database: ${dbConfig.storageType}`);
+            // Update cache
+            cachedConfig = dbConfig;
+            cacheTime = Date.now();
+            return dbConfig;
+        }
+    } else if (dbConfig?.storageType === "local") {
+        cachedConfig = dbConfig;
+        cacheTime = Date.now();
+        return { storageType: "local" };
+    }
+
+    // Default
+    return { storageType: "local" };
 }
 
 /**
@@ -58,4 +108,12 @@ export function getStorageConfig(): StorageConfigData {
  */
 export function isS3ConfigComplete(config: StorageConfigData): boolean {
     return !!(config.endpoint && config.accessKeyId && config.secretAccessKey && config.bucket);
+}
+
+/**
+ * Clear config cache (call when config is updated)
+ */
+export function clearConfigCache(): void {
+    cachedConfig = null;
+    cacheTime = 0;
 }
