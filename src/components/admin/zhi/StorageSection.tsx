@@ -356,20 +356,20 @@ export const StorageSection: React.FC = () => {
                                             key={option.value}
                                             onClick={() => setConfig({ ...config, storageType: option.value as StorageConfig['storageType'] })}
                                             className={`p-4 rounded-xl border-2 transition-all ${config.storageType === option.value
-                                                    ? `border-${option.color}-500 bg-${option.color}-50 dark:bg-${option.color}-900/20`
-                                                    : 'border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600'
+                                                ? `border-${option.color}-500 bg-${option.color}-50 dark:bg-${option.color}-900/20`
+                                                : 'border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600'
                                                 }`}
                                         >
                                             <option.icon
                                                 size={24}
                                                 className={`mx-auto mb-2 ${config.storageType === option.value
-                                                        ? `text-${option.color}-500`
-                                                        : 'text-stone-400'
+                                                    ? `text-${option.color}-500`
+                                                    : 'text-stone-400'
                                                     }`}
                                             />
                                             <div className={`text-xs font-medium ${config.storageType === option.value
-                                                    ? 'text-stone-900 dark:text-stone-100'
-                                                    : 'text-stone-500'
+                                                ? 'text-stone-900 dark:text-stone-100'
+                                                : 'text-stone-500'
                                                 }`}>
                                                 {option.label}
                                             </div>
@@ -384,7 +384,7 @@ export const StorageSection: React.FC = () => {
                                     {/* Endpoint */}
                                     <div>
                                         <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
-                                            {t('s3Endpoint')} <span className="text-rose-500">*</span>
+                                            S3 Endpoint <span className="text-rose-500">*</span>
                                         </label>
                                         <input
                                             type="url"
@@ -397,7 +397,7 @@ export const StorageSection: React.FC = () => {
                                         />
                                         {config.storageType === 'r2' && (
                                             <p className="text-xs text-stone-400 mt-1.5">
-                                                找到你的 Account ID: Cloudflare Dashboard → R2 → Overview
+                                                📍 Cloudflare Dashboard → R2 → Overview 复制 Account ID
                                             </p>
                                         )}
                                     </div>
@@ -421,13 +421,13 @@ export const StorageSection: React.FC = () => {
                                     {/* Bucket Name */}
                                     <div>
                                         <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
-                                            {t('s3Bucket')} <span className="text-rose-500">*</span>
+                                            存储桶名称 <span className="text-rose-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             value={config.bucket}
                                             onChange={(e) => setConfig({ ...config, bucket: e.target.value })}
-                                            placeholder="my-storage-bucket"
+                                            placeholder="my-media-bucket"
                                             className="w-full p-3 border rounded-lg bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 text-sm outline-none focus:ring-2 focus:ring-sage-500/20 focus:border-sage-500"
                                         />
                                     </div>
@@ -435,13 +435,13 @@ export const StorageSection: React.FC = () => {
                                     {/* Access Key ID */}
                                     <div>
                                         <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
-                                            {t('s3AccessKey')} <span className="text-rose-500">*</span>
+                                            访问密钥 ID <span className="text-rose-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             value={config.accessKeyId}
                                             onChange={(e) => setConfig({ ...config, accessKeyId: e.target.value })}
-                                            placeholder="AKIAIOSFODNN7EXAMPLE"
+                                            placeholder="R2 或 S3 Access Key ID"
                                             className="w-full p-3 border rounded-lg bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 text-sm font-mono outline-none focus:ring-2 focus:ring-sage-500/20 focus:border-sage-500"
                                         />
                                     </div>
@@ -449,14 +449,14 @@ export const StorageSection: React.FC = () => {
                                     {/* Secret Access Key */}
                                     <div>
                                         <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
-                                            {t('s3SecretKey')} <span className="text-rose-500">*</span>
+                                            访问密钥 <span className="text-rose-500">*</span>
                                         </label>
                                         <div className="relative">
                                             <input
                                                 type={showSecretKey ? 'text' : 'password'}
                                                 value={config.secretAccessKey}
                                                 onChange={(e) => setConfig({ ...config, secretAccessKey: e.target.value })}
-                                                placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+                                                placeholder="R2 或 S3 Secret Access Key"
                                                 className="w-full p-3 pr-10 border rounded-lg bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 text-sm font-mono outline-none focus:ring-2 focus:ring-sage-500/20 focus:border-sage-500"
                                             />
                                             <button
@@ -472,17 +472,17 @@ export const StorageSection: React.FC = () => {
                                     {/* CDN URL (Optional) */}
                                     <div>
                                         <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
-                                            {t('s3CdnUrl')}
+                                            CDN URL（可选）
                                         </label>
                                         <input
                                             type="url"
                                             value={config.cdnUrl}
                                             onChange={(e) => setConfig({ ...config, cdnUrl: e.target.value })}
-                                            placeholder="https://cdn.yourdomain.com"
+                                            placeholder="https://pub-xxx.r2.dev 或自定义域名"
                                             className="w-full p-3 border rounded-lg bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 text-sm outline-none focus:ring-2 focus:ring-sage-500/20 focus:border-sage-500"
                                         />
                                         <p className="text-xs text-stone-400 mt-1.5">
-                                            可选: 使用自定义 CDN 域名或 R2 Public Access URL
+                                            💡 R2 Public Access 或自定义 CDN 域名，用于图片访问
                                         </p>
                                     </div>
                                 </div>
