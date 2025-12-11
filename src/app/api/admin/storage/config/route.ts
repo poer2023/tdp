@@ -167,8 +167,6 @@ export async function GET() {
     }
 
     try {
-        const maskCredential = (value?: string) => value ? `${MASK_PREFIX.repeat(2)}${value.slice(-4)}` : '';
-
         // First check environment variables (they take precedence)
         if (process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID) {
             return NextResponse.json({
@@ -177,8 +175,8 @@ export async function GET() {
                 region: process.env.S3_REGION || 'auto',
                 bucket: process.env.S3_BUCKET || '',
                 cdnUrl: process.env.S3_CDN_URL || '',
-                accessKeyId: maskCredential(process.env.S3_ACCESS_KEY_ID),
-                secretAccessKey: maskCredential(process.env.S3_SECRET_ACCESS_KEY),
+                accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+                secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
                 source: 'environment',
             });
         }
@@ -188,8 +186,6 @@ export async function GET() {
         if (dbConfig) {
             return NextResponse.json({
                 ...dbConfig,
-                accessKeyId: maskCredential(dbConfig.accessKeyId),
-                secretAccessKey: maskCredential(dbConfig.secretAccessKey),
                 source: 'database',
             });
         }
