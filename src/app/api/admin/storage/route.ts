@@ -71,7 +71,7 @@ export async function GET() {
         }
 
         // List all objects
-        const files: Array<{
+        const allFiles: Array<{
             key: string;
             size: number;
             lastModified: string;
@@ -98,7 +98,7 @@ export async function GET() {
                     const isImage = ["jpg", "jpeg", "png", "webp", "gif", "avif", "heic", "heif", "svg"].includes(ext);
                     const isVideo = ["mp4", "mov", "webm", "avi"].includes(ext);
 
-                    files.push({
+                    allFiles.push({
                         key: obj.Key,
                         size: obj.Size || 0,
                         lastModified: obj.LastModified?.toISOString() || "",
@@ -111,7 +111,13 @@ export async function GET() {
             continuationToken = response.NextContinuationToken;
         } while (continuationToken);
 
-        // Calculate stats
+        // Filter out auto-generated thumbnails
+        // Thumbnails have suffixes like _micro.webp, _small.webp, _medium.webp
+        const thumbnailPattern = /_(micro|small|medium)\.webp$/i;
+        const files = allFiles.filter(file => !thumbnailPattern.test(file.key));
+        const thumbnailFiles = allFiles.filter(file => thumbnailPattern.test(file.key));
+
+        // Calculate stats (based on original files only, excluding thumbnails)
         const stats = {
             totalFiles: files.length,
             totalSize: files.reduce((acc, f) => acc + f.size, 0),
@@ -122,6 +128,9 @@ export async function GET() {
                 },
                 {} as Record<string, number>
             ),
+            // Include thumbnail info for reference
+            thumbnailCount: thumbnailFiles.length,
+            thumbnailSize: thumbnailFiles.reduce((acc, f) => acc + f.size, 0),
         };
 
         return NextResponse.json({
