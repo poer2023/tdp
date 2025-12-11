@@ -5,8 +5,10 @@ FROM cgr.dev/chainguard/node:latest-dev AS deps
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Enable corepack for pnpm
+# Enable corepack for pnpm (requires root for Chainguard image)
+USER root
 RUN corepack enable && corepack prepare pnpm@10.16.1 --activate
+USER node
 
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
@@ -18,8 +20,10 @@ FROM cgr.dev/chainguard/node:latest-dev AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Enable corepack for pnpm
+# Enable corepack for pnpm (requires root for Chainguard image)
+USER root
 RUN corepack enable && corepack prepare pnpm@10.16.1 --activate
+USER node
 
 # Install all dependencies (including devDependencies for build)
 COPY package.json pnpm-lock.yaml ./
