@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import fs from "fs/promises";
+import path from "path";
 
 const STORAGE_CONFIG_KEY = "storage_config";
+const CONFIG_FILE = path.join(process.cwd(), ".storage-config.json");
 
 interface StorageConfig {
     storageType: 'local' | 'r2' | 's3';
@@ -14,36 +17,71 @@ interface StorageConfig {
     cdnUrl?: string;
 }
 
-async function readConfigFromDB(): Promise<StorageConfig | null> {
+/**
+ * Try to read from database, fallback to file
+ */
+async function readConfig(): Promise<StorageConfig | null> {
+    // Try database first
     try {
         const record = await prisma.siteConfig.findUnique({
             where: { key: STORAGE_CONFIG_KEY },
         });
-        if (!record) return null;
-        return JSON.parse(record.value) as StorageConfig;
+        if (record) {
+            return JSON.parse(record.value) as StorageConfig;
+        }
+    } catch (dbError) {
+        console.log("[Storage Config] DB read failed, trying file:", dbError);
+    }
+
+    // Fallback to file
+    try {
+        const data = await fs.readFile(CONFIG_FILE, 'utf-8');
+        return JSON.parse(data) as StorageConfig;
     } catch {
         return null;
     }
 }
 
-async function writeConfigToDB(config: StorageConfig): Promise<void> {
-    await prisma.siteConfig.upsert({
-        where: { key: STORAGE_CONFIG_KEY },
-        update: {
-            value: JSON.stringify(config),
-            updatedAt: new Date(),
-        },
-        create: {
-            key: STORAGE_CONFIG_KEY,
-            value: JSON.stringify(config),
-            encrypted: true, // Mark as sensitive
-        },
-    });
+/**
+ * Try to write to database, fallback to file
+ */
+async function writeConfig(config: StorageConfig): Promise<{ success: boolean; method: string; error?: string }> {
+    // Try database first
+    try {
+        await prisma.siteConfig.upsert({
+            where: { key: STORAGE_CONFIG_KEY },
+            update: {
+                value: JSON.stringify(config),
+                updatedAt: new Date(),
+            },
+            create: {
+                key: STORAGE_CONFIG_KEY,
+                value: JSON.stringify(config),
+                encrypted: true,
+            },
+        });
+        return { success: true, method: 'database' };
+    } catch (dbError) {
+        console.error("[Storage Config] DB write failed:", dbError);
+
+        // Fallback to file storage
+        try {
+            await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
+            return { success: true, method: 'file' };
+        } catch (fileError) {
+            console.error("[Storage Config] File write also failed:", fileError);
+            return {
+                success: false,
+                method: 'none',
+                error: `数据库写入失败 (${dbError instanceof Error ? dbError.message : 'unknown'}), 文件写入也失败 (${fileError instanceof Error ? fileError.message : 'unknown'})`
+            };
+        }
+    }
 }
 
 /**
  * POST /api/admin/storage/config
- * Save storage configuration to database
+ * Save storage configuration
  */
 export async function POST(request: Request) {
     const session = await auth();
@@ -65,16 +103,26 @@ export async function POST(request: Request) {
             cdnUrl: storageType === 'local' ? undefined : cdnUrl,
         };
 
-        await writeConfigToDB(configData);
+        const result = await writeConfig(configData);
+
+        if (!result.success) {
+            return NextResponse.json({
+                error: result.error || "保存失败",
+                details: "请检查数据库连接或确保 SiteConfig 表已创建"
+            }, { status: 500 });
+        }
 
         return NextResponse.json({
             success: true,
-            message: "配置已保存到数据库，无需重启服务器。",
+            message: result.method === 'database'
+                ? "配置已保存到数据库"
+                : "配置已保存到文件（数据库不可用）",
+            method: result.method,
         });
     } catch (error) {
-        console.error("[Storage Config] Error:", error);
+        console.error("[Storage Config POST] Error:", error);
         return NextResponse.json({
-            error: "Failed to save configuration"
+            error: error instanceof Error ? error.message : "保存配置失败",
         }, { status: 500 });
     }
 }
@@ -104,14 +152,14 @@ export async function GET() {
             });
         }
 
-        // Fall back to database config
-        const dbConfig = await readConfigFromDB();
-        if (dbConfig) {
+        // Fall back to database/file config
+        const config = await readConfig();
+        if (config) {
             return NextResponse.json({
-                ...dbConfig,
-                accessKeyId: dbConfig.accessKeyId ? '••••••••' + dbConfig.accessKeyId.slice(-4) : '',
+                ...config,
+                accessKeyId: config.accessKeyId ? '••••••••' + config.accessKeyId.slice(-4) : '',
                 secretAccessKey: '',
-                source: 'database',
+                source: 'saved',
             });
         }
 
@@ -129,7 +177,7 @@ export async function GET() {
     } catch (error) {
         console.error("[Storage Config GET] Error:", error);
         return NextResponse.json({
-            error: "Failed to get configuration"
+            error: error instanceof Error ? error.message : "获取配置失败"
         }, { status: 500 });
     }
 }
