@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import type { Friend, Prisma } from "@prisma/client";
 
 export interface CreateFriendInput {
