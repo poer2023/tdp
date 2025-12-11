@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     Database,
     Image as ImageIcon,
@@ -13,7 +13,9 @@ import {
     CheckCircle,
     AlertCircle,
     Loader2,
-    Archive
+    Archive,
+    Upload,
+    RotateCcw
 } from 'lucide-react';
 
 interface BackupInfo {
@@ -30,6 +32,15 @@ interface BackupInfo {
 
 interface BackupStats {
     database: { tables: number; totalRecords: number };
+    media: { totalFiles: number; totalSize: number };
+}
+
+interface RestorePreview {
+    manifest: {
+        version: string;
+        createdAt: string;
+    };
+    database: { tables: string[]; totalRecords: number };
     media: { totalFiles: number; totalSize: number };
 }
 
@@ -60,6 +71,14 @@ export default function BackupPage() {
     const [deleting, setDeleting] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [includeMedia, setIncludeMedia] = useState(true);
+
+    // Restore state
+    const [restoreFile, setRestoreFile] = useState<File | null>(null);
+    const [restorePreview, setRestorePreview] = useState<RestorePreview | null>(null);
+    const [restoring, setRestoring] = useState(false);
+    const [restoreDatabase, setRestoreDatabase] = useState(true);
+    const [restoreMediaFiles, setRestoreMediaFiles] = useState(true);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const fetchBackups = useCallback(async () => {
         try {
@@ -104,7 +123,7 @@ export default function BackupPage() {
         }
     };
 
-    const handleDownload = async (id: string) => {
+    const handleDownload = (id: string) => {
         window.open(`/api/admin/backup/${id}`, '_blank');
     };
 
@@ -121,6 +140,80 @@ export default function BackupPage() {
         } finally {
             setDeleting(null);
         }
+    };
+
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setRestoreFile(file);
+        setError(null);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch('/api/admin/backup/restore?preview=true', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Invalid backup file');
+            }
+
+            const data = await res.json();
+            setRestorePreview(data.preview);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to parse backup');
+            setRestoreFile(null);
+            setRestorePreview(null);
+        }
+    };
+
+    const handleRestore = async () => {
+        if (!restoreFile || !restorePreview) return;
+        if (!confirm('确定要恢复此备份吗？这将覆盖现有数据！')) return;
+
+        try {
+            setRestoring(true);
+            setError(null);
+
+            const formData = new FormData();
+            formData.append('file', restoreFile);
+            formData.append('restoreDatabase', String(restoreDatabase));
+            formData.append('restoreMedia', String(restoreMediaFiles));
+
+            const res = await fetch('/api/admin/backup/restore', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.error || 'Restore failed');
+            }
+
+            alert('恢复成功！数据库：' + data.result.database.recordsRestored + ' 条记录，媒体：' + data.result.media.filesRestored + ' 个文件');
+
+            setRestoreFile(null);
+            setRestorePreview(null);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+
+            await fetchBackups();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Restore failed');
+        } finally {
+            setRestoring(false);
+        }
+    };
+
+    const cancelRestore = () => {
+        setRestoreFile(null);
+        setRestorePreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     return (
@@ -193,7 +286,7 @@ export default function BackupPage() {
                         </p>
                         <p className="text-xs text-stone-400 mt-1">
                             {backups.length > 0 && backups[0]
-                                ? `最新: ${formatDate(backups[0].createdAt)}`
+                                ? '最新: ' + formatDate(backups[0].createdAt)
                                 : '暂无备份'}
                         </p>
                     </div>
@@ -244,6 +337,117 @@ export default function BackupPage() {
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span className="text-sm">正在创建备份，请稍候...</span>
                         </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Restore Section */}
+            <div className="bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800">
+                <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100 mb-4">
+                    恢复备份
+                </h2>
+
+                {!restorePreview ? (
+                    <div className="border-2 border-dashed border-stone-200 dark:border-stone-700 rounded-lg p-8 text-center">
+                        <Upload className="w-10 h-10 mx-auto text-stone-400 mb-3" />
+                        <p className="text-stone-600 dark:text-stone-400 mb-3">选择备份文件上传</p>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".zip"
+                            onChange={handleFileSelect}
+                            className="hidden"
+                            id="restore-file"
+                        />
+                        <label
+                            htmlFor="restore-file"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 rounded-lg cursor-pointer hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
+                        >
+                            <Upload className="w-4 h-4" />
+                            选择文件
+                        </label>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <div className="p-4 bg-stone-50 dark:bg-stone-800 rounded-lg">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="font-medium text-stone-900 dark:text-stone-100">
+                                    {restoreFile?.name}
+                                </span>
+                                <button
+                                    onClick={cancelRestore}
+                                    className="text-sm text-stone-500 hover:text-stone-700"
+                                >
+                                    取消
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span className="text-stone-500">备份时间：</span>
+                                    <span className="text-stone-900 dark:text-stone-100 ml-1">
+                                        {formatDate(restorePreview.manifest.createdAt)}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span className="text-stone-500">版本：</span>
+                                    <span className="text-stone-900 dark:text-stone-100 ml-1">
+                                        {restorePreview.manifest.version}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span className="text-stone-500">数据库：</span>
+                                    <span className="text-stone-900 dark:text-stone-100 ml-1">
+                                        {restorePreview.database.totalRecords} 条记录
+                                    </span>
+                                </div>
+                                <div>
+                                    <span className="text-stone-500">媒体：</span>
+                                    <span className="text-stone-900 dark:text-stone-100 ml-1">
+                                        {restorePreview.media.totalFiles} 个文件
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={restoreDatabase}
+                                    onChange={(e) => setRestoreDatabase(e.target.checked)}
+                                    className="w-4 h-4 rounded border-stone-300 text-sage-600 focus:ring-sage-500"
+                                />
+                                <span className="text-sm text-stone-600 dark:text-stone-400">恢复数据库</span>
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={restoreMediaFiles}
+                                    onChange={(e) => setRestoreMediaFiles(e.target.checked)}
+                                    className="w-4 h-4 rounded border-stone-300 text-sage-600 focus:ring-sage-500"
+                                />
+                                <span className="text-sm text-stone-600 dark:text-stone-400">恢复媒体文件</span>
+                            </label>
+                        </div>
+
+                        <button
+                            onClick={handleRestore}
+                            disabled={restoring || (!restoreDatabase && !restoreMediaFiles)}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 transition-colors"
+                        >
+                            {restoring ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    恢复中...
+                                </>
+                            ) : (
+                                <>
+                                    <RotateCcw className="w-4 h-4" />
+                                    开始恢复
+                                </>
+                            )}
+                        </button>
                     </div>
                 )}
             </div>
