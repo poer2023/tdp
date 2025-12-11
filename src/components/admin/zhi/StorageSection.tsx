@@ -152,6 +152,31 @@ export const StorageSection: React.FC = () => {
         fetchStorageData();
     };
 
+    // Fetch full config (including keys) from config API when opening modal
+    const fetchStorageConfig = useCallback(async () => {
+        try {
+            const res = await fetch('/api/admin/storage/config');
+            if (!res.ok) throw new Error('Failed to fetch config');
+            const data = await res.json();
+            setConfig({
+                storageType: data.storageType || 'local',
+                endpoint: data.endpoint || '',
+                region: data.region || 'auto',
+                accessKeyId: data.accessKeyId || '',
+                secretAccessKey: data.secretAccessKey || '',
+                bucket: data.bucket || '',
+                cdnUrl: data.cdnUrl || '',
+            });
+        } catch (error) {
+            console.error('Failed to fetch storage config:', error);
+        }
+    }, []);
+
+    const handleOpenConfig = useCallback(async () => {
+        setShowConfigForm(true);
+        await fetchStorageConfig();
+    }, [fetchStorageConfig]);
+
     const handleTestConnection = async () => {
         if (config.storageType === 'local') {
             showToast(t('localStorageMode'), 'info');
@@ -304,7 +329,7 @@ export const StorageSection: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                     <button
-                        onClick={() => setShowConfigForm(true)}
+                        onClick={handleOpenConfig}
                         className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:opacity-90 transition-opacity"
                     >
                         <Settings size={16} />
@@ -752,7 +777,7 @@ export const StorageSection: React.FC = () => {
                             <p className="text-stone-500">{t('localStorageMode')}</p>
                             <p className="text-sm text-stone-400 mt-1">{t('configureStorageHint')}</p>
                             <button
-                                onClick={() => setShowConfigForm(true)}
+                                onClick={handleOpenConfig}
                                 className="mt-4 px-4 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
                             >
                                 {t('storageConfig')}
