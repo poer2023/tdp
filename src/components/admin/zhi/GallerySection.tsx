@@ -196,7 +196,7 @@ export const GallerySection: React.FC = () => {
                     ) : (
                         galleryItems.map(item => (
                             <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
-                                <AdminImage src={item.type === 'video' ? item.thumbnail : item.url} alt={item.title || ''} className="w-full h-full" containerClassName="w-full h-full" />
+                                <AdminImage src={item.smallThumbPath || item.thumbnail || item.url} alt={item.title || ''} className="w-full h-full" containerClassName="w-full h-full" />
                                 {item.type === 'video' && <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white"><Play size={12} /></div>}
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button onClick={() => setEditingGallery(item)} className="p-2 bg-white rounded-full text-stone-900 hover:scale-110 transition-transform"><Edit2 size={16} /></button>
