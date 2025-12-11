@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # ============================================================================
 # Pre-commit Hook: Prisma Schema 检查
 # ============================================================================
@@ -25,7 +22,7 @@ if echo "$CHANGED_FILES" | grep -q "prisma/schema.prisma"; then
     echo "❌ 不要使用 'prisma db push' - 它不会生成迁移文件"
     echo "✅ 请使用以下命令创建迁移:"
     echo ""
-    echo "   npx prisma migrate dev --name describe_your_change"
+    echo "   pnpm exec prisma migrate dev --name describe_your_change"
     echo ""
     echo "💡 提示:"
     echo "   1. 'prisma migrate dev' 会生成迁移文件并应用到开发数据库"
