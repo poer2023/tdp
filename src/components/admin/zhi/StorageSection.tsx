@@ -15,6 +15,7 @@ interface StorageFile {
     size: number;
     lastModified: string;
     url: string;
+    thumbnailUrl?: string;
     type: 'image' | 'video' | 'other';
 }
 
@@ -502,16 +503,6 @@ export const StorageSection: React.FC = () => {
                                     </div>
                                 </div>
                             )}
-
-                            {/* Restart Notice */}
-                            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                                <div className="flex items-start gap-3">
-                                    <AlertCircle size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
-                                    <div className="text-sm text-amber-800 dark:text-amber-200">
-                                        {t('restartRequired')}
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         {/* Modal Footer */}
@@ -602,10 +593,10 @@ export const StorageSection: React.FC = () => {
                         {storageData?.cdnUrl && (
                             <div>
                                 <div className="text-xs text-stone-500 uppercase font-bold mb-1">CDN</div>
-                                <a href={storageData.cdnUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1">
-                                    {new URL(storageData.cdnUrl).hostname}
-                                    <ExternalLink size={12} />
-                                </a>
+                                <span className="text-sm font-medium text-emerald-600 flex items-center gap-1">
+                                    <Check size={12} />
+                                    已配置
+                                </span>
                             </div>
                         )}
                     </div>
@@ -757,7 +748,7 @@ export const StorageSection: React.FC = () => {
                                     <div className="aspect-square relative bg-stone-100 dark:bg-stone-800">
                                         {file.type === 'image' ? (
                                             <NextImage
-                                                src={file.url}
+                                                src={file.thumbnailUrl || file.url}
                                                 alt={file.key}
                                                 fill
                                                 className="object-cover"

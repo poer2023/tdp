@@ -114,8 +114,32 @@ export async function GET() {
         // Filter out auto-generated thumbnails
         // Thumbnails have suffixes like _micro.webp, _small.webp, _medium.webp
         const thumbnailPattern = /_(micro|small|medium)\.webp$/i;
-        const files = allFiles.filter(file => !thumbnailPattern.test(file.key));
+        const originalFiles = allFiles.filter(file => !thumbnailPattern.test(file.key));
         const thumbnailFiles = allFiles.filter(file => thumbnailPattern.test(file.key));
+
+        // Create a lookup map for thumbnails (key without suffix -> thumbnail url)
+        const thumbnailMap = new Map<string, string>();
+        for (const thumb of thumbnailFiles) {
+            // Extract base key: "image_small.webp" -> "image"
+            const baseKey = thumb.key.replace(/_(micro|small|medium)\.webp$/i, '');
+            // Prefer _small.webp for preview
+            if (thumb.key.endsWith('_small.webp')) {
+                thumbnailMap.set(baseKey, thumb.url);
+            } else if (!thumbnailMap.has(baseKey) && thumb.key.endsWith('_medium.webp')) {
+                thumbnailMap.set(baseKey, thumb.url);
+            }
+        }
+
+        // Add thumbnail URLs to files
+        const files = originalFiles.map(file => {
+            // Get base key without extension
+            const baseKey = file.key.replace(/\.[^.]+$/, '');
+            const thumbnailUrl = thumbnailMap.get(baseKey);
+            return {
+                ...file,
+                thumbnailUrl: thumbnailUrl || file.url, // Fallback to original if no thumbnail
+            };
+        });
 
         // Calculate stats (based on original files only, excluding thumbnails)
         const stats = {
