@@ -14,8 +14,32 @@ interface StorageConfig {
     cdnUrl?: string;
 }
 
+/**
+ * Ensure SiteConfig table exists, create if not
+ */
+async function ensureSiteConfigTable(): Promise<void> {
+    try {
+        // Try a simple query first
+        await prisma.$queryRaw`SELECT 1 FROM "SiteConfig" LIMIT 1`;
+    } catch {
+        // Table doesn't exist, create it
+        console.log("[Storage Config] Creating SiteConfig table...");
+        await prisma.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "SiteConfig" (
+        "key" TEXT PRIMARY KEY,
+        "value" TEXT NOT NULL,
+        "encrypted" BOOLEAN DEFAULT false,
+        "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+        console.log("[Storage Config] SiteConfig table created successfully");
+    }
+}
+
 async function readConfigFromDB(): Promise<StorageConfig | null> {
     try {
+        await ensureSiteConfigTable();
         const record = await prisma.siteConfig.findUnique({
             where: { key: STORAGE_CONFIG_KEY },
         });
@@ -28,6 +52,7 @@ async function readConfigFromDB(): Promise<StorageConfig | null> {
 }
 
 async function writeConfigToDB(config: StorageConfig): Promise<void> {
+    await ensureSiteConfigTable();
     await prisma.siteConfig.upsert({
         where: { key: STORAGE_CONFIG_KEY },
         update: {
@@ -75,10 +100,7 @@ export async function POST(request: Request) {
     } catch (error) {
         console.error("[Storage Config POST] Error:", error);
         const message = error instanceof Error ? error.message : "保存失败";
-        return NextResponse.json({
-            error: message,
-            hint: "请确保数据库已通过 migrate.sh 自动创建 SiteConfig 表",
-        }, { status: 500 });
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
 
