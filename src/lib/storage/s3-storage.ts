@@ -1,7 +1,7 @@
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import type { StorageProvider } from "./types";
-import { getStorageConfig, isS3ConfigComplete, type StorageConfigData } from "./config";
+import { getStorageConfig, getStorageConfigAsync, isS3ConfigComplete, type StorageConfigData } from "./config";
 
 /**
  * S3Storage with lazy initialization
@@ -12,12 +12,23 @@ export class S3Storage implements StorageProvider {
   private bucket: string = "";
   private cdnUrl: string | undefined;
   private lastConfigHash: string = "";
+  private injectedConfig: StorageConfigData | null = null;
+
+  /**
+   * Create S3Storage, optionally with pre-loaded config
+   */
+  constructor(config?: StorageConfigData) {
+    if (config) {
+      this.injectedConfig = config;
+    }
+  }
 
   /**
    * Get or create S3 client, refreshing if config has changed
    */
   private getClient(): { client: S3Client; bucket: string; cdnUrl?: string } {
-    const config = getStorageConfig();
+    // Use injected config or fall back to sync config (which uses cache)
+    const config = this.injectedConfig || getStorageConfig();
     const configHash = JSON.stringify(config);
 
     // Check if we need to create/refresh the client
@@ -53,8 +64,18 @@ export class S3Storage implements StorageProvider {
     return { client: this.client, bucket: this.bucket, cdnUrl: this.cdnUrl };
   }
 
+  /**
+   * Async version that ensures fresh config from database
+   */
+  private async getClientAsync(): Promise<{ client: S3Client; bucket: string; cdnUrl?: string }> {
+    if (!this.injectedConfig) {
+      this.injectedConfig = await getStorageConfigAsync();
+    }
+    return this.getClient();
+  }
+
   async upload(buffer: Buffer, filename: string, mimeType: string): Promise<string> {
-    const { client, bucket } = this.getClient();
+    const { client, bucket } = await this.getClientAsync();
     const key = `gallery/${filename}`;
 
     const upload = new Upload({
@@ -76,7 +97,7 @@ export class S3Storage implements StorageProvider {
   async uploadBatch(
     files: { buffer: Buffer; filename: string; mimeType: string }[]
   ): Promise<string[]> {
-    const { client, bucket } = this.getClient();
+    const { client, bucket } = await this.getClientAsync();
 
     const uploads = files.map((file) => {
       const key = `gallery/${file.filename}`;
@@ -102,7 +123,7 @@ export class S3Storage implements StorageProvider {
 
   async delete(key: string): Promise<void> {
     try {
-      const { client, bucket } = this.getClient();
+      const { client, bucket } = await this.getClientAsync();
       await client.send(
         new DeleteObjectCommand({
           Bucket: bucket,
@@ -116,11 +137,11 @@ export class S3Storage implements StorageProvider {
   }
 
   getPublicUrl(key: string): string {
-    const { bucket, cdnUrl } = this.getClient();
-    if (cdnUrl) {
-      return `${cdnUrl}/${key}`;
+    // For sync URL generation, use cached config
+    const config = this.injectedConfig || getStorageConfig();
+    if (config.cdnUrl) {
+      return `${config.cdnUrl}/${key}`;
     }
-    const config = getStorageConfig();
-    return `${config.endpoint}/${bucket}/${key}`;
+    return `${config.endpoint}/${config.bucket}/${key}`;
   }
 }

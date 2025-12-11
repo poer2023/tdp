@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { UserRole } from "@prisma/client";
 import { extractExif } from "@/lib/exif";
 import { reverseGeocode } from "@/lib/geocoding";
-import { getStorageProvider } from "@/lib/storage";
+import { getStorageProviderAsync } from "@/lib/storage";
 import { addGalleryImage } from "@/lib/gallery";
 import { revalidatePath } from "next/cache";
 import { generateThumbnails, getThumbnailFilename } from "@/lib/image-processor";
@@ -43,10 +43,10 @@ export async function POST(req: Request) {
     if (exif?.latitude && exif?.longitude) {
       try {
         location = await reverseGeocode(exif.latitude, exif.longitude);
-      } catch {}
+      } catch { }
     }
 
-    const storage = getStorageProvider();
+    const storage = await getStorageProviderAsync();
     const baseKey = cryptoRandom();
     const imgExt = image.name.split(".").pop() || "bin";
     const imgKey = `${baseKey}.${imgExt}`;

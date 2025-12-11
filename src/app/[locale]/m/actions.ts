@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import { createMoment, type MomentImage } from "@/lib/moments";
-import { getStorageProvider } from "@/lib/storage";
+import { getStorageProviderAsync } from "@/lib/storage";
 import { assertRateLimit } from "@/lib/rate-limit";
 import prisma from "@/lib/prisma";
 import sharp from "sharp";
@@ -76,7 +76,7 @@ export async function createMomentAction(
   const images: MomentImage[] = [];
   const files = (formData.getAll("images") as File[]).slice(0, 9);
   if (files.length) {
-    const storage = getStorageProvider();
+    const storage = await getStorageProviderAsync();
     const uploaded = await Promise.all(
       files.map(async (f) => {
         try {

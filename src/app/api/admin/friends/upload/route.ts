@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { UserRole } from "@prisma/client";
-import { getStorageProvider } from "@/lib/storage";
+import { getStorageProviderAsync } from "@/lib/storage";
 import sharp from "sharp";
 
 export const runtime = "nodejs";
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     }
 
     const imageBuf = Buffer.from(await image.arrayBuffer());
-    const storage = getStorageProvider();
+    const storage = await getStorageProviderAsync();
     const baseKey = cryptoRandom();
 
     // 生成缩略图

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getStorageProvider } from "@/lib/storage";
+import { getStorageProviderAsync } from "@/lib/storage";
 
 /**
  * DELETE /api/admin/storage/[...key]
@@ -23,7 +23,7 @@ export async function DELETE(
             return NextResponse.json({ error: "File key is required" }, { status: 400 });
         }
 
-        const storage = getStorageProvider();
+        const storage = await getStorageProviderAsync();
         await storage.delete(fileKey);
 
         return NextResponse.json({ success: true, deleted: fileKey });

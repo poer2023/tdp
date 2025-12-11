@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { generateThumbnails, getThumbnailFilename } from "@/lib/image-processor";
-import { getStorageProvider } from "@/lib/storage";
+import { getStorageProviderAsync } from "@/lib/storage";
 import fs from "fs";
 import path from "path";
 
@@ -131,7 +131,7 @@ async function regenerateThumbnails(limit: number) {
         });
     }
 
-    const storage = getStorageProvider();
+    const storage = await getStorageProviderAsync();
     let processed = 0;
     let failed = 0;
     const errors: string[] = [];
