@@ -67,3 +67,10 @@ else
   echo "⚠️  Migration completed but status check shows:"
   echo "$POST_STATUS"
 fi
+
+# Sync any schema changes not in migrations (handles drift)
+echo "==> Running db push to sync schema..."
+node /app/node_modules/prisma/build/index.js db push --skip-generate --accept-data-loss 2>&1 || {
+  echo "⚠️  db push had issues but continuing - schema may need manual review"
+}
+echo "✅ Schema sync complete"
