@@ -16,6 +16,27 @@ interface StorageConfig {
     cdnUrl?: string;
 }
 
+function getEnvStorageConfig(): StorageConfig | null {
+    if (
+        process.env.S3_ENDPOINT &&
+        process.env.S3_ACCESS_KEY_ID &&
+        process.env.S3_SECRET_ACCESS_KEY &&
+        process.env.S3_BUCKET
+    ) {
+        return {
+            storageType: (process.env.STORAGE_TYPE || process.env.STORAGE_DRIVER || "r2") as StorageConfig["storageType"],
+            endpoint: process.env.S3_ENDPOINT,
+            region: process.env.S3_REGION || "auto",
+            accessKeyId: process.env.S3_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+            bucket: process.env.S3_BUCKET,
+            cdnUrl: process.env.S3_CDN_URL || "",
+        };
+    }
+
+    return null;
+}
+
 /**
  * Ensure SiteConfig table exists, create if not
  */
@@ -53,6 +74,12 @@ async function readConfigFromDB(): Promise<StorageConfig | null> {
     }
 }
 
+async function getExistingConfig(): Promise<StorageConfig | null> {
+    const envConfig = getEnvStorageConfig();
+    if (envConfig) return envConfig;
+    return await readConfigFromDB();
+}
+
 async function writeConfigToDB(config: StorageConfig): Promise<void> {
     await ensureSiteConfigTable();
     await prisma.siteConfig.upsert({
@@ -84,7 +111,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { storageType, endpoint, region, accessKeyId, secretAccessKey, bucket, cdnUrl } = body;
 
-        const existingConfig = await readConfigFromDB();
+        const existingConfig = await getExistingConfig();
         const isMasked = (value?: string) => !!value && value.startsWith(MASK_PREFIX);
 
         const resolvedAccessKeyId =
