@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { clearConfigCache } from "@/lib/storage/config";
 
 const STORAGE_CONFIG_KEY = "storage_config";
+const MASK_PREFIX = "••••";
 
 interface StorageConfig {
     storageType: 'local' | 'r2' | 's3';
@@ -65,6 +67,7 @@ async function writeConfigToDB(config: StorageConfig): Promise<void> {
             encrypted: true,
         },
     });
+    clearConfigCache();
 }
 
 /**
@@ -81,14 +84,36 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { storageType, endpoint, region, accessKeyId, secretAccessKey, bucket, cdnUrl } = body;
 
+        const existingConfig = await readConfigFromDB();
+        const isMasked = (value?: string) => !!value && value.startsWith(MASK_PREFIX);
+
+        const resolvedAccessKeyId =
+            storageType === 'local'
+                ? undefined
+                : (!accessKeyId || isMasked(accessKeyId) ? existingConfig?.accessKeyId : accessKeyId.trim());
+
+        const resolvedSecretAccessKey =
+            storageType === 'local'
+                ? undefined
+                : (!secretAccessKey || isMasked(secretAccessKey) ? existingConfig?.secretAccessKey : secretAccessKey.trim());
+
+        const resolvedEndpoint = storageType === 'local' ? undefined : (endpoint?.trim() || existingConfig?.endpoint);
+        const resolvedRegion = storageType === 'local' ? undefined : (region?.trim() || existingConfig?.region || 'auto');
+        const resolvedBucket = storageType === 'local' ? undefined : (bucket?.trim() || existingConfig?.bucket);
+        const resolvedCdnUrl = storageType === 'local' ? undefined : (cdnUrl?.trim() || existingConfig?.cdnUrl);
+
+        if (storageType !== 'local' && (!resolvedEndpoint || !resolvedAccessKeyId || !resolvedSecretAccessKey || !resolvedBucket)) {
+            return NextResponse.json({ error: "请填写完整的存储配置" }, { status: 400 });
+        }
+
         const configData: StorageConfig = {
             storageType,
-            endpoint: storageType === 'local' ? undefined : endpoint,
-            region: storageType === 'local' ? undefined : region,
-            accessKeyId: storageType === 'local' ? undefined : accessKeyId,
-            secretAccessKey: storageType === 'local' ? undefined : secretAccessKey,
-            bucket: storageType === 'local' ? undefined : bucket,
-            cdnUrl: storageType === 'local' ? undefined : cdnUrl,
+            endpoint: resolvedEndpoint,
+            region: resolvedRegion,
+            accessKeyId: resolvedAccessKeyId,
+            secretAccessKey: resolvedSecretAccessKey,
+            bucket: resolvedBucket,
+            cdnUrl: resolvedCdnUrl,
         };
 
         await writeConfigToDB(configData);
@@ -115,6 +140,8 @@ export async function GET() {
     }
 
     try {
+        const maskCredential = (value?: string) => value ? `${MASK_PREFIX.repeat(2)}${value.slice(-4)}` : '';
+
         // First check environment variables (they take precedence)
         if (process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID) {
             return NextResponse.json({
@@ -123,8 +150,8 @@ export async function GET() {
                 region: process.env.S3_REGION || 'auto',
                 bucket: process.env.S3_BUCKET || '',
                 cdnUrl: process.env.S3_CDN_URL || '',
-                accessKeyId: '••••••••' + (process.env.S3_ACCESS_KEY_ID?.slice(-4) || ''),
-                secretAccessKey: '',
+                accessKeyId: maskCredential(process.env.S3_ACCESS_KEY_ID),
+                secretAccessKey: maskCredential(process.env.S3_SECRET_ACCESS_KEY),
                 source: 'environment',
             });
         }
@@ -134,8 +161,8 @@ export async function GET() {
         if (dbConfig) {
             return NextResponse.json({
                 ...dbConfig,
-                accessKeyId: dbConfig.accessKeyId ? '••••••••' + dbConfig.accessKeyId.slice(-4) : '',
-                secretAccessKey: '',
+                accessKeyId: maskCredential(dbConfig.accessKeyId),
+                secretAccessKey: maskCredential(dbConfig.secretAccessKey),
                 source: 'database',
             });
         }
