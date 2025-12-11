@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getStorageConfig, isS3ConfigComplete } from "@/lib/storage/config";
+import { getStorageConfigAsync, isS3ConfigComplete } from "@/lib/storage/config";
 import { ListObjectsV2Command, S3Client, HeadBucketCommand } from "@aws-sdk/client-s3";
 
 /**
@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     try {
-        const config = getStorageConfig();
+        const config = await getStorageConfigAsync();
         const storageType = config.storageType;
 
         if (storageType === "local") {
