@@ -5,35 +5,41 @@ FROM cgr.dev/chainguard/node:latest-dev AS deps
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# Enable corepack for pnpm
+RUN corepack enable && corepack prepare pnpm@10.16.1 --activate
+
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --prod
 COPY prisma ./prisma
-RUN npx prisma generate
+RUN pnpm exec prisma generate
 
 # === Builder Stage: Build application ===
 FROM cgr.dev/chainguard/node:latest-dev AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Enable corepack for pnpm
+RUN corepack enable && corepack prepare pnpm@10.16.1 --activate
+
 # Install all dependencies (including devDependencies for build)
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Copy source code with root privileges then hand ownership back to node user
 USER root
 COPY . .
 RUN chown -R node:node /app
 USER node
-RUN npx prisma generate && npm run build
+RUN pnpm exec prisma generate && pnpm run build
 
 # === Migration Stage: Database migrations ===
 FROM cgr.dev/chainguard/node:latest-dev AS migrator
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
 # Prisma CLI is available in node_modules for migrations
-CMD ["npx", "prisma", "migrate", "deploy"]
+CMD ["pnpm", "exec", "prisma", "migrate", "deploy"]
 
 # === Production Stage: Runtime environment ===
 FROM cgr.dev/chainguard/node:latest AS runner

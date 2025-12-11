@@ -48,7 +48,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "npm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.16.1
 
       - name: Cache Prisma binaries
         uses: actions/cache@v4
@@ -56,13 +60,13 @@ jobs:
           path: |
             node_modules/.prisma
             ~/.cache/prisma
-          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma') }}-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma') }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma') }}-
             ${{ runner.os }}-prisma-
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Check for missing migrations (Official Prisma Method)
         id: migration_check
@@ -71,7 +75,7 @@ jobs:
 
           # Prisma 官方推荐方法: 使用 migrate diff 检测 Schema 漂移
           # 如果 schema.prisma 与现有迁移不一致,此命令返回非零退出码
-          if npx prisma migrate diff \
+          if pnpm exec prisma migrate diff \
             --exit-code \
             --from-migrations ./prisma/migrations \
             --to-schema-datamodel ./prisma/schema.prisma \
@@ -101,12 +105,12 @@ jobs:
           exit 1
 
       - name: Validate Prisma schema syntax
-        run: npx prisma validate
+        run: pnpm exec prisma validate
 
       - name: Check Prisma version consistency
         run: |
-          PRISMA_CLI=$(npm list prisma --depth=0 | grep prisma@ | sed 's/.*@//' | tr -d ' ')
-          PRISMA_CLIENT=$(npm list @prisma/client --depth=0 | grep @prisma/client@ | sed 's/.*@//' | tr -d ' ')
+          PRISMA_CLI=$(pnpm list prisma --depth=0 | grep prisma@ | sed 's/.*@//' | tr -d ' ')
+          PRISMA_CLIENT=$(pnpm list @prisma/client --depth=0 | grep @prisma/client@ | sed 's/.*@//' | tr -d ' ')
 
           echo "Prisma CLI version: $PRISMA_CLI"
           echo "Prisma Client version: $PRISMA_CLIENT"
