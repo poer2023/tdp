@@ -3,18 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=22.0.0",
-    "npm": ">=10.0.0"
+    "node": ">=22.0.0"
   },
+  "packageManager": "pnpm@10.16.1",
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
-  "overrides": {
-    "cross-spawn": "^7.0.5",
-    "brace-expansion": "^2.0.1",
-    "react-is": "^19.0.0",
-    "jws": "3.2.3",
-    "mdast-util-to-hast": "13.2.1"
+  "pnpm": {
+    "overrides": {
+      "cross-spawn": "^7.0.5",
+      "brace-expansion": "^2.0.1",
+      "react-is": "^19.0.0",
+      "jws": "3.2.3",
+      "mdast-util-to-hast": "13.2.1"
+    },
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "bcrypt",
+      "esbuild",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
+    ]
   },
   "scripts": {
     "dev": "next dev --turbo",
@@ -42,7 +53,7 @@
     "setup:local": "bash scripts/setup-local.sh",
     "health-check": "bash scripts/health-check.sh",
     "test:cleanup": "pkill -9 -f 'node.*vitest' || true",
-    "pretest": "npm run test:cleanup",
+    "pretest": "pnpm run test:cleanup",
     "test": "vitest",
     "test:run": "vitest run",
     "test:watch": "vitest --watch",
@@ -50,7 +61,7 @@
     "test:integration": "vitest run --config vitest.integration.config.mjs",
     "test:integration:watch": "vitest --config vitest.integration.config.mjs",
     "test:integration:coverage": "vitest run --config vitest.integration.config.mjs --coverage",
-    "test:all": "npm run test:run && npm run test:integration && npm run test:e2e:critical",
+    "test:all": "pnpm run test:run && pnpm run test:integration && pnpm run test:e2e:critical",
     "test:e2e": "playwright test",
     "test:e2e:critical": "playwright test --config=playwright.critical.config.ts",
     "test:e2e:headed": "playwright test --headed",
@@ -90,6 +101,7 @@
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-alert-dialog": "1.1.15",
     "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-dialog": "1.1.15",
     "@radix-ui/react-label": "2.1.8",
     "@radix-ui/react-navigation-menu": "1.2.14",
     "@radix-ui/react-progress": "^1.1.7",

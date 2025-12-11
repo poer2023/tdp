@@ -50,32 +50,36 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "npm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.16.1
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Prepare database
         run: |
-          npx prisma migrate deploy
-          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then npm run prisma:seed || true; fi
+          pnpm exec prisma migrate deploy
+          if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then pnpm run prisma:seed || true; fi
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: pnpm exec playwright install --with-deps
 
       - name: Run Playwright tests (Shard ${{ matrix.shard }} | ${{ matrix.browser }})
         run: |
           set -o pipefail
           SAFE="${{ matrix.browser }}_${{ matrix.shard }}/"
           SAFE=${SAFE//\//_}
-          npx playwright test --project=${{ matrix.browser }} --reporter=line --shard=${{ matrix.shard }} 2>&1 | tee "ci_e2e_${SAFE}.log"
+          pnpm exec playwright test --project=${{ matrix.browser }} --reporter=line --shard=${{ matrix.shard }} 2>&1 | tee "ci_e2e_${SAFE}.log"
 
       - name: Upload shard logs (always)
         if: always()

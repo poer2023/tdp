@@ -139,10 +139,10 @@ export function SubscriptionPieChart({ data, viewMode, locale }: SubscriptionPie
                 fontSize={12}
                 fontWeight={500}
                 fill="currentColor"
-                formatter={(label: React.ReactNode) => {
-                  const value = typeof label === "number" ? label : 0;
-                  return formatCNY(value) as React.ReactNode;
-                }}
+                formatter={((value: unknown) => {
+                  const numValue = typeof value === "number" ? value : 0;
+                  return formatCNY(numValue);
+                }) as (label: unknown) => string}
               />
             </Pie>
           </PieChart>

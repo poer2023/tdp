@@ -25,8 +25,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: package-lock.json
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.16.1
 
       - name: Cache Prisma engines
         uses: actions/cache@v4
@@ -34,21 +37,21 @@ jobs:
           path: |
             node_modules/.prisma
             ~/.cache/prisma
-          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma', 'package-lock.json') }}
+          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma', 'pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-prisma-
 
       - name: Install dependencies
-        run: npm ci --prefer-offline --progress=false
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: pnpm exec prisma generate
 
       - name: Run ESLint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Run TypeScript type check
-        run: npm run type-check
+        run: pnpm run type-check
 
   build_app:
     name: Build application
@@ -62,8 +65,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: package-lock.json
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.16.1
 
       - name: Cache Prisma engines
         uses: actions/cache@v4
@@ -71,18 +77,18 @@ jobs:
           path: |
             node_modules/.prisma
             ~/.cache/prisma
-          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma', 'package-lock.json') }}
+          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma', 'pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-prisma-
 
       - name: Install dependencies
-        run: npm ci --prefer-offline --progress=false
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: pnpm exec prisma generate
 
       - name: Build application
-        run: npm run build
+        run: pnpm run build
 
   db_tests:
     name: Unit & Integration Tests
@@ -114,8 +120,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: package-lock.json
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.16.1
 
       - name: Cache Prisma engines
         uses: actions/cache@v4
@@ -123,27 +132,27 @@ jobs:
           path: |
             node_modules/.prisma
             ~/.cache/prisma
-          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma', 'package-lock.json') }}
+          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma', 'pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-prisma-
 
       - name: Install dependencies
-        run: npm ci --prefer-offline --progress=false
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: pnpm exec prisma generate
 
       - name: Check migration status
         run: |
           echo "==> Checking migration status..."
-          npx prisma migrate status || true
+          pnpm exec prisma migrate status || true
 
       - name: Apply database migrations
-        run: npx prisma migrate deploy
+        run: pnpm exec prisma migrate deploy
 
       - name: Verify migration status
         run: |
-          STATUS=$(npx prisma migrate status 2>&1)
+          STATUS=$(pnpm exec prisma migrate status 2>&1)
           echo "$STATUS"
           if echo "$STATUS" | grep -q "have not yet been applied"; then
             echo "❌ Pending migrations detected after deploy!"
@@ -152,10 +161,10 @@ jobs:
           echo "✅ Database schema is up to date"
 
       - name: Run unit tests
-        run: npm run test:run
+        run: pnpm run test:run
 
       - name: Run integration tests with coverage
-        run: npm run test:integration:coverage
+        run: pnpm run test:integration:coverage
 
       - name: Upload coverage report
         if: always()
@@ -198,8 +207,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: package-lock.json
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.16.1
 
       - name: Cache Prisma engines
         uses: actions/cache@v4
@@ -207,22 +219,22 @@ jobs:
           path: |
             node_modules/.prisma
             ~/.cache/prisma
-          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma', 'package-lock.json') }}
+          key: ${{ runner.os }}-prisma-${{ hashFiles('prisma/schema.prisma', 'pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-prisma-
 
       - name: Install dependencies
-        run: npm ci --prefer-offline --progress=false
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
-        run: npx prisma generate
+        run: pnpm exec prisma generate
 
       - name: Apply database migrations
-        run: npx prisma migrate deploy
+        run: pnpm exec prisma migrate deploy
 
       - name: Verify migration status
         run: |
-          STATUS=$(npx prisma migrate status 2>&1)
+          STATUS=$(pnpm exec prisma migrate status 2>&1)
           echo "$STATUS"
           if echo "$STATUS" | grep -q "have not yet been applied"; then
             echo "❌ Pending migrations detected after deploy!"
@@ -231,23 +243,23 @@ jobs:
           echo "✅ Database schema is up to date"
 
       - name: Seed E2E data
-        run: npm run test:e2e:seed
+        run: pnpm run test:e2e:seed
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: pnpm exec playwright install --with-deps
 
       - name: Run critical E2E tests
-        run: npm run test:e2e:critical
+        run: pnpm run test:e2e:critical
 
       - name: Clean E2E data
         if: always()
-        run: npm run test:e2e:cleanup
+        run: pnpm run test:e2e:cleanup
 
       - name: Upload Playwright report
         if: failure()
