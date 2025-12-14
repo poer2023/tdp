@@ -26,6 +26,7 @@ export interface ZhiProject {
   demoUrl?: string;
   repoUrl?: string;
   stats?: { label: string; value: string }[];
+  component?: React.ReactNode;
 }
 
 interface ProjectSlideProps {
@@ -97,6 +98,17 @@ function ProjectSlide({ project, index, total: _total }: ProjectSlideProps) {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
   };
+
+  // If custom component is provided, render it directly
+  if (project.component) {
+    return (
+      <section
+        className="relative flex min-h-[100dvh] w-full snap-start items-center overflow-hidden bg-stone-50 dark:bg-stone-950"
+      >
+        {project.component}
+      </section>
+    );
+  }
 
   return (
     <section
