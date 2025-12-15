@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, startTransition, Suspense } from "react";
+import React, { useActionState, useEffect, useState, startTransition, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createMomentAction, type CreateMomentState } from "@/app/[locale]/m/actions";
@@ -18,10 +18,10 @@ function MomentComposerCore() {
   const [state, action, pending] = useActionState<CreateMomentState, FormData>(createMomentAction, {
     status: "idle",
   });
-  const formRef = useRef<HTMLFormElement>(null);
+  const formRef = React.useRef<HTMLFormElement>(null);
   const [text, setText] = useState("");
   const [images, setImages] = useState<LocalImage[]>([]);
-  const imagesRef = useRef<LocalImage[]>([]);
+  const imagesRef = React.useRef<LocalImage[]>([]);
   const revokeUrls = (list: LocalImage[]) => {
     list.forEach((im) => URL.revokeObjectURL(im.url));
   };
