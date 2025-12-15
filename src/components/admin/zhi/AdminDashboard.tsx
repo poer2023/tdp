@@ -29,7 +29,7 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     const {
-        posts, moments, projects, shareItems, galleryItems,
+        posts, moments, projects, shareItems, galleryItems, galleryCount,
         movieData, gameData, skillData, photoStats, routineData, stepsData, heroImages,
         trafficData, sourceData, pageVisitData, deviceData,
         friends, subscriptions, credentials, syncJobs,
@@ -438,7 +438,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                         <OverviewSection
                             posts={posts}
                             moments={moments}
-                            galleryItems={galleryItems}
+                            galleryCount={galleryCount}
                             projects={projects}
                             shareItems={shareItems}
                             onQuickAction={setActiveTab}
@@ -752,7 +752,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {galleryItems.map(item => (
+                            {galleryItems.map((item: GalleryItem) => (
                                         <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
                                             <AdminImage src={item.type === 'video' ? item.thumbnail : item.url} alt={item.title || ''} className="w-full h-full" containerClassName="w-full h-full" />
                                             {item.type === 'video' && <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white"><Play size={12} /></div>}
