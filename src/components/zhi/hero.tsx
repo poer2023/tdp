@@ -157,12 +157,12 @@ function getGridLayout(count: number): GridLayout {
   return { cols: 1, rows: 1, gap: "gap-0" };
 }
 
-// Get image quality based on grid size - always high quality
+// Get image quality based on grid size - optimized for performance
 function getImageQuality(cols: number): number {
-  // Keep quality high for all layouts (WebP compression handles file size)
-  if (cols === 1) return 95;
-  if (cols === 2) return 90;
-  return 85;
+  // Balanced quality for performance while maintaining good visuals
+  if (cols === 1) return 85;
+  if (cols === 2) return 80;
+  return 75;
 }
 
 // Get image sizes for responsive loading - request larger images for Retina displays
@@ -259,6 +259,8 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
             sizes={imageSizes}
             className="object-cover transition-transform duration-300 hover:scale-105"
             quality={imageQuality}
+            priority={sq.id < 4}
+            loading={sq.id < 4 ? "eager" : "lazy"}
           />
           <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
         </motion.a>

@@ -7,13 +7,13 @@ import { OverviewSection } from "./AdminComponents";
 
 export function AdminOverviewContent() {
   const router = useRouter();
-  const { posts, moments, projects, shareItems, galleryItems } = useData();
+  const { posts, moments, projects, shareItems, galleryCount } = useData();
 
   return (
     <OverviewSection
       posts={posts}
       moments={moments}
-      galleryItems={galleryItems}
+      galleryCount={galleryCount}
       projects={projects}
       shareItems={shareItems}
       onQuickAction={(tab) => {

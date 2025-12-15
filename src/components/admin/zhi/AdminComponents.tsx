@@ -321,24 +321,24 @@ export const DataSection: React.FC<{ title: string, icon: React.ReactNode, child
 export const OverviewSection: React.FC<{
     posts: BlogPost[],
     moments: Moment[],
-    galleryItems: GalleryItem[],
+    galleryCount: number,
     projects: Project[],
     shareItems: ShareItem[],
     onQuickAction: (tab: Tab) => void
-}> = ({ posts, moments, galleryItems, projects, shareItems: _shareItems, onQuickAction }) => {
+}> = ({ posts, moments, galleryCount, projects, shareItems: _shareItems, onQuickAction }) => {
     const { t } = useAdminLocale();
 
     const stats = [
         { label: t('articles'), value: posts.length, icon: FileText, color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' },
         { label: t('moments'), value: moments.length, icon: ImageIcon, color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' },
-        { label: t('photos'), value: galleryItems.length, icon: Camera, color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' },
+        { label: t('photos'), value: galleryCount, icon: Camera, color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' },
         { label: t('projects'), value: projects.length, icon: Briefcase, color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' },
     ];
 
     const chartData = [
         { name: t('articles'), count: posts.length },
         { name: t('moments'), count: moments.length },
-        { name: t('photos'), count: galleryItems.length },
+        { name: t('photos'), count: galleryCount },
         { name: t('projects'), count: projects.length },
     ];
 

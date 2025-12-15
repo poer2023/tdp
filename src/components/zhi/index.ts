@@ -24,5 +24,4 @@ export { ZhiGallery, type ZhiGalleryItem } from "./gallery";
 // Projects
 export { ZhiProjects, type ZhiProject } from "./projects";
 
-// Stats Dashboard
-export { ZhiStatsDashboard } from "./stats-dashboard";
+// Stats Dashboard - import directly from "./stats-dashboard" to avoid bundling recharts on all pages

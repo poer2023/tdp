@@ -49,12 +49,47 @@ export const MomentsSection: React.FC = () => {
     const handleSaveMoment = async () => {
         if (!editingMoment?.content) return;
 
-        const newImages = uploadQueue.map(item => item.preview);
-        if (manualUrl) newImages.push(manualUrl);
+        // Upload new images first to get real URLs
+        const uploadedImageUrls: string[] = [];
+        for (const item of uploadQueue) {
+            try {
+                const formData = new FormData();
+                formData.append('image', item.file);  // Use 'image' as field name, matching gallery upload
+                formData.append('title', `Moment image ${new Date().toLocaleDateString()}`);
+
+                const uploadRes = await fetch('/api/admin/gallery/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (uploadRes.ok) {
+                    const uploadData = await uploadRes.json();
+                    // The gallery upload returns the image object with filePath
+                    if (uploadData.image?.filePath) {
+                        uploadedImageUrls.push(uploadData.image.filePath);
+                    } else if (uploadData.images?.[0]?.filePath) {
+                        uploadedImageUrls.push(uploadData.images[0].filePath);
+                    } else if (uploadData.url) {
+                        uploadedImageUrls.push(uploadData.url);
+                    }
+                } else {
+                    console.error('Failed to upload image:', await uploadRes.text());
+                }
+            } catch (error) {
+                console.error('Image upload failed:', error);
+            }
+            // Revoke blob URL after upload attempt
+            URL.revokeObjectURL(item.preview);
+        }
+
+        // Add manual URL if provided
+        if (manualUrl && (manualUrl.startsWith('/') || manualUrl.startsWith('http'))) {
+            uploadedImageUrls.push(manualUrl);
+        }
 
         const momentData = {
             ...editingMoment,
-            images: [...(editingMoment.images || []), ...newImages],
+            images: [...(editingMoment.images || []), ...uploadedImageUrls],
             id: editingMoment.id || Math.random().toString(36).substr(2, 9),
             date: editingMoment.date || 'Just now',
             likes: editingMoment.likes || 0,
@@ -81,41 +116,41 @@ export const MomentsSection: React.FC = () => {
         <SectionContainer title={t('momentsTitle')} onAdd={() => { setEditingMoment({}); setUploadQueue([]); setManualUrl(''); }}>
             {editingMoment ? (
                 <EditForm title={editingMoment.id ? t('editMoment') : t('newMoment')} onSave={handleSaveMoment} onCancel={() => setEditingMoment(null)}>
-                        <div className="grid grid-cols-1 gap-6">
-                            <div className="space-y-4">
-                                <TextArea label={t('whatsHappening')} value={editingMoment.content} onChange={v => setEditingMoment({ ...editingMoment, content: v })} />
-                                <Input label={t('tagsCommaSeparated')} value={editingMoment.tags?.join(', ')} onChange={v => setEditingMoment({ ...editingMoment, tags: v.split(',').map(s => s.trim()).filter(Boolean) })} />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('status')}</label>
-                                        <select
-                                            className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
-                                            value={editingMoment.status || 'PUBLISHED'}
-                                            onChange={e => setEditingMoment({ ...editingMoment, status: e.target.value as Moment['status'] })}
-                                        >
-                                            <option value="PUBLISHED">{t('published')}</option>
-                                            <option value="DRAFT">{t('draft')}</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('visibility')}</label>
-                                        <select
-                                            className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
-                                            value={editingMoment.visibility || 'PUBLIC'}
-                                            onChange={e => setEditingMoment({ ...editingMoment, visibility: e.target.value as Moment['visibility'] })}
-                                        >
-                                            <option value="PUBLIC">{t('public')}</option>
-                                            <option value="FRIENDS_ONLY">{t('friendsOnly')}</option>
-                                            <option value="PRIVATE">{t('private')}</option>
-                                        </select>
-                                    </div>
+                    <div className="grid grid-cols-1 gap-6">
+                        <div className="space-y-4">
+                            <TextArea label={t('whatsHappening')} value={editingMoment.content} onChange={v => setEditingMoment({ ...editingMoment, content: v })} />
+                            <Input label={t('tagsCommaSeparated')} value={editingMoment.tags?.join(', ')} onChange={v => setEditingMoment({ ...editingMoment, tags: v.split(',').map(s => s.trim()).filter(Boolean) })} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('status')}</label>
+                                    <select
+                                        className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
+                                        value={editingMoment.status || 'PUBLISHED'}
+                                        onChange={e => setEditingMoment({ ...editingMoment, status: e.target.value as Moment['status'] })}
+                                    >
+                                        <option value="PUBLISHED">{t('published')}</option>
+                                        <option value="DRAFT">{t('draft')}</option>
+                                    </select>
                                 </div>
-                                <Input label={t('happenedAt')} type="datetime-local" value={editingMoment.happenedAt || ''} onChange={v => setEditingMoment({ ...editingMoment, happenedAt: v })} />
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('visibility')}</label>
+                                    <select
+                                        className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
+                                        value={editingMoment.visibility || 'PUBLIC'}
+                                        onChange={e => setEditingMoment({ ...editingMoment, visibility: e.target.value as Moment['visibility'] })}
+                                    >
+                                        <option value="PUBLIC">{t('public')}</option>
+                                        <option value="FRIENDS_ONLY">{t('friendsOnly')}</option>
+                                        <option value="PRIVATE">{t('private')}</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('attachedImages')}</label>
-                                <ImageUploadArea
-                                    queue={uploadQueue}
+                            <Input label={t('happenedAt')} type="datetime-local" value={editingMoment.happenedAt || ''} onChange={v => setEditingMoment({ ...editingMoment, happenedAt: v })} />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('attachedImages')}</label>
+                            <ImageUploadArea
+                                queue={uploadQueue}
                                 onDrop={handleDrop}
                                 onFileSelect={handleFileSelect}
                                 onRemove={removeFileFromQueue}

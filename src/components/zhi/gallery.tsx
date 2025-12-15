@@ -585,7 +585,7 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
     <div className="w-full">
       {/* Masonry Grid */}
       <div className="columns-1 gap-6 space-y-6 sm:columns-2 lg:columns-3">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <div
             key={item.id}
             className="group relative cursor-pointer overflow-hidden rounded-lg bg-stone-200 break-inside-avoid dark:bg-stone-800"
@@ -596,11 +596,15 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
                 src={
                   item.type === "video"
                     ? item.thumbnail || item.url
-                    : item.mediumPath || item.smallThumbPath || item.thumbnail || item.url
+                    : item.smallThumbPath || item.mediumPath || item.thumbnail || item.url
                 }
                 alt={item.title}
+                width={item.width || undefined}
+                height={item.height || undefined}
                 className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                loading="lazy"
+                loading={index < 6 ? "eager" : "lazy"}
+                decoding={index < 6 ? "sync" : "async"}
+                fetchPriority={index < 3 ? "high" : "auto"}
               />
               {/* Video Indicator */}
               {item.type === "video" && (

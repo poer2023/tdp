@@ -68,7 +68,7 @@ export type CreateGalleryImageInput = {
 };
 
 export async function listGalleryImages(
-  limit?: number,
+  limit?: number | { take?: number; skip?: number },
   category?: GalleryCategory
 ): Promise<GalleryImage[]> {
   const loadFromFilesystem = () => {
@@ -76,9 +76,16 @@ export async function listGalleryImages(
       const base = path.join(process.cwd(), "public", "uploads", "gallery");
       const files = fs.existsSync(base)
         ? fs
-            .readdirSync(base)
-            .filter((f) => /\.(jpe?g|png|webp|gif|heic|heif|bmp)$/i.test(f))
-            .slice(0, typeof limit === "number" ? limit : 50)
+          .readdirSync(base)
+          .filter((f) => /\.(jpe?g|png|webp|gif|heic|heif|bmp)$/i.test(f))
+          .slice(
+            typeof limit === "object" ? limit.skip || 0 : 0,
+            typeof limit === "object"
+              ? (limit.skip || 0) + (limit.take || 50)
+              : typeof limit === "number"
+                ? limit
+                : 50
+          )
         : [];
       return files.map((f, idx) => ({
         id: f.replace(/\.[^.]+$/, "") + "-fallback",
@@ -112,11 +119,18 @@ export async function listGalleryImages(
       const args = (
         typeof limit === "number"
           ? {
+            where: category ? { category } : undefined,
+            orderBy: { createdAt: "desc" },
+            take: limit,
+          }
+          : typeof limit === "object"
+            ? {
               where: category ? { category } : undefined,
               orderBy: { createdAt: "desc" },
-              take: limit,
+              take: limit.take,
+              skip: limit.skip,
             }
-          : {
+            : {
               where: category ? { category } : undefined,
               orderBy: { createdAt: "desc" },
             }

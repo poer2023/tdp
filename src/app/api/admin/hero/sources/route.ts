@@ -61,6 +61,7 @@ export async function GET(request: NextRequest) {
     const sourceFilter = searchParams.get("source") as ImageSource | "all" | null;
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") || "50", 10)));
+    const startIndex = (page - 1) * pageSize;
 
     // Get current hero image URLs for selection status
     const heroImages = await prisma.heroImage.findMany({
@@ -71,22 +72,34 @@ export async function GET(request: NextRequest) {
 
     const allImages: SourceImage[] = [];
 
+    // Total count for pagination
+    let total = 0;
+
     // Fetch from Gallery
     if (!sourceFilter || sourceFilter === "all" || sourceFilter === "gallery") {
-      const galleryImages = await prisma.galleryImage.findMany({
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          filePath: true,
-          smallThumbPath: true,
-          mediumPath: true,
-          title: true,
-          createdAt: true,
-        },
-      });
+      const take = sourceFilter === "gallery" ? pageSize : pageSize * page;
+      const skip = sourceFilter === "gallery" ? startIndex : 0;
+
+      const [count, galleryImages] = await Promise.all([
+        prisma.galleryImage.count(),
+        prisma.galleryImage.findMany({
+          orderBy: { createdAt: "desc" },
+          take,
+          skip,
+          select: {
+            id: true,
+            filePath: true,
+            smallThumbPath: true,
+            mediumPath: true, // Use medium for better quality but optimized
+            title: true,
+            createdAt: true,
+          },
+        })
+      ]);
+
+      total += count;
 
       for (const img of galleryImages) {
-        // Use medium resolution for hero images (higher quality)
         const displayUrl = img.mediumPath || img.filePath;
         const originalUrl = img.filePath;
 
@@ -107,18 +120,28 @@ export async function GET(request: NextRequest) {
 
     // Fetch from Posts (cover images)
     if (!sourceFilter || sourceFilter === "all" || sourceFilter === "post") {
-      const posts = await prisma.post.findMany({
-        where: {
-          coverImagePath: { not: null },
-        },
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          title: true,
-          coverImagePath: true,
-          createdAt: true,
-        },
-      });
+      const take = sourceFilter === "post" ? pageSize : pageSize * page;
+      const skip = sourceFilter === "post" ? startIndex : 0;
+
+      const [count, posts] = await Promise.all([
+        prisma.post.count({ where: { coverImagePath: { not: null } } }),
+        prisma.post.findMany({
+          where: {
+            coverImagePath: { not: null },
+          },
+          orderBy: { createdAt: "desc" },
+          take,
+          skip,
+          select: {
+            id: true,
+            title: true,
+            coverImagePath: true,
+            createdAt: true,
+          },
+        })
+      ]);
+
+      total += count;
 
       for (const post of posts) {
         if (post.coverImagePath) {
@@ -138,21 +161,38 @@ export async function GET(request: NextRequest) {
 
     // Fetch from Moments (images array)
     if (!sourceFilter || sourceFilter === "all" || sourceFilter === "moment") {
-      const moments = await prisma.moment.findMany({
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          content: true,
-          images: true,
-          createdAt: true,
-        },
-      });
+      // Moments are tricky because one moment can have multiple images.
+      // We'll fetch a bit more to be safe, or just fetch moments and expand.
+      // 1 moment ~= 1-9 images.
+      // For specific pagination, we can't easily map moment index to image index in DB.
+      // So we fetch 'take: pageSize' moments, which might result in >pageSize images.
+      const take = sourceFilter === "moment" ? pageSize : pageSize * page;
+      const skip = sourceFilter === "moment" ? startIndex : 0;
+
+      const [count, moments] = await Promise.all([
+        prisma.moment.count(),
+        prisma.moment.findMany({
+          orderBy: { createdAt: "desc" },
+          take, // rough approximation
+          skip,
+          select: {
+            id: true,
+            content: true,
+            images: true,
+            createdAt: true,
+          },
+        })
+      ]);
+
+      // Moment count is MOMENTS, not IMAGES. This is a discrepancy.
+      // We'll trust the moment count roughly represents "items with images".
+      // It's hard to get exact image count without a normalized table.
+      total += count;
 
       for (const moment of moments) {
         const momentImages = extractMomentImages(moment.id, moment.images, moment.createdAt);
 
         for (const { url, index } of momentImages) {
-          // Generate a unique ID for each image in the moment
           const imageId = `moment-${moment.id}-${index}`;
           const title = moment.content
             ? moment.content.slice(0, 50) + (moment.content.length > 50 ? "..." : "")
@@ -172,23 +212,50 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Sort by createdAt descending
-    allImages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // If "all" filter, we fetched top (page*pageSize) from each.
+    // Now sort and slice the correct window.
+    if (!sourceFilter || sourceFilter === "all") {
+      allImages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    // Pagination
-    const total = allImages.length;
-    const startIndex = (page - 1) * pageSize;
-    const paginatedImages = allImages.slice(startIndex, startIndex + pageSize);
+      // Since we fetched (page*pageSize) from EACH source, 
+      // we have enough data to cover the requested page even after inter-leaving.
+      // We just need to take the slice for the current page.
+      const paginatedImages = allImages.slice(startIndex, startIndex + pageSize);
 
-    return NextResponse.json({
-      images: paginatedImages,
-      pagination: {
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize),
-      },
-    });
+      return NextResponse.json({
+        images: paginatedImages,
+        pagination: {
+          total, // Approximation (sum of counts)
+          page,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      });
+    } else {
+      // Single source: We already skipped and took correctly (mostly).
+      // For moments, we might have expanded more images than 'pageSize'.
+      // So we still slice to be safe.
+      // Also moments might have been sorted by moment.createdAt, but moment images
+      // effectively share that time.
+
+      let paginatedImages = allImages;
+
+      // For moments, specifically, we might have fetched 'pageSize' moments,
+      // resulting in e.g. 3 * pageSize images. We should slice to respect pageSize.
+      if (sourceFilter === "moment") {
+        paginatedImages = allImages.slice(0, pageSize);
+      }
+
+      return NextResponse.json({
+        images: paginatedImages,
+        pagination: {
+          total,
+          page,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize),
+        },
+      });
+    }
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

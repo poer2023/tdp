@@ -378,8 +378,9 @@ export const HeroSection: React.FC = () => {
                 <p>{t("noImagesFound")}</p>
               </div>
             ) : (
-              sourceImages.map((img) => {
+              sourceImages.map((img, index) => {
                 const isSelected = img.isSelected;
+                const isPriority = index < 8; // First row loads with priority for better LCP
                 return (
                   <button
                     key={img.id}
@@ -394,6 +395,7 @@ export const HeroSection: React.FC = () => {
                       alt={img.title || ""}
                       className="w-full h-full"
                       containerClassName="w-full h-full"
+                      priority={isPriority}
                     />
                     {isSelected && (
                       <div className="absolute inset-0 bg-emerald-500/20 flex items-center justify-center">

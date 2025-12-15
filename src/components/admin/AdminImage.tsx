@@ -29,6 +29,8 @@ interface AdminImageProps {
   priority?: boolean;
   /** object-fit 样式 */
   objectFit?: "cover" | "contain" | "fill" | "none";
+  /** Sizes for responsive images */
+  sizes?: string;
   /** 点击事件 */
   onClick?: () => void;
 }
@@ -43,6 +45,7 @@ export function AdminImage({
   height,
   priority = false,
   objectFit = "cover",
+  sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
   onClick,
 }: AdminImageProps) {
   const [hasError, setHasError] = useState(false);
@@ -139,7 +142,7 @@ export function AdminImage({
           onLoad={handleLoad}
           priority={priority}
           unoptimized={!shouldOptimize}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          sizes={sizes}
         />
       </div>
     );

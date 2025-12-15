@@ -423,7 +423,8 @@ interface DataContextType {
     moments: Moment[];
     shareItems: ShareItem[];
     projects: Project[];
-    galleryItems: GalleryItem[];
+    // galleryItems removed - use local state
+    galleryCount: number;
     movieData: MovieData[];
     gameData: GameGenreData[];
     skillData: SkillData[];
@@ -461,8 +462,8 @@ interface DataContextType {
     updateShareItem: (item: ShareItem) => Promise<void>;
     deleteShareItem: (id: string) => Promise<void>;
 
-    addGalleryItem: (item: GalleryUploadInput) => Promise<void>;
-    updateGalleryItem: (item: GalleryUpdateInput) => Promise<void>;
+    addGalleryItem: (item: GalleryUploadInput) => Promise<GalleryItem | GalleryItem[] | void>;
+    updateGalleryItem: (item: GalleryUpdateInput) => Promise<GalleryItem | void>;
     deleteGalleryItem: (id: string) => Promise<void>;
 
     // Hero Actions
@@ -503,7 +504,7 @@ interface DataContextType {
     refreshMoments: () => Promise<void>;
     refreshProjects: () => Promise<void>;
     refreshShareItems: () => Promise<void>;
-    refreshGallery: () => Promise<void>;
+    // refreshGallery removed
     refreshHeroImages: () => Promise<void>;
     refreshFriends: () => Promise<void>;
     refreshAnalytics: (period?: '7d' | '30d' | '90d' | 'all') => Promise<void>;
@@ -539,7 +540,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [moments, setMoments] = useState<Moment[]>([]);
     const [shareItems, setShareItems] = useState<ShareItem[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
-    const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+    const [galleryCount, setGalleryCount] = useState<number>(0);
+    // const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
     const [movieData, setMovieData] = useState<MovieData[]>(MOVIE_DATA);
     const [gameData, setGameData] = useState<GameGenreData[]>(GAME_GENRE_DATA);
     const [skillData, setSkillData] = useState<SkillData[]>([]);
@@ -735,19 +737,18 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    const refreshGallery = async () => {
-        setLoadingFor('gallery', true);
-        setErrorFor('gallery', null);
+    const refreshGalleryCount = async () => {
         try {
-            const res = await fetch('/api/admin/gallery', { cache: 'no-store' });
+            // Fetch with limit 1 just to get the total from metadata (assuming API returns it now)
+            // Or we could have a dedicated stats endpoint. 
+            // Since we modified the main endpoint to return 'total', we can use that.
+            const res = await fetch('/api/admin/gallery?limit=1', { cache: 'no-store' });
             const data = await res.json();
-            if (res.ok && Array.isArray(data.images)) {
-                setGalleryItems(data.images.map(mapApiGalleryItem));
+            if (res.ok && typeof data.total === 'number') {
+                setGalleryCount(data.total);
             }
         } catch (error) {
-            handleApiError(error, 'gallery');
-        } finally {
-            setLoadingFor('gallery', false);
+            console.error('Failed to fetch gallery count', error);
         }
     };
 
@@ -877,7 +878,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         void refreshMoments();
         void refreshProjects();
         void refreshShareItems();
-        void refreshGallery();
+        void refreshGalleryCount();
         void refreshHeroImages();
         void refreshFriends();
         void refreshAnalytics();
@@ -1212,8 +1213,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to upload image');
-            const mapped = mapApiGalleryItem(data.image || data);
-            setGalleryItems(prev => [mapped, ...prev]);
+            // galleryItems state is removed; local component should handle update
+            return data.images ? data.images[0] : mapApiGalleryItem(data);
         } catch (error) {
             handleApiError(error, 'gallery');
             throw error;
@@ -1234,8 +1235,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to update gallery item');
-            const mapped = mapApiGalleryItem(data.image || data);
-            setGalleryItems(prev => prev.map(g => g.id === updated.id ? mapped : g));
+            return mapApiGalleryItem(data.image || data);
         } catch (error) {
             handleApiError(error, 'gallery');
             throw error;
@@ -1249,7 +1249,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 const data = await res.json().catch(() => ({}));
                 throw new Error(data.error || 'Failed to delete gallery item');
             }
-            setGalleryItems(prev => prev.filter(g => g.id !== id));
+            // setGalleryItems(prev => prev.filter(g => g.id !== id)); // Removed as per instruction
         } catch (error) {
             handleApiError(error, 'gallery');
             throw error;
@@ -1590,7 +1590,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             // Loading and Error States
             loading, errors,
 
-            posts, moments, shareItems, projects, galleryItems,
+            posts, moments, shareItems, projects, // galleryItems removed
+            galleryCount,
             movieData, gameData, skillData, photoStats, routineData, stepsData, heroImages,
             trafficData, sourceData, pageVisitData, deviceData,
             friends, subscriptions, credentials, syncJobs,
@@ -1618,7 +1619,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             // Refresh functions
             refreshPosts, refreshMoments, refreshProjects, refreshShareItems,
-            refreshGallery, refreshHeroImages, refreshFriends, refreshAnalytics, refreshLifeData,
+            /* refreshGallery removed */ refreshHeroImages, refreshFriends, refreshAnalytics, refreshLifeData,
 
             convertCurrency
         }}>

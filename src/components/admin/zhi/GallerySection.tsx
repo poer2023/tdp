@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Play, Edit2, Trash2 } from 'lucide-react';
 import { useData } from './store';
 import type { GalleryItem } from './types';
@@ -11,14 +11,64 @@ import { AdminImage } from '../AdminImage';
 import { useAdminLocale } from './useAdminLocale';
 
 export const GallerySection: React.FC = () => {
-    const { galleryItems, addGalleryItem, updateGalleryItem, deleteGalleryItem, loading } = useData();
+    const { addGalleryItem, updateGalleryItem, deleteGalleryItem } = useData();
     const { t } = useAdminLocale();
+
+    const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+    const [loadingLocal, setLoadingLocal] = useState(false);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const pageSize = 32;
 
     const [editingGallery, setEditingGallery] = useState<Partial<GalleryItem> | null>(null);
     const [uploadQueue, setUploadQueue] = useState<{ file: File, preview: string }[]>([]);
     const [manualUrl, setManualUrl] = useState('');
     const [isDragOver, setIsDragOver] = useState(false);
     const [isBatchMode, setIsBatchMode] = useState(false);
+
+    const fetchGallery = React.useCallback(async (pageNum: number, append = false) => {
+        setLoadingLocal(true);
+        try {
+            const res = await fetch(`/api/admin/gallery?page=${pageNum}&pageSize=${pageSize}`);
+            const data = await res.json();
+            if (res.ok && Array.isArray(data.images)) {
+                if (append) {
+                    setGalleryItems(prev => {
+                        const existingIds = new Set(prev.map(i => i.id));
+                        const newItems = data.images.filter((i: GalleryItem) => !existingIds.has(i.id));
+                        return [...prev, ...newItems];
+                    });
+                } else {
+                    setGalleryItems(data.images);
+                }
+                if (data.images.length < pageSize) {
+                    setHasMore(false);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch gallery', error);
+        } finally {
+            setLoadingLocal(false);
+        }
+    }, [pageSize]);
+
+    useEffect(() => {
+        fetchGallery(1);
+    }, [fetchGallery]);
+
+    // Cleanup blob URLs on unmount to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            uploadQueue.forEach(item => URL.revokeObjectURL(item.preview));
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleLoadMore = () => {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        fetchGallery(nextPage, true);
+    };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -50,12 +100,20 @@ export const GallerySection: React.FC = () => {
     };
 
     const removeFileFromQueue = (idx: number) => {
-        setUploadQueue(prev => prev.filter((_, i) => i !== idx));
+        setUploadQueue(prev => {
+            // Revoke the blob URL before removing
+            if (prev[idx]) {
+                URL.revokeObjectURL(prev[idx].preview);
+            }
+            return prev.filter((_, i) => i !== idx);
+        });
     };
 
     const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this image?')) return;
         try {
             await deleteGalleryItem(id);
+            setGalleryItems(prev => prev.filter(item => item.id !== id));
         } catch (error) {
             console.error('Failed to delete gallery item:', error);
         }
@@ -65,12 +123,15 @@ export const GallerySection: React.FC = () => {
         try {
             // Batch Mode
             if (!editingGallery?.id && isBatchMode && uploadQueue.length > 0) {
-                await Promise.all(uploadQueue.map((item, idx) => addGalleryItem({
+                const results = await Promise.all(uploadQueue.map((item, idx) => addGalleryItem({
                     file: item.file,
                     title: editingGallery?.title ? `${editingGallery.title} ${idx + 1}` : `Upload ${new Date().toLocaleDateString()}`,
                     description: editingGallery?.description || '',
                     date: editingGallery?.date
                 })));
+                // Refresh list or add to state
+                const newItems = results.filter((i): i is GalleryItem => !!i && !Array.isArray(i));
+                setGalleryItems(prev => [...newItems, ...prev]);
             }
             // Single Mode (Edit or New)
             else {
@@ -81,20 +142,29 @@ export const GallerySection: React.FC = () => {
                 };
 
                 if (editingGallery?.id) {
-                    await updateGalleryItem({
+                    const updated = await updateGalleryItem({
                         ...basePayload,
                         id: editingGallery.id,
                     });
+                    if (updated && 'id' in updated) {
+                        setGalleryItems(prev => prev.map(i => i.id === updated.id ? updated : i));
+                    }
                 } else {
                     const file = uploadQueue[0]?.file;
                     if (!file && !manualUrl) return;
-                    await addGalleryItem({
+                    const newItem = await addGalleryItem({
                         ...basePayload,
                         file,
                         manualUrl
                     });
+                    if (newItem && !Array.isArray(newItem)) {
+                        setGalleryItems(prev => [newItem, ...prev]);
+                    }
                 }
             }
+
+            // Cleanup blob URLs before clearing the queue
+            uploadQueue.forEach(item => URL.revokeObjectURL(item.preview));
 
             setEditingGallery(null);
             setUploadQueue([]);
@@ -189,24 +259,48 @@ export const GallerySection: React.FC = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {loading?.gallery ? (
-                        <div className="text-sm text-stone-400">{t('loadingGallery')}</div>
+                    {loadingLocal && page === 1 ? (
+                        <div className="col-span-full py-12 text-center text-stone-400">
+                            {t('loadingGallery')}
+                        </div>
                     ) : galleryItems.length === 0 ? (
-                        <div className="text-sm text-stone-400">{t('noGalleryItems')}</div>
+                        <div className="col-span-full py-12 text-center text-stone-400">
+                            {t('noGalleryItems')}
+                        </div>
                     ) : (
-                        galleryItems.map(item => (
-                            <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
-                                <AdminImage src={item.smallThumbPath || item.thumbnail || item.url} alt={item.title || ''} className="w-full h-full" containerClassName="w-full h-full" />
-                                {item.type === 'video' && <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white"><Play size={12} /></div>}
-                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                    <button onClick={() => setEditingGallery(item)} className="p-2 bg-white rounded-full text-stone-900 hover:scale-110 transition-transform"><Edit2 size={16} /></button>
-                                    <button onClick={() => handleDelete(item.id)} className="p-2 bg-rose-500 rounded-full text-white hover:scale-110 transition-transform"><Trash2 size={16} /></button>
+                        <>
+                            {galleryItems.map((item, index) => (
+                                <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
+                                    <AdminImage
+                                        src={item.smallThumbPath || item.thumbnail || item.url}
+                                        alt={item.title || ''}
+                                        className="w-full h-full"
+                                        containerClassName="w-full h-full"
+                                        priority={index < 4}
+                                    />
+                                    {item.type === 'video' && <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white"><Play size={12} /></div>}
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <button onClick={() => setEditingGallery(item)} className="p-2 bg-white rounded-full text-stone-900 hover:scale-110 transition-transform"><Edit2 size={16} /></button>
+                                        <button onClick={() => handleDelete(item.id)} className="p-2 bg-rose-500 rounded-full text-white hover:scale-110 transition-transform"><Trash2 size={16} /></button>
+                                    </div>
+                                    <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs truncate">
+                                        {item.title}
+                                    </div>
                                 </div>
-                                <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs truncate">
-                                    {item.title}
+                            ))}
+
+                            {hasMore && (
+                                <div className="col-span-full mt-8 text-center">
+                                    <button
+                                        onClick={handleLoadMore}
+                                        disabled={loadingLocal}
+                                        className="px-6 py-2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-50"
+                                    >
+                                        {loadingLocal ? t('loadingImages') : t('loadMore')}
+                                    </button>
                                 </div>
-                            </div>
-                        ))
+                            )}
+                        </>
                     )}
                 </div>
             )}

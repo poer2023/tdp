@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { ZhiHeader, ZhiFooter, ZhiStatsDashboard } from "@/components/zhi";
+import { ZhiHeader, ZhiFooter } from "@/components/zhi";
+import { ZhiStatsDashboard } from "@/components/zhi/stats-dashboard";
+import { getDashboardStats } from "@/lib/dashboard-stats";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -20,11 +22,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function LiveDashboardPage({ params }: PageProps) {
   const { locale: _locale } = await params;
 
+  // Fetch stats server-side to eliminate CLS from client-side loading
+  const stats = await getDashboardStats();
+
   return (
     <>
       <ZhiHeader />
       <main className="min-h-screen bg-stone-50 dark:bg-stone-950">
-        <ZhiStatsDashboard />
+        <ZhiStatsDashboard stats={stats} />
       </main>
       <ZhiFooter />
     </>
@@ -34,3 +39,4 @@ export default async function LiveDashboardPage({ params }: PageProps) {
 export function generateStaticParams() {
   return [{ locale: "en" }, { locale: "zh" }];
 }
+

@@ -27,6 +27,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
+import type { DashboardStatsData } from "@/lib/dashboard-stats";
 
 // Animated Counter Component
 function AnimatedCounter({
@@ -78,99 +79,21 @@ interface StatCardData {
   color: string;
 }
 
-interface StatsData {
-  photoCount: number;
-  photosByMonth: { day: string; count: number }[];
-  routineData: { name: string; value: number; color: string }[];
-  stepsData: {
-    entries: { day: string; dayNum: number; steps: number }[];
-    startDate: string;
-    endDate: string;
-  };
-  movieCount: number;
-  movieData: { month: string; movies: number }[];
-  skillData: { name: string; level: number }[];
-  currentGame?: { name: string; progress: number };
-}
-
 interface ZhiStatsDashboardProps {
-  stats?: StatsData;
+  stats: DashboardStatsData;
   highlights?: StatCardData[];
 }
 
-// Default fallback data (used while loading or on error)
-const defaultStats: StatsData = {
-  photoCount: 0,
-  photosByMonth: [
-    { day: "Mon", count: 0 },
-    { day: "Tue", count: 0 },
-    { day: "Wed", count: 0 },
-    { day: "Thu", count: 0 },
-    { day: "Fri", count: 0 },
-    { day: "Sat", count: 0 },
-    { day: "Sun", count: 0 },
-  ],
-  routineData: [
-    { name: "Work", value: 8, color: "#5c9c6d" },
-    { name: "Sleep", value: 7, color: "#6366f1" },
-    { name: "Creative", value: 4, color: "#f59e0b" },
-    { name: "Exercise", value: 1, color: "#ef4444" },
-    { name: "Other", value: 4, color: "#a8a29e" },
-  ],
-  stepsData: {
-    entries: [
-      { day: "M", dayNum: 1, steps: 0 },
-      { day: "T", dayNum: 2, steps: 0 },
-      { day: "W", dayNum: 3, steps: 0 },
-      { day: "T", dayNum: 4, steps: 0 },
-      { day: "F", dayNum: 5, steps: 0 },
-      { day: "S", dayNum: 6, steps: 0 },
-      { day: "S", dayNum: 7, steps: 0 },
-    ],
-    startDate: "",
-    endDate: "",
-  },
-  movieCount: 0,
-  movieData: [],
-  skillData: [],
-  currentGame: undefined,
-};
+
 
 export function ZhiStatsDashboard({
-  stats: initialStats,
+  stats,
   highlights,
 }: ZhiStatsDashboardProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
   const [animationTrigger, setAnimationTrigger] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
-  const [stats, setStats] = useState<StatsData>(initialStats || defaultStats);
-  const [loading, setLoading] = useState(!initialStats);
-
-  // Fetch real data from dashboard API
-  useEffect(() => {
-    fetch("/api/about/live/dashboard")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.photoCount !== undefined) {
-          setStats({
-            photoCount: data.photoCount,
-            photosByMonth: data.photosByWeek || defaultStats.photosByMonth,
-            routineData: data.routineData || defaultStats.routineData,
-            stepsData: data.stepsData || defaultStats.stepsData,
-            movieCount: data.movieCount || 0,
-            movieData: data.movieData || [],
-            skillData: data.skillData || [],
-            currentGame: data.currentGame,
-          });
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch dashboard stats:", err);
-        setLoading(false);
-      });
-  }, []);
 
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
@@ -225,35 +148,6 @@ export function ZhiStatsDashboard({
   const avgSteps = Math.round(
     stats.stepsData.entries.reduce((acc: number, curr: { steps: number }) => acc + curr.steps, 0) / (stats.stepsData.entries.length || 1)
   );
-
-  // Loading skeleton
-  if (loading) {
-    return (
-      <div className="w-full animate-in fade-in pb-16 duration-700">
-        <div className="mb-8 border-b border-stone-200 bg-white px-4 pb-16 pt-12 dark:border-stone-800 dark:bg-stone-900">
-          <div className="mx-auto max-w-5xl text-center">
-            <span className="mb-6 inline-block rounded-full bg-stone-100 p-3 text-stone-600 dark:bg-stone-800 dark:text-stone-300">
-              <Loader2 size={24} strokeWidth={1.5} className="animate-spin" />
-            </span>
-            <h3 className="mb-4 font-serif text-4xl text-stone-900 md:text-5xl dark:text-stone-100">
-              {t("Life Log")}
-            </h3>
-            <p className="mx-auto max-w-lg text-lg font-light text-stone-500 dark:text-stone-400">
-              {locale === "zh" ? "正在加载数据..." : "Loading data..."}
-            </p>
-          </div>
-        </div>
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className={`${i <= 2 ? "col-span-1 md:col-span-2" : "col-span-1"} h-64 animate-pulse rounded-2xl bg-stone-100 dark:bg-stone-800`}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full animate-in fade-in pb-16 duration-700">
@@ -344,7 +238,7 @@ export function ZhiStatsDashboard({
           </div>
 
           {/* Main Content Area */}
-          <div className="relative z-10 flex h-64 w-full flex-col gap-6 md:flex-row">
+          <div className="relative z-10 flex min-h-64 w-full flex-col gap-6 md:flex-row">
             {/* Left: Stats */}
             <div className="flex w-full flex-col justify-end border-r border-stone-800/50 pb-4 pr-4 md:w-1/3">
               <div className="mb-1 flex items-center gap-2 text-cyan-500/80">
@@ -373,7 +267,7 @@ export function ZhiStatsDashboard({
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   key={animationTrigger}
-                  data={stats.photosByMonth}
+                  data={stats.photosByWeek}
                   margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
                   barCategoryGap="20%"
                 >
@@ -422,7 +316,7 @@ export function ZhiStatsDashboard({
               </p>
             </div>
           </div>
-          <div className="relative h-40 w-full">
+          <div className="relative h-40 min-h-40 w-full">
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <PieChart>
                 <Pie
@@ -471,7 +365,7 @@ export function ZhiStatsDashboard({
                 {stats.movieCount}
               </span>
             </div>
-            <div className="h-24">
+            <div className="h-24 min-h-24">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={stats.movieData}>
                   <Bar dataKey="movies" fill="#fb7185" radius={[2, 2, 0, 0]} />
@@ -571,7 +465,7 @@ export function ZhiStatsDashboard({
               )}
             </div>
           </div>
-          <div className="h-24 w-full">
+          <div className="h-24 min-h-24 w-full">
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={stats.stepsData.entries}>
                 <Tooltip
