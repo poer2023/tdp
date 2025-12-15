@@ -18,6 +18,10 @@ export const MomentsSection: React.FC = () => {
     const [manualUrl, setManualUrl] = useState('');
     const [isDragOver, setIsDragOver] = useState(false);
 
+    const revokePreviewUrls = (items: { preview: string }[]) => {
+        items.forEach(item => URL.revokeObjectURL(item.preview));
+    };
+
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files) as File[];
@@ -43,7 +47,11 @@ export const MomentsSection: React.FC = () => {
     };
 
     const removeFileFromQueue = (idx: number) => {
-        setUploadQueue(prev => prev.filter((_, i) => i !== idx));
+        setUploadQueue(prev => {
+            const target = prev[idx];
+            if (target) URL.revokeObjectURL(target.preview);
+            return prev.filter((_, i) => i !== idx);
+        });
     };
 
     const handleSaveMoment = async () => {
@@ -108,14 +116,15 @@ export const MomentsSection: React.FC = () => {
         }
 
         setEditingMoment(null);
+        revokePreviewUrls(uploadQueue);
         setUploadQueue([]);
         setManualUrl('');
     };
 
     return (
-        <SectionContainer title={t('momentsTitle')} onAdd={() => { setEditingMoment({}); setUploadQueue([]); setManualUrl(''); }}>
+        <SectionContainer title={t('momentsTitle')} onAdd={() => { setEditingMoment({}); revokePreviewUrls(uploadQueue); setUploadQueue([]); setManualUrl(''); }}>
             {editingMoment ? (
-                <EditForm title={editingMoment.id ? t('editMoment') : t('newMoment')} onSave={handleSaveMoment} onCancel={() => setEditingMoment(null)}>
+                <EditForm title={editingMoment.id ? t('editMoment') : t('newMoment')} onSave={handleSaveMoment} onCancel={() => { setEditingMoment(null); revokePreviewUrls(uploadQueue); setUploadQueue([]); setManualUrl(''); }}>
                     <div className="grid grid-cols-1 gap-6">
                         <div className="space-y-4">
                             <TextArea label={t('whatsHappening')} value={editingMoment.content} onChange={v => setEditingMoment({ ...editingMoment, content: v })} />

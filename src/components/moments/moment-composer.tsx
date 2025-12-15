@@ -21,6 +21,14 @@ function MomentComposerCore() {
   const formRef = useRef<HTMLFormElement>(null);
   const [text, setText] = useState("");
   const [images, setImages] = useState<LocalImage[]>([]);
+  const imagesRef = useRef<LocalImage[]>([]);
+  const revokeUrls = (list: LocalImage[]) => {
+    list.forEach((im) => URL.revokeObjectURL(im.url));
+  };
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+  useEffect(() => () => revokeUrls(imagesRef.current), []);
 
   // Check if user is admin
   const isAdmin = session?.user?.role === "ADMIN";
@@ -101,6 +109,7 @@ function MomentComposerCore() {
       console.log("✅ Moment created successfully:", state.id);
       startTransition(() => {
         setText("");
+        revokeUrls(imagesRef.current);
         setImages([]);
         setOpen(false);
       });
@@ -202,7 +211,13 @@ function MomentComposerCore() {
                           <button
                             type="button"
                             className="rounded-full bg-black/60 p-1 text-white transition-colors hover:bg-black/80"
-                            onClick={() => setImages((arr) => arr.filter((_, i) => i !== idx))}
+                            onClick={() =>
+                              setImages((arr) => {
+                                const removed = arr[idx];
+                                if (removed) URL.revokeObjectURL(removed.url);
+                                return arr.filter((_, i) => i !== idx);
+                              })
+                            }
                           >
                             <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />

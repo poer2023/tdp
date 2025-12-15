@@ -6,6 +6,7 @@ import { getStorageProviderAsync } from "@/lib/storage";
 import { assertRateLimit } from "@/lib/rate-limit";
 import prisma from "@/lib/prisma";
 import sharp from "sharp";
+import { generateThumbnails, getThumbnailFilename } from "@/lib/image-processor";
 
 export type CreateMomentState =
   | { status: "idle" }
@@ -84,29 +85,45 @@ export async function createMomentAction(
           const base = cryptoRandom();
           const ext = (f.name.split(".").pop() || "jpg").toLowerCase();
           const key = `${base}.${ext}`;
-          const path = await storage.upload(buf, key, f.type || "image/jpeg");
-          // generate webp preview (max width 1280)
+
+          // Always upload the original for archival
+          const originalPath = await storage.upload(buf, key, f.type || "image/jpeg");
+
+          // Generate webp thumbnails for display (micro/small/medium)
           let w: number | null = null;
           let h: number | null = null;
-          let previewUrl: string | undefined = undefined;
+          let previewUrl: string | undefined;
+          let displayUrl: string | undefined;
           try {
             const img = sharp(buf).rotate(); // Auto-apply EXIF orientation
             const meta = await img.metadata();
             w = meta.width ?? null;
             h = meta.height ?? null;
-            const resized = await img
-              .clone() // Clone since we already used img for metadata
-              .resize({ width: 1280, withoutEnlargement: true })
-              .webp({ quality: 82 })
-              .toBuffer();
-            const previewKey = `${base}.webp`;
-            const previewPath = await storage.upload(resized, previewKey, "image/webp");
-            previewUrl = storage.getPublicUrl(previewPath);
-          } catch { }
-          return { url: storage.getPublicUrl(path), w, h, previewUrl } as MomentImage & {
-            previewUrl?: string;
-          };
-        } catch {
+
+            const thumbs = await generateThumbnails(buf, { small: 720, medium: 1600, quality: 82 });
+            const [microPath, smallPath, mediumPath] = await Promise.all([
+              storage.upload(thumbs.micro, getThumbnailFilename(key, "micro"), "image/webp"),
+              storage.upload(thumbs.small, getThumbnailFilename(key, "small"), "image/webp"),
+              storage.upload(thumbs.medium, getThumbnailFilename(key, "medium"), "image/webp"),
+            ]);
+
+            previewUrl = storage.getPublicUrl(smallPath);
+            // Use medium webp for display/open; fall back to original
+            displayUrl = storage.getPublicUrl(mediumPath);
+            // Micro is uploaded for potential future use (map/film strip)
+            void microPath;
+          } catch (err) {
+            console.warn("[Moment] Thumbnail generation failed, using original", err);
+          }
+
+          return {
+            url: displayUrl || storage.getPublicUrl(originalPath),
+            w,
+            h,
+            previewUrl: previewUrl || storage.getPublicUrl(originalPath),
+          } as MomentImage;
+        } catch (err) {
+          console.error("[Moment] Image upload failed", err);
           return null;
         }
       })
