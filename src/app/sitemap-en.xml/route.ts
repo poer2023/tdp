@@ -32,7 +32,7 @@ ${posts
       .map(
         (post) => `  <url>
     <loc>${baseUrl}/posts/${post.slug}</loc>
-    <lastmod>${post.updatedAt.toISOString()}</lastmod>
+    <lastmod>${typeof post.updatedAt === "string" ? post.updatedAt : new Date(post.updatedAt).toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>`
