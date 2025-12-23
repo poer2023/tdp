@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -152,6 +152,34 @@ export function ZhiStatsDashboard({
   const avgSteps = Math.round(
     stats.stepsData.entries.reduce((acc: number, curr: { steps: number }) => acc + curr.steps, 0) / (stats.stepsData.entries.length || 1)
   );
+
+  // Aggregate daily contributions into weekly data for "Equalizer" chart
+  const weeklyActivity = useMemo(() => {
+    if (!stats.gitHubContributions) return [];
+
+    const weeks: Record<string, number> = {};
+
+    stats.gitHubContributions.forEach((item) => {
+      const date = new Date(item.date);
+      // Get Monday of the week
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(date.setDate(diff));
+      const key = monday.toISOString().split('T')[0];
+
+      weeks[key] = (weeks[key] || 0) + item.value;
+    });
+
+    return Object.entries(weeks)
+      .map(([date, count]) => ({
+        date,
+        count,
+        // Format for tooltip: "Jan 1"
+        label: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-24); // Show last ~6 months (24 weeks)
+  }, [stats.gitHubContributions]);
 
   return (
     <div className="w-full animate-in fade-in pb-16 duration-700">
@@ -554,18 +582,12 @@ export function ZhiStatsDashboard({
                 )}
               </div>
 
-              {/* Waveform Chart */}
+              {/* Equalizer Chart */}
               <div className="mt-6 h-40 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={stats.gitHubContributions}>
-                    <defs>
-                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
+                  <BarChart data={weeklyActivity} barCategoryGap="20%">
                     <Tooltip
-                      cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }}
+                      cursor={{ fill: "transparent" }}
                       contentStyle={{
                         backgroundColor: '#fff',
                         borderColor: '#e5e7eb',
@@ -573,19 +595,45 @@ export function ZhiStatsDashboard({
                         color: '#374151',
                         fontSize: '12px',
                         boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                        padding: '8px 12px',
                       }}
-                      labelStyle={{ color: '#9ca3af' }}
-                      labelFormatter={(label) => `Date: ${label}`}
+                      itemStyle={{ color: '#15803d', fontWeight: 600 }}
+                      formatter={(value: number) => [`${value} commits`, ""]}
+                      labelFormatter={(label) => {
+                        // Find the item with this date to get the formatted label? 
+                        // Recharts labelFormatter passes the label value (XAxis dataKey). 
+                        // If no XAxis, index is used? 
+                        // Better to use custom content or pass dataKey.
+                        // Let's rely on Payload lookup in content if standard formatter isn't enough.
+                        // But wait, standard Tooltip with BarChart works fine if mapped correctly.
+                        // Let's use custom content to be safe and clean.
+                        return "";
+                      }}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length > 0) {
+                          const data = payload[0].payload;
+                          return (
+                            <div className="rounded-lg border border-stone-100 bg-white px-3 py-2 shadow-lg dark:border-stone-800 dark:bg-stone-800">
+                              <p className="mb-1 text-xs text-stone-500 dark:text-stone-400">Week of {data.label}</p>
+                              <p className="font-mono text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                                {data.count}
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
                     />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#22c55e"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorValue)"
-                    />
-                  </AreaChart>
+                    <Bar
+                      dataKey="count"
+                      fill="#22c55e"
+                      radius={[4, 4, 0, 0]}
+                    >
+                      {weeklyActivity.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fillOpacity={Math.max(0.3, Math.min(1, entry.count / 20))} />
+                      ))}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
