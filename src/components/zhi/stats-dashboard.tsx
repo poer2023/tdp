@@ -186,17 +186,19 @@ export function ZhiStatsDashboard({
       {/* CSS Animations & Isometric Styles */}
       <style>{`
         .iso-container {
-          transform: rotateX(60deg) rotateZ(45deg);
+          transform: rotateX(45deg) rotateZ(45deg);
           transform-style: preserve-3d;
+          width: 280px; /* Force specific width for alignment? */
         }
         .iso-pillar {
           transform-style: preserve-3d;
-          transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           will-change: transform;
         }
         .iso-pillar:hover {
-          transform: translateZ(10px);
+          transform: translateZ(20px);
         }
+        /* TOP Face */
         .iso-pillar::before {
           content: '';
           position: absolute;
@@ -208,6 +210,7 @@ export function ZhiStatsDashboard({
           filter: brightness(1.1);
           transform: translateZ(var(--h));
         }
+        /* RIGHT Face (Side 1) */
         .iso-pillar::after {
           content: '';
           position: absolute;
@@ -220,6 +223,7 @@ export function ZhiStatsDashboard({
           transform: rotateY(90deg);
           transform-origin: left top;
         }
+        /* FRONT Face (Side 2) */
         .iso-pillar span {
            position: absolute;
            top: 100%;
@@ -227,7 +231,7 @@ export function ZhiStatsDashboard({
            width: 100%;
            height: var(--h);
            background: inherit;
-           filter: brightness(0.6);
+           filter: brightness(0.9);
            transform: rotateX(-90deg);
            transform-origin: top left;
         }
@@ -630,23 +634,28 @@ export function ZhiStatsDashboard({
               </div>
 
               {/* Isometric 3D City */}
-              <div className="mt-8 flex h-48 w-full items-center justify-center overflow-visible px-4">
-                <div className="iso-container grid grid-cols-14 gap-1.5 -ml-8">
+              <div className="mt-8 flex h-56 w-full items-center justify-center overflow-visible px-4">
+                <div className="iso-container grid grid-cols-14 gap-[5px] -ml-8">
                   {isometricData.map((day, i) => {
-                    const h = Math.max(2, Math.min(60, day.count * 5));
+                    // Scale: 4px base, up to 80px max. Factor 8.
+                    const h = Math.max(4, Math.min(80, day.count * 8));
                     return (
                       <div
                         key={i}
-                        className="iso-pillar relative h-4 w-4 rounded-sm"
+                        className="iso-pillar relative h-4 w-4 rounded-[1px]"
                         style={{
-                          background: day.count > 0 ? '#22c55e' : '#e5e7eb', // Simple green/gray base
-                          backgroundColor: day.count === 0 ? 'rgba(229, 231, 235, 0.5)' :
+                          zIndex: i, // Ensure sorting order (Top-Left rendered first, covered by Bottom-Right)
+                          background: day.count > 0 ? '#22c55e' : '#e5e7eb',
+                          backgroundColor: day.count === 0 ? 'rgba(229, 231, 235, 1)' : // Solid gray for base? or semi-transparent?
+                            // Let's use solid for solid blocks.
                             day.count > 8 ? '#15803d' :
                               day.count > 3 ? '#22c55e' : '#86efac',
                           '--h': `${h}px`
                         } as React.CSSProperties}
                         title={`${day.date}: ${day.count} commits`}
                       >
+                        {/* Front Face */}
+                        <span></span>
                       </div>
                     )
                   })}
