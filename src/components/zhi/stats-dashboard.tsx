@@ -508,10 +508,10 @@ export function ZhiStatsDashboard({
 
         {/* Card 4.5: Code Frequency (Waveform) */}
         {stats.gitHubContributions && stats.gitHubContributions.length > 0 && (
-          <div className="group col-span-1 min-h-[300px] overflow-hidden rounded-2xl border border-stone-800 bg-[#0d1117] p-6 text-white shadow-2xl transition-all duration-300 hover:shadow-cyan-900/10 md:col-span-2 relative">
+          <div className="group col-span-1 min-h-[300px] overflow-hidden rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md md:col-span-2 relative dark:border-stone-800 dark:bg-stone-900">
             {/* Background Grid */}
             <div
-              className="pointer-events-none absolute inset-0 opacity-10"
+              className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-10"
               style={{
                 backgroundImage: "linear-gradient(#30363d 1px, transparent 1px), linear-gradient(90deg, #30363d 1px, transparent 1px)",
                 backgroundSize: "20px 20px",
@@ -521,12 +521,12 @@ export function ZhiStatsDashboard({
             <div className="relative z-10 flex h-full flex-col justify-between">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-stone-800 p-2 text-white">
+                  <div className="rounded-xl bg-stone-100 p-2 text-stone-500 dark:bg-stone-800 dark:text-stone-300">
                     <GitCommit size={20} />
                   </div>
                   <div>
-                    <h4 className="font-serif text-lg text-white">Code Frequency</h4>
-                    <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-stone-500">
+                    <h4 className="font-serif text-lg text-stone-800 dark:text-stone-100">Code Frequency</h4>
+                    <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-stone-400">
                       <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
                       LIVE ACTIVITY
                     </p>
@@ -537,16 +537,16 @@ export function ZhiStatsDashboard({
                   <div className="flex gap-4">
                     <div className="text-right">
                       <div className="flex items-center justify-end gap-1 text-stone-400">
-                        <Zap size={12} className="text-yellow-500" />
+                        <Zap size={12} className="text-amber-500" />
                         <span className="text-xs">Streak</span>
                       </div>
-                      <span className="font-mono text-xl font-bold text-white">
-                        {stats.gitHubStats.currentStreak}<span className="text-sm text-stone-500">d</span>
+                      <span className="font-mono text-xl font-bold text-stone-800 dark:text-stone-100">
+                        {stats.gitHubStats.currentStreak}<span className="text-sm text-stone-400 ml-0.5">d</span>
                       </span>
                     </div>
                     <div className="text-right">
                       <span className="block text-xs text-stone-400">This Week</span>
-                      <span className="font-mono text-2xl font-bold text-green-400">
+                      <span className="font-mono text-2xl font-bold text-emerald-500">
                         {stats.gitHubStats.commitsWeek}
                       </span>
                     </div>
@@ -560,25 +560,27 @@ export function ZhiStatsDashboard({
                   <AreaChart data={stats.gitHubContributions}>
                     <defs>
                       <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#2ecc71" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#2ecc71" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <Tooltip
-                      cursor={{ stroke: '#30363d', strokeWidth: 1 }}
+                      cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }}
                       contentStyle={{
-                        backgroundColor: '#161b22',
-                        borderColor: '#30363d',
-                        borderRadius: '6px',
-                        color: '#c9d1d9',
-                        fontSize: '12px'
+                        backgroundColor: '#fff',
+                        borderColor: '#e5e7eb',
+                        borderRadius: '8px',
+                        color: '#374151',
+                        fontSize: '12px',
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                       }}
+                      labelStyle={{ color: '#9ca3af' }}
                       labelFormatter={(label) => `Date: ${label}`}
                     />
                     <Area
                       type="monotone"
                       dataKey="value"
-                      stroke="#2ecc71"
+                      stroke="#22c55e"
                       strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#colorValue)"
@@ -590,41 +592,92 @@ export function ZhiStatsDashboard({
           </div>
         )}
 
-        {/* Card 5: Skills */}
-        <div className="group relative col-span-1 overflow-hidden rounded-2xl bg-stone-200 p-6 shadow-sm transition-all duration-300 hover:shadow-md md:col-span-3 dark:bg-stone-900">
-          <div className="absolute right-0 top-0 p-8 opacity-5">
-            <Activity size={120} />
-          </div>
-          <div className="relative z-10 mb-6 flex items-center gap-3">
-            <div className="rounded-xl bg-white p-2 text-stone-500 dark:bg-stone-800 dark:text-stone-300">
+        {/* Card 5: Languages (Donut) */}
+        <div className="group relative col-span-1 overflow-hidden rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="rounded-xl bg-orange-50 p-2 text-orange-500 transition-colors group-hover:bg-orange-100 dark:bg-orange-900/10 dark:text-orange-400 dark:group-hover:bg-orange-900/20">
               <Code size={20} strokeWidth={1.5} />
             </div>
             <div>
-              <h4 className="font-serif text-lg text-stone-900 dark:text-white">
+              <h4 className="font-serif text-lg text-stone-800 dark:text-stone-100">
                 {t("The Output")}
               </h4>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
-                {t("Current Focus Areas")}
+              <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                Languages
               </p>
             </div>
           </div>
-          <div className="relative z-10 grid grid-cols-1 gap-6 md:grid-cols-4">
-            {stats.skillData.map((skill) => (
-              <div key={skill.name}>
-                <div className="mb-2 flex justify-between">
-                  <span className="text-xs font-medium text-stone-700 dark:text-stone-300">
-                    {skill.name}
-                  </span>
-                  <span className="text-xs text-stone-500">{skill.level}%</span>
+
+          <div className="relative h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={stats.skillData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="level"
+                  stroke="none"
+                >
+                  {stats.skillData.map((entry, index) => {
+                    const colors: Record<string, string> = {
+                      "Python": "#3572A5",
+                      "TypeScript": "#3178c6",
+                      "Jupyter Notebook": "#DA5B0B",
+                      "HTML": "#e34c26",
+                      "CSS": "#563d7c",
+                      "JavaScript": "#f1e05a"
+                    };
+                    const color = colors[entry.name] || "#a8a29e";
+                    return <Cell key={`cell-${index}`} fill={color} />;
+                  })}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "none",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    fontSize: "12px",
+                  }}
+                  itemStyle={{ color: "#333" }}
+                  formatter={(value: number) => [`${value}%`]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+
+            {/* Center Text */}
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-3xl font-bold text-stone-800 dark:text-stone-100">
+                {stats.skillData.length}
+              </span>
+              <span className="text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                Langs
+              </span>
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="mt-2 flex flex-wrap justify-center gap-3">
+            {stats.skillData.map((skill) => {
+              const colors: Record<string, string> = {
+                "Python": "#3572A5",
+                "TypeScript": "#3178c6",
+                "Jupyter Notebook": "#DA5B0B",
+                "HTML": "#e34c26",
+                "CSS": "#563d7c",
+                "JavaScript": "#f1e05a"
+              };
+              const color = colors[skill.name] || "#a8a29e";
+              return (
+                <div key={skill.name} className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }}></span>
+                  <span className="text-xs font-medium text-stone-600 dark:text-stone-400">{skill.name}</span>
+                  <span className="text-[10px] text-stone-400">({skill.level}%)</span>
                 </div>
-                <div className="h-1 w-full rounded-full bg-stone-300 dark:bg-stone-800">
-                  <div
-                    className="h-1 rounded-full bg-stone-600 transition-all duration-1000 ease-out group-hover:bg-stone-900 dark:bg-stone-400 dark:group-hover:bg-white"
-                    style={{ width: `${skill.level}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
