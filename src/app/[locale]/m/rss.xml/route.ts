@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { listMomentsForFeed } from "@/lib/moments";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+// Align with Cache-Control header (600s = 10 minutes)
+export const revalidate = 600;
 
 export async function GET() {
-  const items = await prisma.moment.findMany({
-    where: { status: "PUBLISHED", visibility: "PUBLIC" },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    select: { id: true, slug: true, content: true, createdAt: true },
-  });
+  const items = await listMomentsForFeed(50);
   const site = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const feed = `<?xml version="1.0" encoding="UTF-8"?>
   <rss version="2.0"><channel>
@@ -18,13 +14,13 @@ export async function GET() {
   <link>${site}/m</link>
   <description>Recent moments</description>
   ${items
-    .map((i) => {
-      const url = `${site}/m/${i.slug || i.id}`;
-      return `<item><title>${escapeXml(i.content.slice(0, 60))}</title><link>${url}</link><guid>${url}</guid><pubDate>${new Date(
-        i.createdAt
-      ).toUTCString()}</pubDate><description>${escapeXml(i.content)}</description></item>`;
-    })
-    .join("")}
+      .map((i) => {
+        const url = `${site}/m/${i.slug || i.id}`;
+        return `<item><title>${escapeXml(i.content.slice(0, 60))}</title><link>${url}</link><guid>${url}</guid><pubDate>${new Date(
+          i.createdAt
+        ).toUTCString()}</pubDate><description>${escapeXml(i.content)}</description></item>`;
+      })
+      .join("")}
   </channel></rss>`;
   return new NextResponse(feed, {
     headers: {

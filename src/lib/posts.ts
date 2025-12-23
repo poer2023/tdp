@@ -1,7 +1,11 @@
 import { PostLocale, PostStatus, type Prisma } from "@prisma/client";
+import { unstable_cache, revalidateTag } from "next/cache";
 import prisma from "@/lib/prisma";
 import { shouldSkipDb, withDbFallback } from "@/lib/utils/db-fallback";
 import { toPinyinString } from "@/lib/pinyin";
+
+// Cache tags for invalidation
+const POSTS_PUBLIC_TAG = "posts:public";
 
 export type PublicPost = {
   id: string;
@@ -77,9 +81,8 @@ export async function listPublishedPosts(options?: { limit?: number }): Promise<
   );
 }
 
-export async function listPublishedPostSummaries(options?: {
-  limit?: number;
-}): Promise<PublicPostSummary[]> {
+// Internal function to fetch post summaries (used by cached version)
+async function _fetchPublishedPostSummaries(limit?: number): Promise<PublicPostSummary[]> {
   return withDbFallback(
     async () => {
       const posts = await prisma.post.findMany({
@@ -100,7 +103,7 @@ export async function listPublishedPostSummaries(options?: {
           author: { select: { id: true, name: true, image: true } },
         },
         orderBy: { publishedAt: "desc" },
-        ...(options?.limit ? { take: options.limit } : {}),
+        ...(limit ? { take: limit } : {}),
       });
 
       return posts.map((post) => ({
@@ -118,16 +121,63 @@ export async function listPublishedPostSummaries(options?: {
         viewCount: post.viewCount || 0,
         author: post.author
           ? {
-              id: post.author.id,
-              name: post.author.name,
-              image: post.author.image,
-            }
+            id: post.author.id,
+            name: post.author.name,
+            image: post.author.image,
+          }
           : null,
       }));
     },
     async () => []
   );
 }
+
+// Cached version with 60s TTL
+const getCachedPublishedPostSummaries = unstable_cache(
+  _fetchPublishedPostSummaries,
+  ["posts-published-summaries"],
+  { revalidate: 60, tags: [POSTS_PUBLIC_TAG] }
+);
+
+export async function listPublishedPostSummaries(options?: {
+  limit?: number;
+}): Promise<PublicPostSummary[]> {
+  return getCachedPublishedPostSummaries(options?.limit);
+}
+
+// Lightweight type for sitemap routes
+export type PostSitemapItem = {
+  slug: string;
+  updatedAt: Date;
+};
+
+// Internal function for sitemap items by locale
+async function _fetchPostsForSitemap(localeCode: "EN" | "ZH"): Promise<PostSitemapItem[]> {
+  const posts = await prisma.post.findMany({
+    where: {
+      locale: localeCode,
+      status: PostStatus.PUBLISHED,
+    },
+    select: { slug: true, updatedAt: true },
+    orderBy: { publishedAt: "desc" },
+  });
+  return posts;
+}
+
+// Cached version with 3600s TTL (matches Cache-Control header)
+const getCachedPostsForSitemap = unstable_cache(
+  _fetchPostsForSitemap,
+  ["posts-for-sitemap"],
+  { revalidate: 3600, tags: [POSTS_PUBLIC_TAG] }
+);
+
+/**
+ * Get cached posts for sitemap generation by locale
+ */
+export async function listPostsForSitemap(locale: "EN" | "ZH"): Promise<PostSitemapItem[]> {
+  return getCachedPostsForSitemap(locale);
+}
+
 
 export async function listAllPosts(): Promise<PublicPost[]> {
   return withDbFallback(
@@ -224,6 +274,8 @@ export async function createPost(input: CreatePostInput): Promise<PublicPost> {
       },
       include: { author: true },
     });
+    // Invalidate public posts cache
+    revalidateTag(POSTS_PUBLIC_TAG, "max");
     return toPublicPost(post);
   } catch (_e) {
     throw new Error("数据库不可用，无法创建文章");
@@ -258,6 +310,8 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Pu
       },
       include: { author: true },
     });
+    // Invalidate public posts cache
+    revalidateTag(POSTS_PUBLIC_TAG, "max");
     return toPublicPost(post);
   } catch (_e) {
     throw new Error("数据库不可用，无法更新文章");
@@ -267,6 +321,8 @@ export async function updatePost(id: string, input: UpdatePostInput): Promise<Pu
 export async function deletePost(id: string): Promise<void> {
   try {
     await prisma.post.delete({ where: { id } });
+    // Invalidate public posts cache so deleted post disappears from lists
+    revalidateTag(POSTS_PUBLIC_TAG, "max");
   } catch (_e) {
     throw new Error("数据库不可用，无法删除文章");
   }
@@ -352,10 +408,10 @@ function toPublicPost(post: PostWithAuthor): PublicPost {
     viewCount: post.viewCount || 0,
     author: post.author
       ? {
-          id: post.author.id,
-          name: post.author.name,
-          image: post.author.image,
-        }
+        id: post.author.id,
+        name: post.author.name,
+        image: post.author.image,
+      }
       : null,
   };
 }
@@ -414,10 +470,11 @@ export async function getRecentActivities(limit = 4): Promise<RecentActivity[]> 
 }
 
 /**
- * 将 PublicPost 转换为 Blog8 组件所需的格式
+ * 将 PublicPost 或 PublicPostSummary 转换为 Blog8 组件所需的格式
+ * Both types work since this function only uses fields present in PublicPostSummary
  */
 export function toBlog8Post(
-  post: PublicPost,
+  post: PublicPost | PublicPostSummary,
   locale: string = "en"
 ): {
   id: string;

@@ -1,7 +1,7 @@
 import LocalizedGalleryMapPage from "../../[locale]/gallery/map/page";
 
-// Match the localized page's ISR settings (no revalidation)
-export const revalidate = 0;
+// Match the localized page's ISR settings (5 min revalidation)
+export const revalidate = 300;
 
 type PageProps = {
   params?: Promise<Record<string, never>>;

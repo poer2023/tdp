@@ -1,21 +1,19 @@
 import { notFound } from "next/navigation";
-import { auth } from "@/auth";
 import { listPublishedPostSummaries } from "@/lib/posts";
 import { listMoments } from "@/lib/moments";
 import { listHeroImages } from "@/lib/hero";
+import { listCuratedItems } from "@/lib/curated";
 import { ZhiHomePage } from "@/components/zhi";
 import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 import type { FeedItem, FeedPost, FeedMoment, FeedCurated } from "@/components/zhi";
 import type { HeroImageItem } from "@/components/zhi/hero";
 import { getZhiProfile } from "@/lib/zhi-profile";
-import prisma from "@/lib/prisma";
 
-// Force dynamic rendering in CI (no DB available); still node runtime.
+// ISR: Revalidate every 60 seconds for fresh content with CDN caching
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const dynamic = "auto";
+export const revalidate = 60;
 export const dynamicParams = false;
-export const dynamicIO = true;
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -29,18 +27,14 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     notFound();
   }
 
-  const session = await auth();
-  const viewerId = session?.user?.id ?? null;
-
-  // Fetch data for homepage
+  // ISR: Fetch public data only (no auth, no viewerId)
+  // Client-side will hydrate user's like states via useMomentLikes hook
+  // All data fetching uses unstable_cache for reduced DB load during ISR rebuilds
   const [posts, moments, heroImageUrls, curatedItems] = await Promise.all([
     listPublishedPostSummaries({ limit: 20 }),
-    listMoments({ limit: 12, visibility: "PUBLIC", viewerId }),
+    listMoments({ limit: 12, visibility: "PUBLIC" }),
     listHeroImages(),
-    prisma.shareItem.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 12,
-    }),
+    listCuratedItems(12),
   ]);
 
   // Transform posts to FeedPost format
@@ -114,9 +108,9 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       id: item.id,
       type: "curated" as const,
       title: item.title,
-      description: item.description,
+      description: item.description ?? "",
       url: item.url,
-      domain: item.domain,
+      domain: item.domain ?? "",
       imageUrl: item.imageUrl || undefined,
       date: dateStr,
       tags: item.tags || [],

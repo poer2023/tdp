@@ -1,11 +1,10 @@
 import LocalizedHomePage from "./[locale]/page";
 
-// Keep root page config aligned with localized page; force dynamic to avoid build-time DB
+// ISR: Revalidate every 60 seconds for fresh content with CDN caching
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const dynamic = "auto";
+export const revalidate = 60;
 export const dynamicParams = false;
-export const dynamicIO = true;
 
 // Root page renders English by default (prefix-free)
 export default function RootPage() {

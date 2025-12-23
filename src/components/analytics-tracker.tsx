@@ -2,26 +2,33 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import crypto from "crypto-js";
+
+// Use native Web Crypto API for fingerprint generation (lighter than crypto-js)
+async function sha256(message: string): Promise<string> {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 export function AnalyticsTracker({ locale }: { locale: string }) {
   const pathname = usePathname();
 
   useEffect(() => {
     // Generate browser fingerprint (privacy-friendly, no IP storage)
-    const generateFingerprint = () => {
+    const generateFingerprint = async (): Promise<string> => {
       const userAgent = navigator.userAgent;
       const screenResolution = `${screen.width}x${screen.height}`;
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const language = navigator.language;
 
       const fingerprintData = `${userAgent}|${screenResolution}|${timezone}|${language}`;
-      return crypto.SHA256(fingerprintData).toString();
+      return sha256(fingerprintData);
     };
 
     const trackPageView = async () => {
       try {
-        const fingerprint = generateFingerprint();
+        const fingerprint = await generateFingerprint();
         const referer = document.referrer || "";
 
         const data = JSON.stringify({
@@ -42,7 +49,7 @@ export function AnalyticsTracker({ locale }: { locale: string }) {
             headers: { "Content-Type": "application/json" },
             body: data,
             keepalive: true,
-          }).catch(() => {}); // Silent failure
+          }).catch(() => { }); // Silent failure
         }
       } catch (error) {
         // Silent failure - don't break page functionality
@@ -56,3 +63,4 @@ export function AnalyticsTracker({ locale }: { locale: string }) {
 
   return null; // No UI, just tracking
 }
+

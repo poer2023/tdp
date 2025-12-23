@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { auth } from "@/auth";
 import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { HERO_IMAGES_TAG } from "@/lib/hero";
 
 export const runtime = "nodejs";
 
@@ -48,6 +50,8 @@ export async function POST(request: NextRequest) {
         active: body.active === false ? false : true,
       },
     });
+    // Invalidate hero images cache so homepage updates immediately
+    revalidateTag(HERO_IMAGES_TAG, "max");
     return NextResponse.json({ image }, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {

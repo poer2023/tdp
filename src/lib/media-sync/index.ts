@@ -3,6 +3,7 @@
  * Unified interface for syncing media watch history from multiple platforms
  */
 
+import { revalidateTag } from "next/cache";
 import prismaDefault, { prisma as prismaNamed } from "@/lib/prisma";
 import type { PrismaClient } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
@@ -13,6 +14,9 @@ import { syncGitHub, type GitHubConfig } from "./github";
 import { decryptCredential, isEncrypted } from "../encryption";
 import { fetchBilibiliIncremental } from "./bilibili-incremental";
 import { getExistingExternalIds } from "./sync-state";
+
+// Dashboard cache tag for instant invalidation after sync
+const DASHBOARD_TAG = "dashboard";
 
 // Re-export GitHub types and functions for external use
 export type { GitHubConfig };
@@ -189,6 +193,11 @@ export async function syncBilibili(
       `[${platform}] Sync completed: ${successCount} new, ${itemsExisting} existing, ${failedCount} failed in ${duration}ms`
     );
 
+    // Invalidate dashboard cache so new data appears immediately
+    if (successCount > 0) {
+      revalidateTag(DASHBOARD_TAG, "max");
+    }
+
     return {
       platform: platform.toLowerCase(),
       success: true,
@@ -352,6 +361,11 @@ export async function syncDouban(config: DoubanConfig, credentialId?: string): P
       `[${platform}] Sync completed: ${successCount} new, ${itemsExisting} existing, ${failedCount} failed in ${duration}ms`
     );
 
+    // Invalidate dashboard cache so new data appears immediately
+    if (successCount > 0) {
+      revalidateTag(DASHBOARD_TAG, "max");
+    }
+
     return {
       platform: platform.toLowerCase(),
       success: true,
@@ -514,6 +528,11 @@ export async function syncSteam(config: SteamConfig, credentialId?: string): Pro
     console.log(
       `[${platform}] Sync completed: ${successCount} new, ${itemsExisting} existing, ${failedCount} failed in ${duration}ms`
     );
+
+    // Invalidate dashboard cache so new data appears immediately
+    if (successCount > 0) {
+      revalidateTag(DASHBOARD_TAG, "max");
+    }
 
     return {
       platform: platform.toLowerCase(),

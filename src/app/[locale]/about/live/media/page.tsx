@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { MediaDetailPage } from "@/components/about/media-detail-page";
+import { SkeletonGrid } from "@/components/about/skeleton-card";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -17,11 +19,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+function MediaLoadingFallback() {
+  return (
+    <div className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:px-12 md:py-16">
+      <div className="space-y-8">
+        <SkeletonGrid count={3} />
+        <SkeletonGrid count={5} />
+      </div>
+    </div>
+  );
+}
+
 export default async function MediaPage({ params }: PageProps) {
   const { locale } = await params;
   const l = locale === "zh" ? "zh" : "en";
 
-  return <MediaDetailPage locale={l} />;
+  return (
+    <Suspense fallback={<MediaLoadingFallback />}>
+      <MediaDetailPage locale={l} />
+    </Suspense>
+  );
 }
 
 export function generateStaticParams() {

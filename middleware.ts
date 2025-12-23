@@ -112,20 +112,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const res = NextResponse.next({
+  // Note: We no longer set x-locale cookie to preserve CDN caching.
+  // Locale is derived from the URL path (x-locale header is still set for server components).
+  return NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
-  try {
-    res.cookies.set("x-locale", currentLocale, {
-      path: "/",
-      httpOnly: false,
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
-  } catch { }
-  return res;
 }
 
 export const config = {

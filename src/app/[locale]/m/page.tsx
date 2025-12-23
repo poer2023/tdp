@@ -1,32 +1,37 @@
+import { Suspense } from "react";
 import { listMoments } from "@/lib/moments";
-import { auth } from "@/auth";
 import { ParticlesMomentsContent } from "./particles-moments-content";
 
+// ISR: Revalidate every 5 minutes - moments are read-heavy
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const dynamic = "auto";
+export const revalidate = 300;
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
 
+// Loading fallback for Suspense boundary
+function MomentsLoadingFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#F5F7FB] dark:bg-[#0B1220]">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-stone-200 border-t-stone-600" />
+    </div>
+  );
+}
+
 export default async function LocalizedMomentsPage({ params }: Props) {
   const { locale } = await params;
   const l = locale === "zh" ? "zh" : "en";
 
-  let session = null;
-  let isAdmin = false;
-  try {
-    session = await auth();
-    isAdmin = (session?.user as { role?: string } | undefined)?.role === "ADMIN";
-  } catch (error) {
-    // 在开发环境忽略认证错误
-    if (process.env.NODE_ENV === "development") {
-      console.warn("Auth error (ignored in development):", error);
-    }
-  }
-
+  // ISR: Fetch public moments only
+  // Admin state is determined client-side via useSession
   const moments = await listMoments({ limit: 24, tag: null, q: null });
 
-  return <ParticlesMomentsContent moments={moments} locale={l} isAdmin={isAdmin} />;
+  // Wrap in Suspense because ParticlesMomentsContent uses components with useSearchParams
+  return (
+    <Suspense fallback={<MomentsLoadingFallback />}>
+      <ParticlesMomentsContent moments={moments} locale={l} isAdmin={false} />
+    </Suspense>
+  );
 }

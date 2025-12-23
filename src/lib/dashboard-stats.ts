@@ -1,4 +1,8 @@
 import prisma from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
+
+// Cache tag for dashboard stats invalidation
+const DASHBOARD_TAG = "dashboard";
 
 /**
  * Dashboard Stats Data structure for ZhiStatsDashboard
@@ -20,6 +24,7 @@ export interface DashboardStatsData {
 
 /**
  * Get the latest game being played
+ * Optimized to use count instead of fetching all achievements
  */
 async function getLatestGame(): Promise<{ name: string; progress: number } | undefined> {
     try {
@@ -33,13 +38,18 @@ async function getLatestGame(): Promise<{ name: string; progress: number } | und
         const game = latestSession.game;
         let progress = 50;
 
-        const achievements = await prisma.gameAchievement.findMany({
-            where: { gameId: game.id },
-        });
+        // Use count aggregation instead of fetching all achievements
+        const [totalCount, unlockedCount] = await Promise.all([
+            prisma.gameAchievement.count({
+                where: { gameId: game.id },
+            }),
+            prisma.gameAchievement.count({
+                where: { gameId: game.id, isUnlocked: true },
+            }),
+        ]);
 
-        if (achievements.length > 0) {
-            const unlocked = achievements.filter((a) => a.isUnlocked).length;
-            progress = Math.round((unlocked / achievements.length) * 100);
+        if (totalCount > 0) {
+            progress = Math.round((unlockedCount / totalCount) * 100);
         }
 
         return {
@@ -245,10 +255,9 @@ async function getStepsDataFromDB(): Promise<{
 }
 
 /**
- * Fetch all dashboard stats from the database
- * Can be called from Server Components directly
+ * Fetch all dashboard stats from the database (internal, uncached)
  */
-export async function getDashboardStats(): Promise<DashboardStatsData> {
+async function _fetchDashboardStats(): Promise<DashboardStatsData> {
     try {
         const now = new Date();
         const startOfYear = new Date(now.getFullYear(), 0, 1);
@@ -319,4 +328,19 @@ export async function getDashboardStats(): Promise<DashboardStatsData> {
             currentGame: undefined,
         };
     }
+}
+
+// Cached version with 300s (5 min) TTL
+const getCachedDashboardStats = unstable_cache(
+    _fetchDashboardStats,
+    ["dashboard-stats"],
+    { revalidate: 300, tags: [DASHBOARD_TAG] }
+);
+
+/**
+ * Get dashboard stats with caching (300s TTL)
+ * Can be called from Server Components directly
+ */
+export async function getDashboardStats(): Promise<DashboardStatsData> {
+    return getCachedDashboardStats();
 }

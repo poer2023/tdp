@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
-import { listPublishedPosts, toBlog8Post } from "@/lib/posts";
+import { listPublishedPostSummaries, toBlog8Post } from "@/lib/posts";
 import { Blog8 } from "@/components/ui/blog8";
 
 // Querying Prisma – lock runtime to Node.js
 export const runtime = "nodejs";
+// ISR: Revalidate every 60 seconds
+export const revalidate = 60;
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -21,8 +23,8 @@ export default async function LocalizedPostsPage({ params }: PageProps) {
   const l = locale === "zh" ? "zh" : "en";
   const isZh = l === "zh";
 
-  // Fetch all published posts via shared lib (supports E2E fallback)
-  const allPosts = await listPublishedPosts();
+  // Fetch all published posts via cached function (60s TTL)
+  const allPosts = await listPublishedPostSummaries();
 
   // Convert posts to Blog8 format
   const blog8Posts = allPosts.map((post) => toBlog8Post(post, l));

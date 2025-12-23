@@ -1,4 +1,4 @@
-# TDP 博客与相册平台（Next.js 15 + React 19）
+# TDP - 个人博客与生活仪表盘平台
 
 [![CI Status](https://github.com/poer2023/tdp/workflows/CI%20Critical%20Path/badge.svg)](https://github.com/poer2023/tdp/actions)
 [![Unit Tests](https://img.shields.io/badge/unit%20tests-passing-brightgreen)](https://github.com/poer2023/tdp/actions)
@@ -6,7 +6,63 @@
 [![E2E Tests](https://img.shields.io/badge/e2e%20tests-critical%20path-brightgreen)](https://github.com/poer2023/tdp/actions)
 [![Coverage](https://img.shields.io/badge/coverage-75%25-green)](https://github.com/poer2023/tdp/actions)
 
-一个基于 Next.js 15 的全栈博客/相册项目，内置文章管理、图片上传、Google / 邮箱验证码登录与后台管理，支持 Docker 一键部署与 PostgreSQL 持久化存储。
+一个基于 Next.js 16 + React 19 的全栈个人站点，集成博客、相册、动态、生活数据仪表盘等功能，支持多平台数据同步与 Docker 一键部署。
+
+## ✨ 核心功能
+
+### 📝 内容管理
+
+- **博客系统**：支持草稿/发布、Markdown 正文、封面图、标签、多语言翻译配对
+- **相册管理**：支持 EXIF 解析、地图定位、Live Photo、多种分类（原创/转发/AI）
+- **动态 (Moments)**：类微博短内容，支持评论、点赞、可见性设置、RSS/JSON Feed
+- **精选内容**：策展式内容聚合，支持自定义分类
+- **项目展示**：作品集页面，展示个人项目与技术栈
+
+### 🌐 多语言支持 (i18n)
+
+- 英文默认 (`/`)、中文支持 (`/zh`)
+- 自动 pinyin slug 转换
+- 301 重定向旧链接
+- 双语 sitemap、hreflang 交叉引用
+
+### 📊 生活数据仪表盘 (About Live)
+
+实时同步并展示个人生活数据：
+
+| 模块 | 数据来源 | 功能 |
+|------|----------|------|
+| **开发** | GitHub | 贡献热力图、提交统计、活跃仓库、语言分布 |
+| **游戏** | Steam | 游戏时长追踪、成就进度、每日统计 |
+| **阅读** | 豆瓣 | 在读/已读书籍、阅读进度 |
+| **影视** | Bilibili / Jellyfin | 观看历史、追剧进度 |
+| **财务** | 内置 | 订阅管理、月度支出统计 |
+| **社交** | Bilibili | 动态互动数据 |
+| **基建** | Uptime Kuma | 服务器状态监控、可用性统计 |
+
+### 👥 社交功能
+
+- **好友系统**：私密动态分享、好友专属内容
+- **点赞互动**：文章/动态无需登录即可点赞
+- **全站搜索**：支持文章、相册、动态的全文检索
+
+### 🔐 认证与权限
+
+- NextAuth 5 认证系统
+- Google OAuth + 邮箱验证码登录
+- 管理员白名单控制
+- 基于角色的访问控制 (ADMIN/AUTHOR/READER)
+
+### 🛠 后台管理
+
+功能完善的管理面板：
+
+- **内容管理**：文章、相册、动态、项目、精选内容的 CRUD
+- **数据同步**：手动/自动同步外部平台数据，支持增量同步
+- **凭据管理**：安全存储 API Key、Cookie 等凭据（AES 加密）
+- **存储管理**：支持本地存储和 S3 兼容对象存储
+- **备份恢复**：数据库备份、配置导出/导入
+- **分析统计**：访问量、设备分布、页面热度
+- **AI 诊断日志**：同步错误的 AI 辅助诊断
 
 ## 🚀 快速开始
 
@@ -25,7 +81,7 @@ npm run setup:local
 
 - ✅ 检查 Node.js 版本 (需要 v22+)
 - ✅ 创建并引导填写 `.env.local`
-- ✅ 安装所有依赖 (`npm ci`)
+- ✅ 安装所有依赖 (`pnpm install`)
 - ✅ 生成 Prisma Client
 - ✅ 测试数据库连接
 - ✅ 同步数据库 Schema
@@ -53,548 +109,235 @@ npm run test             # 运行单元测试
 npm run test:e2e         # 运行 E2E 测试
 ```
 
-### 跨机器开发
+## 📋 技术栈
 
-如果你在多台机器上开发,参考以下文档确保环境一致:
+| 层级 | 技术选型 |
+|------|----------|
+| **框架** | Next.js 16、React 19、App Router、Server Actions |
+| **认证** | NextAuth 5、Prisma Adapter |
+| **数据库** | PostgreSQL、Prisma ORM |
+| **样式** | Tailwind CSS v4 |
+| **UI 组件** | Radix UI、Lucide Icons、Framer Motion |
+| **图表** | Recharts |
+| **地图** | Leaflet + React Leaflet |
+| **测试** | Vitest、Testing Library、Playwright |
+| **部署** | Docker 多阶段构建、docker-compose |
 
-- [环境变量设置指南](./docs/ENVIRONMENT_SETUP.md) - 详细的环境变量配置说明
-- [跨机器开发指南](./docs/CROSS_MACHINE_SETUP.md) - 多机器环境同步流程
+## ⚙️ 环境配置
 
-## 特性
-
-### 核心功能
-
-- **多语言支持 (i18n)**：英文默认 (`/`)、中文支持 (`/zh`)，自动 pinyin slug 转换，301 重定向旧链接
-- **文章管理**：草稿/发布、Markdown 正文、封面图、标签、翻译配对 (groupId)
-- **用户互动**：无需登录的点赞系统
-- **内容运营**：Markdown 导入/导出 (YAML frontmatter)、双语 sitemap
-- **SEO 优化**：hreflang 交叉引用、JSON-LD 结构化数据、Open Graph 元标签
-- **相册管理**：本地上传到 `public/uploads`，可选关联文章
-- **身份认证**：NextAuth (Google OAuth + 邮箱验证码登录)，管理员通过白名单控制
-- **数据库**：Prisma + PostgreSQL，生产/本地统一迁移流程
-- **路由保护**：`/admin` 需登录访问
-- **工程化**：ESLint、Prettier、Vitest 单测、Playwright E2E、CI 构建
-
-## 技术栈
-
-- 应用：Next.js 15、React 19、App Router、Server Actions
-- 认证：NextAuth、Prisma Adapter
-- 数据：Prisma ORM、PostgreSQL（`provider = postgresql`）
-- 样式：Tailwind CSS（v4 PostCSS 插件）
-- 测试：Vitest、@testing-library、Playwright
-- 部署：Dockerfile 多阶段构建、docker-compose 编排
-
-## 本地开发（推荐）
-
-1. 安装依赖
-
-```bash
-npm ci
-```
-
-2. 配置环境变量（根目录新建 `.env`）
+### 必需环境变量
 
 ```env
-# PostgreSQL 连接串（本地或容器）
-DATABASE_URL="postgresql://tdp:tdp_password@localhost:5432/tdp?schema=public"
+# PostgreSQL 连接串
+DATABASE_URL="postgresql://user:password@localhost:5432/tdp?schema=public"
 
-# NextAuth 基础配置
+# NextAuth 配置
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="请填入长度>=32的随机字符串"
 FRIEND_JWT_SECRET="请填入长度>=32的随机字符串"
 
-# Google OAuth 凭据（用于 OAuth 登录，可选但推荐）
-GOOGLE_CLIENT_ID="你的 Google Client ID"
-GOOGLE_CLIENT_SECRET="你的 Google Client Secret"
+# 管理员邮箱白名单
+ADMIN_EMAILS="admin@example.com"
+```
 
-# 邮箱验证码登录配置（启用 Email Provider 必需）
+### 可选功能配置
+
+```env
+# Google OAuth（推荐）
+GOOGLE_CLIENT_ID="your-client-id"
+GOOGLE_CLIENT_SECRET="your-client-secret"
+
+# 邮箱验证码登录
 EMAIL_FROM="noreply@example.com"
 SMTP_HOST="smtp.example.com"
 SMTP_PORT="587"
 SMTP_USER="your-smtp-user"
 SMTP_PASS="your-smtp-password"
-SMTP_SECURE="false"             # 465 使用 true
-VERIFICATION_CODE_LENGTH="6"
-VERIFICATION_CODE_EXPIRY_MINUTES="10"
-ADMIN_EMAILS="admin@example.com,ops@example.com"
 
-# 上传大小限制（MB）
-MAX_UPLOAD_SIZE_MB=8
+# 凭据加密密钥（32字节 hex）
+CREDENTIAL_ENCRYPTION_KEY="your-64-char-hex-key"
+
+# S3 对象存储
+S3_ENDPOINT="https://s3.example.com"
+S3_ACCESS_KEY="your-access-key"
+S3_SECRET_KEY="your-secret-key"
+S3_BUCKET="tdp-uploads"
+
+# 外部服务 API
+STEAM_API_KEY="your-steam-api-key"
+GITHUB_TOKEN="your-github-token"
+UPTIME_KUMA_URL="https://uptime.example.com"
+UPTIME_KUMA_API_KEY="your-api-key"
 ```
 
-3. 初始化数据库（只需首次或模型变更后）
+### 功能开关
 
-```bash
-npm run db:migrate
+所有功能默认启用，可通过环境变量关闭：
+
+```env
+FEATURE_ADMIN_CREDENTIALS=off    # 凭据管理
+FEATURE_ADMIN_DASHBOARD=off      # 仪表盘统计
+FEATURE_ADMIN_ANALYTICS=off      # 分析报表
+FEATURE_ADMIN_GALLERY=off        # 相册管理
+FEATURE_ADMIN_POSTS=off          # 文章管理
+FEATURE_ADMIN_SYNC=off           # 同步控制
+FEATURE_ADMIN_EXPORT=off         # 内容导出
+FEATURE_GALLERY_INSIGHTS=off     # 相册分析
 ```
 
-4. 启动开发服务器
+## 🐳 Docker 部署
 
 ```bash
-npm run dev
-# 打开 http://localhost:3000
-```
+# 1. 准备环境变量文件
+cp .env.example .env
+# 编辑 .env 填入配置
 
-提示：管理员角色由 `ADMIN_EMAILS` 白名单控制；未列入白名单的账号（无论 Google 或邮箱登录）都会以 READER 角色进入系统。
-
-### 邮箱验证码登录说明
-
-1. 确认上文 SMTP 相关环境变量已经配置，且 `NEXTAUTH_URL` 指向对外可访问的地址。
-2. 用户在登录页选择“使用邮箱登录”，输入邮箱后会收到 6 位验证码与兜底登录链接。
-3. 验证码 10 分钟有效（可通过 `VERIFICATION_CODE_EXPIRY_MINUTES` 调整），系统会对邮箱/IP 做限流（默认 15 分钟内每邮箱 5 次、每 IP 20 次）。
-4. 成功登录后若邮箱未在 `ADMIN_EMAILS` 中，账号会以 READER 角色创建，可在后台调整权限。
-
-## 使用 Docker 启动
-
-如需快速启动数据库与应用，可使用 docker-compose：
-
-```bash
-# 1) 准备环境变量文件（根目录 .env）
-#   参考上文“本地开发”的 .env 字段；
-#   若使用 compose 默认的 Postgres 服务，可将 DATABASE_URL 设置为：
-#   postgresql://tdp:tdp_password@postgres:5432/tdp?schema=public
-
-# 2) 构建并启动
+# 2. 构建并启动
 docker compose up -d --build
 
-# 3) 访问应用
+# 3. 访问应用
 open http://localhost:3000
 ```
 
 说明：
 
-- 数据库数据保存在命名卷 `postgres-data`，图片上传目录映射到宿主机 `./public/uploads`。
-- 容器启动脚本会自动执行数据库迁移（见 `docker/entrypoint.sh`）。
+- 数据库数据保存在命名卷 `postgres-data`
+- 上传文件可映射到宿主机 `./public/uploads`
+- 容器启动时自动执行数据库迁移
 
-## 脚本命令
+## 🧪 测试策略
 
-### 开发与构建
-
-- 开发：`npm run dev`
-- 构建：`npm run build`
-- 启动：`npm run start`
-- 代码规范：`npm run lint`、`npm run format`、`npm run type-check`
-
-### 数据库
-
-- 迁移：`npm run db:migrate`
-- 生成客户端：`npm run db:generate`
-- 可视化管理：`npm run db:studio`
-
-### 测试
-
-- **单元测试**：`npm run test`、`npm run test:run`、`npm run test:coverage`
-- **集成测试**：`npm run test:integration`、`npm run test:integration:watch`
-- **E2E 测试**：
-  - 全量测试：`npm run test:e2e` (314 tests)
-  - 关键路径：`npm run test:e2e:critical` (60-80 tests)
-  - 详细指南：见 [docs/E2E_TESTING_GUIDE.md](docs/E2E_TESTING_GUIDE.md)
-- **所有测试**：`npm run test:all` - 运行单元 + 集成 + E2E关键路径
-- **i18n 功能测试**：
-  - 重定向测试：`npx tsx scripts/test-redirect.ts`
-  - 点赞功能测试：`npx tsx scripts/test-likes.ts`
-  - 导出场景测试：`npx tsx scripts/test-export-scenarios.ts`
-  - 导入场景测试：`npx tsx scripts/test-import-scenarios.ts`
-  - SEO Rich Results 测试：`npx tsx scripts/test-seo-rich-results.ts`
-
-## 模块化开发工作流
-
-- 新功能默认挂在 `FEATURE_*` 环境变量上，通过 `FeatureToggle` 组件或 `features.get()` 控制上线范围，必要时可即时关闭。
-- 管理端的独立功能通过专用路由目录和 `next/dynamic` 懒加载渲染，配合 Error Boundary 限制故障影响面。
-- 服务端查询和外部依赖在失败时需返回兜底数据（示例：`E2E_SKIP_DB`），避免 Prisma 与第三方抛错导致整页崩溃。
-- 开发阶段建议执行“增量测试”组合：`npm run lint`、`npm run type-check`、相关模块的 Vitest/Playwright 脚本；CI 主流程再调度全量集合。
-- 详尽的实施手册、代码片段及回滚策略见 [docs/modular-development-playbook.md](docs/modular-development-playbook.md)。
-
-### 部署
-
-- 部署前检查：`./scripts/deploy-checklist.sh`
-
-## 测试策略 | Testing Strategy
-
-### 测试金字塔 | Test Pyramid
-
-我们遵循行业标准的测试金字塔方法：
+### 测试金字塔
 
 ```
        /\
-      /E2E\      10% - 关键用户旅程 (8-10 files)
+      /E2E\      10% - 关键用户旅程
      /------\
-    / Integration \  20% - API + DB + Services (10-15 files)
-   /----------\
-  /   Unit Tests  \  70% - 业务逻辑 + 工具函数 (30+ files)
- /--------------\
+    /Integration\  20% - API + DB + Services
+   /------------\
+  /  Unit Tests  \  70% - 业务逻辑 + 工具函数
+ /----------------\
 ```
 
-### 覆盖率标准 | Coverage Standards
-
-| 测试类型           | 最低要求 | 目标 | 企业标准 |
-| ------------------ | -------- | ---- | -------- |
-| Unit Tests         | 60%      | 75%  | **80%**  |
-| Integration Tests  | 40%      | 50%  | **60%**  |
-| E2E Critical Paths | 100%     | 100% | **100%** |
-| Overall            | 70%      | 80%  | **85%**  |
-
-### 何时添加测试 | When to Add Tests
-
-**单元测试** (`src/**/*.test.ts`)：
-
-- ✅ 纯函数和工具函数
-- ✅ 业务逻辑计算
-- ✅ 数据验证和转换
-- ❌ 复杂UI交互 (使用E2E)
-- ❌ 路由和导航 (使用E2E)
-
-**集成测试** (`src/tests/integration/**/*.integration.test.ts`)：
-
-- ✅ API路由 + 数据库操作
-- ✅ 第三方服务集成
-- ✅ 认证流程
-- ✅ 文件上传和处理
-
-**E2E测试** (`e2e/**/*.spec.ts`)：
-
-- ✅ 关键业务流程 (登录、发布)
-- ✅ 跨页面用户旅程
-- ✅ 性能关键路径
-- ❌ 边界情况和错误处理 (使用单元测试)
-
-### 运行测试 | Running Tests
+### 运行测试
 
 ```bash
 # 单元测试
-npm run test              # Watch模式
+npm run test              # Watch 模式
 npm run test:run          # 运行一次
 npm run test:coverage     # 带覆盖率
 
 # 集成测试
-npm run test:integration         # 运行一次
-npm run test:integration:watch   # Watch模式
+npm run test:integration
 
-# E2E测试
-npm run test:e2e                 # 完整E2E套件
-npm run test:e2e:critical        # 关键路径 (CI使用)
-npm run test:e2e:headed          # 带浏览器UI
+# E2E 测试
+npm run test:e2e                 # 完整套件
+npm run test:e2e:critical        # 关键路径 (CI)
+npm run test:e2e:headed          # 带浏览器 UI
 
 # 所有测试
-npm run test:all          # 单元 + 集成 + E2E关键路径
+npm run test:all
 ```
 
-### 质量门禁 | Quality Gates
+### 覆盖率标准
 
-**Pre-commit** (通过Husky自动执行)：
+| 测试类型 | 最低要求 | 目标 |
+|----------|----------|------|
+| 单元测试 | 60% | 80% |
+| 集成测试 | 40% | 60% |
+| E2E 关键路径 | 100% | 100% |
 
-- ESLint检查
-- TypeScript编译
-- 单元测试覆盖率 ≥ 80%
-
-**CI Pipeline** (GitHub Actions)：
-
-- Lint + Format检查
-- Type检查
-- 单元测试 (覆盖率 ≥ 80%)
-- 集成测试 (覆盖率 ≥ 60%)
-- E2E关键测试 (100%通过)
-- 构建成功
-
-**Pre-merge要求**：
-
-- 所有CI检查通过 ✅
-- 代码审查批准 (需要1人)
-- 无失败测试
-- 覆盖率达标
-
-### 维护原则 | Maintenance Principles
-
-1. **测试隔离**：每个测试必须独立,可任意顺序运行
-2. **快速反馈**：单元测试 < 2分钟，集成测试 < 5分钟，E2E < 10分钟
-3. **快速失败**：第一个错误出现立即停止,节省CI时间
-4. **清理数据**：测试后始终清理测试数据
-5. **禁止跳过**：永远不要跳过测试来通过CI；修复或删除它们
-6. **真实代码**：生产代码中不要有TODO、模拟对象或占位符
-7. **覆盖率优先**：合并新功能前先写测试
-
-### 测试文件组织 | Test File Organization
+## 📁 项目结构
 
 ```
-src/
-  ├── lib/
-  │   ├── utils.ts
-  │   └── __tests__/
-  │       └── utils.test.ts          # 单元测试
-  ├── tests/
-  │   ├── integration/
-  │   │   ├── api/
-  │   │   │   ├── auth.integration.test.ts
-  │   │   │   └── posts.integration.test.ts
-  │   │   └── services/
-  │   │       └── storage.integration.test.ts
-  │   └── setup.ts
-  └── components/
-      ├── button.tsx
-      └── __tests__/
-          └── button.test.tsx         # 组件单元测试
-
-e2e/
-  ├── auth-flow.spec.ts               # 关键E2E
-  ├── sitemap-improved.spec.ts        # 关键E2E
-  └── utils/
-      └── test-helpers.ts
+tdp/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── [locale]/           # 多语言路由
+│   │   ├── admin/              # 后台管理页面
+│   │   ├── api/                # API 路由
+│   │   ├── m/                  # Moments 动态
+│   │   ├── posts/              # 博客文章
+│   │   ├── gallery/            # 相册
+│   │   ├── about/              # 关于页面 + Live Dashboard
+│   │   └── projects/           # 项目展示
+│   ├── components/             # React 组件
+│   │   ├── admin/              # 管理面板组件
+│   │   ├── about/              # Live Dashboard 组件
+│   │   ├── moments/            # 动态组件
+│   │   ├── ui/                 # 通用 UI 组件
+│   │   └── ...
+│   ├── lib/                    # 业务逻辑
+│   │   ├── media-sync/         # 媒体同步服务
+│   │   ├── storage/            # 存储抽象层
+│   │   ├── backup/             # 备份功能
+│   │   ├── gaming/             # 游戏数据处理
+│   │   └── ...
+│   └── config/                 # 配置文件
+├── prisma/                     # Prisma Schema & 迁移
+├── e2e/                        # Playwright E2E 测试
+├── docs/                       # 项目文档
+├── scripts/                    # 工具脚本
+└── docker/                     # Docker 配置
 ```
 
-### 贡献指南 | Contributing
+## 📚 文档
 
-添加新功能时：
+### 用户文档
 
-1. **测试先行** (TDD,如果可能)
-2. **遵循金字塔**：主要是单元测试,少量集成测试,极少E2E
-3. **保持覆盖率**：不要降低现有覆盖率
-4. **更新文档**：如果添加新的测试模式,请更新此文档
+- [用户指南](docs/USER_GUIDE.md) - 点赞、语言切换
+- [管理员指南](docs/ADMIN_GUIDE.md) - 导出、导入
+- [隐私政策](docs/PRIVACY_POLICY.md) - 数据处理说明
 
-### 故障排除 | Troubleshooting
+### 开发者文档
 
-**测试在本地通过但CI失败**：
+- [环境变量设置](docs/ENVIRONMENT_SETUP.md) - 详细配置说明
+- [E2E 测试指南](docs/E2E_TESTING_GUIDE.md) - Playwright 测试完整指南
+- [测试策略](docs/test-strategy.md) - 自动化测试概览
+- [模块化开发手册](docs/modular-development-playbook.md) - 功能开发规范
 
-- 检查Node版本 (应该 ≥22.0.0)
-- 清理缓存：`rm -rf node_modules/.vitest`
-- 确保测试数据库干净
+### 功能配置
 
-**测试超时**：
+- [数据同步配置](docs/MEDIA_SYNC_SETUP.md) - Bilibili/豆瓣同步设置
+- [游戏数据配置](docs/GAMING_DATA_SETUP.md) - Steam 数据同步
+- [基建监控配置](docs/INFRASTRUCTURE_MONITORING.md) - Uptime Kuma 集成
 
-- 检查未解决的Promise
-- 验证fake timers配置正确
-- 如果测试确实很慢,增加`testTimeout`
+### DevOps 文档
 
-**覆盖率低于阈值**：
+- [CI/CD 配置](docs/CI_CD_DEPLOYMENT_GUIDE.md) - 自动化部署流程
+- [Docker 部署](docs/docker-deployment.md) - 生产部署步骤
+- [自托管部署](docs/self-host-deployment.md) - 自托管指南
+- [备份迁移指南](docs/BACKUP_MIGRATION_GUIDE.md) - 数据备份与恢复
+- [紧急回滚方案](docs/EMERGENCY_ROLLBACK_PLAN.md) - 故障恢复
 
-- 运行 `npm run test:coverage` 查看报告
-- 为未覆盖的行添加测试
-- 考虑代码是否可测试 (如果不可测试,重构)
-
-详细的 CI/CD 流程与优化建议见 [docs/CI_CD_DEPLOYMENT_GUIDE.md](docs/CI_CD_DEPLOYMENT_GUIDE.md)
-
-## 目录与关键文件
-
-### 应用结构
-
-- 应用入口与页面：`src/app`
-  - 英文路由：`src/app/posts/[slug]`
-  - 中文路由：`src/app/[locale]/posts/[slug]`
-- 接口与权限：`src/app/api/*`、`middleware.ts`
-- 数据访问层：`src/lib/*`、`prisma/schema.prisma`
-- 后台界面：`src/app/admin/*`
-  - 内容导出：`src/app/admin/export`
-  - 内容导入：`src/app/admin/import`
-
-### 文档
-
-#### 用户文档
-
-- **用户指南**：[docs/USER_GUIDE.md](docs/USER_GUIDE.md) - 点赞、语言切换
-- **管理员指南**：[docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) - 导出、导入
-- **隐私政策**：[docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md) - 数据处理说明
-
-#### 开发者文档
-
-- **E2E 测试指南**：[docs/E2E_TESTING_GUIDE.md](docs/E2E_TESTING_GUIDE.md) - Playwright E2E 测试完整指南
-- **测试指南**：[docs/TESTING.md](docs/TESTING.md) - 自动化测试概览
-- **手动测试**：[docs/MANUAL_TESTING.md](docs/MANUAL_TESTING.md) - 性能、安全、可访问性
-
-#### DevOps 文档
-
-- **分支管理策略**：[docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md) - GitHub Flow 工作流程
-- **分支保护配置**：[docs/BRANCH_PROTECTION_SETUP.md](docs/BRANCH_PROTECTION_SETUP.md) - 分支保护规则设置指南
-- **CI/CD 配置**：[docs/CI_CD_DEPLOYMENT_GUIDE.md](docs/CI_CD_DEPLOYMENT_GUIDE.md) - CI/CD 配置与部署流程
-- **部署指南**：[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) - 生产部署步骤
-- **Docker 构建**：[docs/docker-build.md](docs/docker-build.md) - 本地构建与推送
-- **Docker 部署**：[docs/docker-deployment.md](docs/docker-deployment.md) - Docker 生产部署
-- **自托管部署**：[docs/self-host-deployment.md](docs/self-host-deployment.md) - 自托管部署指南
-- **监控指南**：[docs/MONITORING.md](docs/MONITORING.md) - 上线后监控
-
-#### 配置文档
-
-- **配置选项**：[docs/CONFIGURATION.md](docs/CONFIGURATION.md) - 功能配置
-- **内容格式**：[docs/CONTENT_FORMAT.md](docs/CONTENT_FORMAT.md) - Markdown 导入/导出规范
-
-#### 项目历史
-
-- 历史文档已清理，如需查看请查阅 Git 历史或发布说明
-
-### Docker 与部署
-
-- Docker 与编排：`Dockerfile`、`docker-compose.yml`、`docker/entrypoint.sh`
-- 部署文档：见上方"文档 → DevOps 文档"章节
-
-## CI/CD 测试流程
+## 🔄 CI/CD 流程
 
 ### 工作流配置
 
-- **CI Critical Path** (`.github/workflows/ci-critical.yml`)：
-  - 触发：每次 PR 和 push
-  - 执行：Lint + TypeCheck + 单测 + 关键 E2E (~60-80 tests) + Build
-  - 用途：**阻塞式验证**，失败则阻止合并
+- **CI Critical Path** (`ci-critical.yml`)：每次 PR 执行 Lint + TypeCheck + 单测 + 关键 E2E + Build
+- **E2E Full Suite** (`e2e.yml`)：main 分支 push 后执行全量 E2E 测试
+- **Docker Publish** (`docker-publish.yml`)：main 分支 push 后自动构建并推送镜像
 
-- **E2E Full Suite** (`.github/workflows/e2e.yml`)：
-  - 触发：main 分支 push（非文档变更） + 每日 2AM + 手动触发
-  - 执行：全量 314 tests，4-way sharding，Chromium only
-  - 用途：**非阻塞式检测**，失败创建 GitHub Issue
-
-详细配置说明见 [docs/CI_CD_DEPLOYMENT_GUIDE.md](docs/CI_CD_DEPLOYMENT_GUIDE.md)
-
-### 测试配置
-
-- **Playwright Config**：`playwright.config.ts` - 5 browser projects，自动启动服务器
-- **Critical Config**：`playwright.critical.config.ts` - Chromium only，快速验证
-
-## 开发与部署工作流
-
-### 分支管理策略
-
-本项目采用 **GitHub Flow** 分支策略：
-
-- **主分支**: `main` - 始终保持可部署状态，受分支保护
-- **功能分支**: `feature/xxx`, `fix/xxx` - 短期分支，完成后立即合并并删除
-- **工作流程**: 从 main 创建分支 → 开发 → PR → CI 验证 → 合并 → 删除分支
-
-详细说明见 [docs/BRANCHING_STRATEGY.md](docs/BRANCHING_STRATEGY.md)
-
-### 部署流程
-
-**推荐工作流**：分支开发 + PR 合并 + 受控发布
-
-本项目采用"分支开发、PR 验证、审批发布"的 CI/CD 流程，既方便日常随手提交，又能确保生产发布可控。
-
-### 工作流程概览
+### 发布流程
 
 ```
-功能分支 push
-    ↓
-创建 PR → CI 验证 (lint/typecheck/test/build)
-    ↓
-合并到 main → 自动构建镜像
-    ↓
-等待审批 → 点击 Approve → 部署到生产
+功能分支开发 → 创建 PR → CI 验证 → 合并到 main → 自动构建镜像 → 审批后部署
 ```
 
-### 当前配置状态
+支持 `[skip deploy]` 标记跳过部署。
 
-| 功能                 | 状态          | 说明                                               |
-| -------------------- | ------------- | -------------------------------------------------- |
-| PR 自动 CI 验证      | ✅ 已实现     | `.github/workflows/ci.yml` 在 PR 时运行全套检查    |
-| 合并后自动构建镜像   | ✅ 已实现     | `docker-publish.yml` 在 main push 时构建并推送镜像 |
-| `[skip deploy]` 跳过 | ✅ 已配置     | 提交信息包含此标记时跳过部署                       |
-| 生产发布需审批       | ⚠️ 需手动配置 | 需创建 `production` 环境并设置审批人（见下方步骤） |
-| main 分支保护        | ⚠️ 可选配置   | 防止直接 push，强制走 PR 流程（推荐但非必需）      |
+## 🗺 开发路线图
 
-### 日常使用场景
+- [ ] 评论系统优化
+- [ ] 更多平台数据同步（Spotify、豆瓣电影）
+- [ ] PWA 支持
+- [ ] 邮件订阅功能
+- [ ] 多主题支持
 
-#### 场景 1：随手保存进度，不影响 main
+## 📄 许可证
 
-```bash
-# 在功能分支上随意提交
-git checkout -b feature/new-feature
-# ... 修改代码 ...
-git add .
-git commit -m "wip: 临时保存进度"
-git push origin feature/new-feature
+MIT License
 
-# ✅ 只推送到功能分支，main 不受影响，不触发部署
-```
+---
 
-#### 场景 2：合并到 main 但暂不部署
-
-```bash
-# PR 合并时在合并提交中加上 [skip deploy]
-# 方式 1: 在 GitHub PR 界面合并时编辑提交信息
-Merge pull request #123 from feature/new-feature [skip deploy]
-
-# 方式 2: 本地合并
-git checkout main
-git merge feature/new-feature -m "feat: new feature [skip deploy]"
-git push origin main
-
-# ✅ 镜像会构建，但不会部署到生产
-```
-
-#### 场景 3：正式发布到生产
-
-```bash
-# 1. 合并 PR 到 main（不加 [skip deploy]）
-# 2. 等待 Docker Build & Push 完成（约 10-15 分钟）
-# 3. 前往 GitHub Actions 页面
-open https://github.com/poer2023/tdp/actions
-
-# 4. 找到 "Auto Deploy" 工作流，点击等待中的部署
-# 5. 点击 "Review deployments" → 勾选 "production" → "Approve and deploy"
-
-# ✅ 审批后自动部署到生产服务器
-```
-
-### 一次性配置步骤
-
-#### 必需：创建 production 环境并配置审批
-
-1. 访问仓库 Settings → Environments → New environment
-2. 输入环境名称: `production`
-3. 勾选 **Required reviewers**，添加你自己（或团队成员）
-4. 保存
-
-完成后，每次 main 合并只会在点击 Approve 后才发布到生产。
-
-#### 可选：开启 main 分支保护
-
-如果希望强制所有变更走 PR 流程，防止直接 push 到 main：
-
-1. 访问仓库 Settings → Branches → Add branch protection rule
-2. Branch name pattern: `main`
-3. 勾选以下选项：
-   - ✅ Require a pull request before merging
-   - ✅ Require status checks to pass before merging
-     - 选择 `CI Pipeline` (或其他必需的检查)
-   - ❌ 不勾选 "Include administrators"（保留紧急推送权限）
-4. 保存
-
-配置后，必须通过 PR 才能合并到 main，直接 push 会被拒绝。
-
-### 高级用法：本地构建 + 手动部署
-
-适用于快速验证、部署特定版本、GitHub Actions 不可用等场景。
-
-```bash
-# 1. 启动 Docker
-open -a Docker
-
-# 2. 登录 GHCR
-echo "YOUR_GITHUB_TOKEN" | docker login ghcr.io -u YOUR_USERNAME --password-stdin
-
-# 3. 构建并推送镜像（约 8 分钟）
-TAG=$(date +%Y%m%d-%H%M)-$(git rev-parse --short HEAD)
-docker buildx build \
-  --platform linux/amd64 \
-  -t ghcr.io/poer2023/tdp:$TAG \
-  -t ghcr.io/poer2023/tdp:latest \
-  --cache-from type=registry,ref=ghcr.io/poer2023/tdp:buildcache \
-  --push .
-
-# 4. 手动触发部署
-gh workflow run "Deploy Only" -f image_tag=$TAG
-gh run watch
-```
-
-**注意**：本地构建建议只使用 `--cache-from`（读取缓存），不使用 `--cache-to`（导出缓存），以避免额外的 5-10 分钟导出时间。
-
-### 相关文档
-
-- 本地构建详细指南：[`docs/docker-build.md`](docs/docker-build.md)
-- Docker 部署说明：[`docs/docker-deployment.md`](docs/docker-deployment.md)
-- 自托管部署：[`docs/self-host-deployment.md`](docs/self-host-deployment.md)
-
-## 开发路线图
-
-主要改进方向：
-
-- 健康检查接口与 Compose 健康探针
-- Docker 非 root 运行
-- 镜像安全扫描/签名
-- `.env.example` 模板补充
-
-如需部署到生产环境，请优先阅读 [docs/docker-deployment.md](docs/docker-deployment.md) 与 [docs/self-host-deployment.md](docs/self-host-deployment.md)。
+如有问题或建议，欢迎提交 Issue 或 PR。

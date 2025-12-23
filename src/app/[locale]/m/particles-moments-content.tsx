@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Particles } from "@/components/ui/particles";
 import { useTheme } from "@/hooks/use-theme";
 import { MomentMasonry } from "@/components/moments/moment-masonry";
@@ -14,17 +15,29 @@ import type { MomentListItem } from "@/lib/moments";
 interface ParticlesMomentsContentProps {
   moments: MomentListItem[];
   locale: "en" | "zh";
-  isAdmin: boolean;
+  isAdmin: boolean; // Initial value from server (always false for ISR)
 }
 
 export function ParticlesMomentsContent({
   moments,
   locale,
-  isAdmin,
+  isAdmin: serverIsAdmin,
 }: ParticlesMomentsContentProps) {
   const { theme } = useTheme();
   const pathname = usePathname();
   const particleColor = useMemo(() => (theme === "dark" ? "#ffffff" : "#000000"), [theme]);
+
+  // Client-side admin check (hydrates after initial render)
+  const { data: session, status } = useSession();
+  const isAdmin = useMemo(() => {
+    if (serverIsAdmin) return true; // Trust server if it says admin
+    if (status === "loading") return false; // Not yet loaded
+    return (session?.user as { role?: string } | undefined)?.role === "ADMIN";
+  }, [serverIsAdmin, session, status]);
+
+  // Show admin controls container but hide content until session loads
+  // This preserves layout space and prevents content shift
+  const adminButtonVisible = status !== "loading" && isAdmin;
 
   return (
     <LightboxProvider>
@@ -57,7 +70,10 @@ export function ParticlesMomentsContent({
           {/* 工具栏（Tabs + 按钮组合）*/}
           <div className="mb-8 flex flex-col items-center gap-3 rounded-full bg-white px-6 py-3.5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:flex-row sm:justify-between dark:bg-[#111827] dark:shadow-[0_10px_30px_rgba(0,0,0,0.45)]">
             <MomentTabs locale={locale} currentPath={pathname} />
-            <OpenComposerButton label={locale === "zh" ? "+ 新建" : "+ New"} />
+            {/* Admin button: reserve space with visibility:hidden when loading, show when ready */}
+            <div style={{ visibility: adminButtonVisible ? "visible" : "hidden" }}>
+              <OpenComposerButton label={locale === "zh" ? "+ 新建" : "+ New"} />
+            </div>
           </div>
 
           {/* 瀑布流布局 */}
@@ -78,3 +94,4 @@ export function ParticlesMomentsContent({
     </LightboxProvider>
   );
 }
+

@@ -3,6 +3,8 @@
  *
  * GET /api/infra/stats
  * Returns uptime statistics and performance metrics
+ *
+ * OPTIMIZED: Uses DB aggregation to avoid N+1 queries
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -22,64 +24,79 @@ export async function GET(_request: NextRequest) {
       select: { id: true, name: true },
     });
 
-    // Calculate stats for each monitor
-    const monitorStats = await Promise.all(
-      monitors.map(async (monitor) => {
-        // Get heartbeats for 24h and 30d periods
-        const [heartbeats24h, heartbeats30d, latestHeartbeat] = await Promise.all([
-          prisma.monitorHeartbeat.findMany({
-            where: {
-              monitorId: monitor.id,
-              timestamp: { gte: oneDayAgo },
-            },
-            select: { status: true, responseTime: true },
-          }),
-          prisma.monitorHeartbeat.findMany({
-            where: {
-              monitorId: monitor.id,
-              timestamp: { gte: thirtyDaysAgo },
-            },
-            select: { status: true },
-          }),
-          prisma.monitorHeartbeat.findFirst({
-            where: { monitorId: monitor.id },
-            orderBy: { timestamp: "desc" },
-            select: { status: true, responseTime: true },
-          }),
-        ]);
+    const monitorIds = monitors.map((m) => m.id);
 
-        // Calculate uptime percentages
-        const uptime24h =
-          heartbeats24h.length > 0
-            ? (heartbeats24h.filter((h) => h.status === "UP").length / heartbeats24h.length) * 100
-            : 0;
+    // Use aggregation to get all stats in fewer queries
+    const [
+      // 24h stats grouped by monitor
+      heartbeats24hAgg,
+      // 30d stats grouped by monitor
+      heartbeats30dAgg,
+      // Latest heartbeat per monitor (using raw query for efficiency)
+      latestHeartbeats,
+    ] = await Promise.all([
+      // 24h: count total and UP status per monitor, avg response time
+      prisma.monitorHeartbeat.groupBy({
+        by: ["monitorId", "status"],
+        where: {
+          monitorId: { in: monitorIds },
+          timestamp: { gte: oneDayAgo },
+        },
+        _count: { id: true },
+        _avg: { responseTime: true },
+      }),
+      // 30d: count total and UP status per monitor
+      prisma.monitorHeartbeat.groupBy({
+        by: ["monitorId", "status"],
+        where: {
+          monitorId: { in: monitorIds },
+          timestamp: { gte: thirtyDaysAgo },
+        },
+        _count: { id: true },
+      }),
+      // Latest heartbeat per monitor using distinct on (more efficient than N findFirst calls)
+      prisma.$queryRaw<Array<{ monitorId: string; status: string; responseTime: number | null }>>`
+        SELECT DISTINCT ON ("monitorId")
+          "monitorId",
+          "status",
+          "responseTime"
+        FROM "MonitorHeartbeat"
+        WHERE "monitorId" = ANY(${monitorIds}::text[])
+        ORDER BY "monitorId", "timestamp" DESC
+      `,
+    ]);
 
-        const uptime30d =
-          heartbeats30d.length > 0
-            ? (heartbeats30d.filter((h) => h.status === "UP").length / heartbeats30d.length) * 100
-            : 0;
+    // Process aggregated results into monitor stats
+    const monitorStats = monitors.map((monitor) => {
+      // 24h stats
+      const stats24h = heartbeats24hAgg.filter((s) => s.monitorId === monitor.id);
+      const total24h = stats24h.reduce((sum, s) => sum + s._count.id, 0);
+      const up24h = stats24h.find((s) => s.status === "UP")?._count.id || 0;
+      const uptime24h = total24h > 0 ? (up24h / total24h) * 100 : 0;
 
-        // Calculate average response time (24h)
-        const validResponseTimes = heartbeats24h
-          .map((h) => h.responseTime)
-          .filter((rt): rt is number => rt !== null && rt > 0);
+      // Get average response time from UP heartbeats in 24h
+      const upStats24h = stats24h.find((s) => s.status === "UP");
+      const avgResponseTime = upStats24h?._avg.responseTime || null;
 
-        const avgResponseTime =
-          validResponseTimes.length > 0
-            ? validResponseTimes.reduce((sum, rt) => sum + rt, 0) / validResponseTimes.length
-            : null;
+      // 30d stats
+      const stats30d = heartbeats30dAgg.filter((s) => s.monitorId === monitor.id);
+      const total30d = stats30d.reduce((sum, s) => sum + s._count.id, 0);
+      const up30d = stats30d.find((s) => s.status === "UP")?._count.id || 0;
+      const uptime30d = total30d > 0 ? (up30d / total30d) * 100 : 0;
 
-        return {
-          monitorId: monitor.id,
-          monitorName: monitor.name,
-          uptime24h: Math.round(uptime24h * 100) / 100,
-          uptime30d: Math.round(uptime30d * 100) / 100,
-          avgResponseTime: avgResponseTime ? Math.round(avgResponseTime) : null,
-          currentStatus: latestHeartbeat?.status || "PENDING",
-          lastResponseTime: latestHeartbeat?.responseTime || null,
-        };
-      })
-    );
+      // Latest heartbeat
+      const latest = latestHeartbeats.find((h) => h.monitorId === monitor.id);
+
+      return {
+        monitorId: monitor.id,
+        monitorName: monitor.name,
+        uptime24h: Math.round(uptime24h * 100) / 100,
+        uptime30d: Math.round(uptime30d * 100) / 100,
+        avgResponseTime: avgResponseTime ? Math.round(avgResponseTime) : null,
+        currentStatus: latest?.status || "PENDING",
+        lastResponseTime: latest?.responseTime || null,
+      };
+    });
 
     // Calculate overall stats
     const overallUptime24h =

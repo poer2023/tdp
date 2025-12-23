@@ -1,7 +1,11 @@
 import prisma from "@/lib/prisma";
+import { unstable_cache, revalidateTag } from "next/cache";
 import fs from "fs";
 import path from "path";
 import { withDbFallback } from "@/lib/utils/db-fallback";
+
+// Cache tag for gallery data (exported for external revalidation)
+export const GALLERY_TAG = "gallery:location";
 
 export type GalleryCategory = "REPOST" | "ORIGINAL" | "AI";
 
@@ -143,6 +147,37 @@ export async function listGalleryImages(
   );
 }
 
+// Internal function for cached gallery images fetch (simple limit+category only)
+async function _fetchCachedGalleryImages(
+  limit: number,
+  category: GalleryCategory | undefined
+): Promise<GalleryImage[]> {
+  const images = await prisma.galleryImage.findMany({
+    where: category ? { category } : undefined,
+    orderBy: { createdAt: "desc" as const },
+    take: limit,
+  });
+  return images.map(toGalleryImage);
+}
+
+// Cached version with 300s TTL for gallery list page
+const getCachedGalleryImages = unstable_cache(
+  _fetchCachedGalleryImages,
+  ["gallery-images-list"],
+  { revalidate: 300, tags: [GALLERY_TAG] }
+);
+
+/**
+ * Get cached gallery images for simple queries (limit + optional category)
+ * Use this for gallery list page to reduce ISR rebuild DB cost
+ */
+export async function listCachedGalleryImages(
+  limit: number = 100,
+  category?: GalleryCategory
+): Promise<GalleryImage[]> {
+  return getCachedGalleryImages(limit, category);
+}
+
 export async function addGalleryImage(input: CreateGalleryImageInput): Promise<GalleryImage> {
   // Deduplicate by filePath: if exists, update missing fields and return existing
   const existing = await prisma.galleryImage.findFirst({ where: { filePath: input.filePath } });
@@ -198,6 +233,8 @@ export async function addGalleryImage(input: CreateGalleryImageInput): Promise<G
       storageType: input.storageType ?? "local",
     },
   });
+  // Invalidate gallery location cache
+  revalidateTag(GALLERY_TAG, "max");
   return toGalleryImage(image);
 }
 
@@ -239,11 +276,15 @@ export async function updateGalleryImage(
       capturedAt: input.capturedAt ?? undefined,
     },
   });
+  // Invalidate gallery location cache
+  revalidateTag(GALLERY_TAG, "max");
   return toGalleryImage(image);
 }
 
 export async function deleteGalleryImage(id: string): Promise<void> {
   await prisma.galleryImage.delete({ where: { id } });
+  // Invalidate gallery location cache
+  revalidateTag(GALLERY_TAG, "max");
 }
 
 export async function getGalleryImageById(id: string): Promise<GalleryImage | null> {
@@ -393,7 +434,8 @@ export async function getAdjacentImageIds(id: string): Promise<{
   );
 }
 
-export async function listGalleryImagesWithLocation(limit?: number): Promise<GalleryLocationImage[]> {
+// Internal function to fetch gallery images with location (used by cached version)
+async function _fetchGalleryImagesWithLocation(limit?: number): Promise<GalleryLocationImage[]> {
   return withDbFallback(
     async () => {
       const images = await prisma.galleryImage.findMany({
@@ -438,6 +480,63 @@ export async function listGalleryImagesWithLocation(limit?: number): Promise<Gal
     },
     async () => []
   );
+}
+
+// Cached version with 300s (5 min) TTL
+const getCachedGalleryImagesWithLocation = unstable_cache(
+  _fetchGalleryImagesWithLocation,
+  ["gallery-images-with-location"],
+  { revalidate: 300, tags: [GALLERY_TAG] }
+);
+
+export async function listGalleryImagesWithLocation(limit?: number): Promise<GalleryLocationImage[]> {
+  return getCachedGalleryImagesWithLocation(limit);
+}
+
+// Lightweight thumbnail type for gallery detail navigation
+export type GalleryThumb = {
+  id: string;
+  filePath: string;
+  microThumbPath?: string;
+  smallThumbPath?: string;
+  mediumPath?: string;
+};
+
+// Internal function to fetch minimal thumbnail data
+async function _fetchGalleryThumbs(): Promise<GalleryThumb[]> {
+  return withDbFallback(
+    async () => {
+      const images = await prisma.galleryImage.findMany({
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          filePath: true,
+          microThumbPath: true,
+          smallThumbPath: true,
+          mediumPath: true,
+        },
+      });
+      return images.map((img) => ({
+        id: img.id,
+        filePath: img.filePath,
+        microThumbPath: img.microThumbPath ?? undefined,
+        smallThumbPath: img.smallThumbPath ?? undefined,
+        mediumPath: img.mediumPath ?? undefined,
+      }));
+    },
+    async () => []
+  );
+}
+
+// Cached version with 300s TTL - lighter query for gallery detail thumbnail strip
+const getCachedGalleryThumbs = unstable_cache(
+  _fetchGalleryThumbs,
+  ["gallery-thumbs"],
+  { revalidate: 300, tags: [GALLERY_TAG] }
+);
+
+export async function listGalleryThumbs(): Promise<GalleryThumb[]> {
+  return getCachedGalleryThumbs();
 }
 
 function toGalleryImage(image: {

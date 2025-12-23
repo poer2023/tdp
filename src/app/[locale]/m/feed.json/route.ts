@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { listMomentsForFeed } from "@/lib/moments";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+// Align with Cache-Control header (600s = 10 minutes)
+export const revalidate = 600;
 
 export async function GET() {
-  const items = await prisma.moment.findMany({
-    where: { status: "PUBLISHED", visibility: "PUBLIC" },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    select: { id: true, slug: true, content: true, createdAt: true },
-  });
+  const items = await listMomentsForFeed(50);
   const site = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const feed = {
     version: "https://jsonfeed.org/version/1.1",

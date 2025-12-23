@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import prisma from "@/lib/prisma";
+import { getCuratedItemById, getRelatedCuratedItems } from "@/lib/curated";
 import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 import CuratedDetailContent from "./curated-detail-content";
 
@@ -15,9 +15,8 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id, locale } = await params;
 
-  const item = await prisma.shareItem.findUnique({
-    where: { id },
-  });
+  // Use cached function (same cache key as page content)
+  const item = await getCuratedItemById(id);
 
   if (!item) {
     return {
@@ -30,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: item.description,
     openGraph: {
       title: item.title,
-      description: item.description,
+      description: item.description ?? undefined,
       type: "article",
       images: item.imageUrl ? [item.imageUrl] : undefined,
     },
@@ -45,39 +44,15 @@ export default async function CuratedDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // Fetch the curated item
-  const item = await prisma.shareItem.findUnique({
-    where: { id },
-  });
+  // Fetch the curated item (cached)
+  const item = await getCuratedItemById(id);
 
   if (!item) {
     notFound();
   }
 
-  // Get related items (same tags or recent)
-  const relatedItems = await prisma.shareItem.findMany({
-    where: {
-      id: { not: item.id },
-      OR: [
-        { tags: { hasSome: item.tags } },
-      ],
-    },
-    orderBy: { createdAt: "desc" },
-    take: 4,
-  });
-
-  // If not enough related items, fill with recent ones
-  let finalRelatedItems = relatedItems;
-  if (relatedItems.length < 4) {
-    const recentItems = await prisma.shareItem.findMany({
-      where: {
-        id: { notIn: [item.id, ...relatedItems.map(r => r.id)] },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 4 - relatedItems.length,
-    });
-    finalRelatedItems = [...relatedItems, ...recentItems];
-  }
+  // Get related items (cached)
+  const relatedItems = await getRelatedCuratedItems(id, item.tags, 4);
 
   return (
     <>
@@ -87,20 +62,20 @@ export default async function CuratedDetailPage({ params }: PageProps) {
           item={{
             id: item.id,
             title: item.title,
-            description: item.description,
+            description: item.description ?? "",
             url: item.url,
-            domain: item.domain,
+            domain: item.domain ?? "",
             imageUrl: item.imageUrl || undefined,
             tags: item.tags,
             likes: item.likes,
             createdAt: item.createdAt.toISOString(),
           }}
-          relatedItems={finalRelatedItems.map((r) => ({
+          relatedItems={relatedItems.map((r) => ({
             id: r.id,
             title: r.title,
-            description: r.description,
+            description: r.description ?? "",
             url: r.url,
-            domain: r.domain,
+            domain: r.domain ?? "",
             imageUrl: r.imageUrl || undefined,
             tags: r.tags,
             likes: r.likes,

@@ -2,10 +2,9 @@ import prisma from "@/lib/prisma";
 import { localePath } from "@/lib/locale-path";
 import { Container } from "@/components/ui/container";
 
+// ISR: Revalidate every 60 seconds, pages cached by query params
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const dynamicIO = true;
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ locale: string }>;

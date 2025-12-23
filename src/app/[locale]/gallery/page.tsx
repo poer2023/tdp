@@ -1,15 +1,17 @@
 import Link from "next/link";
-import { listGalleryImages } from "@/lib/gallery";
+import { listCachedGalleryImages } from "@/lib/gallery";
 import type { GalleryCategory, GalleryImage } from "@/lib/gallery";
 import { ZhiHeader, ZhiFooter, ZhiGallery } from "@/components/zhi";
 import type { ZhiGalleryItem } from "@/components/zhi";
 import { GalleryCategoryTabs } from "@/components/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
 
-// Force dynamic to avoid DB during build pipelines without DATABASE_URL
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const dynamicIO = true;
+// ISR: Revalidate every 5 minutes for gallery updates with CDN caching
+export const dynamic = "auto";
+export const revalidate = 300; // 5 minutes
+
+// Default gallery limit to prevent performance issues with large datasets
+const GALLERY_PAGE_LIMIT = 100;
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -71,7 +73,8 @@ export default async function LocalizedGalleryPage({ params, searchParams }: Pag
       ? (category as GalleryCategory)
       : undefined;
 
-  const images = await listGalleryImages(undefined, currentCategory);
+  // Use cached function for gallery list page
+  const images = await listCachedGalleryImages(GALLERY_PAGE_LIMIT, currentCategory);
   const imagesWithLocation = images.filter((img) => img.latitude && img.longitude);
 
   // Convert to Zhi gallery format

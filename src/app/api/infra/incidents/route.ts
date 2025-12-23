@@ -3,6 +3,8 @@
  *
  * GET /api/infra/incidents?limit=10
  * Returns recent monitor failures and downtime events
+ *
+ * OPTIMIZED: Batch fetch next heartbeats instead of N+1 per-incident queries
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -87,35 +89,73 @@ export async function GET(request: NextRequest) {
       incidentGroups.push(currentIncident);
     }
 
-    // Check if incidents are still ongoing (no UP status after DOWN)
-    const ongoingIncidents = await Promise.all(
-      incidentGroups.slice(0, 10).map(async (incident) => {
-        const nextHeartbeat = await prisma.monitorHeartbeat.findFirst({
-          where: {
-            monitorId: incident.monitorId,
-            timestamp: { gt: incident.startTime },
-          },
-          orderBy: { timestamp: "asc" },
-          select: { status: true, timestamp: true },
-        });
+    // Get the earliest start time among incidents we need to check
+    const incidentsToCheck = incidentGroups.slice(0, 10);
+    if (incidentsToCheck.length === 0) {
+      return NextResponse.json({
+        success: true,
+        incidents: [],
+        totalCount: 0,
+        timestamp: new Date().toISOString(),
+      });
+    }
 
-        const isOngoing = !nextHeartbeat || nextHeartbeat.status === "DOWN";
-
-        if (!isOngoing && nextHeartbeat) {
-          // Calculate actual duration
-          incident.duration = Math.round(
-            (nextHeartbeat.timestamp.getTime() - incident.startTime.getTime()) / (1000 * 60)
-          );
-          incident.endTime = nextHeartbeat.timestamp;
-        }
-
-        return {
-          ...incident,
-          isOngoing,
-          resolved: !isOngoing,
-        };
-      })
+    const minStartTime = incidentsToCheck.reduce(
+      (min, inc) => (inc.startTime < min ? inc.startTime : min),
+      incidentsToCheck[0]!.startTime
     );
+
+    // OPTIMIZATION: Batch fetch all heartbeats after minStartTime for relevant monitors
+    // instead of N separate findFirst queries
+    const monitorIds = [...new Set(incidentsToCheck.map((inc) => inc.monitorId))];
+
+    const nextHeartbeats = await prisma.monitorHeartbeat.findMany({
+      where: {
+        monitorId: { in: monitorIds },
+        timestamp: { gt: minStartTime },
+      },
+      select: {
+        monitorId: true,
+        status: true,
+        timestamp: true,
+      },
+      orderBy: {
+        timestamp: "asc",
+      },
+    });
+
+    // Map heartbeats by monitorId for fast lookup
+    const heartbeatsByMonitor = new Map<string, typeof nextHeartbeats>();
+    for (const hb of nextHeartbeats) {
+      if (!heartbeatsByMonitor.has(hb.monitorId)) {
+        heartbeatsByMonitor.set(hb.monitorId, []);
+      }
+      heartbeatsByMonitor.get(hb.monitorId)!.push(hb);
+    }
+
+    // Process incidents with batched heartbeat data
+    const ongoingIncidents = incidentsToCheck.map((incident) => {
+      const monitorHeartbeats = heartbeatsByMonitor.get(incident.monitorId) || [];
+
+      // Find the first heartbeat after this incident's startTime
+      const nextHeartbeat = monitorHeartbeats.find((hb) => hb.timestamp > incident.startTime);
+
+      const isOngoing = !nextHeartbeat || nextHeartbeat.status === "DOWN";
+
+      if (!isOngoing && nextHeartbeat) {
+        // Calculate actual duration
+        incident.duration = Math.round(
+          (nextHeartbeat.timestamp.getTime() - incident.startTime.getTime()) / (1000 * 60)
+        );
+        incident.endTime = nextHeartbeat.timestamp;
+      }
+
+      return {
+        ...incident,
+        isOngoing,
+        resolved: !isOngoing,
+      };
+    });
 
     return NextResponse.json({
       success: true,

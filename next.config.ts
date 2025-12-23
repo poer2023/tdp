@@ -1,10 +1,18 @@
 import type { NextConfig } from "next";
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  turbopack: {
-    root: __dirname,
-  },
+  // Disable turbopack when running bundle analysis (webpack required)
+  ...(process.env.ANALYZE !== "true" && {
+    turbopack: {
+      root: __dirname,
+    },
+  }),
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
@@ -129,4 +137,4 @@ const nextConfig: NextConfig = {
   /* config options here */
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

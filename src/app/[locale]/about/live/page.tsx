@@ -1,7 +1,36 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { ZhiHeader, ZhiFooter } from "@/components/zhi";
-import { ZhiStatsDashboard } from "@/components/zhi/stats-dashboard";
 import { getDashboardStats } from "@/lib/dashboard-stats";
+
+// ISR: Revalidate every 5 minutes (dashboard data doesn't need to be real-time)
+export const revalidate = 300;
+
+// Dynamic import to avoid bundling recharts (~370KB) in common chunks
+const ZhiStatsDashboard = dynamic(
+  () => import("@/components/zhi/stats-dashboard").then((mod) => mod.ZhiStatsDashboard),
+  {
+    loading: () => (
+      <div className="w-full animate-pulse pb-16">
+        {/* Header skeleton */}
+        <div className="mb-8 border-b border-stone-200 bg-white px-4 pb-16 pt-12 dark:border-stone-800 dark:bg-stone-900">
+          <div className="mx-auto max-w-5xl text-center">
+            <div className="mx-auto mb-6 h-12 w-12 rounded-full bg-stone-100 dark:bg-stone-800" />
+            <div className="mx-auto mb-4 h-10 w-48 rounded bg-stone-100 dark:bg-stone-800" />
+            <div className="mx-auto h-6 w-72 rounded bg-stone-100 dark:bg-stone-800" />
+          </div>
+        </div>
+        {/* Cards skeleton */}
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="col-span-1 h-80 rounded-2xl bg-stone-200 md:col-span-2 dark:bg-stone-800" />
+          <div className="h-64 rounded-2xl bg-stone-100 dark:bg-stone-800" />
+          <div className="col-span-1 h-48 rounded-2xl bg-stone-100 md:col-span-2 dark:bg-stone-800" />
+          <div className="h-48 rounded-2xl bg-stone-100 dark:bg-stone-800" />
+        </div>
+      </div>
+    ),
+  }
+);
 
 type PageProps = {
   params: Promise<{ locale: string }>;

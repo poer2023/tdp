@@ -2,9 +2,9 @@ import Link from "next/link";
 import { listGalleryImagesWithLocation } from "@/lib/gallery";
 import { GalleryMapWrapper } from "@/components/gallery-map-wrapper";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const dynamicIO = true;
+// ISR: Revalidate every 5 minutes for gallery map data
+export const dynamic = "auto";
+export const revalidate = 300;
 
 type PageProps = {
   params: Promise<{ locale: string }>;

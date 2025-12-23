@@ -3,9 +3,10 @@ import { aboutContent, aboutLayoutClass, resolveAboutLocale } from "@/lib/about-
 import { ParticlesAboutContent } from "./particles-about-content";
 import { getLiveHighlightsData } from "@/lib/about-live";
 
+// ISR: Revalidate every 60 seconds (getLiveHighlightsData is already cached)
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const dynamic = "auto";
+export const revalidate = 60;
 
 type PageProps = {
   params: Promise<{ locale: string }>;

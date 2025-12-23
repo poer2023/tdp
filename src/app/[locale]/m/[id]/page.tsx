@@ -6,7 +6,9 @@ import { Container } from "@/components/ui/container";
 import { BackButton } from "@/components/moments/back-button";
 import { MomentCard } from "@/components/moments/moment-card";
 
-export const revalidate = 0;
+// ISR: Revalidate every 60 seconds for public/unlisted moments
+// Private moments will still require auth check on each request
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
@@ -30,7 +32,8 @@ export default async function LocalizedMomentDetailPage({ params, searchParams }
   const m = await getMomentByIdOrSlug(id);
   if (!m) notFound();
 
-  // Access control for private
+  // Access control for private - only call auth() when needed
+  // This allows public/unlisted moments to be served via ISR
   if (m.visibility === "PRIVATE") {
     const session = await auth();
     const can = session?.user && (session.user.id === m.authorId || session.user.role === "ADMIN");
@@ -54,11 +57,11 @@ export default async function LocalizedMomentDetailPage({ params, searchParams }
             url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}${l === "zh" ? "/zh" : ""}/m/${m.slug || m.id}`,
             image: Array.isArray(m.images)
               ? (m.images as MomentImage[]).slice(0, 3).map((im) => ({
-                  "@type": "ImageObject",
-                  url: im.url,
-                  width: im.w,
-                  height: im.h,
-                }))
+                "@type": "ImageObject",
+                url: im.url,
+                width: im.w,
+                height: im.h,
+              }))
               : undefined,
           }),
         }}
@@ -81,3 +84,4 @@ export default async function LocalizedMomentDetailPage({ params, searchParams }
 export function generateStaticParams() {
   return [{ locale: "en" }, { locale: "zh" }];
 }
+

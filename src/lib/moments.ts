@@ -1,6 +1,9 @@
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
 import type { Prisma } from "@prisma/client";
+
+// Cache tags for invalidation (exported for use in API routes)
+export const MOMENTS_PUBLIC_TAG = "moments:public";
 
 export type MomentVisibility = "PUBLIC" | "UNLISTED" | "PRIVATE";
 export type MomentStatus = "DRAFT" | "PUBLISHED" | "SCHEDULED";
@@ -30,7 +33,8 @@ export type MomentListItem = {
   likedByViewer?: boolean;
 };
 
-export async function listMoments(options?: {
+// Internal function to fetch moments (used by cached and uncached versions)
+async function _fetchMoments(options?: {
   limit?: number;
   cursor?: string | null;
   visibility?: MomentVisibility;
@@ -112,7 +116,48 @@ export async function listMoments(options?: {
   });
 }
 
-export async function getMomentByIdOrSlug(idOrSlug: string) {
+// Cached version for public moments list (no viewerId, no cursor, no tag, no q)
+// Uses 60s TTL to balance freshness with performance
+async function _fetchPublicMomentsCached(
+  limit: number,
+  visibility: MomentVisibility | undefined,
+  lang: string | null | undefined
+): Promise<MomentListItem[]> {
+  return _fetchMoments({ limit, visibility, lang });
+}
+
+const getCachedPublicMoments = unstable_cache(
+  _fetchPublicMomentsCached,
+  ["moments-public-list"],
+  { revalidate: 60, tags: [MOMENTS_PUBLIC_TAG] }
+);
+
+export async function listMoments(options?: {
+  limit?: number;
+  cursor?: string | null;
+  visibility?: MomentVisibility;
+  lang?: string | null;
+  tag?: string | null;
+  q?: string | null;
+  viewerId?: string | null;
+}): Promise<MomentListItem[]> {
+  // Use cached version for simple public list queries (no dynamic params)
+  const isCacheable = !options?.cursor && !options?.tag && !options?.q && !options?.viewerId;
+
+  if (isCacheable) {
+    return getCachedPublicMoments(
+      options?.limit ?? 20,
+      options?.visibility,
+      options?.lang
+    );
+  }
+
+  // Fall back to uncached version for queries with dynamic params
+  return _fetchMoments(options);
+}
+
+// Internal function to fetch moment by ID or slug
+async function _getMomentByIdOrSlug(idOrSlug: string) {
   const now = new Date();
   const m = await prisma.moment.findFirst({
     where: {
@@ -130,12 +175,90 @@ export async function getMomentByIdOrSlug(idOrSlug: string) {
   return { ...m, images: (m.images as MomentImage[] | null) ?? [] };
 }
 
+// Cached version of getMomentByIdOrSlug with 60s TTL
+const getCachedMomentByIdOrSlug = unstable_cache(
+  _getMomentByIdOrSlug,
+  ["moment-detail"],
+  { revalidate: 60, tags: [MOMENTS_PUBLIC_TAG] }
+);
+
+export async function getMomentByIdOrSlug(idOrSlug: string) {
+  return getCachedMomentByIdOrSlug(idOrSlug);
+}
+
+// Lightweight type for feed/rss routes
+export type MomentFeedItem = {
+  id: string;
+  slug: string | null;
+  content: string;
+  createdAt: Date;
+};
+
+// Internal function for feed items
+async function _fetchMomentsForFeed(limit: number): Promise<MomentFeedItem[]> {
+  return prisma.moment.findMany({
+    where: { status: "PUBLISHED", visibility: "PUBLIC" },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: { id: true, slug: true, content: true, createdAt: true },
+  });
+}
+
+// Cached version with 600s TTL (matches Cache-Control header)
+const getCachedMomentsForFeed = unstable_cache(
+  _fetchMomentsForFeed,
+  ["moments-for-feed"],
+  { revalidate: 600, tags: [MOMENTS_PUBLIC_TAG] }
+);
+
+/**
+ * Get cached moments for feed/rss generation
+ */
+export async function listMomentsForFeed(limit: number = 50): Promise<MomentFeedItem[]> {
+  return getCachedMomentsForFeed(limit);
+}
+
+// Lightweight type for sitemap routes
+export type MomentSitemapItem = {
+  id: string;
+  slug: string | null;
+  updatedAt: Date;
+};
+
+// Internal function for sitemap items
+async function _fetchMomentsForSitemap(limit: number): Promise<MomentSitemapItem[]> {
+  return prisma.moment.findMany({
+    where: { status: "PUBLISHED", visibility: "PUBLIC" },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: { id: true, slug: true, updatedAt: true },
+  });
+}
+
+// Cached version with 600s TTL
+const getCachedMomentsForSitemap = unstable_cache(
+  _fetchMomentsForSitemap,
+  ["moments-for-sitemap"],
+  { revalidate: 600, tags: [MOMENTS_PUBLIC_TAG] }
+);
+
+/**
+ * Get cached moments for sitemap generation
+ */
+export async function listMomentsForSitemap(limit: number = 500): Promise<MomentSitemapItem[]> {
+  return getCachedMomentsForSitemap(limit);
+}
+
 export async function softDeleteMoment(id: string, requester: { id: string; role?: string }) {
   const m = await prisma.moment.findUnique({ where: { id } });
   if (!m) throw new Error("not found");
   const can = requester.role === "ADMIN" || requester.id === m.authorId;
   if (!can) throw new Error("forbidden");
   await prisma.moment.update({ where: { id }, data: { deletedAt: new Date() } });
+  // Invalidate cache so deleted moment disappears from lists
+  revalidatePath("/m");
+  revalidatePath("/zh/m");
+  revalidateTag(MOMENTS_PUBLIC_TAG, "max");
 }
 
 export async function restoreMoment(id: string, requester: { id: string; role?: string }) {
@@ -144,6 +267,10 @@ export async function restoreMoment(id: string, requester: { id: string; role?: 
   const can = requester.role === "ADMIN" || requester.id === m.authorId;
   if (!can) throw new Error("forbidden");
   await prisma.moment.update({ where: { id }, data: { deletedAt: null } });
+  // Invalidate cache so restored moment appears in lists
+  revalidatePath("/m");
+  revalidatePath("/zh/m");
+  revalidateTag(MOMENTS_PUBLIC_TAG, "max");
 }
 
 export async function purgeMoment(id: string, requester: { id: string; role?: string }) {
@@ -152,6 +279,10 @@ export async function purgeMoment(id: string, requester: { id: string; role?: st
   const can = requester.role === "ADMIN" || requester.id === m.authorId;
   if (!can) throw new Error("forbidden");
   await prisma.moment.delete({ where: { id } });
+  // Invalidate cache so purged moment disappears from lists
+  revalidatePath("/m");
+  revalidatePath("/zh/m");
+  revalidateTag(MOMENTS_PUBLIC_TAG, "max");
 }
 
 export async function publishDueScheduled(): Promise<number> {
@@ -187,8 +318,9 @@ export async function createMoment(input: {
     select: { id: true },
   });
 
-  // Revalidate key pages
+  // Revalidate key pages and cache
   revalidatePath("/m");
   revalidatePath("/zh/m");
+  revalidateTag(MOMENTS_PUBLIC_TAG, "max");
   return moment.id;
 }

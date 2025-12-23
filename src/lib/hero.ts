@@ -1,10 +1,13 @@
 import prisma from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
+
+// Cache tag for hero images invalidation
+export const HERO_IMAGES_TAG = "hero-images";
 
 /**
- * 获取激活的 Hero 图片 URL 列表
- * 用于首页 Hero 组件展示
+ * 获取激活的 Hero 图片 URL 列表（内部实现）
  */
-export async function listHeroImages(): Promise<string[]> {
+async function _listHeroImages(): Promise<string[]> {
   const images = await prisma.heroImage.findMany({
     where: { active: true },
     orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
@@ -19,3 +22,15 @@ export async function listHeroImages(): Promise<string[]> {
     return img.url;
   });
 }
+
+/**
+ * 获取激活的 Hero 图片 URL 列表
+ * 用于首页 Hero 组件展示
+ * Cached for 60s with hero-images tag
+ */
+export const listHeroImages = unstable_cache(
+  _listHeroImages,
+  ["hero-images-list"],
+  { revalidate: 60, tags: [HERO_IMAGES_TAG] }
+);
+

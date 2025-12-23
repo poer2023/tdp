@@ -162,11 +162,38 @@ function shouldTransform(mime: string, options: TransformOptions): boolean {
   return Boolean(options.width || options.height || options.quality || options.format);
 }
 
+/**
+ * Check if transformation would be a no-op for the given mime type and options.
+ * Returns true if we can skip sharp entirely.
+ */
+function isNoOpTransform(mime: string, options: TransformOptions): boolean {
+  const hasResize = Boolean(options.width || options.height);
+  const hasQuality = Boolean(options.quality);
+  const hasFormatChange = Boolean(options.format) && options.format !== mimeToFormat(mime);
+
+  // If no resize, no quality change, and no format change, it's a no-op
+  return !hasResize && !hasQuality && !hasFormatChange;
+}
+
+function mimeToFormat(mime: string): string | undefined {
+  if (mime === "image/webp") return "webp";
+  if (mime === "image/jpeg") return "jpeg";
+  if (mime === "image/png") return "png";
+  if (mime === "image/avif") return "avif";
+  return undefined;
+}
+
 async function applyTransform(
   buffer: Buffer,
   mime: string,
   options: TransformOptions
 ): Promise<{ buffer: Buffer; mime: string }> {
+  // Early return: skip sharp entirely if no actual transformation is needed
+  // This saves CPU for already-optimized images (e.g., webp without resize/quality params)
+  if (isNoOpTransform(mime, options)) {
+    return { buffer, mime };
+  }
+
   const qual = options.quality && options.quality <= 100 ? options.quality : undefined;
   let pipeline = sharp(buffer, { failOnError: false })
     .rotate(); // Auto-apply EXIF orientation

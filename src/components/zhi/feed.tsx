@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Loader2, ArrowDown } from "lucide-react";
 import { ZhiPostCard } from "./post-card";
@@ -8,6 +8,7 @@ import { ZhiMomentCard } from "./moment-card";
 import { ZhiMomentDetail } from "./moment-detail";
 import { ZhiShareCard } from "./share-card";
 import { getLocaleFromPathname } from "@/lib/i18n";
+import { useMomentLikes } from "@/hooks/use-moment-likes";
 
 export type FeedFilter = "All" | "Articles" | "Moments" | "Curated";
 
@@ -72,6 +73,25 @@ export function ZhiFeed({ initialItems, onPostClick, onMomentLike }: ZhiFeedProp
   const [selectedMoment, setSelectedMoment] = useState<FeedMoment | null>(null);
   const [items, setItems] = useState<FeedItem[]>(initialItems);
 
+  // Extract moment IDs for like state hydration
+  const momentIds = useMemo(
+    () => initialItems.filter((item) => item.type === "moment").map((item) => item.id),
+    [initialItems]
+  );
+
+  // Fetch user's like states via client-side hook (uses localStorage cache to avoid flicker)
+  const { isLiked, toggleLike } = useMomentLikes(momentIds);
+
+  // Hydrate liked states into items when like states are loaded
+  const hydratedItems = useMemo(() => {
+    return items.map((item) => {
+      if (item.type === "moment") {
+        return { ...item, liked: isLiked(item.id) };
+      }
+      return item;
+    });
+  }, [items, isLiked]);
+
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
       en: {
@@ -101,18 +121,18 @@ export function ZhiFeed({ initialItems, onPostClick, onMomentLike }: ZhiFeedProp
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Keep items in sync if server data changes
-  React.useEffect(() => {
+  useEffect(() => {
     setItems(initialItems);
   }, [initialItems]);
 
-  // Filter items based on current filter
+  // Filter items based on current filter (use hydratedItems for liked state)
   const filteredItems = useMemo(() => {
-    if (feedFilter === "All") return items;
-    if (feedFilter === "Articles") return items.filter((item) => item.type === "article");
-    if (feedFilter === "Moments") return items.filter((item) => item.type === "moment");
-    if (feedFilter === "Curated") return items.filter((item) => item.type === "curated");
-    return items;
-  }, [feedFilter, items]);
+    if (feedFilter === "All") return hydratedItems;
+    if (feedFilter === "Articles") return hydratedItems.filter((item) => item.type === "article");
+    if (feedFilter === "Moments") return hydratedItems.filter((item) => item.type === "moment");
+    if (feedFilter === "Curated") return hydratedItems.filter((item) => item.type === "curated");
+    return hydratedItems;
+  }, [feedFilter, hydratedItems]);
 
   // Get visible items for pagination
   const visibleItems = useMemo(() => {
@@ -140,6 +160,9 @@ export function ZhiFeed({ initialItems, onPostClick, onMomentLike }: ZhiFeedProp
       const res = await fetch(`/api/moments/${id}/likes`, { method: "POST" });
       if (!res.ok) throw new Error(`Failed to toggle like: ${res.status}`);
       const data = await res.json();
+
+      // Update localStorage cache via hook
+      toggleLike(id, data.liked);
 
       setItems((prev) =>
         prev.map((item) =>

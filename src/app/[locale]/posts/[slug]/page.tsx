@@ -15,6 +15,8 @@ import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 
 // Ensure Node.js runtime for Prisma
 export const runtime = "nodejs";
+// ISR: Revalidate every 60 seconds for article detail pages
+export const revalidate = 60;
 
 // Cache the post query to avoid duplicate database calls
 const getPostBySlug = cache(async (slug: string, locale: string) => {
@@ -190,7 +192,9 @@ export default async function LocalizedPostPage({ params }: PageProps) {
                   src={post.coverImagePath}
                   alt={post.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 768px"
                   className="rounded-lg object-cover"
+                  priority
                 />
               </div>
             )}

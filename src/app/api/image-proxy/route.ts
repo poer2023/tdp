@@ -20,12 +20,14 @@ import { getAllowedImageProxyDomains } from "@/lib/image-proxy";
 const ALLOWED_DOMAINS = getAllowedImageProxyDomains();
 
 /**
- * GET /api/image-proxy?url=<image_url>
+ * GET /api/image-proxy?url=<image_url>&w=<width>&q=<quality>
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const imageUrl = searchParams.get("url");
+    const targetWidth = parseInt(searchParams.get("w") || "0", 10);
+    const targetQuality = parseInt(searchParams.get("q") || "78", 10);
 
     if (!imageUrl) {
       return NextResponse.json({ error: "Missing url parameter" }, { status: 400 });
@@ -80,15 +82,27 @@ export async function GET(request: NextRequest) {
     let optimizedBuffer: Buffer = imageBuffer;
     let outputContentType = contentType;
 
-    // Convert to WebP when safe to do so; fall back to original on failure/unsupported types
-    if (isImage && !isAnimated && !alreadyWebP) {
+    // Process image with sharp: resize if width specified, convert to WebP
+    if (isImage && !isAnimated) {
       try {
-        optimizedBuffer = await sharp(imageBuffer)
-          .webp({ quality: 78, effort: 4 })
+        let sharpInstance = sharp(imageBuffer);
+
+        // Resize if width parameter is provided and valid
+        if (targetWidth > 0 && targetWidth < 4000) {
+          sharpInstance = sharpInstance.resize(targetWidth, null, {
+            withoutEnlargement: true,
+            fit: "inside",
+          });
+        }
+
+        // Convert to WebP with specified quality
+        const quality = Math.min(Math.max(targetQuality, 50), 95);
+        optimizedBuffer = await sharpInstance
+          .webp({ quality, effort: 4 })
           .toBuffer();
         outputContentType = "image/webp";
       } catch (err) {
-        console.warn("[Image Proxy] WebP conversion failed, returning original", err);
+        console.warn("[Image Proxy] Image processing failed, returning original", err);
         optimizedBuffer = imageBuffer;
         outputContentType = contentType;
       }
