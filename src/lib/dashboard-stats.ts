@@ -20,6 +20,64 @@ export interface DashboardStatsData {
     movieData: { month: string; movies: number }[];
     skillData: { name: string; level: number }[];
     currentGame?: { name: string; progress: number };
+    gitHubStats?: {
+        commitsWeek: number;
+        commitsMonth: number;
+        prsMonth: number;
+        starsYear: number;
+        currentStreak: number;
+        lastSynced: Date;
+    };
+    gitHubContributions?: { date: string; value: number }[];
+}
+
+/**
+ * Get latest GitHub stats
+ */
+async function getGitHubStatsFromDB() {
+    try {
+        const stats = await (prisma as any).gitHubStats.findFirst({
+            orderBy: { syncedAt: "desc" },
+        });
+
+        if (!stats) return undefined;
+
+        return {
+            commitsWeek: stats.commitsWeek,
+            commitsMonth: stats.commitsMonth,
+            prsMonth: stats.prsMonth,
+            starsYear: stats.starsYear,
+            currentStreak: stats.currentStreak,
+            lastSynced: stats.syncedAt,
+        };
+    } catch {
+        return undefined;
+    }
+}
+
+/**
+ * Get GitHub contributions for the chart (last 6 months)
+ */
+async function getGitHubContributionsFromDB() {
+    try {
+        const now = new Date();
+        const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+
+        const contributions = await (prisma as any).gitHubContribution.findMany({
+            where: {
+                date: { gte: sixMonthsAgo },
+            },
+            orderBy: { date: "asc" },
+        });
+
+        // Format dates as YYYY-MM-DD for simpler frontend handling
+        return contributions.map((c: any) => ({
+            date: c.date.toISOString().split('T')[0],
+            value: c.value,
+        }));
+    } catch {
+        return [];
+    }
 }
 
 /**
@@ -189,7 +247,7 @@ async function getSkillDataFromDB(
         if (languages.length > 0) {
             return languages.slice(0, 4).map((lang) => ({
                 name: lang.name,
-                level: Math.min(95, Math.round(lang.percentage * 1.2 + 50)),
+                level: Math.round(lang.percentage), // Use real GitHub percentage
             }));
         }
 
@@ -359,10 +417,13 @@ async function _fetchDashboardStats(): Promise<DashboardStatsData> {
         const { movieCount, movieData } = processMoviesByMonth(mediaThisYear);
 
         // Fetch skill and routine data from database (with fallbacks)
-        const [skillData, routineData, stepsData] = await Promise.all([
+        // Also fetch GitHub stats and contributions
+        const [skillData, routineData, stepsData, gitHubStats, gitHubContributions] = await Promise.all([
             getSkillDataFromDB(languages),
             getRoutineDataFromDB(),
             getStepsDataFromDB(),
+            getGitHubStatsFromDB(),
+            getGitHubContributionsFromDB(),
         ]);
 
         return {
@@ -374,6 +435,8 @@ async function _fetchDashboardStats(): Promise<DashboardStatsData> {
             movieData,
             skillData,
             currentGame: currentlyPlayingGame,
+            gitHubStats,
+            gitHubContributions,
         };
     } catch (error) {
         console.error("[Dashboard Stats] Error fetching data:", error);

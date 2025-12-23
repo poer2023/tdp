@@ -15,6 +15,8 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  AreaChart,
+  Area,
 } from "recharts";
 import {
   Camera,
@@ -23,8 +25,10 @@ import {
   Film,
   Gamepad2,
   Code,
+  GitCommit,
   ArrowUpRight,
   Loader2,
+  Zap,
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import type { DashboardStatsData } from "@/lib/dashboard-stats";
@@ -501,6 +505,90 @@ export function ZhiStatsDashboard({
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* Card 4.5: Code Frequency (Waveform) */}
+        {stats.gitHubContributions && stats.gitHubContributions.length > 0 && (
+          <div className="group col-span-1 min-h-[300px] overflow-hidden rounded-2xl border border-stone-800 bg-[#0d1117] p-6 text-white shadow-2xl transition-all duration-300 hover:shadow-cyan-900/10 md:col-span-2 relative">
+            {/* Background Grid */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-10"
+              style={{
+                backgroundImage: "linear-gradient(#30363d 1px, transparent 1px), linear-gradient(90deg, #30363d 1px, transparent 1px)",
+                backgroundSize: "20px 20px",
+              }}
+            ></div>
+
+            <div className="relative z-10 flex h-full flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-xl bg-stone-800 p-2 text-white">
+                    <GitCommit size={20} />
+                  </div>
+                  <div>
+                    <h4 className="font-serif text-lg text-white">Code Frequency</h4>
+                    <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-stone-500">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                      LIVE ACTIVITY
+                    </p>
+                  </div>
+                </div>
+
+                {stats.gitHubStats && (
+                  <div className="flex gap-4">
+                    <div className="text-right">
+                      <div className="flex items-center justify-end gap-1 text-stone-400">
+                        <Zap size={12} className="text-yellow-500" />
+                        <span className="text-xs">Streak</span>
+                      </div>
+                      <span className="font-mono text-xl font-bold text-white">
+                        {stats.gitHubStats.currentStreak}<span className="text-sm text-stone-500">d</span>
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="block text-xs text-stone-400">This Week</span>
+                      <span className="font-mono text-2xl font-bold text-green-400">
+                        {stats.gitHubStats.commitsWeek}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Waveform Chart */}
+              <div className="mt-6 h-40 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={stats.gitHubContributions}>
+                    <defs>
+                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#2ecc71" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#2ecc71" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <Tooltip
+                      cursor={{ stroke: '#30363d', strokeWidth: 1 }}
+                      contentStyle={{
+                        backgroundColor: '#161b22',
+                        borderColor: '#30363d',
+                        borderRadius: '6px',
+                        color: '#c9d1d9',
+                        fontSize: '12px'
+                      }}
+                      labelFormatter={(label) => `Date: ${label}`}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#2ecc71"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorValue)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Card 5: Skills */}
         <div className="group relative col-span-1 overflow-hidden rounded-2xl bg-stone-200 p-6 shadow-sm transition-all duration-300 hover:shadow-md md:col-span-3 dark:bg-stone-900">
