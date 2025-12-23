@@ -153,32 +153,28 @@ export function ZhiStatsDashboard({
     stats.stepsData.entries.reduce((acc: number, curr: { steps: number }) => acc + curr.steps, 0) / (stats.stepsData.entries.length || 1)
   );
 
-  // Aggregate daily contributions into a continuous 14-week grid (7 rows x 14 cols)
-  const isometricData = useMemo(() => {
+  // Aggregate daily contributions into weekly data for "3D Skyline"
+  const skylineData = useMemo(() => {
     if (!stats.gitHubContributions) return [];
 
-    const days = 14 * 7; // 98 days
-    const today = new Date();
-    const dataMap = new Map(stats.gitHubContributions.map(i => [i.date.split('T')[0], i.value]));
+    const weeks: Record<string, number> = {};
+    stats.gitHubContributions.forEach((item) => {
+      const date = new Date(item.date);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(date.setDate(diff));
+      const key = monday.toISOString().split('T')[0] as string;
+      weeks[key] = (weeks[key] || 0) + item.value;
+    });
 
-    // Generate last 98 days in reverse (newest last for visual order? 
-    // actually for 3D grid, usually top-left is old, bottom-right is new, or vice versa.
-    // Let's generate chronological: Oldest -> Newest.
-    // 14 cols (weeks), 7 rows (days). 
-    // Grid rendering usually goes Row by Row. 
-    // So 7 rows. Row 0 = Mon? 
-    // Standard GitHub is Col (Week) oriented.
-    // Let's do 14 columns, 7 rows.
-
-    const result = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(today.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const count = dataMap.get(dateStr) || 0;
-      result.push({ date: dateStr, count });
-    }
-    return result;
+    return Object.entries(weeks)
+      .map(([date, count]) => ({
+        date,
+        count,
+        label: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-20); // Show last 20 weeks for cleaner skyline
   }, [stats.gitHubContributions]);
 
   return (
@@ -186,9 +182,9 @@ export function ZhiStatsDashboard({
       {/* CSS Animations & Isometric Styles */}
       <style>{`
         .iso-container {
-          transform: rotateX(45deg) rotateZ(45deg);
+          transform: rotateX(-45deg) rotateZ(-30deg);
           transform-style: preserve-3d;
-          width: 280px; /* Force specific width for alignment? */
+          width: 80%; /* Adjust width */
         }
         .iso-pillar {
           transform-style: preserve-3d;
@@ -207,7 +203,7 @@ export function ZhiStatsDashboard({
           width: 100%;
           height: 100%;
           background: inherit;
-          filter: brightness(1.1);
+          filter: brightness(1.2);
           transform: translateZ(var(--h));
         }
         /* RIGHT Face (Side 1) */
@@ -216,11 +212,11 @@ export function ZhiStatsDashboard({
           position: absolute;
           top: 0;
           left: 100%;
-          width: 100%;
-          height: var(--h);
+          width: var(--h); /* Extends along Z */
+          height: 100%;
           background: inherit;
           filter: brightness(0.8);
-          transform: rotateY(90deg);
+          transform: rotateY(-90deg);
           transform-origin: left top;
         }
         /* FRONT Face (Side 2) */
@@ -229,7 +225,7 @@ export function ZhiStatsDashboard({
            top: 100%;
            left: 0;
            width: 100%;
-           height: var(--h);
+           height: var(--h); /* Extends along Z */
            background: inherit;
            filter: brightness(0.9);
            transform: rotateX(-90deg);
@@ -633,26 +629,26 @@ export function ZhiStatsDashboard({
                 )}
               </div>
 
-              {/* Isometric 3D City */}
+              {/* Isometric 3D Skyline */}
               <div className="mt-8 flex h-56 w-full items-center justify-center overflow-visible px-4">
-                <div className="iso-container grid grid-cols-14 gap-[5px] -ml-8">
-                  {isometricData.map((day, i) => {
-                    // Scale: 4px base, up to 80px max. Factor 8.
-                    const h = Math.max(4, Math.min(80, day.count * 8));
+                <div className="iso-container flex items-end justify-center gap-3">
+                  {skylineData.map((week, i) => {
+                    // Scale: 4px base, up to 120px max. Factor 3.
+                    // Weekly counts are larger (e.g. 50 commits). 50 * 3 = 150px.
+                    const h = Math.max(4, Math.min(120, week.count * 3));
                     return (
                       <div
                         key={i}
-                        className="iso-pillar relative h-4 w-4 rounded-[1px]"
+                        className="iso-pillar relative h-6 w-6 rounded-[1px]"
                         style={{
-                          zIndex: i, // Ensure sorting order (Top-Left rendered first, covered by Bottom-Right)
-                          background: day.count > 0 ? '#22c55e' : '#e5e7eb',
-                          backgroundColor: day.count === 0 ? 'rgba(229, 231, 235, 1)' : // Solid gray for base? or semi-transparent?
-                            // Let's use solid for solid blocks.
-                            day.count > 8 ? '#15803d' :
-                              day.count > 3 ? '#22c55e' : '#86efac',
+                          zIndex: i,
+                          background: week.count > 0 ? '#22c55e' : '#e5e7eb',
+                          backgroundColor: week.count === 0 ? '#f5f5f4' :
+                            week.count > 40 ? '#15803d' :
+                              week.count > 10 ? '#22c55e' : '#86efac',
                           '--h': `${h}px`
                         } as React.CSSProperties}
-                        title={`${day.date}: ${day.count} commits`}
+                        title={`Week of ${week.label}: ${week.count} commits`}
                       >
                         {/* Front Face */}
                         <span></span>
