@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { listMomentsForFeed } from "@/lib/moments";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 // Align with Cache-Control header (600s = 10 minutes)
 export const revalidate = 600;
 
