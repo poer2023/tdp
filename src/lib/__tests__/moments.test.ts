@@ -43,7 +43,11 @@ vi.mock("../prisma", () => {
   };
 });
 
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+  unstable_cache: vi.fn((fn) => fn), // Pass-through implementation
+}));
 
 describe("moments lib", () => {
   beforeEach(() => {

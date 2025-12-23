@@ -19,6 +19,13 @@ vi.mock("../prisma", () => ({
   },
 }));
 
+// Mock next/cache (for unstable_cache and revalidateTag used in posts.ts)
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+  unstable_cache: vi.fn((fn) => fn), // Pass-through implementation
+}));
+
 describe("createPost / slug generation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
