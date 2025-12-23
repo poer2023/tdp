@@ -153,38 +153,85 @@ export function ZhiStatsDashboard({
     stats.stepsData.entries.reduce((acc: number, curr: { steps: number }) => acc + curr.steps, 0) / (stats.stepsData.entries.length || 1)
   );
 
-  // Aggregate daily contributions into weekly data for "Equalizer" chart
-  const weeklyActivity = useMemo(() => {
+  // Aggregate daily contributions into a continuous 14-week grid (7 rows x 14 cols)
+  const isometricData = useMemo(() => {
     if (!stats.gitHubContributions) return [];
 
-    const weeks: Record<string, number> = {};
+    const days = 14 * 7; // 98 days
+    const today = new Date();
+    const dataMap = new Map(stats.gitHubContributions.map(i => [i.date.split('T')[0], i.value]));
 
-    stats.gitHubContributions.forEach((item) => {
-      const date = new Date(item.date);
-      // Get Monday of the week
-      const day = date.getDay();
-      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-      const monday = new Date(date.setDate(diff));
-      const key = monday.toISOString().split('T')[0];
+    // Generate last 98 days in reverse (newest last for visual order? 
+    // actually for 3D grid, usually top-left is old, bottom-right is new, or vice versa.
+    // Let's generate chronological: Oldest -> Newest.
+    // 14 cols (weeks), 7 rows (days). 
+    // Grid rendering usually goes Row by Row. 
+    // So 7 rows. Row 0 = Mon? 
+    // Standard GitHub is Col (Week) oriented.
+    // Let's do 14 columns, 7 rows.
 
-      weeks[key] = (weeks[key] || 0) + item.value;
-    });
-
-    return Object.entries(weeks)
-      .map(([date, count]) => ({
-        date,
-        count,
-        // Format for tooltip: "Jan 1"
-        label: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-      }))
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .slice(-24); // Show last ~6 months (24 weeks)
+    const result = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const count = dataMap.get(dateStr) || 0;
+      result.push({ date: dateStr, count });
+    }
+    return result;
   }, [stats.gitHubContributions]);
 
   return (
     <div className="w-full animate-in fade-in pb-16 duration-700">
-      {/* CSS Animations */}
+      {/* CSS Animations & Isometric Styles */}
       <style>{`
+        .iso-container {
+          transform: rotateX(60deg) rotateZ(45deg);
+          transform-style: preserve-3d;
+        }
+        .iso-pillar {
+          transform-style: preserve-3d;
+          transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: transform;
+        }
+        .iso-pillar:hover {
+          transform: translateZ(10px);
+        }
+        .iso-pillar::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: inherit;
+          filter: brightness(1.1);
+          transform: translateZ(var(--h));
+        }
+        .iso-pillar::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 100%;
+          width: 100%;
+          height: var(--h);
+          background: inherit;
+          filter: brightness(0.8);
+          transform: rotateY(90deg);
+          transform-origin: left top;
+        }
+        .iso-pillar span {
+           position: absolute;
+           top: 100%;
+           left: 0;
+           width: 100%;
+           height: var(--h);
+           background: inherit;
+           filter: brightness(0.6);
+           transform: rotateX(-90deg);
+           transform-origin: top left;
+        }
+
         @keyframes flash {
           0% { opacity: 0; }
           10% { opacity: 1; }
@@ -582,59 +629,28 @@ export function ZhiStatsDashboard({
                 )}
               </div>
 
-              {/* Equalizer Chart */}
-              <div className="mt-6 h-40 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weeklyActivity} barCategoryGap="20%">
-                    <Tooltip
-                      cursor={{ fill: "transparent" }}
-                      contentStyle={{
-                        backgroundColor: '#fff',
-                        borderColor: '#e5e7eb',
-                        borderRadius: '8px',
-                        color: '#374151',
-                        fontSize: '12px',
-                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                        padding: '8px 12px',
-                      }}
-                      itemStyle={{ color: '#15803d', fontWeight: 600 }}
-                      formatter={(value: number) => [`${value} commits`, ""]}
-                      labelFormatter={(label) => {
-                        // Find the item with this date to get the formatted label? 
-                        // Recharts labelFormatter passes the label value (XAxis dataKey). 
-                        // If no XAxis, index is used? 
-                        // Better to use custom content or pass dataKey.
-                        // Let's rely on Payload lookup in content if standard formatter isn't enough.
-                        // But wait, standard Tooltip with BarChart works fine if mapped correctly.
-                        // Let's use custom content to be safe and clean.
-                        return "";
-                      }}
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length > 0) {
-                          const data = payload[0].payload;
-                          return (
-                            <div className="rounded-lg border border-stone-100 bg-white px-3 py-2 shadow-lg dark:border-stone-800 dark:bg-stone-800">
-                              <p className="mb-1 text-xs text-stone-500 dark:text-stone-400">Week of {data.label}</p>
-                              <p className="font-mono text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                                {data.count}
-                              </p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Bar
-                      dataKey="count"
-                      fill="#22c55e"
-                      radius={[4, 4, 0, 0]}
-                    >
-                      {weeklyActivity.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fillOpacity={Math.max(0.3, Math.min(1, entry.count / 20))} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+              {/* Isometric 3D City */}
+              <div className="mt-8 flex h-48 w-full items-center justify-center overflow-visible px-4">
+                <div className="iso-container grid grid-cols-14 gap-1.5 -ml-8">
+                  {isometricData.map((day, i) => {
+                    const h = Math.max(2, Math.min(60, day.count * 5));
+                    return (
+                      <div
+                        key={i}
+                        className="iso-pillar relative h-4 w-4 rounded-sm"
+                        style={{
+                          background: day.count > 0 ? '#22c55e' : '#e5e7eb', // Simple green/gray base
+                          backgroundColor: day.count === 0 ? 'rgba(229, 231, 235, 0.5)' :
+                            day.count > 8 ? '#15803d' :
+                              day.count > 3 ? '#22c55e' : '#86efac',
+                          '--h': `${h}px`
+                        } as React.CSSProperties}
+                        title={`${day.date}: ${day.count} commits`}
+                      >
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           </div>
