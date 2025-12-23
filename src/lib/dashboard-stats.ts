@@ -166,12 +166,42 @@ function processMoviesByMonth(media: Array<{ watchedAt: Date | null }>): {
 }
 
 /**
- * Build skill data from programming languages
+ * Get skill data from database (fallback to languages or defaults)
  */
-function buildSkillData(
+async function getSkillDataFromDB(
     languages: Array<{ name: string; percentage: number; hours: number }>
-): Array<{ name: string; level: number }> {
-    if (languages.length === 0) {
+): Promise<Array<{ name: string; level: number }>> {
+    try {
+        // First try to get from SkillData table
+        const skillRecords = await prisma.skillData.findMany({
+            orderBy: { level: "desc" },
+            take: 4,
+        });
+
+        if (skillRecords.length > 0) {
+            return skillRecords.map((skill) => ({
+                name: skill.name,
+                level: skill.level,
+            }));
+        }
+
+        // Fallback to GitHub languages if available
+        if (languages.length > 0) {
+            return languages.slice(0, 4).map((lang) => ({
+                name: lang.name,
+                level: Math.min(95, Math.round(lang.percentage * 1.2 + 50)),
+            }));
+        }
+
+        // Final fallback to hardcoded defaults
+        return [
+            { name: "React/Next.js", level: 90 },
+            { name: "TypeScript", level: 85 },
+            { name: "Product Design", level: 80 },
+            { name: "Photography", level: 75 },
+        ];
+    } catch (error) {
+        console.error("[Dashboard Stats] Error fetching skill data:", error);
         return [
             { name: "React/Next.js", level: 90 },
             { name: "TypeScript", level: 85 },
@@ -179,11 +209,45 @@ function buildSkillData(
             { name: "Photography", level: 75 },
         ];
     }
+}
 
-    return languages.slice(0, 4).map((lang) => ({
-        name: lang.name,
-        level: Math.min(95, Math.round(lang.percentage * 1.2 + 50)),
-    }));
+/**
+ * Get routine data from database (fallback to defaults)
+ */
+async function getRoutineDataFromDB(): Promise<
+    Array<{ name: string; value: number; color: string }>
+> {
+    try {
+        const routineRecords = await prisma.routineData.findMany({
+            orderBy: { value: "desc" },
+        });
+
+        if (routineRecords.length > 0) {
+            return routineRecords.map((routine) => ({
+                name: routine.name,
+                value: routine.value,
+                color: routine.color,
+            }));
+        }
+
+        // Fallback to hardcoded defaults
+        return [
+            { name: "Work", value: 8, color: "#5c9c6d" },
+            { name: "Sleep", value: 7, color: "#6366f1" },
+            { name: "Creative", value: 4, color: "#f59e0b" },
+            { name: "Exercise", value: 1, color: "#ef4444" },
+            { name: "Other", value: 4, color: "#a8a29e" },
+        ];
+    } catch (error) {
+        console.error("[Dashboard Stats] Error fetching routine data:", error);
+        return [
+            { name: "Work", value: 8, color: "#5c9c6d" },
+            { name: "Sleep", value: 7, color: "#6366f1" },
+            { name: "Creative", value: 4, color: "#f59e0b" },
+            { name: "Exercise", value: 1, color: "#ef4444" },
+            { name: "Other", value: 4, color: "#a8a29e" },
+        ];
+    }
 }
 
 /**
@@ -293,15 +357,13 @@ async function _fetchDashboardStats(): Promise<DashboardStatsData> {
 
         const photosByWeek = processPhotosByWeek(recentPhotos);
         const { movieCount, movieData } = processMoviesByMonth(mediaThisYear);
-        const skillData = buildSkillData(languages);
-        const routineData = [
-            { name: "Work", value: 8, color: "#5c9c6d" },
-            { name: "Sleep", value: 7, color: "#6366f1" },
-            { name: "Creative", value: 4, color: "#f59e0b" },
-            { name: "Exercise", value: 1, color: "#ef4444" },
-            { name: "Other", value: 4, color: "#a8a29e" },
-        ];
-        const stepsData = await getStepsDataFromDB();
+
+        // Fetch skill and routine data from database (with fallbacks)
+        const [skillData, routineData, stepsData] = await Promise.all([
+            getSkillDataFromDB(languages),
+            getRoutineDataFromDB(),
+            getStepsDataFromDB(),
+        ]);
 
         return {
             photoCount,
