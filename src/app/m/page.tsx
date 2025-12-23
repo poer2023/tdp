@@ -3,7 +3,7 @@ import LocalizedMomentsPage from "../[locale]/m/page";
 
 // ISR: Match localized page revalidate (300s)
 export const runtime = "nodejs";
-export const dynamic = "auto";
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 type PageProps = {

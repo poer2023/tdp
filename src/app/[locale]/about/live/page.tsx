@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 import { getDashboardStats } from "@/lib/dashboard-stats";
 
 // ISR: Revalidate every 5 minutes (dashboard data doesn't need to be real-time)
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 // Dynamic import to avoid bundling recharts (~370KB) in common chunks
-const ZhiStatsDashboard = dynamic(
+const ZhiStatsDashboard = nextDynamic(
   () => import("@/components/zhi/stats-dashboard").then((mod) => mod.ZhiStatsDashboard),
   {
     loading: () => (

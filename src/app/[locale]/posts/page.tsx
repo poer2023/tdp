@@ -4,6 +4,7 @@ import { Blog8 } from "@/components/ui/blog8";
 
 // Querying Prisma – lock runtime to Node.js
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 // ISR: Revalidate every 60 seconds
 export const revalidate = 60;
 

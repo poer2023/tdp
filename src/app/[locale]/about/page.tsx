@@ -5,7 +5,7 @@ import { getLiveHighlightsData } from "@/lib/about-live";
 
 // ISR: Revalidate every 60 seconds (getLiveHighlightsData is already cached)
 export const runtime = "nodejs";
-export const dynamic = "auto";
+export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 type PageProps = {

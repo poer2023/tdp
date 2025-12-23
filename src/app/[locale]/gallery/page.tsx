@@ -7,7 +7,7 @@ import { GalleryCategoryTabs } from "@/components/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
 
 // ISR: Revalidate every 5 minutes for gallery updates with CDN caching
-export const dynamic = "auto";
+export const dynamic = "force-dynamic";
 export const revalidate = 300; // 5 minutes
 
 // Default gallery limit to prevent performance issues with large datasets

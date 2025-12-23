@@ -15,6 +15,7 @@ import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 
 // Ensure Node.js runtime for Prisma
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 // ISR: Revalidate every 60 seconds for article detail pages
 export const revalidate = 60;
 

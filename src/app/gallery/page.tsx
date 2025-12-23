@@ -1,6 +1,7 @@
 import LocalizedGalleryPage from "../[locale]/gallery/page";
 
 // Match the localized page's revalidate (300s)
+export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 type PageProps = {

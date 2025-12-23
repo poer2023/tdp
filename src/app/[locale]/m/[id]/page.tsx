@@ -8,6 +8,7 @@ import { MomentCard } from "@/components/moments/moment-card";
 
 // ISR: Revalidate every 60 seconds for public/unlisted moments
 // Private moments will still require auth check on each request
+export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 type Props = {
