@@ -21,26 +21,31 @@ export function useMomentLikes(momentIds: string[]) {
     const { data: session, status } = useSession();
     const isAuthenticated = status === "authenticated" && !!session?.user;
 
-    const [likedIds, setLikedIds] = useState<Set<string>>(() => {
-        // Initialize from localStorage cache to avoid flicker
-        if (typeof window === "undefined") return new Set();
+    // Always start with empty set to match SSR (avoids hydration mismatch)
+    const [likedIds, setLikedIds] = useState<Set<string>>(() => new Set());
+    const [isHydrated, setIsHydrated] = useState(false);
+
+    const [isLoading, setIsLoading] = useState(true);
+    const fetchedRef = useRef(false);
+
+    // Hydrate from localStorage AFTER mount to avoid hydration mismatch
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
         try {
             const cached = localStorage.getItem(CACHE_KEY);
             if (cached) {
                 const data: CacheData = JSON.parse(cached);
                 // Check if cache is still valid
                 if (Date.now() - data.timestamp < CACHE_TTL) {
-                    return new Set(data.likedIds);
+                    setLikedIds(new Set(data.likedIds));
                 }
             }
         } catch {
             // Ignore parse errors
         }
-        return new Set();
-    });
-
-    const [isLoading, setIsLoading] = useState(true);
-    const fetchedRef = useRef(false);
+        setIsHydrated(true);
+    }, []);
 
     // Fetch like states from API
     const fetchLikeStates = useCallback(async (ids: string[]) => {

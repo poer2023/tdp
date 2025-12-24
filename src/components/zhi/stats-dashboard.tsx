@@ -72,6 +72,245 @@ function AnimatedCounter({
   return <span>{count.toLocaleString()}</span>;
 }
 
+// Code Frequency Heatmap Component with Modern Design
+interface HeatmapDay {
+  date: string;
+  count: number;
+  level: number;
+  label: string;
+}
+
+interface CodeFrequencyHeatmapProps {
+  heatmapData: HeatmapDay[];
+  gitHubStats?: {
+    currentStreak: number;
+    commitsWeek: number;
+  };
+  locale: string;
+}
+
+function CodeFrequencyHeatmap({ heatmapData, gitHubStats, locale }: CodeFrequencyHeatmapProps) {
+  const [hoveredDay, setHoveredDay] = useState<{ day: HeatmapDay; x: number; y: number } | null>(null);
+
+  // Get color class based on level - purple-cyan gradient
+  const getLevelColor = (level: number) => {
+    switch (level) {
+      case 0: return 'bg-stone-100 dark:bg-stone-800/50';
+      case 1: return 'bg-violet-200 dark:bg-violet-900/50';
+      case 2: return 'bg-violet-400 dark:bg-violet-700/70';
+      case 3: return 'bg-fuchsia-500 dark:bg-fuchsia-600/80';
+      case 4: return 'bg-cyan-400 dark:bg-cyan-500';
+      default: return 'bg-stone-100 dark:bg-stone-800/50';
+    }
+  };
+
+  // Group data by weeks (7 days per week, starting from Sunday)
+  const weeks = useMemo(() => {
+    const result: HeatmapDay[][] = [];
+    for (let i = 0; i < heatmapData.length; i += 7) {
+      result.push(heatmapData.slice(i, i + 7));
+    }
+    return result;
+  }, [heatmapData]);
+
+  // Get month labels with positions
+  const monthLabels = useMemo(() => {
+    const labels: { label: string; weekIndex: number }[] = [];
+    let lastMonth = -1;
+
+    weeks.forEach((week, weekIndex) => {
+      // Check the first day of each week
+      const firstDay = week[0];
+      if (firstDay) {
+        const date = new Date(firstDay.date);
+        const month = date.getMonth();
+        if (month !== lastMonth) {
+          const monthName = date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short' });
+          labels.push({ label: monthName, weekIndex });
+          lastMonth = month;
+        }
+      }
+    });
+
+    return labels;
+  }, [weeks, locale]);
+
+  // Calculate total contributions
+  const totalContributions = useMemo(() => {
+    return heatmapData.reduce((sum, day) => sum + day.count, 0);
+  }, [heatmapData]);
+
+  const weekDays = locale === 'zh' ? ['', '一', '', '三', '', '五', ''] : ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+
+  const handleMouseEnter = (day: HeatmapDay, event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setHoveredDay({
+      day,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 8
+    });
+  };
+
+  return (
+    <div className="group col-span-1 min-h-[320px] overflow-hidden rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md md:col-span-2 relative dark:border-stone-800 dark:bg-stone-900">
+      {/* Subtle gradient background */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.08]"
+        style={{
+          background: 'radial-gradient(ellipse at top right, #c084fc, transparent 50%), radial-gradient(ellipse at bottom left, #22d3ee, transparent 50%)'
+        }}
+      />
+
+      <div className="relative z-10 flex h-full flex-col">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-gradient-to-br from-violet-100 to-cyan-100 p-2 text-violet-600 dark:from-violet-900/30 dark:to-cyan-900/30 dark:text-violet-400">
+              <GitCommit size={20} />
+            </div>
+            <div>
+              <h4 className="font-serif text-lg text-stone-800 dark:text-stone-100">
+                {locale === 'zh' ? '代码频率' : 'Code Frequency'}
+              </h4>
+              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cyan-500" />
+                </span>
+                {locale === 'zh' ? '过去一年' : 'Past Year'} · {totalContributions.toLocaleString()} {locale === 'zh' ? '次提交' : 'contributions'}
+              </p>
+            </div>
+          </div>
+
+          {gitHubStats && (
+            <div className="flex gap-5">
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-1 text-stone-400">
+                  <Zap size={12} className="text-amber-500" />
+                  <span className="text-xs">{locale === 'zh' ? '连续' : 'Streak'}</span>
+                </div>
+                <span className="font-mono text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">
+                  {gitHubStats.currentStreak}<span className="text-sm text-stone-400 ml-0.5">d</span>
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="block text-xs text-stone-400">{locale === 'zh' ? '本周' : 'This Week'}</span>
+                <span className="font-mono text-2xl font-bold text-cyan-500">
+                  {gitHubStats.commitsWeek}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Heatmap Container */}
+        <div className="flex-1 flex flex-col">
+          {/* Month Labels */}
+          <div className="flex pl-8 mb-1">
+            <div className="flex relative" style={{ width: `${weeks.length * 13}px` }}>
+              {monthLabels.map(({ label, weekIndex }, idx) => (
+                <span
+                  key={idx}
+                  className="absolute text-[10px] font-medium text-stone-400 dark:text-stone-500"
+                  style={{ left: `${weekIndex * 13}px` }}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Heatmap Grid with Week Labels */}
+          <div className="flex overflow-x-auto pb-2 scrollbar-hide">
+            {/* Week day labels */}
+            <div className="flex flex-col gap-[3px] pr-2 flex-shrink-0">
+              {weekDays.map((day, idx) => (
+                <div key={idx} className="h-[11px] flex items-center justify-end">
+                  <span className="text-[9px] font-medium text-stone-400 dark:text-stone-500 w-6 text-right">
+                    {day}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Grid */}
+            <div className="flex gap-[3px]">
+              {weeks.map((week, weekIdx) => (
+                <div key={weekIdx} className="flex flex-col gap-[3px]">
+                  {week.map((day, dayIdx) => (
+                    <div
+                      key={dayIdx}
+                      className={`h-[11px] w-[11px] rounded-[2px] transition-all cursor-pointer
+                        hover:ring-2 hover:ring-violet-400/50 hover:scale-110
+                        ${getLevelColor(day.level)}`}
+                      onMouseEnter={(e) => handleMouseEnter(day, e)}
+                      onMouseLeave={() => setHoveredDay(null)}
+                    />
+                  ))}
+                  {/* Fill empty days at end of last week */}
+                  {week.length < 7 && Array.from({ length: 7 - week.length }).map((_, idx) => (
+                    <div key={`empty-${idx}`} className="h-[11px] w-[11px]" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-stone-100 dark:border-stone-800">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-stone-400">{locale === 'zh' ? '少' : 'Less'}</span>
+              <div className="flex gap-[3px]">
+                {[0, 1, 2, 3, 4].map((level) => (
+                  <div key={level} className={`h-[10px] w-[10px] rounded-[2px] ${getLevelColor(level)}`} />
+                ))}
+              </div>
+              <span className="text-[10px] text-stone-400">{locale === 'zh' ? '多' : 'More'}</span>
+            </div>
+            <a
+              href="https://github.com/ZhiHao-He"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-[10px] text-stone-400 hover:text-violet-500 transition-colors"
+            >
+              <span>@GitHub</span>
+              <ArrowUpRight size={10} />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating Tooltip */}
+      {hoveredDay && (
+        <div
+          className="fixed z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-150"
+          style={{
+            left: hoveredDay.x,
+            top: hoveredDay.y,
+            transform: 'translate(-50%, -100%)'
+          }}
+        >
+          <div className="bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-3 py-2 rounded-lg shadow-xl text-center">
+            <div className="font-bold text-sm">
+              {hoveredDay.day.count} {locale === 'zh' ? '次提交' : hoveredDay.day.count === 1 ? 'contribution' : 'contributions'}
+            </div>
+            <div className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5">
+              {new Date(hoveredDay.day.date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              })}
+            </div>
+            {/* Tooltip Arrow */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-stone-900 dark:border-t-stone-100" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Types
 interface StatCardData {
   icon: React.ReactNode;
@@ -87,7 +326,6 @@ interface ZhiStatsDashboardProps {
   stats: DashboardStatsData;
   highlights?: StatCardData[];
 }
-
 
 
 export function ZhiStatsDashboard({
@@ -153,85 +391,60 @@ export function ZhiStatsDashboard({
     stats.stepsData.entries.reduce((acc: number, curr: { steps: number }) => acc + curr.steps, 0) / (stats.stepsData.entries.length || 1)
   );
 
-  // Aggregate daily contributions into weekly data for "3D Skyline"
-  const skylineData = useMemo(() => {
+  // Aggregate daily contributions for Standard Heatmap (Last 365 Days)
+  const heatmapData = useMemo(() => {
     if (!stats.gitHubContributions) return [];
 
-    const weeks: Record<string, number> = {};
-    stats.gitHubContributions.forEach((item) => {
-      const date = new Date(item.date);
-      const day = date.getDay();
-      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-      const monday = new Date(date.setDate(diff));
-      const key = monday.toISOString().split('T')[0] as string;
-      weeks[key] = (weeks[key] || 0) + item.value;
-    });
+    // Create map for O(1) lookup
+    const dataMap = new Map((stats.gitHubContributions || []).map(i => {
+      // Ensure date string format YYYY-MM-DD
+      const dateStr = typeof i.date === 'string' ? i.date.split('T')[0] : new Date(i.date).toISOString().split('T')[0];
+      return [dateStr, i.value];
+    }));
 
-    return Object.entries(weeks)
-      .map(([date, count]) => ({
-        date,
+    const today = new Date();
+    // Start from 1 year ago (52 weeks)
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - 365);
+
+    // Align start date to the previous Sunday (to start grid correctly)
+    const dayOfWeek = startDate.getDay(); // 0 = Sunday
+    const alignedStartDate = new Date(startDate);
+    alignedStartDate.setDate(startDate.getDate() - dayOfWeek);
+
+    const days = [];
+    // 53 weeks * 7 days = 371 grid cells
+    const totalDays = 53 * 7;
+
+    for (let i = 0; i < totalDays; i++) {
+      const d = new Date(alignedStartDate);
+      d.setDate(alignedStartDate.getDate() + i);
+      // Assert dateStr is string to avoid lint error
+      const dateStr = d.toISOString().split('T')[0] as string;
+
+      const isFuture = d > new Date();
+      const count = isFuture ? 0 : (dataMap.get(dateStr) || 0);
+
+      let level = 0;
+      if (count > 0) level = 1;
+      if (count >= 3) level = 2;
+      if (count >= 6) level = 3;
+      if (count >= 10) level = 4;
+
+      days.push({
+        date: dateStr,
         count,
-        label: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-      }))
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .slice(-20); // Show last 20 weeks for cleaner skyline
+        level,
+        label: new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+      });
+    }
+    return days;
   }, [stats.gitHubContributions]);
 
   return (
     <div className="w-full animate-in fade-in pb-16 duration-700">
-      {/* CSS Animations & Isometric Styles */}
+      {/* CSS Animations */}
       <style>{`
-        .iso-container {
-          transform: rotateX(-45deg) rotateZ(-30deg);
-          transform-style: preserve-3d;
-          width: 80%; /* Adjust width */
-        }
-        .iso-pillar {
-          transform-style: preserve-3d;
-          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          will-change: transform;
-        }
-        .iso-pillar:hover {
-          transform: translateZ(20px);
-        }
-        /* TOP Face */
-        .iso-pillar::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: inherit;
-          filter: brightness(1.2);
-          transform: translateZ(var(--h));
-        }
-        /* RIGHT Face (Side 1) */
-        .iso-pillar::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 100%;
-          width: var(--h); /* Extends along Z */
-          height: 100%;
-          background: inherit;
-          filter: brightness(0.8);
-          transform: rotateY(-90deg);
-          transform-origin: left top;
-        }
-        /* FRONT Face (Side 2) */
-        .iso-pillar span {
-           position: absolute;
-           top: 100%;
-           left: 0;
-           width: 100%;
-           height: var(--h); /* Extends along Z */
-           background: inherit;
-           filter: brightness(0.9);
-           transform: rotateX(-90deg);
-           transform-origin: top left;
-        }
-
         @keyframes flash {
           0% { opacity: 0; }
           10% { opacity: 1; }
@@ -581,84 +794,13 @@ export function ZhiStatsDashboard({
           </div>
         </div>
 
-        {/* Card 4.5: Code Frequency (Waveform) */}
+        {/* Card 4.5: Code Frequency (Enhanced Heatmap) */}
         {stats.gitHubContributions && stats.gitHubContributions.length > 0 && (
-          <div className="group col-span-1 min-h-[300px] overflow-hidden rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md md:col-span-2 relative dark:border-stone-800 dark:bg-stone-900">
-            {/* Background Grid */}
-            <div
-              className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-10"
-              style={{
-                backgroundImage: "linear-gradient(#30363d 1px, transparent 1px), linear-gradient(90deg, #30363d 1px, transparent 1px)",
-                backgroundSize: "20px 20px",
-              }}
-            ></div>
-
-            <div className="relative z-10 flex h-full flex-col justify-between">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-stone-100 p-2 text-stone-500 dark:bg-stone-800 dark:text-stone-300">
-                    <GitCommit size={20} />
-                  </div>
-                  <div>
-                    <h4 className="font-serif text-lg text-stone-800 dark:text-stone-100">Code Frequency</h4>
-                    <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-stone-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                      LIVE ACTIVITY
-                    </p>
-                  </div>
-                </div>
-
-                {stats.gitHubStats && (
-                  <div className="flex gap-4">
-                    <div className="text-right">
-                      <div className="flex items-center justify-end gap-1 text-stone-400">
-                        <Zap size={12} className="text-amber-500" />
-                        <span className="text-xs">Streak</span>
-                      </div>
-                      <span className="font-mono text-xl font-bold text-stone-800 dark:text-stone-100">
-                        {stats.gitHubStats.currentStreak}<span className="text-sm text-stone-400 ml-0.5">d</span>
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="block text-xs text-stone-400">This Week</span>
-                      <span className="font-mono text-2xl font-bold text-emerald-500">
-                        {stats.gitHubStats.commitsWeek}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Isometric 3D Skyline */}
-              <div className="mt-8 flex h-56 w-full items-center justify-center overflow-visible px-4">
-                <div className="iso-container flex items-end justify-center gap-3">
-                  {skylineData.map((week, i) => {
-                    // Scale: 4px base, up to 120px max. Factor 3.
-                    // Weekly counts are larger (e.g. 50 commits). 50 * 3 = 150px.
-                    const h = Math.max(4, Math.min(120, week.count * 3));
-                    return (
-                      <div
-                        key={i}
-                        className="iso-pillar relative h-6 w-6 rounded-[1px]"
-                        style={{
-                          zIndex: i,
-                          background: week.count > 0 ? '#22c55e' : '#e5e7eb',
-                          backgroundColor: week.count === 0 ? '#f5f5f4' :
-                            week.count > 40 ? '#15803d' :
-                              week.count > 10 ? '#22c55e' : '#86efac',
-                          '--h': `${h}px`
-                        } as React.CSSProperties}
-                        title={`Week of ${week.label}: ${week.count} commits`}
-                      >
-                        {/* Front Face */}
-                        <span></span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
+          <CodeFrequencyHeatmap
+            heatmapData={heatmapData}
+            gitHubStats={stats.gitHubStats}
+            locale={locale}
+          />
         )}
 
         {/* Card 5: Languages (Donut) */}

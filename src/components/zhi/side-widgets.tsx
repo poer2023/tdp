@@ -175,12 +175,29 @@ function SocialBtn({ icon, label, href, color }: SocialBtnProps) {
 interface StatusItem {
   label: string;
   value: string;
-  icon: React.ReactNode;
+  icon: "zap" | "film" | "gamepad2" | "book" | "music" | "code" | React.ReactNode;
+  url?: string;
 }
 
 interface CompactStatusWidgetProps {
   items?: StatusItem[];
   updatedAt?: string;
+}
+
+// Icon mapping function
+function getIconComponent(icon: StatusItem["icon"]): React.ReactNode {
+  if (typeof icon !== "string") return icon;
+
+  const iconMap: Record<string, React.ReactNode> = {
+    zap: <Zap size={16} className="text-amber-500" />,
+    film: <Film size={16} className="text-rose-500" />,
+    gamepad2: <Gamepad2 size={16} className="text-indigo-500" />,
+    book: <Compass size={16} className="text-emerald-500" />,
+    music: <Compass size={16} className="text-purple-500" />,
+    code: <Compass size={16} className="text-cyan-500" />,
+  };
+
+  return iconMap[icon] || <Zap size={16} className="text-stone-400" />;
 }
 
 export function CompactStatusWidget({ items, updatedAt }: CompactStatusWidgetProps) {
@@ -191,9 +208,15 @@ export function CompactStatusWidget({ items, updatedAt }: CompactStatusWidgetPro
     const translations: Record<string, Record<string, string>> = {
       en: {
         "At a Glance": "At a Glance",
+        "Focusing on": "Focusing on",
+        "Watching": "Watching",
+        "Playing": "Playing",
       },
       zh: {
         "At a Glance": "概览",
+        "Focusing on": "正在专注",
+        "Watching": "正在看",
+        "Playing": "正在玩",
       },
     };
     return translations[locale]?.[key] || key;
@@ -203,21 +226,21 @@ export function CompactStatusWidget({ items, updatedAt }: CompactStatusWidgetPro
     {
       label: "Focusing on",
       value: "Product Strategy",
-      icon: <Zap size={16} className="text-amber-500" />,
+      icon: "zap",
     },
     {
       label: "Watching",
       value: "Oppenheimer",
-      icon: <Film size={16} className="text-rose-500" />,
+      icon: "film",
     },
     {
       label: "Playing",
       value: "Black Myth: Wukong",
-      icon: <Gamepad2 size={16} className="text-indigo-500" />,
+      icon: "gamepad2",
     },
   ];
 
-  const displayItems = items || defaultItems;
+  const displayItems = items && items.length > 0 ? items : defaultItems;
   const displayUpdatedAt = updatedAt || "2 HRS AGO";
 
   return (
@@ -229,7 +252,13 @@ export function CompactStatusWidget({ items, updatedAt }: CompactStatusWidgetPro
 
       <div className="space-y-4">
         {displayItems.map((item, index) => (
-          <StatusRow key={index} label={item.label} value={item.value} icon={item.icon} />
+          <StatusRow
+            key={index}
+            label={t(item.label)}
+            value={item.value}
+            icon={getIconComponent(item.icon)}
+            url={item.url}
+          />
         ))}
       </div>
 
@@ -245,10 +274,11 @@ interface StatusRowProps {
   label: string;
   value: string;
   icon: React.ReactNode;
+  url?: string;
 }
 
-function StatusRow({ label, value, icon }: StatusRowProps) {
-  return (
+function StatusRow({ label, value, icon, url }: StatusRowProps) {
+  const content = (
     <div className="group flex items-center justify-between">
       <div className="flex items-center gap-3">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-100 bg-stone-50 text-stone-400 transition-colors group-hover:bg-white dark:border-[#2a2a2e] dark:bg-[#1f1f23] dark:group-hover:bg-[#27272a]">
@@ -256,9 +286,25 @@ function StatusRow({ label, value, icon }: StatusRowProps) {
         </div>
         <span className="text-xs font-medium text-stone-500 dark:text-stone-400">{label}</span>
       </div>
-      <span className="max-w-[120px] truncate text-right text-xs font-bold text-stone-800 dark:text-stone-200">
+      <span className={`max-w-[120px] truncate text-right text-xs font-bold text-stone-800 dark:text-stone-200 ${url ? 'group-hover:text-sage-600 dark:group-hover:text-sage-400' : ''}`}>
         {value}
       </span>
     </div>
   );
+
+  if (url) {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block transition-opacity hover:opacity-80"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return content;
 }
+

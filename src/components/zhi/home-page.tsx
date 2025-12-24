@@ -9,6 +9,13 @@ import { ProfileWidget, CompactStatusWidget } from "./side-widgets";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
 
+interface StatusItem {
+  label: string;
+  value: string;
+  icon: "zap" | "film" | "gamepad2" | "book" | "music" | "code";
+  url?: string;
+}
+
 interface ZhiHomePageProps {
   feedItems: FeedItem[];
   heroImages?: HeroImageItem[];
@@ -18,9 +25,13 @@ interface ZhiHomePageProps {
     title?: string;
     bio?: string;
   };
+  statusData?: {
+    items: StatusItem[];
+    updatedAt: string;
+  };
 }
 
-export function ZhiHomePage({ feedItems, heroImages, profileData }: ZhiHomePageProps) {
+export function ZhiHomePage({ feedItems, heroImages, profileData, statusData }: ZhiHomePageProps) {
   const pathname = usePathname();
   const router = useRouter();
   const locale = getLocaleFromPathname(pathname) ?? "en";
@@ -65,7 +76,10 @@ export function ZhiHomePage({ feedItems, heroImages, profileData }: ZhiHomePageP
               <ProfileWidget {...profileData} />
 
               {/* Compact Status Widget */}
-              <CompactStatusWidget />
+              <CompactStatusWidget
+                items={statusData?.items}
+                updatedAt={statusData?.updatedAt}
+              />
 
               {/* Footer Note */}
               <div className="border-t border-stone-200 pt-8 text-center text-xs text-stone-400 lg:text-left dark:border-[#27272a]">
