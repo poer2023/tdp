@@ -56,16 +56,16 @@ async function getGitHubStatsFromDB() {
 }
 
 /**
- * Get GitHub contributions for the chart (last 6 months)
+ * Get GitHub contributions for the chart (last 365 days for full heatmap)
  */
 async function getGitHubContributionsFromDB() {
     try {
         const now = new Date();
-        const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+        const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
         const contributions = await (prisma as any).gitHubContribution.findMany({
             where: {
-                date: { gte: sixMonthsAgo },
+                date: { gte: oneYearAgo },
             },
             orderBy: { date: "asc" },
         });

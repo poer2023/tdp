@@ -230,12 +230,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
           ? decryptCredential(credential.value)
           : credential.value;
 
-        // Extract username from metadata if available
-        const metadata = credential.metadata as { username?: string } | null;
-        const username = metadata?.username;
-
-        // Run GitHub sync
-        syncResult = await syncGitHub({ token, username }, credential.id);
+        // Note: We intentionally don't pass username here.
+        // The sync will automatically fetch the authenticated user from the token,
+        // ensuring we always sync the correct user's contribution data.
+        syncResult = await syncGitHub({ token }, credential.id);
 
         // Update credential usage
         await prisma.externalCredential.update({

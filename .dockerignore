@@ -81,7 +81,7 @@ temp/
 # Database
 prisma/*.db
 prisma/*.db-journal
-prisma/migrations/
+# NOTE: prisma/migrations/ is NOT excluded - it's required for `prisma migrate deploy`
 
 # Uploads (应使用外部存储或挂载卷)
 public/uploads/

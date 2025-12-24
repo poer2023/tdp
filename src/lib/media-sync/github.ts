@@ -108,14 +108,22 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
       return createdAt >= oneYearAgo;
     }).length;
 
+
     // Calculate language statistics via GitHub repo languages API (byte-based)
-    // Aggregate across up to 100 repos retrieved in `allRepos`
+    // Only process the 20 most recently updated repos to improve performance
     const aggregateLanguageBytes: Record<string, number> = {};
 
-    // Process repos in small batches to avoid excessive parallel requests
-    const batchSize = 10;
-    for (let i = 0; i < allRepos.length; i += batchSize) {
-      const batch = allRepos.slice(i, i + batchSize);
+    // Sort repos by pushed_at date and take top 20 most active
+    const recentRepos = [...allRepos]
+      .sort((a, b) => new Date(b.pushed_at || 0).getTime() - new Date(a.pushed_at || 0).getTime())
+      .slice(0, 20);
+
+    console.log(`[${platform}] Fetching languages for ${recentRepos.length} most active repos (out of ${allRepos.length})`);
+
+    // Process repos in batches of 5 to reduce parallel requests
+    const batchSize = 5;
+    for (let i = 0; i < recentRepos.length; i += batchSize) {
+      const batch = recentRepos.slice(i, i + batchSize);
       const results = await Promise.all(
         batch.map((repo) =>
           client
@@ -226,13 +234,13 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
           const commitsCount = commits.length;
           const lastCommit = commits[0]
             ? {
-                date: new Date(commits[0].commit.committer.date),
-                message: commits[0].commit.message.split("\n")[0] || "",
-              }
+              date: new Date(commits[0].commit.committer.date),
+              message: commits[0].commit.message.split("\n")[0] || "",
+            }
             : {
-                date: new Date(repo.pushed_at || repo.updated_at),
-                message: "No recent commits",
-              };
+              date: new Date(repo.pushed_at || repo.updated_at),
+              message: "No recent commits",
+            };
 
           // Upsert repo
           if (p.gitHubRepo.upsert) {
