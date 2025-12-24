@@ -124,3 +124,18 @@ jobs:
           if-no-files-found: ignore
 
       # Removed duplicate table scan to save time; severity handled above
+
+      # Trigger Coolify deployment after successful image push
+      # This ensures Coolify deploys with the new image instead of the old cached one
+      - name: Trigger Coolify deployment
+        if: github.event_name == 'workflow_run' && success()
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.COOLIFY_WEBHOOK_URL }}" ]; then
+            echo "Triggering Coolify deployment..."
+            curl -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}" \
+              --fail --silent --show-error \
+              --max-time 30 || echo "Coolify webhook failed, but continuing..."
+          else
+            echo "COOLIFY_WEBHOOK_URL not configured, skipping deployment trigger"
+          fi
