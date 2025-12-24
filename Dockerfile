@@ -32,6 +32,8 @@ RUN pnpm install --frozen-lockfile
 # Copy source code with root privileges then hand ownership back to node user
 USER root
 COPY . .
+# Debug: verify prisma directory was copied
+RUN echo "==> Checking prisma directory in builder stage:" && ls -la /app/prisma/ || echo "ERROR: prisma directory not found!"
 RUN chown -R node:node /app
 USER node
 RUN pnpm exec prisma generate && pnpm run build
@@ -67,10 +69,13 @@ COPY --from=builder --chown=node:node /app/node_modules/.pnpm ./node_modules/.pn
 COPY --from=builder --chown=node:node /app/node_modules/tsx ./node_modules/tsx
 COPY --from=builder --chown=node:node /app/node_modules/.bin ./node_modules/.bin
 
-# Copy prisma schema for migrations
-COPY --chown=node:node prisma ./prisma
+# Copy prisma schema and migrations from builder (not from build context)
+# This ensures .dockerignore doesn't exclude any prisma files
+COPY --from=builder --chown=node:node /app/prisma ./prisma
+# Debug: verify prisma was copied correctly in runner stage
+RUN echo "==> Checking prisma directory in runner stage:" && ls -la /app/prisma/ && echo "==> schema.prisma content check:" && head -5 /app/prisma/schema.prisma
 
-# Copy scripts for maintenance operations (thumbnail generation, etc.)
+# Copy scripts for maintenance operations (thumbnail generation, etc.)\
 COPY --chown=node:node scripts ./scripts
 COPY --chown=node:node package.json ./
 
