@@ -8,6 +8,7 @@ import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 import type { FeedItem, FeedPost, FeedMoment, FeedCurated } from "@/components/zhi";
 import type { HeroImageItem } from "@/components/zhi/hero";
 import { getZhiProfile } from "@/lib/zhi-profile";
+import { getAtAGlanceStatus, formatRelativeTime } from "@/lib/user-status";
 
 // ISR: Revalidate every 60 seconds for fresh content with CDN caching
 export const runtime = "nodejs";
@@ -30,11 +31,12 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   // ISR: Fetch public data only (no auth, no viewerId)
   // Client-side will hydrate user's like states via useMomentLikes hook
   // All data fetching uses unstable_cache for reduced DB load during ISR rebuilds
-  const [posts, moments, heroImageUrls, curatedItems] = await Promise.all([
+  const [posts, moments, heroImageUrls, curatedItems, statusData] = await Promise.all([
     listPublishedPostSummaries({ limit: 20 }),
     listMoments({ limit: 12, visibility: "PUBLIC" }),
     listHeroImages(),
     listCuratedItems(12),
+    getAtAGlanceStatus(),
   ]);
 
   // Transform posts to FeedPost format
@@ -140,6 +142,10 @@ export default async function LocalizedHomePage({ params }: PageProps) {
           feedItems={feedItems}
           heroImages={heroImages.length > 0 ? heroImages : undefined}
           profileData={getZhiProfile(locale === "zh" ? "zh" : "en")}
+          statusData={{
+            items: statusData.items,
+            updatedAt: formatRelativeTime(statusData.updatedAt, locale),
+          }}
         />
       </main>
       <ZhiFooter />

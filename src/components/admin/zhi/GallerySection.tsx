@@ -9,6 +9,7 @@ import {
 } from './AdminComponents';
 import { AdminImage } from '../AdminImage';
 import { useAdminLocale } from './useAdminLocale';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 export const GallerySection: React.FC = () => {
     const { addGalleryItem, updateGalleryItem, deleteGalleryItem } = useData();
@@ -25,6 +26,12 @@ export const GallerySection: React.FC = () => {
     const [manualUrl, setManualUrl] = useState('');
     const [isDragOver, setIsDragOver] = useState(false);
     const [isBatchMode, setIsBatchMode] = useState(false);
+
+    // Delete confirmation dialog state
+    const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({
+        open: false,
+        id: null
+    });
 
     const fetchGallery = React.useCallback(async (pageNum: number, append = false) => {
         setLoadingLocal(true);
@@ -110,12 +117,13 @@ export const GallerySection: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this image?')) return;
         try {
             await deleteGalleryItem(id);
             setGalleryItems(prev => prev.filter(item => item.id !== id));
         } catch (error) {
             console.error('Failed to delete gallery item:', error);
+        } finally {
+            setDeleteConfirm({ open: false, id: null });
         }
     };
 
@@ -281,7 +289,7 @@ export const GallerySection: React.FC = () => {
                                     {item.type === 'video' && <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white"><Play size={12} /></div>}
                                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                         <button onClick={() => setEditingGallery(item)} className="p-2 bg-white rounded-full text-stone-900 hover:scale-110 transition-transform"><Edit2 size={16} /></button>
-                                        <button onClick={() => handleDelete(item.id)} className="p-2 bg-rose-500 rounded-full text-white hover:scale-110 transition-transform"><Trash2 size={16} /></button>
+                                        <button onClick={() => setDeleteConfirm({ open: true, id: item.id })} className="p-2 bg-rose-500 rounded-full text-white hover:scale-110 transition-transform"><Trash2 size={16} /></button>
                                     </div>
                                     <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs truncate">
                                         {item.title}
@@ -304,6 +312,19 @@ export const GallerySection: React.FC = () => {
                     )}
                 </div>
             )}
+
+            {/* Delete Confirmation Dialog */}
+            <ConfirmDialog
+                open={deleteConfirm.open}
+                onOpenChange={(open) => setDeleteConfirm({ open, id: open ? deleteConfirm.id : null })}
+                title={t('confirmDeleteImage')}
+                description={t('confirmDeleteImageDescription')}
+                confirmText={t('cancel') === '取消' ? '删除' : 'Delete'}
+                cancelText={t('cancel')}
+                variant="danger"
+                onConfirm={() => deleteConfirm.id && handleDelete(deleteConfirm.id)}
+                onCancel={() => setDeleteConfirm({ open: false, id: null })}
+            />
         </SectionContainer>
     );
 };

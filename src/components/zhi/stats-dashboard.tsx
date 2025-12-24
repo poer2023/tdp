@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -15,6 +15,8 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  AreaChart,
+  Area,
 } from "recharts";
 import {
   Camera,
@@ -23,8 +25,10 @@ import {
   Film,
   Gamepad2,
   Code,
+  GitCommit,
   ArrowUpRight,
   Loader2,
+  Zap,
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import type { DashboardStatsData } from "@/lib/dashboard-stats";
@@ -68,6 +72,245 @@ function AnimatedCounter({
   return <span>{count.toLocaleString()}</span>;
 }
 
+// Code Frequency Heatmap Component with Modern Design
+interface HeatmapDay {
+  date: string;
+  count: number;
+  level: number;
+  label: string;
+}
+
+interface CodeFrequencyHeatmapProps {
+  heatmapData: HeatmapDay[];
+  gitHubStats?: {
+    currentStreak: number;
+    commitsWeek: number;
+  };
+  locale: string;
+}
+
+function CodeFrequencyHeatmap({ heatmapData, gitHubStats, locale }: CodeFrequencyHeatmapProps) {
+  const [hoveredDay, setHoveredDay] = useState<{ day: HeatmapDay; x: number; y: number } | null>(null);
+
+  // Get color class based on level - purple-cyan gradient
+  const getLevelColor = (level: number) => {
+    switch (level) {
+      case 0: return 'bg-stone-100 dark:bg-stone-800/50';
+      case 1: return 'bg-violet-200 dark:bg-violet-900/50';
+      case 2: return 'bg-violet-400 dark:bg-violet-700/70';
+      case 3: return 'bg-fuchsia-500 dark:bg-fuchsia-600/80';
+      case 4: return 'bg-cyan-400 dark:bg-cyan-500';
+      default: return 'bg-stone-100 dark:bg-stone-800/50';
+    }
+  };
+
+  // Group data by weeks (7 days per week, starting from Sunday)
+  const weeks = useMemo(() => {
+    const result: HeatmapDay[][] = [];
+    for (let i = 0; i < heatmapData.length; i += 7) {
+      result.push(heatmapData.slice(i, i + 7));
+    }
+    return result;
+  }, [heatmapData]);
+
+  // Get month labels with positions
+  const monthLabels = useMemo(() => {
+    const labels: { label: string; weekIndex: number }[] = [];
+    let lastMonth = -1;
+
+    weeks.forEach((week, weekIndex) => {
+      // Check the first day of each week
+      const firstDay = week[0];
+      if (firstDay) {
+        const date = new Date(firstDay.date);
+        const month = date.getMonth();
+        if (month !== lastMonth) {
+          const monthName = date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short' });
+          labels.push({ label: monthName, weekIndex });
+          lastMonth = month;
+        }
+      }
+    });
+
+    return labels;
+  }, [weeks, locale]);
+
+  // Calculate total contributions
+  const totalContributions = useMemo(() => {
+    return heatmapData.reduce((sum, day) => sum + day.count, 0);
+  }, [heatmapData]);
+
+  const weekDays = locale === 'zh' ? ['', '一', '', '三', '', '五', ''] : ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+
+  const handleMouseEnter = (day: HeatmapDay, event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setHoveredDay({
+      day,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 8
+    });
+  };
+
+  return (
+    <div className="group col-span-1 min-h-[320px] overflow-hidden rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md md:col-span-2 relative dark:border-stone-800 dark:bg-stone-900">
+      {/* Subtle gradient background */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.08]"
+        style={{
+          background: 'radial-gradient(ellipse at top right, #c084fc, transparent 50%), radial-gradient(ellipse at bottom left, #22d3ee, transparent 50%)'
+        }}
+      />
+
+      <div className="relative z-10 flex h-full flex-col">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-gradient-to-br from-violet-100 to-cyan-100 p-2 text-violet-600 dark:from-violet-900/30 dark:to-cyan-900/30 dark:text-violet-400">
+              <GitCommit size={20} />
+            </div>
+            <div>
+              <h4 className="font-serif text-lg text-stone-800 dark:text-stone-100">
+                {locale === 'zh' ? '代码频率' : 'Code Frequency'}
+              </h4>
+              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cyan-500" />
+                </span>
+                {locale === 'zh' ? '过去一年' : 'Past Year'} · {totalContributions.toLocaleString()} {locale === 'zh' ? '次提交' : 'contributions'}
+              </p>
+            </div>
+          </div>
+
+          {gitHubStats && (
+            <div className="flex gap-5">
+              <div className="text-right">
+                <div className="flex items-center justify-end gap-1 text-stone-400">
+                  <Zap size={12} className="text-amber-500" />
+                  <span className="text-xs">{locale === 'zh' ? '连续' : 'Streak'}</span>
+                </div>
+                <span className="font-mono text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">
+                  {gitHubStats.currentStreak}<span className="text-sm text-stone-400 ml-0.5">d</span>
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="block text-xs text-stone-400">{locale === 'zh' ? '本周' : 'This Week'}</span>
+                <span className="font-mono text-2xl font-bold text-cyan-500">
+                  {gitHubStats.commitsWeek}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Heatmap Container */}
+        <div className="flex-1 flex flex-col">
+          {/* Month Labels */}
+          <div className="flex pl-8 mb-1">
+            <div className="flex relative" style={{ width: `${weeks.length * 13}px` }}>
+              {monthLabels.map(({ label, weekIndex }, idx) => (
+                <span
+                  key={idx}
+                  className="absolute text-[10px] font-medium text-stone-400 dark:text-stone-500"
+                  style={{ left: `${weekIndex * 13}px` }}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Heatmap Grid with Week Labels */}
+          <div className="flex overflow-x-auto pb-2 scrollbar-hide">
+            {/* Week day labels */}
+            <div className="flex flex-col gap-[3px] pr-2 flex-shrink-0">
+              {weekDays.map((day, idx) => (
+                <div key={idx} className="h-[11px] flex items-center justify-end">
+                  <span className="text-[9px] font-medium text-stone-400 dark:text-stone-500 w-6 text-right">
+                    {day}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Grid */}
+            <div className="flex gap-[3px]">
+              {weeks.map((week, weekIdx) => (
+                <div key={weekIdx} className="flex flex-col gap-[3px]">
+                  {week.map((day, dayIdx) => (
+                    <div
+                      key={dayIdx}
+                      className={`h-[11px] w-[11px] rounded-[2px] transition-all cursor-pointer
+                        hover:ring-2 hover:ring-violet-400/50 hover:scale-110
+                        ${getLevelColor(day.level)}`}
+                      onMouseEnter={(e) => handleMouseEnter(day, e)}
+                      onMouseLeave={() => setHoveredDay(null)}
+                    />
+                  ))}
+                  {/* Fill empty days at end of last week */}
+                  {week.length < 7 && Array.from({ length: 7 - week.length }).map((_, idx) => (
+                    <div key={`empty-${idx}`} className="h-[11px] w-[11px]" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-stone-100 dark:border-stone-800">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-stone-400">{locale === 'zh' ? '少' : 'Less'}</span>
+              <div className="flex gap-[3px]">
+                {[0, 1, 2, 3, 4].map((level) => (
+                  <div key={level} className={`h-[10px] w-[10px] rounded-[2px] ${getLevelColor(level)}`} />
+                ))}
+              </div>
+              <span className="text-[10px] text-stone-400">{locale === 'zh' ? '多' : 'More'}</span>
+            </div>
+            <a
+              href="https://github.com/ZhiHao-He"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-[10px] text-stone-400 hover:text-violet-500 transition-colors"
+            >
+              <span>@GitHub</span>
+              <ArrowUpRight size={10} />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating Tooltip */}
+      {hoveredDay && (
+        <div
+          className="fixed z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-150"
+          style={{
+            left: hoveredDay.x,
+            top: hoveredDay.y,
+            transform: 'translate(-50%, -100%)'
+          }}
+        >
+          <div className="bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-3 py-2 rounded-lg shadow-xl text-center">
+            <div className="font-bold text-sm">
+              {hoveredDay.day.count} {locale === 'zh' ? '次提交' : hoveredDay.day.count === 1 ? 'contribution' : 'contributions'}
+            </div>
+            <div className="text-[10px] text-stone-400 dark:text-stone-500 mt-0.5">
+              {new Date(hoveredDay.day.date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              })}
+            </div>
+            {/* Tooltip Arrow */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-stone-900 dark:border-t-stone-100" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Types
 interface StatCardData {
   icon: React.ReactNode;
@@ -83,7 +326,6 @@ interface ZhiStatsDashboardProps {
   stats: DashboardStatsData;
   highlights?: StatCardData[];
 }
-
 
 
 export function ZhiStatsDashboard({
@@ -148,6 +390,56 @@ export function ZhiStatsDashboard({
   const avgSteps = Math.round(
     stats.stepsData.entries.reduce((acc: number, curr: { steps: number }) => acc + curr.steps, 0) / (stats.stepsData.entries.length || 1)
   );
+
+  // Aggregate daily contributions for Standard Heatmap (Last 365 Days)
+  const heatmapData = useMemo(() => {
+    if (!stats.gitHubContributions) return [];
+
+    // Create map for O(1) lookup
+    const dataMap = new Map((stats.gitHubContributions || []).map(i => {
+      // Ensure date string format YYYY-MM-DD
+      const dateStr = typeof i.date === 'string' ? i.date.split('T')[0] : new Date(i.date).toISOString().split('T')[0];
+      return [dateStr, i.value];
+    }));
+
+    const today = new Date();
+    // Start from 1 year ago (52 weeks)
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - 365);
+
+    // Align start date to the previous Sunday (to start grid correctly)
+    const dayOfWeek = startDate.getDay(); // 0 = Sunday
+    const alignedStartDate = new Date(startDate);
+    alignedStartDate.setDate(startDate.getDate() - dayOfWeek);
+
+    const days = [];
+    // 53 weeks * 7 days = 371 grid cells
+    const totalDays = 53 * 7;
+
+    for (let i = 0; i < totalDays; i++) {
+      const d = new Date(alignedStartDate);
+      d.setDate(alignedStartDate.getDate() + i);
+      // Assert dateStr is string to avoid lint error
+      const dateStr = d.toISOString().split('T')[0] as string;
+
+      const isFuture = d > new Date();
+      const count = isFuture ? 0 : (dataMap.get(dateStr) || 0);
+
+      let level = 0;
+      if (count > 0) level = 1;
+      if (count >= 3) level = 2;
+      if (count >= 6) level = 3;
+      if (count >= 10) level = 4;
+
+      days.push({
+        date: dateStr,
+        count,
+        level,
+        label: new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+      });
+    }
+    return days;
+  }, [stats.gitHubContributions]);
 
   return (
     <div className="w-full animate-in fade-in pb-16 duration-700">
@@ -502,41 +794,101 @@ export function ZhiStatsDashboard({
           </div>
         </div>
 
-        {/* Card 5: Skills */}
-        <div className="group relative col-span-1 overflow-hidden rounded-2xl bg-stone-200 p-6 shadow-sm transition-all duration-300 hover:shadow-md md:col-span-3 dark:bg-stone-900">
-          <div className="absolute right-0 top-0 p-8 opacity-5">
-            <Activity size={120} />
-          </div>
-          <div className="relative z-10 mb-6 flex items-center gap-3">
-            <div className="rounded-xl bg-white p-2 text-stone-500 dark:bg-stone-800 dark:text-stone-300">
+        {/* Card 4.5: Code Frequency (Enhanced Heatmap) */}
+        {stats.gitHubContributions && stats.gitHubContributions.length > 0 && (
+          <CodeFrequencyHeatmap
+            heatmapData={heatmapData}
+            gitHubStats={stats.gitHubStats}
+            locale={locale}
+          />
+        )}
+
+        {/* Card 5: Languages (Donut) */}
+        <div className="group relative col-span-1 overflow-hidden rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="rounded-xl bg-orange-50 p-2 text-orange-500 transition-colors group-hover:bg-orange-100 dark:bg-orange-900/10 dark:text-orange-400 dark:group-hover:bg-orange-900/20">
               <Code size={20} strokeWidth={1.5} />
             </div>
             <div>
-              <h4 className="font-serif text-lg text-stone-900 dark:text-white">
+              <h4 className="font-serif text-lg text-stone-800 dark:text-stone-100">
                 {t("The Output")}
               </h4>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">
-                {t("Current Focus Areas")}
+              <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                Languages
               </p>
             </div>
           </div>
-          <div className="relative z-10 grid grid-cols-1 gap-6 md:grid-cols-4">
-            {stats.skillData.map((skill) => (
-              <div key={skill.name}>
-                <div className="mb-2 flex justify-between">
-                  <span className="text-xs font-medium text-stone-700 dark:text-stone-300">
-                    {skill.name}
-                  </span>
-                  <span className="text-xs text-stone-500">{skill.level}%</span>
+
+          <div className="relative h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={stats.skillData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="level"
+                  stroke="none"
+                >
+                  {stats.skillData.map((entry, index) => {
+                    const colors: Record<string, string> = {
+                      "Python": "#3572A5",
+                      "TypeScript": "#3178c6",
+                      "Jupyter Notebook": "#DA5B0B",
+                      "HTML": "#e34c26",
+                      "CSS": "#563d7c",
+                      "JavaScript": "#f1e05a"
+                    };
+                    const color = colors[entry.name] || "#a8a29e";
+                    return <Cell key={`cell-${index}`} fill={color} />;
+                  })}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "none",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    fontSize: "12px",
+                  }}
+                  itemStyle={{ color: "#333" }}
+                  formatter={(value: number) => [`${value}%`]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+
+            {/* Center Text */}
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-3xl font-bold text-stone-800 dark:text-stone-100">
+                {stats.skillData.length}
+              </span>
+              <span className="text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                Langs
+              </span>
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="mt-2 flex flex-wrap justify-center gap-3">
+            {stats.skillData.map((skill) => {
+              const colors: Record<string, string> = {
+                "Python": "#3572A5",
+                "TypeScript": "#3178c6",
+                "Jupyter Notebook": "#DA5B0B",
+                "HTML": "#e34c26",
+                "CSS": "#563d7c",
+                "JavaScript": "#f1e05a"
+              };
+              const color = colors[skill.name] || "#a8a29e";
+              return (
+                <div key={skill.name} className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }}></span>
+                  <span className="text-xs font-medium text-stone-600 dark:text-stone-400">{skill.name}</span>
+                  <span className="text-[10px] text-stone-400">({skill.level}%)</span>
                 </div>
-                <div className="h-1 w-full rounded-full bg-stone-300 dark:bg-stone-800">
-                  <div
-                    className="h-1 rounded-full bg-stone-600 transition-all duration-1000 ease-out group-hover:bg-stone-900 dark:bg-stone-400 dark:group-hover:bg-white"
-                    style={{ width: `${skill.level}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

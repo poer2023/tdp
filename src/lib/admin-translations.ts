@@ -402,6 +402,8 @@ export const adminTranslations = {
     updateInfo: "Update Info",
     loadingGallery: "Loading gallery...",
     noGalleryItems: "No gallery items yet.",
+    confirmDeleteImage: "Delete this image?",
+    confirmDeleteImageDescription: "This action will permanently remove the image and cannot be undone.",
 
     // Hero
     heroShuffleGrid: "Hero Shuffle Grid",
@@ -940,6 +942,8 @@ export const adminTranslations = {
     updateInfo: "更新信息",
     loadingGallery: "正在加载相册...",
     noGalleryItems: "暂无相册内容。",
+    confirmDeleteImage: "确认删除此图片？",
+    confirmDeleteImageDescription: "此操作将永久删除该图片，无法恢复。",
 
     // Hero
     heroShuffleGrid: "头图轮播",
