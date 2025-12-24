@@ -21,9 +21,7 @@ cd /app
 # - Clears unfinished migration record so migrate deploy can re-run cleanly
 # - Uses DO block with exception handling for fresh databases where tables don't exist yet
 echo "==> Applying hotfix for migration 20251202120000_add_performance_indexes"
-node /app/node_modules/prisma/build/index.js db execute --stdin --schema /app/prisma/schema.prisma <<'SQL' || {
-  echo "⚠️  Hotfix skipped (likely fresh database - tables don't exist yet)"
-}
+if ! node /app/node_modules/prisma/build/index.js db execute --stdin --schema /app/prisma/schema.prisma <<'SQL'
 -- Use DO block to handle case where tables don't exist yet (fresh database)
 DO $$
 BEGIN
@@ -45,6 +43,9 @@ BEGIN
   END IF;
 END $$;
 SQL
+then
+  echo "⚠️  Hotfix skipped (likely fresh database - tables don't exist yet)"
+fi
 
 # Pre-check migration status
 echo "==> Checking migration status..."
