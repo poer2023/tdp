@@ -277,9 +277,9 @@ export const StorageSection: React.FC = () => {
 
     const getFileIcon = (type: string) => {
         switch (type) {
-            case 'image': return <Image size={16} className="text-purple-500" />;
-            case 'video': return <Video size={16} className="text-blue-500" />;
-            default: return <File size={16} className="text-stone-400" />;
+            case 'image': return <Image size={16} className="text-purple-500" aria-label="Image file" />;
+            case 'video': return <Video size={16} className="text-blue-500" aria-label="Video file" />;
+            default: return <File size={16} className="text-stone-400" aria-label="Other file" />;
         }
     };
 
@@ -687,7 +687,7 @@ export const StorageSection: React.FC = () => {
                 <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg text-emerald-600">
-                            <Image size={20} />
+                            <Image size={20} aria-label="Image files" />
                         </div>
                         <div>
                             <div className="text-xs text-stone-500 uppercase font-bold">{t('imageFiles')}</div>

@@ -152,7 +152,7 @@ export const authConfig: NextAuthConfig = {
       }
       return session;
     },
-    async signIn({ user, account }) {
+    async signIn({ user, account: _account }) {
       // For OAuth (Google), email is required but id may not exist on first login
       // The adapter will create the user after signIn succeeds
       if (!user?.email) {

@@ -24,7 +24,7 @@ export async function POST() {
         // Try to query the table
         await prisma.$queryRaw`SELECT 1 FROM "SiteConfig" LIMIT 1`;
         results.push({ table: "SiteConfig", status: "exists" });
-    } catch (error) {
+    } catch (_error) {
         // Table doesn't exist, create it
         try {
             await prisma.$executeRaw`

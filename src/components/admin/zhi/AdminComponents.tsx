@@ -15,7 +15,7 @@ import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
     AreaChart, Area, CartesianGrid, PieChart, Pie, Sector
 } from 'recharts';
-import type { BlogPost, Moment, MomentImage, Project, ShareItem, GalleryItem, TrafficData, SourceData, PageVisitData, DeviceData, Tab } from './types';
+import type { BlogPost, Moment, MomentImage, Project, ShareItem, TrafficData, SourceData, PageVisitData, DeviceData, Tab } from './types';
 import { AdminImage } from '../AdminImage';
 import { useAdminLocale } from './useAdminLocale';
 import { useData } from './store';

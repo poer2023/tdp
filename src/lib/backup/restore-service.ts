@@ -186,7 +186,7 @@ export async function restoreFromBackup(
  * Restore a single table using upsert
  */
 async function restoreTable(tableName: BackupTableName, records: unknown[]): Promise<number> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const model = (prisma as any)[tableName.charAt(0).toLowerCase() + tableName.slice(1)];
 
     if (!model || typeof model.upsert !== 'function') {

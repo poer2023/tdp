@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     const contentType = response.headers.get("content-type") || "image/jpeg";
     const isImage = contentType.startsWith("image/");
     const isAnimated = contentType.includes("gif");
-    const alreadyWebP = contentType.includes("webp");
+    const _alreadyWebP = contentType.includes("webp");
 
     let optimizedBuffer: Buffer = imageBuffer;
     let outputContentType = contentType;

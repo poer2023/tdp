@@ -15,8 +15,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  AreaChart,
-  Area,
 } from "recharts";
 import {
   Camera,
@@ -27,7 +25,6 @@ import {
   Code,
   GitCommit,
   ArrowUpRight,
-  Loader2,
   Zap,
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";

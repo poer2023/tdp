@@ -20,7 +20,7 @@ export function ProfilePage({ user }: ProfilePageProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [fetchingGoogleAvatar, setFetchingGoogleAvatar] = useState(false);
+  const [_fetchingGoogleAvatar, setFetchingGoogleAvatar] = useState(false);
 
   const initials =
     user.username?.trim()?.[0]?.toUpperCase() ||

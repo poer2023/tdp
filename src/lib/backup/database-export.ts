@@ -47,7 +47,7 @@ export async function exportDatabase(): Promise<DatabaseExportResult> {
  */
 async function exportTable(tableName: BackupTableName): Promise<unknown[]> {
     // Use dynamic access to Prisma client
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const model = (prisma as any)[tableName.charAt(0).toLowerCase() + tableName.slice(1)];
 
     if (!model || typeof (model as { findMany?: unknown }).findMany !== 'function') {
@@ -89,7 +89,7 @@ export async function getDatabaseStats(): Promise<Record<string, number>> {
 
     for (const tableName of BACKUP_TABLES) {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const model = (prisma as any)[tableName.charAt(0).toLowerCase() + tableName.slice(1)];
             if (model && typeof (model as { count?: unknown }).count === 'function') {
                 counts[tableName] = await (model as { count: () => Promise<number> }).count();

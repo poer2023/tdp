@@ -23,7 +23,7 @@ export function useMomentLikes(momentIds: string[]) {
 
     // Always start with empty set to match SSR (avoids hydration mismatch)
     const [likedIds, setLikedIds] = useState<Set<string>>(() => new Set());
-    const [isHydrated, setIsHydrated] = useState(false);
+    const [_isHydrated, setIsHydrated] = useState(false);
 
     const [isLoading, setIsLoading] = useState(true);
     const fetchedRef = useRef(false);
