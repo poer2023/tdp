@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+import { getRecentTracks, type NowPlayingData } from "@/lib/now-playing";
 
 // Cache tag for dashboard stats invalidation
 const DASHBOARD_TAG = "dashboard";
@@ -29,6 +30,7 @@ export interface DashboardStatsData {
         lastSynced: Date;
     };
     gitHubContributions?: { date: string; value: number }[];
+    nowPlaying?: NowPlayingData[];
 }
 
 /**
@@ -418,12 +420,13 @@ async function _fetchDashboardStats(): Promise<DashboardStatsData> {
 
         // Fetch skill and routine data from database (with fallbacks)
         // Also fetch GitHub stats and contributions
-        const [skillData, routineData, stepsData, gitHubStats, gitHubContributions] = await Promise.all([
+        const [skillData, routineData, stepsData, gitHubStats, gitHubContributions, nowPlaying] = await Promise.all([
             getSkillDataFromDB(languages),
             getRoutineDataFromDB(),
             getStepsDataFromDB(),
             getGitHubStatsFromDB(),
             getGitHubContributionsFromDB(),
+            getRecentTracks(10).catch(() => []),
         ]);
 
         return {
@@ -437,6 +440,7 @@ async function _fetchDashboardStats(): Promise<DashboardStatsData> {
             currentGame: currentlyPlayingGame,
             gitHubStats,
             gitHubContributions,
+            nowPlaying: nowPlaying.length > 0 ? nowPlaying : undefined,
         };
     } catch (error) {
         console.error("[Dashboard Stats] Error fetching data:", error);
