@@ -3,14 +3,14 @@ ALTER TYPE "CredentialPlatform" ADD VALUE IF NOT EXISTS 'DEEPSEEK';
 
 -- Add SyncStatus enum if not exists
 DO $$ BEGIN
-    CREATE TYPE "SyncStatus" AS ENUM ('RUNNING', 'SUCCESS', 'FAILED', 'PARTIAL');
+    CREATE TYPE "SyncStatus" AS ENUM ('RUNNING', 'SUCCESS', 'FAILED', 'TIMEOUT', 'CANCELLED');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
 -- Add SyncTriggerType enum if not exists
 DO $$ BEGIN
-    CREATE TYPE "SyncTriggerType" AS ENUM ('MANUAL', 'SCHEDULED', 'WEBHOOK', 'AUTO');
+    CREATE TYPE "SyncTriggerType" AS ENUM ('MANUAL', 'AUTO', 'VALIDATION', 'API');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -18,18 +18,26 @@ END $$;
 -- CreateTable SyncLog
 CREATE TABLE IF NOT EXISTS "SyncLog" (
     "id" TEXT NOT NULL,
-    "platform" "CredentialPlatform" NOT NULL,
     "credentialId" TEXT,
+    "platform" TEXT NOT NULL,
     "triggerType" "SyncTriggerType" NOT NULL DEFAULT 'MANUAL',
+    "syncConfig" JSONB,
     "status" "SyncStatus" NOT NULL DEFAULT 'RUNNING',
-    "itemsSynced" INTEGER NOT NULL DEFAULT 0,
+    "success" BOOLEAN NOT NULL DEFAULT false,
+    "itemsTotal" INTEGER NOT NULL DEFAULT 0,
+    "itemsSuccess" INTEGER NOT NULL DEFAULT 0,
     "itemsFailed" INTEGER NOT NULL DEFAULT 0,
+    "itemsNew" INTEGER NOT NULL DEFAULT 0,
+    "itemsUpdated" INTEGER NOT NULL DEFAULT 0,
+    "itemsExisting" INTEGER NOT NULL DEFAULT 0,
+    "duration" INTEGER,
     "errorMessage" TEXT,
-    "metadata" JSONB,
+    "errorStack" TEXT,
+    "aiDiagnosisId" TEXT,
+    "aiAssisted" BOOLEAN NOT NULL DEFAULT false,
     "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "completedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "SyncLog_pkey" PRIMARY KEY ("id")
 );
@@ -39,8 +47,10 @@ CREATE TABLE IF NOT EXISTS "GamePlaytimeSnapshot" (
     "id" TEXT NOT NULL,
     "gameId" TEXT NOT NULL,
     "steamId" TEXT NOT NULL,
-    "playtimeMinutes" INTEGER NOT NULL,
-    "snapshotAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "playtime" INTEGER NOT NULL,
+    "snapshotAt" TIMESTAMP(3) NOT NULL,
+    "dailyDelta" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "GamePlaytimeSnapshot_pkey" PRIMARY KEY ("id")
 );
