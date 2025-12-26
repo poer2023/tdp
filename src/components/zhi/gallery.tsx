@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
@@ -578,48 +578,82 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
       }
     };
   }, []);
+  // Distribute items into columns for row-first ordering
+  // This ensures new items appear at top-left instead of filling columns top-to-bottom
+  const distributeToColumns = useCallback((itemsToDistribute: ZhiGalleryItem[], colCount: number) => {
+    const cols: ZhiGalleryItem[][] = Array.from({ length: colCount }, () => []);
+    itemsToDistribute.forEach((item, idx) => {
+      const targetCol = cols[idx % colCount];
+      if (targetCol) {
+        targetCol.push(item);
+      }
+    });
+    return cols;
+  }, []);
 
+  // Get column count based on screen size (matches Tailwind breakpoints)
+  const [columnCount, setColumnCount] = useState(1);
 
+  useEffect(() => {
+    const updateColumnCount = () => {
+      if (window.innerWidth >= 1024) {
+        setColumnCount(3); // lg:columns-3
+      } else if (window.innerWidth >= 640) {
+        setColumnCount(2); // sm:columns-2
+      } else {
+        setColumnCount(1); // columns-1
+      }
+    };
+    updateColumnCount();
+    window.addEventListener('resize', updateColumnCount);
+    return () => window.removeEventListener('resize', updateColumnCount);
+  }, []);
+
+  const columns = useMemo(() => distributeToColumns(items, columnCount), [items, columnCount, distributeToColumns]);
 
   return (
     <div className="w-full">
-      {/* Masonry Grid */}
-      <div className="columns-1 gap-6 space-y-6 sm:columns-2 lg:columns-3">
-        {items.map((item, index) => (
-          <div
-            key={item.id}
-            className="group relative cursor-pointer overflow-hidden rounded-lg bg-stone-200 break-inside-avoid dark:bg-stone-800"
-            onClick={() => handleOpen(item)}
-          >
-            <div className="relative">
-              <img
-                src={
-                  item.type === "video"
-                    ? item.thumbnail || item.url
-                    : item.smallThumbPath || item.mediumPath || item.thumbnail || item.url
-                }
-                alt={item.title}
-                width={item.width || undefined}
-                height={item.height || undefined}
-                className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                loading={index < 6 ? "eager" : "lazy"}
-                decoding={index < 6 ? "sync" : "async"}
-                fetchPriority={index < 3 ? "high" : "auto"}
-              />
-              {/* Video Indicator */}
-              {item.type === "video" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/10">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/20 text-white backdrop-blur-md">
-                    <Play size={20} fill="currentColor" />
+      {/* Masonry Grid - Row-first ordering */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {columns.map((column, colIndex) => (
+          <div key={colIndex} className="flex flex-col gap-6">
+            {column.map((item, index) => (
+              <div
+                key={item.id}
+                className="group relative cursor-pointer overflow-hidden rounded-lg bg-stone-200 dark:bg-stone-800"
+                onClick={() => handleOpen(item)}
+              >
+                <div className="relative">
+                  <img
+                    src={
+                      item.type === "video"
+                        ? item.thumbnail || item.url
+                        : item.smallThumbPath || item.mediumPath || item.thumbnail || item.url
+                    }
+                    alt={item.title}
+                    width={item.width || undefined}
+                    height={item.height || undefined}
+                    className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading={colIndex * column.length + index < 6 ? "eager" : "lazy"}
+                    decoding={colIndex * column.length + index < 6 ? "sync" : "async"}
+                    fetchPriority={colIndex * column.length + index < 3 ? "high" : "auto"}
+                  />
+                  {/* Video Indicator */}
+                  {item.type === "video" && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/10">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/20 text-white backdrop-blur-md">
+                        <Play size={20} fill="currentColor" />
+                      </div>
+                    </div>
+                  )}
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <h3 className="font-serif text-lg font-medium text-white">{item.title}</h3>
+                    <span className="text-xs text-stone-300">{item.date}</span>
                   </div>
                 </div>
-              )}
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <h3 className="font-serif text-lg font-medium text-white">{item.title}</h3>
-                <span className="text-xs text-stone-300">{item.date}</span>
               </div>
-            </div>
+            ))}
           </div>
         ))}
       </div>

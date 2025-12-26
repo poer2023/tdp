@@ -139,6 +139,36 @@ export function ZhiFeed({ initialItems, onPostClick, onMomentLike }: ZhiFeedProp
     return filteredItems.slice(0, visibleCount);
   }, [filteredItems, visibleCount]);
 
+  // Get column count based on screen size (matches Tailwind md: breakpoint)
+  const [columnCount, setColumnCount] = React.useState(1);
+
+  React.useEffect(() => {
+    const updateColumnCount = () => {
+      if (window.innerWidth >= 768) {
+        setColumnCount(2); // md:columns-2
+      } else {
+        setColumnCount(1); // columns-1
+      }
+    };
+    updateColumnCount();
+    window.addEventListener('resize', updateColumnCount);
+    return () => window.removeEventListener('resize', updateColumnCount);
+  }, []);
+
+  // Distribute items into columns for row-first ordering
+  const distributeToColumns = React.useCallback((itemsToDistribute: FeedItem[], colCount: number) => {
+    const cols: FeedItem[][] = Array.from({ length: colCount }, () => []);
+    itemsToDistribute.forEach((item, idx) => {
+      const targetCol = cols[idx % colCount];
+      if (targetCol) {
+        targetCol.push(item);
+      }
+    });
+    return cols;
+  }, []);
+
+  const columns = useMemo(() => distributeToColumns(visibleItems, columnCount), [visibleItems, columnCount, distributeToColumns]);
+
   const hasMore = visibleCount < filteredItems.length;
 
   const handleLoadMore = () => {
@@ -270,61 +300,65 @@ export function ZhiFeed({ initialItems, onPostClick, onMomentLike }: ZhiFeedProp
           </div>
         </div>
 
-        {/* Feed Content - Masonry Layout */}
-        <div className="mb-12 columns-1 gap-8 space-y-8 md:columns-2">
-          {visibleItems.map((item) => (
-            <React.Fragment key={item.id}>
-              {item.type === "article" ? (
-                <ZhiPostCard
-                  post={{
-                    id: item.id,
-                    title: item.title,
-                    excerpt: item.excerpt,
-                    category: item.category,
-                    date: item.date,
-                    readTime: item.readTime,
-                    imageUrl: item.imageUrl,
-                    tags: item.tags,
-                    likes: item.likes,
-                  }}
-                  onClick={() => onPostClick?.(item)}
-                  onLike={handlePostLike}
-                />
-              ) : item.type === "moment" ? (
-                <ZhiMomentCard
-                  moment={{
-                    id: item.id,
-                    content: item.content,
-                    images: item.images,
-                    date: item.date,
-                    tags: item.tags,
-                    likes: item.likes,
-                    liked: item.liked,
-                    author: item.author,
-                  }}
-                  onClick={() => setSelectedMoment(item)}
-                  onLike={() => handleMomentLike(item.id)}
-                />
-              ) : (
-                <ZhiShareCard
-                  item={{
-                    id: item.id,
-                    title: item.title,
-                    description: item.description,
-                    url: item.url,
-                    domain: item.domain,
-                    imageUrl: item.imageUrl,
-                    date: item.date,
-                    tags: item.tags,
-                    likes: item.likes,
-                  }}
-                />
-              )}
-            </React.Fragment>
+        {/* Feed Content - Masonry Layout with Row-first ordering */}
+        <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-2">
+          {columns.map((column, colIndex) => (
+            <div key={colIndex} className="flex flex-col gap-8">
+              {column.map((item) => (
+                <React.Fragment key={item.id}>
+                  {item.type === "article" ? (
+                    <ZhiPostCard
+                      post={{
+                        id: item.id,
+                        title: item.title,
+                        excerpt: item.excerpt,
+                        category: item.category,
+                        date: item.date,
+                        readTime: item.readTime,
+                        imageUrl: item.imageUrl,
+                        tags: item.tags,
+                        likes: item.likes,
+                      }}
+                      onClick={() => onPostClick?.(item)}
+                      onLike={handlePostLike}
+                    />
+                  ) : item.type === "moment" ? (
+                    <ZhiMomentCard
+                      moment={{
+                        id: item.id,
+                        content: item.content,
+                        images: item.images,
+                        date: item.date,
+                        tags: item.tags,
+                        likes: item.likes,
+                        liked: item.liked,
+                        author: item.author,
+                      }}
+                      onClick={() => setSelectedMoment(item)}
+                      onLike={() => handleMomentLike(item.id)}
+                    />
+                  ) : (
+                    <ZhiShareCard
+                      item={{
+                        id: item.id,
+                        title: item.title,
+                        description: item.description,
+                        url: item.url,
+                        domain: item.domain,
+                        imageUrl: item.imageUrl,
+                        date: item.date,
+                        tags: item.tags,
+                        likes: item.likes,
+                      }}
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           ))}
 
           {visibleItems.length === 0 && (
-            <div className="col-span-full break-inside-avoid rounded-xl border border-dashed border-stone-200 bg-white py-20 text-center transition-colors dark:border-[#27272a] dark:bg-[#141416]">
+            <div className="col-span-full rounded-xl border border-dashed border-stone-200 bg-white py-20 text-center transition-colors dark:border-[#27272a] dark:bg-[#141416]">
               <p className="text-stone-400">{t("No content found here yet.")}</p>
             </div>
           )}
