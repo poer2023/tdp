@@ -83,28 +83,47 @@ export const ArticlesSection: React.FC = () => {
             return;
         }
 
-        let finalCoverPath = editingPost.coverImagePath || editingPost.imageUrl;
-        if (manualUrl) finalCoverPath = manualUrl;
-        else if (uploadQueue.length > 0) {
-            finalCoverPath = uploadQueue[0]!.preview;
-        }
-
-        const postData = {
-            ...editingPost,
-            coverImagePath: finalCoverPath,
-            imageUrl: finalCoverPath, // For backward compatibility
-            id: editingPost.id || Math.random().toString(36).substr(2, 9),
-            date: editingPost.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            likes: editingPost.likes || 0,
-            comments: editingPost.comments || [],
-            type: 'article' as const,
-            status: editingPost.status || 'DRAFT',
-            locale: editingPost.locale || 'EN',
-            content: editingPost.content || ''
-        } as BlogPost;
-
         setIsSaving(true);
+
         try {
+            // Determine cover image path
+            let finalCoverPath = editingPost.coverImagePath || editingPost.imageUrl;
+
+            if (manualUrl) {
+                finalCoverPath = manualUrl;
+            } else if (uploadQueue.length > 0) {
+                // Upload the cover image first
+                const formData = new FormData();
+                formData.append('image', uploadQueue[0]!.file);
+
+                const uploadRes = await fetch('/api/admin/posts/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!uploadRes.ok) {
+                    const errData = await uploadRes.json();
+                    throw new Error(errData.error || 'Failed to upload cover image');
+                }
+
+                const uploadData = await uploadRes.json();
+                finalCoverPath = uploadData.coverUrl;
+            }
+
+            const postData = {
+                ...editingPost,
+                coverImagePath: finalCoverPath,
+                imageUrl: finalCoverPath, // For backward compatibility
+                id: editingPost.id || Math.random().toString(36).substr(2, 9),
+                date: editingPost.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                likes: editingPost.likes || 0,
+                comments: editingPost.comments || [],
+                type: 'article' as const,
+                status: editingPost.status || 'DRAFT',
+                locale: editingPost.locale || 'EN',
+                content: editingPost.content || ''
+            } as BlogPost;
+
             if (editingPost.id) {
                 await updatePost(postData);
                 showToast(t('articleUpdated'), 'success');
