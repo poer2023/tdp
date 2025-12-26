@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { X, Play, Edit2, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { X, Play, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { useData } from './store';
 import type { GalleryItem } from './types';
 import {
@@ -10,6 +10,8 @@ import {
 import { AdminImage } from '../AdminImage';
 import { useAdminLocale } from './useAdminLocale';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useUpload, type UploadItem } from '@/hooks/use-upload';
+
 
 export const GallerySection: React.FC = () => {
     const { addGalleryItem, updateGalleryItem, deleteGalleryItem } = useData();
@@ -31,6 +33,32 @@ export const GallerySection: React.FC = () => {
     const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({
         open: false,
         id: null
+    });
+
+    // Pending uploads for optimistic UI
+    const [pendingUploads, setPendingUploads] = useState<UploadItem[]>([]);
+
+    // Handle successful upload
+    const handleUploadSuccess = useCallback((item: UploadItem, result: unknown) => {
+        // Remove from pending and add real item to gallery
+        setPendingUploads(prev => prev.filter(p => p.id !== item.id));
+        const newItem = (result as { image?: GalleryItem })?.image;
+        if (newItem) {
+            setGalleryItems(prev => [newItem, ...prev]);
+        }
+    }, []);
+
+    // Handle upload error
+    const handleUploadError = useCallback((item: UploadItem) => {
+        // Remove from pending after a delay so user can see the error
+        setTimeout(() => {
+            setPendingUploads(prev => prev.filter(p => p.id !== item.id));
+        }, 3000);
+    }, []);
+
+    const upload = useUpload({
+        onSuccess: handleUploadSuccess,
+        onError: handleUploadError,
     });
 
     const fetchGallery = React.useCallback(async (pageNum: number, append = false) => {
@@ -129,55 +157,65 @@ export const GallerySection: React.FC = () => {
 
     const handleSaveGallery = async () => {
         try {
-            // Batch Mode
-            if (!editingGallery?.id && isBatchMode && uploadQueue.length > 0) {
-                const results = await Promise.all(uploadQueue.map((item, idx) => addGalleryItem({
-                    file: item.file,
-                    title: editingGallery?.title ? `${editingGallery.title} ${idx + 1}` : `Upload ${new Date().toLocaleDateString()}`,
-                    description: editingGallery?.description || '',
-                    date: editingGallery?.date
-                })));
-                // Refresh list or add to state
-                const newItems = results.filter((i): i is GalleryItem => !!i && !Array.isArray(i));
-                setGalleryItems(prev => [...newItems, ...prev]);
-            }
-            // Single Mode (Edit or New)
-            else {
+            // Edit mode - keep synchronous for simplicity
+            if (editingGallery?.id) {
                 const basePayload = {
                     title: editingGallery?.title || 'Untitled',
                     description: editingGallery?.description || '',
                     date: editingGallery?.date
                 };
-
-                if (editingGallery?.id) {
-                    const updated = await updateGalleryItem({
-                        ...basePayload,
-                        id: editingGallery.id,
-                    });
-                    if (updated && 'id' in updated) {
-                        setGalleryItems(prev => prev.map(i => i.id === updated.id ? updated : i));
-                    }
-                } else {
-                    const file = uploadQueue[0]?.file;
-                    if (!file && !manualUrl) return;
-                    const newItem = await addGalleryItem({
-                        ...basePayload,
-                        file,
-                        manualUrl
-                    });
-                    if (newItem && !Array.isArray(newItem)) {
-                        setGalleryItems(prev => [newItem, ...prev]);
-                    }
+                const updated = await updateGalleryItem({
+                    ...basePayload,
+                    id: editingGallery.id,
+                });
+                if (updated && 'id' in updated) {
+                    setGalleryItems(prev => prev.map(i => i.id === updated.id ? updated : i));
                 }
+                setEditingGallery(null);
+                setUploadQueue([]);
+                setManualUrl('');
+                return;
             }
 
-            // Cleanup blob URLs before clearing the queue
-            uploadQueue.forEach(item => URL.revokeObjectURL(item.preview));
+            // New upload mode - use optimistic updates
+            if (uploadQueue.length === 0 && !manualUrl) return;
 
+            // Create pending upload items for optimistic UI
+            const newUploadItems: UploadItem[] = uploadQueue.map(item => ({
+                id: crypto.randomUUID(),
+                file: item.file,
+                preview: item.preview,
+                progress: 0,
+                status: 'uploading' as const,
+            }));
+
+            // Add to pending uploads (will show as uploading cards)
+            setPendingUploads(prev => [...newUploadItems, ...prev]);
+
+            // Close the form immediately (optimistic)
             setEditingGallery(null);
             setUploadQueue([]);
             setManualUrl('');
             setIsBatchMode(false);
+
+            // Upload in background
+            const title = editingGallery?.title || `Upload ${new Date().toLocaleDateString()}`;
+            const description = editingGallery?.description || '';
+
+            for (let i = 0; i < newUploadItems.length; i++) {
+                const item = newUploadItems[i];
+                if (!item) continue;
+
+                try {
+                    await upload.uploadItem(item, '/api/admin/gallery/upload', {
+                        title: isBatchMode && newUploadItems.length > 1 ? `${title} ${i + 1}` : title,
+                        description,
+                    });
+                } catch (err) {
+                    console.error('Upload failed:', err);
+                    // Error is handled by the hook callback
+                }
+            }
         } catch (error) {
             console.error('Failed to save gallery:', error);
         }
@@ -271,12 +309,43 @@ export const GallerySection: React.FC = () => {
                         <div className="col-span-full py-12 text-center text-stone-400">
                             {t('loadingGallery')}
                         </div>
-                    ) : galleryItems.length === 0 ? (
+                    ) : galleryItems.length === 0 && pendingUploads.length === 0 ? (
                         <div className="col-span-full py-12 text-center text-stone-400">
                             {t('noGalleryItems')}
                         </div>
                     ) : (
                         <>
+                            {/* Pending uploads - optimistic UI */}
+                            {pendingUploads.map((item) => (
+                                <div key={item.id} className="relative rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
+                                    <img
+                                        src={item.preview}
+                                        alt="Uploading"
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
+                                        {item.status === 'uploading' && (
+                                            <>
+                                                <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
+                                                <div className="w-3/4 h-1.5 bg-white/30 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-white rounded-full transition-all duration-300"
+                                                        style={{ width: `${item.progress}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-white text-xs mt-1">{item.progress}%</span>
+                                            </>
+                                        )}
+                                        {item.status === 'error' && (
+                                            <div className="text-center px-2">
+                                                <X className="w-8 h-8 text-rose-400 mx-auto mb-1" />
+                                                <span className="text-rose-300 text-xs">Upload failed</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+
                             {galleryItems.map((item, index) => (
                                 <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
                                     <AdminImage
