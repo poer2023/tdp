@@ -150,6 +150,12 @@ services:
         condition: service_completed_successfully
     networks:
       - tdp-net
+      - coolify
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.tdp-app.entryPoints=http
+      - traefik.http.routers.tdp-app.rule=Host(`dybzy.com`) || Host(`www.dybzy.com`)
+      - traefik.http.services.tdp-app.loadbalancer.server.port=3000
     # 如果需要本地构建，取消下面的注释
     # build:
     #   context: .
@@ -162,3 +168,5 @@ volumes:
 networks:
   tdp-net:
     driver: bridge
+  coolify:
+    external: true
