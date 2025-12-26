@@ -15,7 +15,9 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - tdp-net
+      tdp-net:
+        aliases:
+          - tdp-postgres
 
   # Pre-migration backup service
   # Creates a database backup before running migrations to ensure zero data loss
