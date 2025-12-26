@@ -916,3 +916,17 @@ model SiteConfig {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+/// Now Playing - Music history synced from Apple Music via iOS Shortcuts
+model NowPlaying {
+  id         String   @id @default(cuid())
+  trackName  String
+  artistName String
+  albumName  String?
+  artworkUrl String?
+  duration   Int?     // Duration in seconds
+  playedAt   DateTime @default(now())
+  source     String   @default("apple_music")
+
+  @@index([playedAt])
+}

@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useCallback } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { useData } from './store';
 import type { BlogPost } from './types';
 import {
@@ -11,6 +9,7 @@ import {
 } from './AdminComponents';
 import { SimpleToast } from './Toast';
 import { useAdminLocale } from './useAdminLocale';
+import { TiptapEditor } from '../TiptapEditor';
 
 export const ArticlesSection: React.FC = () => {
     const { posts, addPost, updatePost, deletePost, loading } = useData();
@@ -62,6 +61,24 @@ export const ArticlesSection: React.FC = () => {
     const removeFileFromQueue = (idx: number) => {
         setUploadQueue(prev => prev.filter((_, i) => i !== idx));
     };
+
+    // Upload image for content (used by TiptapEditor)
+    const handleContentImageUpload = useCallback(async (file: File): Promise<string> => {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const res = await fetch('/api/admin/gallery/upload', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!res.ok) {
+            throw new Error('Failed to upload image');
+        }
+
+        const data = await res.json();
+        return data.image?.filePath || data.image?.mediumPath || '';
+    }, []);
 
     const handleSavePost = async () => {
         if (!editingPost?.title) {
@@ -158,28 +175,15 @@ export const ArticlesSection: React.FC = () => {
                         </div>
                         <TextArea label={t('excerpt')} value={editingPost.excerpt} onChange={v => setEditingPost({ ...editingPost, excerpt: v })} />
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('contentMarkdown')}</label>
-                                <textarea
-                                    className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none min-h-[300px] font-mono text-sm"
-                                    placeholder={t('writeMarkdownContent')}
-                                    value={editingPost.content || ''}
-                                    onChange={e => setEditingPost({ ...editingPost, content: e.target.value })}
-                                />
-                            </div>
-                            <div className="border border-stone-200 dark:border-stone-800 rounded-lg p-4 bg-white dark:bg-stone-900 min-h-[300px] overflow-auto">
-                                <div className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('preview')}</div>
-                                <div className="prose prose-sm dark:prose-invert max-w-none text-stone-800 dark:text-stone-100">
-                                    {editingPost.content ? (
-                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                            {editingPost.content}
-                                        </ReactMarkdown>
-                                    ) : (
-                                        <p className="text-stone-400">{t('startTypingPreview')}</p>
-                                    )}
-                                </div>
-                            </div>
+                        <div>
+                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('contentMarkdown')}</label>
+                            <TiptapEditor
+                                content={editingPost.content || ''}
+                                onChange={v => setEditingPost({ ...editingPost, content: v })}
+                                placeholder={t('writeMarkdownContent') || 'Start writing...'}
+                                onImageUpload={handleContentImageUpload}
+                                autoSaveKey={`post-draft-${editingPost.id || 'new'}`}
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
