@@ -17,6 +17,7 @@ export const MomentsSection: React.FC = () => {
     const [uploadQueue, setUploadQueue] = useState<{ file: File, preview: string }[]>([]);
     const [manualUrl, setManualUrl] = useState('');
     const [isDragOver, setIsDragOver] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const revokePreviewUrls = (items: { preview: string }[]) => {
         items.forEach(item => URL.revokeObjectURL(item.preview));
@@ -56,6 +57,7 @@ export const MomentsSection: React.FC = () => {
 
     const handleSaveMoment = async () => {
         if (!editingMoment?.content) return;
+        setIsSaving(true);
 
         // Upload new images first to get real URLs
         const uploadedImageUrls: string[] = [];
@@ -119,12 +121,13 @@ export const MomentsSection: React.FC = () => {
         revokePreviewUrls(uploadQueue);
         setUploadQueue([]);
         setManualUrl('');
+        setIsSaving(false);
     };
 
     return (
         <SectionContainer title={t('momentsTitle')} onAdd={() => { setEditingMoment({}); revokePreviewUrls(uploadQueue); setUploadQueue([]); setManualUrl(''); }}>
             {editingMoment ? (
-                <EditForm title={editingMoment.id ? t('editMoment') : t('newMoment')} onSave={handleSaveMoment} onCancel={() => { setEditingMoment(null); revokePreviewUrls(uploadQueue); setUploadQueue([]); setManualUrl(''); }}>
+                <EditForm title={editingMoment.id ? t('editMoment') : t('newMoment')} onSave={handleSaveMoment} onCancel={() => { setEditingMoment(null); revokePreviewUrls(uploadQueue); setUploadQueue([]); setManualUrl(''); }} isSaving={isSaving}>
                     <div className="grid grid-cols-1 gap-6">
                         <div className="space-y-4">
                             <TextArea label={t('whatsHappening')} value={editingMoment.content} onChange={v => setEditingMoment({ ...editingMoment, content: v })} />

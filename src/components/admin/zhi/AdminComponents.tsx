@@ -5,7 +5,7 @@ import {
     FileText, Image as ImageIcon, Database,
     Plus, Trash2, Edit2, X,
     Briefcase, Camera,
-    UploadCloud, Check,
+    UploadCloud, Check, Loader2,
     Activity, Clock, TrendingUp, PieChart as PieIcon,
     ShieldCheck, Globe, Calendar, Tag, Heart, MessageCircle,
     Users, MousePointer, Smartphone,
@@ -267,20 +267,27 @@ export const ActionBtn: React.FC<{ onClick: () => void, icon: React.ReactNode, d
     </button>
 );
 
-export const EditForm: React.FC<{ title: string, children: React.ReactNode, onSave: () => void, onCancel: () => void }> = ({ title, children, onSave, onCancel }) => {
+export const EditForm: React.FC<{ title: string, children: React.ReactNode, onSave: () => void, onCancel: () => void, isSaving?: boolean }> = ({ title, children, onSave, onCancel, isSaving = false }) => {
     const { t } = useAdminLocale();
     return (
         <div className="bg-white dark:bg-stone-900 p-6 rounded-xl shadow-sm border border-stone-200 dark:border-stone-800">
             <div className="flex justify-between items-center mb-6 border-b border-stone-100 dark:border-stone-800 pb-4">
                 <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">{title}</h3>
-                <button onClick={onCancel} className="cursor-pointer text-stone-400 hover:text-stone-600 transition-colors"><X size={20} /></button>
+                <button onClick={onCancel} disabled={isSaving} className="cursor-pointer text-stone-400 hover:text-stone-600 transition-colors disabled:opacity-50"><X size={20} /></button>
             </div>
             <div className="space-y-4">
                 {children}
             </div>
             <div className="flex gap-3 pt-6 mt-2 border-t border-stone-100 dark:border-stone-800">
-                <button onClick={onSave} className="flex-1 cursor-pointer bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-6 py-2.5 rounded-lg font-bold hover:opacity-90 transition-opacity">{t('saveChanges')}</button>
-                <button onClick={onCancel} className="flex-1 cursor-pointer bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 px-6 py-2.5 rounded-lg font-medium hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors">{t('cancel')}</button>
+                <button
+                    onClick={onSave}
+                    disabled={isSaving}
+                    className="flex-1 cursor-pointer bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-6 py-2.5 rounded-lg font-bold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                    {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {isSaving ? t('saving') || 'Saving...' : t('saveChanges')}
+                </button>
+                <button onClick={onCancel} disabled={isSaving} className="flex-1 cursor-pointer bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 px-6 py-2.5 rounded-lg font-medium hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors disabled:opacity-50">{t('cancel')}</button>
             </div>
         </div>
     );

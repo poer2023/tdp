@@ -21,7 +21,7 @@ export const ArticlesSection: React.FC = () => {
     const [manualUrl, setManualUrl] = useState('');
     const [isDragOver, setIsDragOver] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-    const [_isSaving, setIsSaving] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
         setToast({ message, type });
@@ -150,7 +150,7 @@ export const ArticlesSection: React.FC = () => {
 
             <SectionContainer title={t('articles')} onAdd={() => { setEditingPost({}); setUploadQueue([]); setManualUrl(''); }}>
                 {editingPost ? (
-                    <EditForm title={editingPost.id ? t('editArticle') : t('newArticle')} onSave={handleSavePost} onCancel={() => setEditingPost(null)}>
+                    <EditForm title={editingPost.id ? t('editArticle') : t('newArticle')} onSave={handleSavePost} onCancel={() => setEditingPost(null)} isSaving={isSaving}>
                         <Input label={t('title')} value={editingPost.title} onChange={v => setEditingPost({ ...editingPost, title: v })} />
                         <div className="grid grid-cols-2 gap-4">
                             <Input label={t('category')} value={editingPost.category} onChange={v => setEditingPost({ ...editingPost, category: v })} />
