@@ -55,18 +55,22 @@ CREATE TABLE IF NOT EXISTS "GamePlaytimeSnapshot" (
     CONSTRAINT "GamePlaytimeSnapshot_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable AIDiagnosisLog
+-- CreateTable AIDiagnosisLog (new structure)
 CREATE TABLE IF NOT EXISTS "AIDiagnosisLog" (
     "id" TEXT NOT NULL,
-    "platform" "CredentialPlatform" NOT NULL,
-    "diagnosisType" TEXT NOT NULL,
-    "severity" TEXT NOT NULL DEFAULT 'info',
-    "title" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "recommendation" TEXT,
+    "platform" TEXT NOT NULL,
+    "errorType" TEXT NOT NULL,
+    "errorMessage" TEXT NOT NULL,
+    "htmlSnapshot" TEXT,
+    "aiReason" TEXT NOT NULL,
+    "aiSolution" TEXT NOT NULL,
     "canAutoFix" BOOLEAN NOT NULL DEFAULT false,
+    "confidence" DOUBLE PRECISION NOT NULL,
     "autoFixApplied" BOOLEAN NOT NULL DEFAULT false,
-    "context" JSONB,
+    "autoFixSuccess" BOOLEAN,
+    "autoFixDetails" JSONB,
+    "tokensUsed" INTEGER,
+    "costYuan" DOUBLE PRECISION,
     "credentialId" TEXT,
     "syncJobId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
