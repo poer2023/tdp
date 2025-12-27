@@ -730,15 +730,13 @@ export function ZhiStatsDashboard({
         </div>
 
         {/* Card 3.5: Now Playing Music */}
-        {stats.nowPlaying && stats.nowPlaying.length > 0 && (
-          <div className="col-span-1">
-            <NowPlayingCard
-              track={stats.nowPlaying[0] as MusicTrack}
-              recentTracks={stats.nowPlaying.slice(1) as MusicTrack[]}
-              locale={locale}
-            />
-          </div>
-        )}
+        <div className="col-span-1">
+          <NowPlayingCard
+            track={stats.nowPlaying?.[0] as MusicTrack | null}
+            recentTracks={(stats.nowPlaying?.slice(1) ?? []) as MusicTrack[]}
+            locale={locale}
+          />
+        </div>
 
         {/* Card 4: Daily Steps */}
         <div className="group col-span-1 rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900">
