@@ -9,13 +9,14 @@ import prisma from "@/lib/prisma";
 import { generateBlogPostingSchema, generateAlternateLinks } from "@/lib/seo";
 import { LikeButton } from "@/components/like-button";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { safeJsonLd } from "@/lib/safe-json-ld";
 import { cache } from "react";
 import { Container } from "@/components/ui/container";
 import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 
 // Ensure Node.js runtime for Prisma
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export const dynamic = "auto";
 // ISR: Revalidate every 60 seconds for article detail pages
 export const revalidate = 60;
 
@@ -23,10 +24,11 @@ export const revalidate = 60;
 const getPostBySlug = cache(async (slug: string, locale: string) => {
   const l = locale === "zh" ? PostLocale.ZH : PostLocale.EN;
 
-  // Find post by slug - try direct match first
+  // Find post by slug - filter by locale to avoid cross-language conflicts
   let post = await prisma.post.findFirst({
     where: {
       slug,
+      locale: l,
       status: PostStatus.PUBLISHED,
     },
     include: {
@@ -154,7 +156,7 @@ export default async function LocalizedPostPage({ params }: PageProps) {
             {/* JSON-LD Schema for SEO */}
             <script
               type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+              dangerouslySetInnerHTML={{ __html: safeJsonLd(schema) }}
             />
 
             {/* Header */}

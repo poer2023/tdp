@@ -35,7 +35,7 @@ export class LocalStorage implements StorageProvider {
             console.error(`无法修复目录权限: ${dirPath}`, chmodError);
             throw new Error(
               `上传目录权限不足: ${dirPath}\n` +
-                `请确保应用有权限写入此目录，或手动执行: chmod 755 ${dirPath}`
+              `请确保应用有权限写入此目录，或手动执行: chmod 755 ${dirPath}`
             );
           }
         } else if (nodeError.code === "ENOENT") {
@@ -77,8 +77,8 @@ export class LocalStorage implements StorageProvider {
         if (nodeError.code === "EACCES" || nodeError.code === "EPERM") {
           throw new Error(
             `上传失败：文件权限不足。请检查服务器目录权限设置。\n` +
-              `目录: ${dir}\n` +
-              `建议执行: chmod -R 755 ${this.uploadRoot}`
+            `目录: ${dir}\n` +
+            `建议执行: chmod -R 755 ${this.uploadRoot}`
           );
         } else if (nodeError.code === "ENOSPC") {
           throw new Error("上传失败：服务器存储空间不足");
@@ -118,7 +118,14 @@ export class LocalStorage implements StorageProvider {
 
   async delete(relativePath: string): Promise<void> {
     const sanitized = relativePath.startsWith("/") ? relativePath.slice(1) : relativePath;
-    const fullPath = path.join(process.cwd(), "public", sanitized);
+    const fullPath = path.resolve(process.cwd(), "public", sanitized);
+    const uploadsRoot = path.resolve(process.cwd(), "public", "uploads");
+
+    // Security: only allow deletion within public/uploads
+    if (!fullPath.startsWith(uploadsRoot + path.sep) && fullPath !== uploadsRoot) {
+      console.warn(`[LocalStorage] Blocked delete attempt outside uploads: ${relativePath}`);
+      return;
+    }
 
     try {
       await stat(fullPath);

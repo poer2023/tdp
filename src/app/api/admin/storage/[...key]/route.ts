@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { UserRole } from "@prisma/client";
 import { getStorageProviderAsync } from "@/lib/storage";
 
 /**
@@ -11,7 +12,7 @@ export async function DELETE(
     { params }: { params: Promise<{ key: string[] }> }
 ) {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user || session.user.role !== UserRole.ADMIN) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -19,8 +20,9 @@ export async function DELETE(
         const { key } = await params;
         const fileKey = key.join("/");
 
-        if (!fileKey) {
-            return NextResponse.json({ error: "File key is required" }, { status: 400 });
+        // Security: reject dangerous paths
+        if (!fileKey || fileKey.includes("..") || fileKey.startsWith("/")) {
+            return NextResponse.json({ error: "Invalid file key" }, { status: 400 });
         }
 
         const storage = await getStorageProviderAsync();

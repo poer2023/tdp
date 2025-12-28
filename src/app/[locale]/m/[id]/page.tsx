@@ -5,10 +5,11 @@ import { auth } from "@/auth";
 import { Container } from "@/components/ui/container";
 import { BackButton } from "@/components/moments/back-button";
 import { MomentCard } from "@/components/moments/moment-card";
+import { safeJsonLd } from "@/lib/safe-json-ld";
 
 // ISR: Revalidate every 60 seconds for public/unlisted moments
 // Private moments will still require auth check on each request
-export const dynamic = "force-dynamic";
+export const dynamic = "auto";
 export const revalidate = 60;
 
 type Props = {
@@ -49,7 +50,7 @@ export default async function LocalizedMomentDetailPage({ params, searchParams }
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "SocialMediaPosting",
             headline: m.content.slice(0, 60),

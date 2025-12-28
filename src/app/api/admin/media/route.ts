@@ -4,15 +4,25 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
+const MAX_LIMIT = 200;
+
 export async function GET(request: NextRequest) {
+    const session = await auth();
+    if (!session?.user || session.user.role !== UserRole.ADMIN) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         const { searchParams } = new URL(request.url);
         const platform = searchParams.get('platform');
-        const limit = parseInt(searchParams.get('limit') || '5000'); // Increased default to get all data
+        const requestedLimit = parseInt(searchParams.get('limit') || '50');
+        const limit = Math.min(Math.max(1, requestedLimit), MAX_LIMIT);
 
-        const where: any = {};
+        const where: Record<string, unknown> = {};
         if (platform) {
             where.platform = platform;
         }

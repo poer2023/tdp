@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { clearConfigCache } from "@/lib/storage/config";
 
@@ -103,7 +104,7 @@ async function writeConfigToDB(config: StorageConfig): Promise<void> {
  */
 export async function POST(request: Request) {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user || session.user.role !== UserRole.ADMIN) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -162,11 +163,17 @@ export async function POST(request: Request) {
  */
 export async function GET() {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user || session.user.role !== UserRole.ADMIN) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
+        // Helper to mask sensitive values (show MASK_PREFIX + last 4 chars)
+        const maskValue = (value?: string) => {
+            if (!value || value.length <= 4) return MASK_PREFIX;
+            return MASK_PREFIX + value.slice(-4);
+        };
+
         // First check environment variables (they take precedence)
         if (process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID) {
             return NextResponse.json({
@@ -175,8 +182,8 @@ export async function GET() {
                 region: process.env.S3_REGION || 'auto',
                 bucket: process.env.S3_BUCKET || '',
                 cdnUrl: process.env.S3_CDN_URL || '',
-                accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-                secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+                accessKeyId: maskValue(process.env.S3_ACCESS_KEY_ID),
+                secretAccessKey: maskValue(process.env.S3_SECRET_ACCESS_KEY),
                 source: 'environment',
             });
         }
@@ -186,6 +193,8 @@ export async function GET() {
         if (dbConfig) {
             return NextResponse.json({
                 ...dbConfig,
+                accessKeyId: maskValue(dbConfig.accessKeyId),
+                secretAccessKey: maskValue(dbConfig.secretAccessKey),
                 source: 'database',
             });
         }
