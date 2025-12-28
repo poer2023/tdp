@@ -117,7 +117,14 @@ export class LocalStorage implements StorageProvider {
   }
 
   async delete(relativePath: string): Promise<void> {
-    const sanitized = relativePath.startsWith("/") ? relativePath.slice(1) : relativePath;
+    // Strip leading slash
+    let sanitized = relativePath.startsWith("/") ? relativePath.slice(1) : relativePath;
+
+    // Handle /api/uploads/... paths by stripping the api/ prefix
+    if (sanitized.startsWith("api/uploads/")) {
+      sanitized = sanitized.slice(4); // Remove "api/" prefix -> "uploads/..."
+    }
+
     const fullPath = path.resolve(process.cwd(), "public", sanitized);
     const uploadsRoot = path.resolve(process.cwd(), "public", "uploads");
 
