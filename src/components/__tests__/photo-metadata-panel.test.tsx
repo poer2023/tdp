@@ -9,76 +9,51 @@ vi.mock("next-themes", () => ({
   useTheme: () => ({ resolvedTheme: "light" }),
 }));
 
-// Mock leaflet
-vi.mock("leaflet", () => ({
-  default: {
-    divIcon: vi.fn(() => ({})),
-  },
-  divIcon: vi.fn(() => ({})),
-}));
-
-// Mock react-leaflet components
-vi.mock("react-leaflet", () => ({
-  MapContainer: ({ children, center }: { children: React.ReactNode; center: [number, number] }) => (
-    <div data-testid="map-container" data-center={JSON.stringify(center)}>
+// Mock the MapLibre-based map components
+vi.mock("@/components/ui/map", () => ({
+  Map: ({ children, center, className }: { children: React.ReactNode; center: [number, number]; className?: string }) => (
+    <div data-testid="map-container" data-center={JSON.stringify(center)} className={className}>
       {children}
     </div>
   ),
-  TileLayer: ({ url }: { url: string }) => <div data-testid="tile-layer" data-url={url} />,
-  Marker: ({ position }: { position: [number, number] }) => (
-    <div data-testid="marker" data-position={JSON.stringify(position)} />
+  MapMarker: ({ children, longitude, latitude }: { children: React.ReactNode; longitude: number; latitude: number }) => (
+    <div data-testid="marker" data-position={JSON.stringify([latitude, longitude])}>
+      {children}
+    </div>
   ),
-  ZoomControl: () => <div data-testid="zoom-control" />,
+  MarkerContent: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="marker-content">{children}</div>
+  ),
+  MapControls: ({ position, showZoom }: { position?: string; showZoom?: boolean }) => (
+    <div data-testid="zoom-control" data-position={position} data-show-zoom={showZoom} />
+  ),
 }));
 
-// Mock next/dynamic to synchronously return mocked react-leaflet components
+// Mock next/dynamic to synchronously return mocked map components
 vi.mock("next/dynamic", () => ({
   default: (importFunc: () => Promise<{ default: unknown } | Record<string, unknown>>) => {
-    // Simply return the component directly from react-leaflet mock
-    // next/dynamic will be bypassed and components will be rendered synchronously
-    const funcString = importFunc.toString();
-
-    if (funcString.includes("MapContainer")) {
-      const MapContainerMock = ({
-        children,
-        center,
-      }: {
-        children: React.ReactNode;
-        center: [number, number];
-      }) => (
-        <div data-testid="map-container" data-center={JSON.stringify(center)}>
-          {children}
+    // Return a synchronous component that matches LocationMapMini structure
+    const LocationMapMiniMock = ({
+      latitude,
+      longitude,
+    }: {
+      latitude: number;
+      longitude: number;
+    }) => (
+      <div data-testid="map-container" data-center={JSON.stringify([longitude, latitude])}>
+        <div data-testid="marker" data-position={JSON.stringify([latitude, longitude])}>
+          <div data-testid="marker-content">
+            <div className="h-8 w-8 text-rose-500" />
+          </div>
         </div>
-      );
-      MapContainerMock.displayName = "MapContainerMock";
-      return MapContainerMock;
-    }
-    if (funcString.includes("TileLayer")) {
-      const TileLayerMock = ({ url }: { url: string }) => (
-        <div data-testid="tile-layer" data-url={url} />
-      );
-      TileLayerMock.displayName = "TileLayerMock";
-      return TileLayerMock;
-    }
-    if (funcString.includes("ZoomControl")) {
-      const ZoomControlMock = () => <div data-testid="zoom-control" />;
-      ZoomControlMock.displayName = "ZoomControlMock";
-      return ZoomControlMock;
-    }
-    if (funcString.includes("Marker")) {
-      const MarkerMock = ({ position }: { position: [number, number] }) => (
-        <div data-testid="marker" data-position={JSON.stringify(position)} />
-      );
-      MarkerMock.displayName = "MarkerMock";
-      return MarkerMock;
-    }
-
-    // Fallback: return a placeholder
-    const PlaceholderMock = () => null;
-    PlaceholderMock.displayName = "PlaceholderMock";
-    return PlaceholderMock;
+        <div data-testid="zoom-control" />
+      </div>
+    );
+    LocationMapMiniMock.displayName = "LocationMapMiniMock";
+    return LocationMapMiniMock;
   },
 }));
+
 
 describe("PhotoMetadataPanel", () => {
   const baseImage: GalleryImage = {
@@ -377,7 +352,8 @@ describe("PhotoMetadataPanel", () => {
     render(<PhotoMetadataPanel image={baseImage} />);
 
     const mapContainer = screen.getByTestId("map-container");
-    expect(mapContainer).toHaveAttribute("data-center", JSON.stringify([37.7749, -122.4194]));
+    // MapLibre uses [longitude, latitude] order (GeoJSON convention)
+    expect(mapContainer).toHaveAttribute("data-center", JSON.stringify([-122.4194, 37.7749]));
   });
 
   it("should render marker at correct position", () => {
