@@ -54,8 +54,8 @@ describe("About Live Dashboard Integration", () => {
         // Verify trend is valid
         expect(["up", "down", "stable"]).toContain(highlight.trend);
 
-        // Verify href points to correct module
-        expect(highlight.href).toMatch(/\/about\/live\//);
+        // Verify href points to correct module (pages moved from /about/live/* to /about/*)
+        expect(highlight.href).toMatch(/\/about\//);
       });
     });
 
