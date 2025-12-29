@@ -2,15 +2,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
 
 @import "tailwindcss";
-@import "leaflet/dist/leaflet.css";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+/* MapLibre GL popup style overrides */
+.maplibregl-popup-content {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.maplibregl-popup-tip {
+  display: none !important;
+}
 
 /* Enable dark mode via .dark class selector (Tailwind v4) */
 /* Using :where() for lower specificity so dark:* utilities work correctly */
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #fafaf9; /* stone-50 */
-  --foreground: #292524; /* stone-800 */
+  --background: #fafaf9;
+  /* stone-50 */
+  --foreground: #292524;
+  /* stone-800 */
 
   /* 搜索组件焦点样式 */
   --search-focus-ring: 0 0 0 2px rgba(59, 130, 246, 0.2);
@@ -86,15 +100,18 @@ html.dark {
 
 body {
   margin: 0;
-  background-color: #fafaf9; /* stone-50 */
+  background-color: #fafaf9;
+  /* stone-50 */
   color: var(--foreground);
   font-family: 'Outfit', var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 html.dark body {
-  background-color: #0c0a09; /* stone-950 */
-  color: #f5f5f4; /* stone-100 */
+  background-color: #0c0a09;
+  /* stone-950 */
+  color: #f5f5f4;
+  /* stone-100 */
 }
 
 /* Zhi selection styles */
@@ -172,35 +189,48 @@ select:focus-visible {
    让常见的 dark:bg-* 和 dark:border/ring-* 更柔和
 ----------------------------------------- */
 :root {
-  --ios-bg: #1c1c1e; /* System background */
-  --ios-elev-1: #2c2c2e; /* Secondary background / separators */
-  --ios-elev-2: #3a3a3c; /* Tertiary background */
-  --ios-label: #f2f2f7; /* Primary text */
-  --ios-secondary-label: #d1d1d6; /* Secondary text */
-  --ios-tertiary-label: #8e8e93; /* Tertiary text */
+  --ios-bg: #1c1c1e;
+  /* System background */
+  --ios-elev-1: #2c2c2e;
+  /* Secondary background / separators */
+  --ios-elev-2: #3a3a3c;
+  /* Tertiary background */
+  --ios-label: #f2f2f7;
+  /* Primary text */
+  --ios-secondary-label: #d1d1d6;
+  /* Secondary text */
+  --ios-tertiary-label: #8e8e93;
+  /* Tertiary text */
 }
 
 .dark .dark\:bg-zinc-950 {
   background-color: var(--ios-bg) !important;
 }
+
 .dark .dark\:bg-zinc-900 {
   background-color: var(--ios-bg) !important;
 }
+
 .dark .dark\:bg-zinc-900\/40 {
   background-color: rgba(28, 28, 30, 0.4) !important;
 }
+
 .dark .dark\:bg-zinc-900\/60 {
   background-color: rgba(28, 28, 30, 0.6) !important;
 }
+
 .dark .dark\:bg-zinc-900\/70 {
   background-color: rgba(28, 28, 30, 0.7) !important;
 }
+
 .dark .dark\:bg-zinc-900\/80 {
   background-color: rgba(28, 28, 30, 0.8) !important;
 }
+
 .dark .dark\:border-zinc-800 {
   border-color: var(--ios-elev-1) !important;
 }
+
 .dark .dark\:ring-zinc-800 {
   --tw-ring-color: var(--ios-elev-1) !important;
 }
@@ -209,48 +239,63 @@ select:focus-visible {
 .dark .bg-white {
   background-color: var(--ios-elev-1) !important;
 }
+
 .dark .bg-white\/90 {
   background-color: rgba(44, 44, 46, 0.9) !important;
 }
+
 .dark .bg-white\/80 {
   background-color: rgba(44, 44, 46, 0.8) !important;
 }
+
 .dark .bg-white\/70 {
   background-color: rgba(44, 44, 46, 0.7) !important;
 }
+
 .dark .bg-white\/60 {
   background-color: rgba(44, 44, 46, 0.6) !important;
 }
+
 .dark .bg-zinc-50 {
   background-color: var(--ios-bg) !important;
 }
+
 .dark .bg-zinc-100 {
   background-color: var(--ios-elev-2) !important;
 }
+
 .dark .bg-zinc-100\/60 {
   background-color: rgba(58, 58, 60, 0.6) !important;
 }
+
 .dark .border-zinc-200 {
   border-color: var(--ios-elev-1) !important;
 }
+
 .dark .text-zinc-900 {
   color: var(--ios-label) !important;
 }
+
 .dark .text-zinc-800 {
   color: var(--ios-label) !important;
 }
+
 .dark .text-zinc-700 {
   color: var(--ios-secondary-label) !important;
 }
+
 .dark .text-zinc-600 {
   color: var(--ios-secondary-label) !important;
 }
+
 .dark .text-zinc-500 {
   color: var(--ios-tertiary-label) !important;
 }
+
 .dark .text-zinc-400 {
   color: var(--ios-tertiary-label) !important;
 }
+
 .dark .text-black {
   color: var(--ios-label) !important;
 }
@@ -259,30 +304,39 @@ select:focus-visible {
 .dark .bg-stone-50 {
   background-color: var(--ios-bg) !important;
 }
+
 .dark .bg-stone-100 {
   background-color: var(--ios-elev-1) !important;
 }
+
 .dark .bg-stone-200 {
   background-color: var(--ios-elev-2) !important;
 }
+
 .dark .text-stone-900 {
   color: var(--ios-label) !important;
 }
+
 .dark .text-stone-800 {
   color: var(--ios-label) !important;
 }
+
 .dark .text-stone-700 {
   color: var(--ios-secondary-label) !important;
 }
+
 .dark .text-stone-600 {
   color: var(--ios-secondary-label) !important;
 }
+
 .dark .text-stone-500 {
   color: var(--ios-tertiary-label) !important;
 }
+
 .dark .border-stone-200 {
   border-color: var(--ios-elev-1) !important;
 }
+
 .dark .border-stone-300 {
   border-color: var(--ios-elev-2) !important;
 }
@@ -291,61 +345,92 @@ select:focus-visible {
 html {
   color-scheme: light;
 }
+
 html.dark {
   color-scheme: dark;
 }
 
 /* Admin: subtle, divider-free scrollbars on inner panes */
 .admin-scroll {
-  scrollbar-width: thin; /* Firefox */
-  scrollbar-color: rgba(113, 113, 122, 0.35) transparent; /* thumb, track */
+  scrollbar-width: thin;
+  /* Firefox */
+  scrollbar-color: rgba(113, 113, 122, 0.35) transparent;
+  /* thumb, track */
 }
+
 .admin-scroll::-webkit-scrollbar {
   width: 8px;
 }
+
 .admin-scroll::-webkit-scrollbar-thumb {
-  background-color: rgba(113, 113, 122, 0.35); /* zinc-500 @ ~35% */
+  background-color: rgba(113, 113, 122, 0.35);
+  /* zinc-500 @ ~35% */
   border-radius: 9999px;
-  border: 2px solid transparent; /* avoid a visible divider line */
+  border: 2px solid transparent;
+  /* avoid a visible divider line */
   background-clip: padding-box;
 }
+
 .admin-scroll:hover::-webkit-scrollbar-thumb {
   background-color: rgba(113, 113, 122, 0.5);
 }
+
 .admin-scroll::-webkit-scrollbar-track {
-  background: transparent; /* no track divider */
+  background: transparent;
+  /* no track divider */
 }
 
 /* Zhi Custom Scrollbar - Global */
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #e7e5e4; /* stone-200 */
+  background: #e7e5e4;
+  /* stone-200 */
   border-radius: 4px;
 }
+
 .dark ::-webkit-scrollbar-thumb {
-  background: #44403c; /* stone-700 */
+  background: #44403c;
+  /* stone-700 */
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #d6d3d1; /* stone-300 */
+  background: #d6d3d1;
+  /* stone-300 */
 }
+
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #57534e; /* stone-600 */
+  background: #57534e;
+  /* stone-600 */
 }
 
 /* Zhi Animations */
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-in-from-bottom {
-  from { transform: translateY(0.5rem); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(0.5rem);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .animate-in {
@@ -367,13 +452,33 @@ html.dark {
 }
 
 /* Duration overrides */
-.duration-75 { animation-duration: 75ms !important; }
-.duration-100 { animation-duration: 100ms !important; }
-.duration-150 { animation-duration: 150ms !important; }
-.duration-200 { animation-duration: 200ms !important; }
-.duration-300 { animation-duration: 300ms !important; }
-.duration-500 { animation-duration: 500ms !important; }
-.duration-700 { animation-duration: 700ms !important; }
+.duration-75 {
+  animation-duration: 75ms !important;
+}
+
+.duration-100 {
+  animation-duration: 100ms !important;
+}
+
+.duration-150 {
+  animation-duration: 150ms !important;
+}
+
+.duration-200 {
+  animation-duration: 200ms !important;
+}
+
+.duration-300 {
+  animation-duration: 300ms !important;
+}
+
+.duration-500 {
+  animation-duration: 500ms !important;
+}
+
+.duration-700 {
+  animation-duration: 700ms !important;
+}
 
 /* Utility: font-serif for Lora */
 .font-serif {
@@ -391,7 +496,8 @@ html.dark {
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.1;
-  background-color: #5c9c6d; /* sage-600 */
+  background-color: #5c9c6d;
+  /* sage-600 */
   color: #fff;
   box-shadow: 0 1px 2px rgba(12, 10, 9, 0.14);
   transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease,
@@ -400,11 +506,13 @@ html.dark {
 }
 
 .admin-primary-btn:hover {
-  background-color: #457a53; /* sage-700 */
+  background-color: #457a53;
+  /* sage-700 */
 }
 
 .admin-primary-btn:focus-visible {
-  outline: 2px solid #c4efce; /* sage-200 */
+  outline: 2px solid #c4efce;
+  /* sage-200 */
   outline-offset: 2px;
 }
 
@@ -420,17 +528,21 @@ html.dark {
 }
 
 html.dark .admin-primary-btn {
-  background-color: #f5f5f4; /* stone-100 */
-  color: #0c0a09; /* stone-950 */
+  background-color: #f5f5f4;
+  /* stone-100 */
+  color: #0c0a09;
+  /* stone-950 */
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 html.dark .admin-primary-btn:hover {
-  background-color: #e7e5e4; /* stone-200 */
+  background-color: #e7e5e4;
+  /* stone-200 */
 }
 
 html.dark .admin-primary-btn:focus-visible {
-  outline: 2px solid #a8a29e; /* stone-400 */
+  outline: 2px solid #a8a29e;
+  /* stone-400 */
   outline-offset: 2px;
 }
 

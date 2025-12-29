@@ -83,7 +83,7 @@ async function main() {
 
       console.log();
       console.log("🎯 访问以下页面查看数据：");
-      console.log("   http://localhost:3000/about/live/gaming");
+      console.log("   http://localhost:3000/about/gaming");
       console.log("   http://localhost:3000/admin/credentials");
       console.log();
     } else {

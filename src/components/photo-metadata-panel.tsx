@@ -1,21 +1,55 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
 import type { GalleryImage } from "@/lib/gallery";
 import { useTheme } from "next-themes";
-import L from "leaflet";
 
-const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), {
-  ssr: false,
-});
-const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), {
-  ssr: false,
-});
-const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
-const ZoomControl = dynamic(() => import("react-leaflet").then((mod) => mod.ZoomControl), {
-  ssr: false,
-});
+// Dynamically import map components to avoid SSR issues
+const LocationMapMini = dynamic(
+  () => import("@/components/ui/map").then((mod) => {
+    const { Map, MapMarker, MarkerContent, MapControls } = mod;
+
+    return function LocationMapMiniInner({
+      latitude,
+      longitude,
+    }: {
+      latitude: number;
+      longitude: number;
+    }) {
+      return (
+        <Map
+          center={[longitude, latitude]}
+          zoom={14}
+          scrollZoom={true}
+          doubleClickZoom={true}
+          className="h-full w-full"
+        >
+          <MapMarker longitude={longitude} latitude={latitude}>
+            <MarkerContent>
+              <div className="relative">
+                <div className="h-8 w-8 text-rose-500 drop-shadow-md">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                  </svg>
+                </div>
+                <div className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 animate-ping rounded-full bg-rose-400/50" />
+              </div>
+            </MarkerContent>
+          </MapMarker>
+          <MapControls position="top-right" showZoom />
+        </Map>
+      );
+    };
+  }),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center bg-stone-100 dark:bg-stone-800">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-stone-300 border-t-stone-600" />
+      </div>
+    ),
+  }
+);
 
 type PhotoMetadataPanelProps = {
   image: GalleryImage;
@@ -63,114 +97,9 @@ function formatRelativeTime(dateString: string | null | undefined, locale: strin
   return locale === "zh" ? `${years} 年前` : `${years} year${years > 1 ? "s" : ""} ago`;
 }
 
-/**
- * Create custom location marker icon
- */
-function createLocationIcon(): L.DivIcon {
-  return L.divIcon({
-    className: "location-marker",
-    html: `
-      <div class="location-marker-container">
-        <div class="location-marker-pin">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-        </div>
-        <div class="location-marker-pulse"></div>
-      </div>
-    `,
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-  });
-}
-
-// Map tile URLs
-const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
-const DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-
 export function PhotoMetadataPanel({ image, locale = "zh" }: PhotoMetadataPanelProps) {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
   const hasLocation = image.latitude && image.longitude;
-  const _fileName = image.filePath.split("/").pop() || (locale === "zh" ? "未知" : "Unknown");
-
-  // Inject custom map styles
-  useEffect(() => {
-    const styleId = "photo-metadata-map-styles";
-    if (document.getElementById(styleId)) return;
-
-    const style = document.createElement("style");
-    style.id = styleId;
-    style.textContent = `
-      /* Location marker */
-      .location-marker {
-        background: transparent !important;
-        border: none !important;
-      }
-      .location-marker-container {
-        position: relative;
-        width: 40px;
-        height: 40px;
-      }
-      .location-marker-pin {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 32px;
-        height: 32px;
-        color: #ef4444;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-      }
-      .dark .location-marker-pin {
-        color: #f87171;
-      }
-      .location-marker-pulse {
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 12px;
-        height: 12px;
-        background: rgba(239, 68, 68, 0.3);
-        border-radius: 50%;
-        animation: pulse 2s ease-out infinite;
-      }
-      @keyframes pulse {
-        0% { transform: translateX(-50%) scale(1); opacity: 1; }
-        100% { transform: translateX(-50%) scale(2.5); opacity: 0; }
-      }
-      
-      /* Zoom control */
-      .metadata-map .leaflet-control-zoom {
-        border: none !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-        border-radius: 8px !important;
-        overflow: hidden;
-        margin: 8px !important;
-      }
-      .metadata-map .leaflet-control-zoom a {
-        width: 28px !important;
-        height: 28px !important;
-        line-height: 28px !important;
-        font-size: 14px !important;
-        color: #44403c !important;
-        background: white !important;
-        border: none !important;
-      }
-      .metadata-map .leaflet-control-zoom a:hover {
-        background: #f5f5f4 !important;
-      }
-      .dark .metadata-map .leaflet-control-zoom a {
-        background: #27272a !important;
-        color: #fafafa !important;
-      }
-      .dark .metadata-map .leaflet-control-zoom a:hover {
-        background: #3f3f46 !important;
-      }
-    `;
-    document.head.appendChild(style);
-  }, []);
 
   return (
     <div className="space-y-5 p-5">
@@ -201,23 +130,11 @@ export function PhotoMetadataPanel({ image, locale = "zh" }: PhotoMetadataPanelP
             </h2>
           </div>
           <div className="overflow-hidden rounded-xl border border-stone-200/60 shadow-sm dark:border-stone-700/50">
-            <div className="metadata-map h-[140px] w-full">
-              <MapContainer
-                center={[image.latitude!, image.longitude!]}
-                zoom={14}
-                style={{ height: "100%", width: "100%" }}
-                zoomControl={false}
-                attributionControl={false}
-                scrollWheelZoom={true}
-                doubleClickZoom={true}
-              >
-                <TileLayer url={isDark ? DARK_TILES : LIGHT_TILES} />
-                <Marker
-                  position={[image.latitude!, image.longitude!]}
-                  icon={createLocationIcon()}
-                />
-                <ZoomControl position="topright" />
-              </MapContainer>
+            <div className="h-[140px] w-full">
+              <LocationMapMini
+                latitude={image.latitude!}
+                longitude={image.longitude!}
+              />
             </div>
           </div>
           <div className="space-y-1.5 rounded-lg bg-stone-50/80 p-3 dark:bg-stone-800/50">
@@ -359,4 +276,3 @@ export function PhotoMetadataPanel({ image, locale = "zh" }: PhotoMetadataPanelP
     </div>
   );
 }
-

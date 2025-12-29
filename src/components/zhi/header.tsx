@@ -31,7 +31,7 @@ const NAV_LINKS: NavLink[] = [
   { label: "Home", labelZh: "首页", path: "/" },
   { label: "Projects", labelZh: "项目", path: "/projects" },
   { label: "Gallery", labelZh: "相册", path: "/gallery" },
-  { label: "Life Log", labelZh: "生活日志", path: "/about/live" },
+  { label: "Life Log", labelZh: "生活日志", path: "/about" },
 ];
 
 export function ZhiHeader() {
@@ -134,7 +134,7 @@ export function ZhiHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-stone-200 bg-stone-50/80 backdrop-blur-md transition-colors duration-300 dark:border-[#1f1f23] dark:bg-[#0a0a0b]/80">
+    <header className="sticky top-0 z-50 w-full bg-stone-50/80 backdrop-blur-md transition-colors duration-300 dark:bg-[#0a0a0b]/80">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

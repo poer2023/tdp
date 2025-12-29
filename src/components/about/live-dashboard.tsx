@@ -79,7 +79,7 @@ export function LiveDashboard({ locale }: LiveDashboardProps) {
     locale === "zh"
       ? {
           title: "实时动态仪表盘",
-          backToAbout: "返回关于页",
+          backToAbout: "返回生活记录",
           overview: "概览",
           subtitle: "查看所有实时活动数据和统计信息",
           lastUpdated: "最后更新",
@@ -89,7 +89,7 @@ export function LiveDashboard({ locale }: LiveDashboardProps) {
         }
       : {
           title: "Live Activity Dashboard",
-          backToAbout: "Back to About",
+          backToAbout: "Back to Life Log",
           overview: "Overview",
           subtitle: "View all live activity data and statistics",
           lastUpdated: "Last updated",

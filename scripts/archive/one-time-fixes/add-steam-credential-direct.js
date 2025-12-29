@@ -110,7 +110,7 @@ async function main() {
     console.log("🎯 下一步操作：");
     console.log(`   1. 访问管理后台: http://localhost:3000/admin/credentials`);
     console.log(`   2. 找到 Steam 凭据并点击"同步"按钮`);
-    console.log(`   3. 等待同步完成后访问: http://localhost:3000/about/live/gaming`);
+    console.log(`   3. 等待同步完成后访问: http://localhost:3000/about/gaming`);
     console.log();
     console.log("=".repeat(60));
   } catch (error) {

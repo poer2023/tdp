@@ -30,7 +30,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("[API /about/live/infra] Error fetching monitoring data:", error);
+    console.error("[API /about/infra] Error fetching monitoring data:", error);
 
     // Fallback to minimal data on error
     const data: InfraData = {

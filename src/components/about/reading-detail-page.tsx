@@ -72,7 +72,7 @@ export function ReadingDetailPage({ locale }: ReadingDetailPageProps) {
       <div className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:px-12 md:py-16">
         <div className="mb-8">
           <Link
-            href={localePath(locale, "/about/live")}
+            href={localePath(locale, "/about")}
             className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -125,7 +125,7 @@ export function ReadingDetailPage({ locale }: ReadingDetailPageProps) {
     <div className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:px-12 md:py-16">
       <div className="mb-8">
         <Link
-          href={localePath(locale, "/about/live")}
+          href={localePath(locale, "/about")}
           className="inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
         >
           <ArrowLeft className="h-4 w-4" />

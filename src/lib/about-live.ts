@@ -51,7 +51,7 @@ const getLiveHighlightsDataBase = async (): Promise<LiveHighlightsData> => {
       subtitle: latestMedia?.title || "No recent activity",
       value: `${mediaThisWeek} this week`,
       trend: mediaThisWeek > 0 ? "up" : "stable",
-      href: "/about/live/media",
+      href: "/about/media",
     });
 
     // Gaming highlight
@@ -63,7 +63,7 @@ const getLiveHighlightsDataBase = async (): Promise<LiveHighlightsData> => {
         subtitle: gamingData.gameName,
         value: `${gamingData.hoursThisMonth}h this month`,
         trend: gamingData.hoursThisMonth > 10 ? "up" : "stable",
-        href: "/about/live/gaming",
+        href: "/about/gaming",
       });
     }
 
@@ -76,7 +76,7 @@ const getLiveHighlightsDataBase = async (): Promise<LiveHighlightsData> => {
         subtitle: `${infraStatus.serviceCount} services`,
         value: infraStatus.allHealthy ? "All healthy" : "Issues detected",
         trend: infraStatus.allHealthy ? "stable" : "down",
-        href: "/about/live/infra",
+        href: "/about/infra",
       });
     }
 
@@ -89,7 +89,7 @@ const getLiveHighlightsDataBase = async (): Promise<LiveHighlightsData> => {
         subtitle: `${devData.commitsThisWeek} commits`,
         value: "This week",
         trend: devData.commitsThisWeek > 10 ? "up" : "stable",
-        href: "/about/live/dev",
+        href: "/about/dev",
       });
     }
 
@@ -101,7 +101,7 @@ const getLiveHighlightsDataBase = async (): Promise<LiveHighlightsData> => {
       subtitle: "Coming soon",
       value: "—",
       trend: "stable",
-      href: "/about/live/reading",
+      href: "/about/reading",
     });
 
     // Social highlight (placeholder - privacy sensitive)
@@ -112,7 +112,7 @@ const getLiveHighlightsDataBase = async (): Promise<LiveHighlightsData> => {
       subtitle: "Privacy protected",
       value: "—",
       trend: "stable",
-      href: "/about/live/social",
+      href: "/about/social",
     });
 
     // Finance highlight
@@ -123,7 +123,7 @@ const getLiveHighlightsDataBase = async (): Promise<LiveHighlightsData> => {
       subtitle: `${subscriptionCount} active`,
       value: "This month",
       trend: "stable",
-      href: "/about/live/finance",
+      href: "/about/finance",
     });
   } catch (error) {
     console.error("[Live Highlights] Error fetching data:", error);
@@ -137,7 +137,7 @@ const getLiveHighlightsDataBase = async (): Promise<LiveHighlightsData> => {
           subtitle: "View activity",
           value: "—",
           trend: "stable",
-          href: "/about/live/media",
+          href: "/about/media",
         },
         {
           module: "gaming",
@@ -146,7 +146,7 @@ const getLiveHighlightsDataBase = async (): Promise<LiveHighlightsData> => {
           subtitle: "View activity",
           value: "—",
           trend: "stable",
-          href: "/about/live/gaming",
+          href: "/about/gaming",
         },
         {
           module: "dev",
@@ -155,7 +155,7 @@ const getLiveHighlightsDataBase = async (): Promise<LiveHighlightsData> => {
           subtitle: "View activity",
           value: "—",
           trend: "stable",
-          href: "/about/live/dev",
+          href: "/about/dev",
         },
       ],
       lastUpdated: new Date(),

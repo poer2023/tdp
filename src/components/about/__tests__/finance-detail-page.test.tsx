@@ -201,7 +201,7 @@ describe("FinanceDetailPage", () => {
 
     await waitFor(() => {
       const link = screen.getByText("Back to Dashboard");
-      expect(link.closest("a")).toHaveAttribute("href", "/about/live");
+      expect(link.closest("a")).toHaveAttribute("href", "/about");
     });
   });
 

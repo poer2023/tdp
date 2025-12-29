@@ -27,6 +27,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl, { status: 301 });
   }
 
+  // Flatten legacy /about/live routes to /about (301 to preserve SEO)
+  const hasZhPrefix = pathname.startsWith("/zh");
+  const pathWithoutLocale = hasZhPrefix ? pathname.slice(3) || "/" : pathname;
+  if (pathWithoutLocale.startsWith("/about/live")) {
+    const flattenedPath = pathWithoutLocale.replace(/^\/about\/live/, "/about") || "/about";
+    const redirectPath = hasZhPrefix ? `/zh${flattenedPath}` : flattenedPath;
+    const redirectUrl = new URL(redirectPath, request.nextUrl.origin);
+    searchParams.forEach((value, key) => redirectUrl.searchParams.set(key, value));
+    return NextResponse.redirect(redirectUrl, { status: 301 });
+  }
+
   // Always attach pathname header for i18n html lang resolution
   const requestHeaders = new Headers(request.headers);
 

@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
-import { aboutContent, aboutLayoutClass, resolveAboutLocale } from "@/lib/about-content";
-import { ParticlesAboutContent } from "./particles-about-content";
-import { getLiveHighlightsData } from "@/lib/about-live";
-
-// ISR: Revalidate every 60 seconds (getLiveHighlightsData is already cached)
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 60;
+import { ZhiHeader, ZhiFooter } from "@/components/zhi";
+import { ZhiStatsDashboard } from "@/components/zhi/stats-dashboard";
+import { getDashboardStats } from "@/lib/dashboard-stats";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -14,29 +9,33 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
-  const l = resolveAboutLocale(locale);
-  const data = aboutContent[l];
 
   return {
-    title: data.metaTitle,
-    description: data.metaDescription,
+    title: locale === "zh" ? "生活记录" : "Life Log",
+    description:
+      locale === "zh"
+        ? "查看 Hao 的生活数据 - 摄影、娱乐、游戏、开发等"
+        : "View Hao's life data - photography, entertainment, gaming, development and more",
   };
 }
 
-export default async function LocalizedAboutPage({ params }: PageProps) {
-  const { locale } = await params;
-  const l = resolveAboutLocale(locale);
-  const data = aboutContent[l];
+export default async function LiveLogPage({ params }: PageProps) {
+  const { locale: _locale } = await params;
 
-  // SSR fetch highlights to provide instant content for Live Updates
-  const initialHighlights = await getLiveHighlightsData();
+  // Fetch stats server-side to eliminate CLS from client-side loading
+  const stats = await getDashboardStats();
 
   return (
-    <ParticlesAboutContent
-      data={data}
-      locale={l}
-      layoutClass={aboutLayoutClass}
-      initialHighlights={initialHighlights}
-    />
+    <>
+      <ZhiHeader />
+      <main className="min-h-screen bg-stone-50 dark:bg-stone-950">
+        <ZhiStatsDashboard stats={stats} />
+      </main>
+      <ZhiFooter />
+    </>
   );
+}
+
+export function generateStaticParams() {
+  return [{ locale: "en" }, { locale: "zh" }];
 }

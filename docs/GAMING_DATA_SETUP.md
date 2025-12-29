@@ -164,7 +164,7 @@ npx ts-node scripts/test-gaming-sync.ts
 
 ## 验证数据同步
 
-访问: http://localhost:3000/about/live/gaming
+访问: http://localhost:3000/about/gaming
 
 你应该能看到:
 
