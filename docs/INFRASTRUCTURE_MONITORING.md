@@ -134,7 +134,7 @@ Set up a cron job or use a service like GitHub Actions to call the sync endpoint
    - Should return sync status and statistics
 
 2. **View Monitoring Dashboard**
-   - Navigate to: `https://your-domain.com/[locale]/about/live/infra`
+   - Navigate to: `https://your-domain.com/[locale]/about/infra`
    - Should display all configured monitors
 
 3. **Test Admin Access**
@@ -179,7 +179,7 @@ Set up a cron job or use a service like GitHub Actions to call the sync endpoint
          │
          ▼
 ┌─────────────────┐
-│  Infra Page     │  ← /[locale]/about/live/infra
+│  Infra Page     │  ← /[locale]/about/infra
 └─────────────────┘
 ```
 

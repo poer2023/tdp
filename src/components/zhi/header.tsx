@@ -31,7 +31,7 @@ const NAV_LINKS: NavLink[] = [
   { label: "Home", labelZh: "首页", path: "/" },
   { label: "Projects", labelZh: "项目", path: "/projects" },
   { label: "Gallery", labelZh: "相册", path: "/gallery" },
-  { label: "Life Log", labelZh: "生活日志", path: "/about/live" },
+  { label: "Life Log", labelZh: "生活日志", path: "/about" },
 ];
 
 export function ZhiHeader() {

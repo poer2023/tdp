@@ -129,7 +129,7 @@ export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlig
               (highlight as unknown as { title?: string }).title ||
               String(idx)
             }
-            href={lp(highlight.href || "/about/live")}
+            href={lp(highlight.href || "/about")}
             className="group relative overflow-hidden rounded-2xl border border-stone-200 bg-white/70 p-6 shadow-[0_8px_24px_-12px_rgba(39,39,42,0.25)] backdrop-blur transition-all hover:shadow-[0_12px_32px_-8px_rgba(39,39,42,0.35)] dark:border-stone-800 dark:bg-stone-950/70"
           >
             {/* Icon */}
@@ -207,7 +207,7 @@ export function LiveHighlightsSection({ locale, initialHighlights }: LiveHighlig
       {/* View Full Dashboard Button */}
       <div className="pt-4 text-center">
         <Link
-          href={lp("/about/live")}
+          href={lp("/about")}
           className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/70 px-6 py-3 text-sm font-semibold text-stone-900 backdrop-blur transition-all hover:bg-stone-100 dark:border-stone-800 dark:bg-stone-950/70 dark:text-stone-50 dark:hover:bg-stone-900"
         >
           {t.viewDashboard}

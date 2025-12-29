@@ -19,22 +19,9 @@ import { useTheme } from "next-themes";
 
 // Dynamically import the entire map component to avoid SSR issues
 const LocationMap = dynamic(
-  () => import("react-leaflet").then(async (mod) => {
-    const { MapContainer, TileLayer, Marker, ZoomControl } = mod;
-    const L = await import("leaflet");
+  () => import("@/components/ui/map").then((mod) => {
+    const { Map, MapMarker, MarkerContent, MapControls } = mod;
 
-    // Create a custom icon to avoid the default icon loading issue
-    const customIcon = L.icon({
-      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-      iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41],
-    });
-
-    // Return a wrapper component
     return function LocationMapInner({
       lat,
       lng,
@@ -48,23 +35,23 @@ const LocationMap = dynamic(
       height?: string;
       showZoomControl?: boolean;
     }) {
-      const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
-      const DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
-
       return (
-        <MapContainer
-          center={[lat, lng]}
-          zoom={13}
-          style={{ height, width: "100%" }}
-          zoomControl={false}
-          attributionControl={false}
-          scrollWheelZoom={true}
-          doubleClickZoom={true}
-        >
-          <TileLayer url={isDark ? DARK_TILES : LIGHT_TILES} />
-          <Marker position={[lat, lng]} icon={customIcon} />
-          {showZoomControl && <ZoomControl position="topright" />}
-        </MapContainer>
+        <div style={{ height, width: "100%" }}>
+          <Map
+            center={[lng, lat]}
+            zoom={13}
+            scrollZoom={true}
+            doubleClickZoom={true}
+            className="h-full w-full"
+          >
+            <MapMarker longitude={lng} latitude={lat}>
+              <MarkerContent>
+                <div className="relative h-6 w-6 rounded-full border-2 border-white bg-blue-500 shadow-lg" />
+              </MarkerContent>
+            </MapMarker>
+            {showZoomControl && <MapControls position="top-right" showZoom />}
+          </Map>
+        </div>
       );
     };
   }),
@@ -256,50 +243,6 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
 
   // Thumbnails ref for scrolling
   const thumbnailsRef = useRef<HTMLDivElement>(null);
-
-  // Inject custom map styles
-  useEffect(() => {
-    const styleId = "Zhi-gallery-map-styles";
-    if (document.getElementById(styleId)) return;
-
-    const style = document.createElement("style");
-    style.id = styleId;
-    style.textContent = `
-      /* Zhi Gallery Map Controls - Dark */
-      .Zhi-map .leaflet-control-zoom {
-        border: none !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
-        border-radius: 8px !important;
-        overflow: hidden;
-        margin: 8px !important;
-      }
-      .Zhi-map .leaflet-control-zoom a {
-        width: 28px !important;
-        height: 28px !important;
-        line-height: 28px !important;
-        font-size: 14px !important;
-        border: none !important;
-        transition: background 0.15s ease;
-      }
-      /* Dark theme controls */
-      .dark .Zhi-map .leaflet-control-zoom a {
-        color: #fafafa !important;
-        background: #27272a !important;
-      }
-      .dark .Zhi-map .leaflet-control-zoom a:hover {
-        background: #3f3f46 !important;
-      }
-      /* Light theme controls */
-      .Zhi-map .leaflet-control-zoom a {
-        color: #44403c !important;
-        background: #ffffff !important;
-      }
-      .Zhi-map .leaflet-control-zoom a:hover {
-        background: #f5f5f4 !important;
-      }
-    `;
-    document.head.appendChild(style);
-  }, []);
 
   // Image container ref for wheel zoom
   const imageContainerRef = useRef<HTMLDivElement>(null);

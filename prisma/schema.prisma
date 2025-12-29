@@ -916,3 +916,110 @@ model SiteConfig {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ============================================================================
+// Footprint / Travel Tracking Models
+// ============================================================================
+
+/// Footprint Trip/Track
+/// Records walking, driving, cycling, and other transport data
+model Footprint {
+  id        String          @id @default(cuid())
+  type      FootprintType   @default(WALK)
+  source    FootprintSource @default(MANUAL)
+  title     String?
+  startTime DateTime
+  endTime   DateTime?
+  distance  Float?          // kilometers
+  duration  Int?            // seconds
+  
+  // Route data - encoded polyline or JSON coordinates
+  polyline  String?         @db.Text
+  
+  // Start/End locations
+  startLat  Float?
+  startLng  Float?
+  endLat    Float?
+  endLng    Float?
+  startAddr String?
+  endAddr   String?
+  
+  // Extended metadata (speed, elevation, energy, etc.)
+  metadata  Json?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type, startTime])
+  @@index([source, startTime])
+  @@index([startTime])
+}
+
+enum FootprintType {
+  WALK
+  RUN
+  BIKE
+  DRIVE
+  TRANSIT
+  FLIGHT
+  OTHER
+}
+
+enum FootprintSource {
+  YISHENGZUJI  // 一生足迹 App
+  TESLAMATE    // TeslaMate
+  APPLE_HEALTH // Apple Health
+  STRAVA       // Strava
+  MANUAL       // Manual entry
+  OTHER
+}
+
+/// City - Visited cities for city markers feature
+model City {
+  id         String    @id @default(cuid())
+  code       String    @unique // City code (e.g., CN-11 for Beijing)
+  name       String             // City name
+  nameEn     String?            // English name
+  lat        Float              // Center latitude
+  lng        Float              // Center longitude
+  visits     Int       @default(0) // Visit count
+  firstVisit DateTime?          // First visit date
+  lastVisit  DateTime?          // Last visit date
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([visits])
+}
+
+/// Achievement - Footprint achievement badges
+model Achievement {
+  id          String   @id @default(cuid())
+  code        String   @unique // e.g., "walker_10k", "driver_500k"
+  name        String            // Display name
+  nameEn      String?           // English name
+  description String            // Description
+  descriptionEn String?         // English description
+  icon        String            // Emoji or icon name
+  category    String            // e.g., "distance", "cities", "streak"
+  threshold   Float             // Unlock threshold value
+  order       Int      @default(0) // Display order
+  createdAt   DateTime @default(now())
+  
+  userAchievements UserAchievement[]
+  
+  @@index([category])
+}
+
+/// UserAchievement - User's achievement progress
+model UserAchievement {
+  id            String       @id @default(cuid())
+  achievementId String
+  achievement   Achievement  @relation(fields: [achievementId], references: [id])
+  progress      Float        @default(0) // Current progress value
+  unlockedAt    DateTime?    // Null if not unlocked
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@unique([achievementId]) // One record per achievement (single user)
+  @@index([unlockedAt])
+}

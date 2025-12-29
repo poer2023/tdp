@@ -13,7 +13,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Social Detail Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/about/live/social");
+    await page.goto("/about/social");
   });
 
   test("should display privacy notice prominently", async ({ page }) => {
@@ -137,11 +137,11 @@ test.describe("Social Detail Page", () => {
     await expect(backLink).toBeVisible();
 
     await backLink.click();
-    await expect(page).toHaveURL(/\/about\/live$/);
+    await expect(page).toHaveURL(/\/about$/);
   });
 
   test("should work in Chinese locale", async ({ page }) => {
-    await page.goto("/zh/about/live/social");
+    await page.goto("/zh/about/social");
     await page.waitForLoadState("networkidle");
 
     // Chinese text should be visible
@@ -171,7 +171,7 @@ test.describe("Social Detail Page", () => {
       setTimeout(() => route.continue(), 1000);
     });
 
-    await page.goto("/about/live/social");
+    await page.goto("/about/social");
 
     // Should show loading skeletons
     const skeletons = page.locator(".animate-pulse");
@@ -184,7 +184,7 @@ test.describe("Social Detail Page", () => {
 
   test("should be responsive on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/about/live/social");
+    await page.goto("/about/social");
     await page.waitForLoadState("networkidle");
 
     // Content should be visible and stacked

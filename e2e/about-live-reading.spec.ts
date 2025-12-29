@@ -13,7 +13,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Reading Detail Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/about/live/reading");
+    await page.goto("/about/reading");
   });
 
   test("should display reading statistics", async ({ page }) => {
@@ -140,11 +140,11 @@ test.describe("Reading Detail Page", () => {
     await expect(backLink).toBeVisible();
 
     await backLink.click();
-    await expect(page).toHaveURL(/\/about\/live$/);
+    await expect(page).toHaveURL(/\/about$/);
   });
 
   test("should work in Chinese locale", async ({ page }) => {
-    await page.goto("/zh/about/live/reading");
+    await page.goto("/zh/about/reading");
     await page.waitForLoadState("networkidle");
 
     // Chinese text should be visible
@@ -160,7 +160,7 @@ test.describe("Reading Detail Page", () => {
       setTimeout(() => route.continue(), 1000);
     });
 
-    await page.goto("/about/live/reading");
+    await page.goto("/about/reading");
 
     // Should show loading skeletons
     const skeletons = page.locator(".animate-pulse");
@@ -173,7 +173,7 @@ test.describe("Reading Detail Page", () => {
 
   test("should be responsive on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/about/live/reading");
+    await page.goto("/about/reading");
     await page.waitForLoadState("networkidle");
 
     // Content should be visible and stacked

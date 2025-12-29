@@ -174,7 +174,7 @@ describe("LiveHighlightsSection", () => {
       const dashboardLink = screen.getByRole("link", { name: /dashboard/i });
       expect(dashboardLink).toBeInTheDocument();
       // localePath returns prefix-free paths for EN (default locale)
-      expect(dashboardLink).toHaveAttribute("href", "/about/live");
+      expect(dashboardLink).toHaveAttribute("href", "/about");
     });
   });
 

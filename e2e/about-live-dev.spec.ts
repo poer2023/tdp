@@ -21,7 +21,7 @@ const waitForDevData = async (page: Page) => {
 
 test.describe("Development Detail Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/about/live/dev");
+    await page.goto("/about/dev");
   });
 
   test("should display dev statistics", async ({ page }) => {
@@ -123,11 +123,11 @@ test.describe("Development Detail Page", () => {
     await expect(backLink).toBeVisible();
 
     await backLink.click();
-    await expect(page).toHaveURL(/\/about\/live$/);
+    await expect(page).toHaveURL(/\/about$/);
   });
 
   test("should work in Chinese locale", async ({ page }) => {
-    await page.goto("/zh/about/live/dev");
+    await page.goto("/zh/about/dev");
     await waitForDevData(page);
 
     // Chinese text should be visible
@@ -157,7 +157,7 @@ test.describe("Development Detail Page", () => {
       setTimeout(() => route.continue(), 1000);
     });
 
-    await page.goto("/about/live/dev");
+    await page.goto("/about/dev");
 
     // Should show loading skeletons
     const skeletons = page.locator(".animate-pulse");
@@ -170,7 +170,7 @@ test.describe("Development Detail Page", () => {
 
   test("should be responsive on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/about/live/dev");
+    await page.goto("/about/dev");
     await waitForDevData(page);
 
     // Content should be visible and stacked

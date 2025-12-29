@@ -12,7 +12,7 @@ const mockHighlights: LiveHighlight[] = [
     subtitle: "5 repos active",
     value: "23",
     trend: "up",
-    href: "/about/live/dev",
+    href: "/about/dev",
   },
   {
     module: "gaming",
@@ -21,7 +21,7 @@ const mockHighlights: LiveHighlight[] = [
     subtitle: "8 games",
     value: "45 hours",
     trend: "stable",
-    href: "/about/live/gaming",
+    href: "/about/gaming",
   },
   {
     module: "reading",
@@ -30,7 +30,7 @@ const mockHighlights: LiveHighlight[] = [
     subtitle: "System Design Interview",
     value: "2 books",
     trend: "stable",
-    href: "/about/live/reading",
+    href: "/about/reading",
   },
   {
     module: "social",
@@ -39,7 +39,7 @@ const mockHighlights: LiveHighlight[] = [
     subtitle: "45 conversations",
     value: "This week",
     trend: "up",
-    href: "/about/live/social",
+    href: "/about/social",
   },
   {
     module: "finance",
@@ -48,7 +48,7 @@ const mockHighlights: LiveHighlight[] = [
     subtitle: "5 active",
     value: "This month",
     trend: "stable",
-    href: "/about/live/finance",
+    href: "/about/finance",
   },
 ];
 
@@ -146,19 +146,19 @@ describe("LiveDashboard", () => {
 
     await waitFor(() => {
       const devLink = screen.getByText("Commits Today").closest("a");
-      expect(devLink).toHaveAttribute("href", "/about/live/dev");
+      expect(devLink).toHaveAttribute("href", "/about/dev");
 
       const gamingLink = screen.getByText("Gaming This Week").closest("a");
-      expect(gamingLink).toHaveAttribute("href", "/about/live/gaming");
+      expect(gamingLink).toHaveAttribute("href", "/about/gaming");
 
       const readingLink = screen.getByText("Currently Reading").closest("a");
-      expect(readingLink).toHaveAttribute("href", "/about/live/reading");
+      expect(readingLink).toHaveAttribute("href", "/about/reading");
 
       const socialLink = screen.getByText("Social Activity").closest("a");
-      expect(socialLink).toHaveAttribute("href", "/about/live/social");
+      expect(socialLink).toHaveAttribute("href", "/about/social");
 
       const financeLink = screen.getByText("Subscriptions").closest("a");
-      expect(financeLink).toHaveAttribute("href", "/about/live/finance");
+      expect(financeLink).toHaveAttribute("href", "/about/finance");
     });
   });
 
@@ -187,7 +187,7 @@ describe("LiveDashboard", () => {
 
     await waitFor(() => {
       // Should have at least 5 highlights (dev, gaming, reading, social, finance)
-      const cards = document.querySelectorAll("a[href*='/about/live/']");
+      const cards = document.querySelectorAll("a[href*='/about/']");
       expect(cards.length).toBeGreaterThanOrEqual(5);
     });
   });

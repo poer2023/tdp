@@ -70,7 +70,7 @@ async function testSteamSync() {
 
       console.log();
       console.log("🔍 你可以通过以下方式查看数据：");
-      console.log("   1. 访问: http://localhost:3000/about/live/gaming");
+      console.log("   1. 访问: http://localhost:3000/about/gaming");
       console.log(
         "   2. 查询数据库: npx prisma studio (然后查看 Game, GameSession, SteamProfile 表)"
       );
