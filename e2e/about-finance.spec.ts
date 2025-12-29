@@ -193,7 +193,7 @@ test.describe("Finance Detail Page", () => {
 
   test("should handle loading state", async ({ page }) => {
     // Intercept API to delay response
-    await page.route("**/api/about/live/finance", (route) => {
+    await page.route("**/api/about/finance", (route) => {
       setTimeout(() => route.continue(), 1000);
     });
 

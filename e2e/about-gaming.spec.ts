@@ -112,7 +112,7 @@ test.describe("Gaming Detail Page", () => {
 
   test("should handle loading state", async ({ page }) => {
     // Intercept API to delay response
-    await page.route("**/api/about/live/gaming", (route) => {
+    await page.route("**/api/about/gaming", (route) => {
       setTimeout(() => route.continue(), 1000);
     });
 
@@ -160,7 +160,7 @@ test.describe("Gaming Detail Page", () => {
 
   test("should handle empty database gracefully", async ({ page }) => {
     // Mock empty API response
-    await page.route("**/api/about/live/gaming", async (route) => {
+    await page.route("**/api/about/gaming", async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -216,7 +216,7 @@ test.describe("Gaming Detail Page", () => {
 
   test("should handle API errors gracefully", async ({ page }) => {
     // Mock API error
-    await page.route("**/api/about/live/gaming", async (route) => {
+    await page.route("**/api/about/gaming", async (route) => {
       await route.fulfill({
         status: 500,
         contentType: "application/json",
@@ -280,7 +280,7 @@ test.describe("Gaming Detail Page", () => {
 
   test("should load data from database API", async ({ page }) => {
     // Verify API is called correctly
-    const apiPromise = page.waitForResponse("**/api/about/live/gaming");
+    const apiPromise = page.waitForResponse("**/api/about/gaming");
 
     await page.goto("/about/gaming");
 
@@ -297,7 +297,7 @@ test.describe("Gaming Detail Page", () => {
   });
 
   test("should respect cache headers", async ({ page }) => {
-    const apiPromise = page.waitForResponse("**/api/about/live/gaming");
+    const apiPromise = page.waitForResponse("**/api/about/gaming");
 
     await page.goto("/about/gaming");
 

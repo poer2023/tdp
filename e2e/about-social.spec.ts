@@ -167,7 +167,7 @@ test.describe("Social Detail Page", () => {
 
   test("should handle loading state", async ({ page }) => {
     // Intercept API to delay response
-    await page.route("**/api/about/live/social", (route) => {
+    await page.route("**/api/about/social", (route) => {
       setTimeout(() => route.continue(), 1000);
     });
 

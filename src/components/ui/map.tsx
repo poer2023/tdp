@@ -138,9 +138,13 @@ function Map({ children, className, onLoad, ...props }: MapProps) {
 // Marker Context
 // ============================================================================
 
+// ============================================================================
+// Marker Context
+// ============================================================================
+
 type MarkerContextValue = {
     markerRef: React.RefObject<MapLibreGL.Marker | null>;
-    markerElementRef: React.RefObject<HTMLDivElement | null>;
+    markerElement: HTMLDivElement | null;
     map: MapLibreGL.Map | null;
     isReady: boolean;
 };
@@ -179,14 +183,14 @@ function MapMarker({
 }: MapMarkerProps) {
     const { map, isLoaded } = useMap();
     const markerRef = useRef<MapLibreGL.Marker | null>(null);
-    const markerElementRef = useRef<HTMLDivElement | null>(null);
+    const [markerElement, setMarkerElement] = useState<HTMLDivElement | null>(null);
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
         if (!isLoaded || !map) return;
 
         const container = document.createElement("div");
-        markerElementRef.current = container;
+        setMarkerElement(container);
 
         const marker = new MapLibreGL.Marker({
             ...markerOptions,
@@ -211,7 +215,7 @@ function MapMarker({
                 container.removeEventListener("mouseleave", onMouseLeave);
             marker.remove();
             markerRef.current = null;
-            markerElementRef.current = null;
+            setMarkerElement(null);
             setIsReady(false);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -223,7 +227,7 @@ function MapMarker({
 
     return (
         <MarkerContext.Provider
-            value={{ markerRef, markerElementRef, map, isReady }}
+            value={{ markerRef, markerElement, map, isReady }}
         >
             {children}
         </MarkerContext.Provider>
@@ -240,15 +244,15 @@ type MarkerContentProps = {
 };
 
 function MarkerContent({ children, className }: MarkerContentProps) {
-    const { markerElementRef, isReady } = useMarkerContext();
+    const { markerElement, isReady } = useMarkerContext();
 
-    if (!isReady || !markerElementRef.current) return null;
+    if (!isReady || !markerElement) return null;
 
     return createPortal(
         <div className={cn("relative cursor-pointer", className)}>
             {children || <DefaultMarkerIcon />}
         </div>,
-        markerElementRef.current
+        markerElement
     );
 }
 
@@ -345,13 +349,13 @@ function MarkerTooltip({
     className,
     ...popupOptions
 }: MarkerTooltipProps) {
-    const { markerRef, markerElementRef, map, isReady } = useMarkerContext();
+    const { markerRef, markerElement, map, isReady } = useMarkerContext();
     const containerRef = useRef<HTMLDivElement | null>(null);
     const popupRef = useRef<MapLibreGL.Popup | null>(null);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        if (!isReady || !markerRef.current || !markerElementRef.current || !map)
+        if (!isReady || !markerRef.current || !markerElement || !map)
             return;
 
         const container = document.createElement("div");
@@ -366,7 +370,8 @@ function MarkerTooltip({
 
         popupRef.current = popup;
 
-        const markerElement = markerElementRef.current;
+        // Note: markerElement is guaranteed to be set if isReady is true and we checked it
+        const element = markerElement;
         const marker = markerRef.current;
 
         const handleMouseEnter = () => {
@@ -374,13 +379,13 @@ function MarkerTooltip({
         };
         const handleMouseLeave = () => popup.remove();
 
-        markerElement.addEventListener("mouseenter", handleMouseEnter);
-        markerElement.addEventListener("mouseleave", handleMouseLeave);
+        element.addEventListener("mouseenter", handleMouseEnter);
+        element.addEventListener("mouseleave", handleMouseLeave);
         setMounted(true);
 
         return () => {
-            markerElement.removeEventListener("mouseenter", handleMouseEnter);
-            markerElement.removeEventListener("mouseleave", handleMouseLeave);
+            element.removeEventListener("mouseenter", handleMouseEnter);
+            element.removeEventListener("mouseleave", handleMouseLeave);
             popup.remove();
             popupRef.current = null;
             containerRef.current = null;
