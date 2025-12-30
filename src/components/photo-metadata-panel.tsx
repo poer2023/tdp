@@ -98,7 +98,7 @@ function formatRelativeTime(dateString: string | null | undefined, locale: strin
 }
 
 export function PhotoMetadataPanel({ image, locale = "zh" }: PhotoMetadataPanelProps) {
-  const { resolvedTheme } = useTheme();
+  useTheme(); // Keep hook call for potential future use
   const hasLocation = image.latitude && image.longitude;
 
   return (

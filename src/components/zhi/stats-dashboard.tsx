@@ -26,7 +26,6 @@ import {
   GitCommit,
   ArrowUpRight,
   Zap,
-  Music,
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import type { DashboardStatsData } from "@/lib/dashboard-stats";

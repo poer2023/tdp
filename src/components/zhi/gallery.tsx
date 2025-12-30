@@ -25,13 +25,13 @@ const LocationMap = dynamic(
     return function LocationMapInner({
       lat,
       lng,
-      isDark,
+      _isDark,
       height = "160px",
       showZoomControl = true
     }: {
       lat: number;
       lng: number;
-      isDark: boolean;
+      _isDark?: boolean;
       height?: string;
       showZoomControl?: boolean;
     }) {
@@ -738,7 +738,7 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
                       <LocationMap
                         lat={selectedItem.latitude}
                         lng={selectedItem.longitude}
-                        isDark={isDark}
+                        _isDark={isDark}
                         height="160px"
                         showZoomControl={true}
                       />
@@ -936,7 +936,7 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
                             <LocationMap
                               lat={selectedItem.latitude}
                               lng={selectedItem.longitude}
-                              isDark={true}
+                              _isDark={true}
                               height="120px"
                               showZoomControl={false}
                             />

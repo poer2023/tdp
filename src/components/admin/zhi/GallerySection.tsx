@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { X, Play, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { useData } from './store';
 import type { GalleryItem } from './types';
@@ -14,7 +15,7 @@ import { useUpload, type UploadItem } from '@/hooks/use-upload';
 
 
 export const GallerySection: React.FC = () => {
-    const { addGalleryItem, updateGalleryItem, deleteGalleryItem } = useData();
+    const { updateGalleryItem, deleteGalleryItem } = useData();
     const { t } = useAdminLocale();
 
     const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
@@ -318,10 +319,12 @@ export const GallerySection: React.FC = () => {
                             {/* Pending uploads - optimistic UI */}
                             {pendingUploads.map((item) => (
                                 <div key={item.id} className="relative rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
-                                    <img
+                                    <Image
                                         src={item.preview}
                                         alt="Uploading"
-                                        className="w-full h-full object-cover"
+                                        fill
+                                        className="object-cover"
+                                        unoptimized
                                     />
                                     <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
                                         {item.status === 'uploading' && (
