@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import type { MomentImage } from "@/lib/moments";
+import { getMomentImageUrl } from "@/lib/moment-images";
 
 interface MultiImageGridProps {
   images: MomentImage[];
@@ -25,7 +26,7 @@ export function MultiImageGrid({ images, onImageClick }: MultiImageGridProps) {
             }}
           >
             <Image
-              src={img.previewUrl || img.url}
+              src={getMomentImageUrl(img, "small")}
               alt={img.alt || `Image ${idx + 1}`}
               fill
               className="object-cover transition-transform duration-200 hover:scale-105"
@@ -51,7 +52,7 @@ export function MultiImageGrid({ images, onImageClick }: MultiImageGridProps) {
           }}
         >
           <Image
-            src={images[0]!.previewUrl || images[0]!.url}
+            src={getMomentImageUrl(images[0]!, "medium")}
             alt={images[0]!.alt || "Image 1"}
             fill
             className="object-cover transition-transform duration-200 hover:scale-105"
@@ -70,7 +71,7 @@ export function MultiImageGrid({ images, onImageClick }: MultiImageGridProps) {
             }}
           >
             <Image
-              src={img.previewUrl || img.url}
+              src={getMomentImageUrl(img, "small")}
               alt={img.alt || `Image ${idx + 2}`}
               fill
               className="object-cover transition-transform duration-200 hover:scale-105"
@@ -96,7 +97,7 @@ export function MultiImageGrid({ images, onImageClick }: MultiImageGridProps) {
             }}
           >
             <Image
-              src={img.previewUrl || img.url}
+              src={getMomentImageUrl(img, "small")}
               alt={img.alt || `Image ${idx + 1}`}
               fill
               className="object-cover transition-transform duration-200 hover:scale-105"

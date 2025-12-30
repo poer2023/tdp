@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { MomentImage } from "@/lib/moments";
 import { localePath } from "@/lib/locale-path";
 import { toOptimizedImageUrl } from "@/lib/image-proxy";
+import { getMomentImageUrl } from "@/lib/moment-images";
 
 export function MomentCard({
   id,
@@ -76,7 +77,8 @@ function renderTwitterLikeGrid(images: MomentImage[] | null | unknown, detailHre
 
   if (count === 1) {
     const im = images[0]!;
-    const imgSrc = toOptimizedImageUrl(im.previewUrl || im.url) || im.url;
+    const displayUrl = getMomentImageUrl(im, "medium");
+    const imgSrc = toOptimizedImageUrl(displayUrl) || displayUrl;
 
     return (
       <a
@@ -109,7 +111,7 @@ function renderTwitterLikeGrid(images: MomentImage[] | null | unknown, detailHre
             className="relative block h-40 overflow-hidden rounded-lg sm:h-48"
           >
             <Image
-              src={toOptimizedImageUrl(im.previewUrl || im.url) || im.url}
+              src={toOptimizedImageUrl(getMomentImageUrl(im, "small")) || im.url}
               alt={im.alt || ""}
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
@@ -136,7 +138,7 @@ function renderTwitterLikeGrid(images: MomentImage[] | null | unknown, detailHre
             className="relative block h-40 overflow-hidden rounded-lg sm:h-48"
           >
             <Image
-              src={toOptimizedImageUrl(a!.previewUrl || a!.url) || a!.url}
+              src={toOptimizedImageUrl(getMomentImageUrl(a!, "medium")) || a!.url}
               alt={a!.alt || ""}
               fill
               sizes="(max-width: 768px) 66vw, 33vw"
@@ -154,7 +156,7 @@ function renderTwitterLikeGrid(images: MomentImage[] | null | unknown, detailHre
             className="relative block h-[calc(50%-0.375rem)] overflow-hidden rounded-lg sm:h-[calc(50%-0.25rem)]"
           >
             <Image
-              src={toOptimizedImageUrl(b!.previewUrl || b!.url) || b!.url}
+              src={toOptimizedImageUrl(getMomentImageUrl(b!, "small")) || b!.url}
               alt={b!.alt || ""}
               fill
               sizes="(max-width: 768px) 34vw, 17vw"
@@ -170,7 +172,7 @@ function renderTwitterLikeGrid(images: MomentImage[] | null | unknown, detailHre
             className="relative block h-[calc(50%-0.375rem)] overflow-hidden rounded-lg sm:h-[calc(50%-0.25rem)]"
           >
             <Image
-              src={toOptimizedImageUrl(c!.previewUrl || c!.url) || c!.url}
+              src={toOptimizedImageUrl(getMomentImageUrl(c!, "small")) || c!.url}
               alt={c!.alt || ""}
               fill
               sizes="(max-width: 768px) 34vw, 17vw"
@@ -193,7 +195,7 @@ function renderTwitterLikeGrid(images: MomentImage[] | null | unknown, detailHre
           {}
           <a href={im.url} target="_blank" rel="noopener" className="relative block h-full w-full">
             <Image
-              src={toOptimizedImageUrl(im.previewUrl || im.url) || im.url}
+              src={toOptimizedImageUrl(getMomentImageUrl(im, "small")) || im.url}
               alt={im.alt || ""}
               fill
               sizes="(max-width: 768px) 50vw, 25vw"

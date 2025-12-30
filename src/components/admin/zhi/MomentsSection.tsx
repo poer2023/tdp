@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useData } from './store';
-import type { Moment } from './types';
+import type { Moment, MomentImage } from './types';
 import {
     SectionContainer, EditForm, Input, TextArea,
     ImageUploadArea, RichMomentItem
@@ -60,7 +60,7 @@ export const MomentsSection: React.FC = () => {
         setIsSaving(true);
 
         // Upload new images first to get real URLs
-        const uploadedImageUrls: string[] = [];
+        const uploadedImageUrls: (string | MomentImage)[] = [];
         for (const item of uploadQueue) {
             try {
                 const formData = new FormData();
@@ -76,7 +76,14 @@ export const MomentsSection: React.FC = () => {
                     const uploadData = await uploadRes.json();
                     // The gallery upload returns the image object with filePath
                     if (uploadData.image?.filePath) {
-                        uploadedImageUrls.push(uploadData.image.filePath);
+                        uploadedImageUrls.push({
+                            url: uploadData.image.filePath,
+                            microThumbUrl: uploadData.image.microThumbPath,
+                            smallThumbUrl: uploadData.image.smallThumbPath,
+                            mediumUrl: uploadData.image.mediumPath,
+                            w: uploadData.image.width,
+                            h: uploadData.image.height
+                        });
                     } else if (uploadData.images?.[0]?.filePath) {
                         uploadedImageUrls.push(uploadData.images[0].filePath);
                     } else if (uploadData.url) {

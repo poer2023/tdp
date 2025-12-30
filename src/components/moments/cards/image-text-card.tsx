@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { MomentListItem } from "@/lib/moments";
+import { getMomentImageUrl } from "@/lib/moment-images";
 import { MomentCardFooter } from "../moment-card-footer";
 
 interface ImageTextCardProps {
@@ -18,6 +19,7 @@ export function ImageTextCard({ moment, locale, cardLink, onImageClick }: ImageT
   const firstImage = moment.images?.[0];
 
   if (!firstImage) return null;
+  const displayUrl = getMomentImageUrl(firstImage, "medium");
 
   return (
     <div className="group relative overflow-hidden rounded-[24px] bg-white shadow-[0_25px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-1.5 hover:scale-[1.01] hover:shadow-[0_35px_70px_rgba(15,23,42,0.12)] active:scale-[0.99] dark:bg-[#111827] dark:shadow-[0_25px_50px_rgba(0,0,0,0.35)]">
@@ -30,7 +32,7 @@ export function ImageTextCard({ moment, locale, cardLink, onImageClick }: ImageT
         }}
       >
         <Image
-          src={firstImage.previewUrl || firstImage.url}
+          src={displayUrl}
           alt={moment.content?.slice(0, 50) || "Moment image"}
           width={firstImage.w || 800}
           height={firstImage.h || 600}

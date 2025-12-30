@@ -203,11 +203,22 @@ export const RichMomentItem: React.FC<{ moment: Moment, onEdit: () => void, onDe
         </p>
         {moment.images && moment.images.length > 0 && (
             <div className="flex gap-2 overflow-x-auto pb-1">
-                {moment.images.map((img, idx) => (
-                    <div key={idx} className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-100 dark:border-stone-700">
-                        <AdminImage src={getImageUrl(img)} alt="" className="w-full h-full" containerClassName="w-full h-full" />
-                    </div>
-                ))}
+                {moment.images.map((img, idx) => {
+                    const imgUrl = typeof img === 'string' ? img : img.url;
+                    const thumbUrl = typeof img === 'object' ? (img.microThumbUrl || imgUrl) : imgUrl;
+
+                    return (
+                        <div key={idx} className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-100 dark:border-stone-700">
+                            <AdminImage
+                                src={thumbUrl}
+                                alt=""
+                                className="w-full h-full"
+                                containerClassName="w-full h-full"
+                                sizes="64px"
+                            />
+                        </div>
+                    );
+                })}
             </div>
         )}
     </div>

@@ -9,6 +9,7 @@ import type { FeedItem, FeedPost, FeedMoment, FeedCurated } from "@/components/z
 import type { HeroImageItem } from "@/components/zhi/hero";
 import { getZhiProfile } from "@/lib/zhi-profile";
 import { getAtAGlanceStatus, formatRelativeTime } from "@/lib/user-status";
+import { getMomentImageUrl } from "@/lib/moment-images";
 
 // ISR: Revalidate every 60 seconds for fresh content with CDN caching
 export const runtime = "nodejs";
@@ -84,7 +85,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       id: moment.id,
       type: "moment" as const,
       content: moment.content,
-      images: moment.images?.map((img) => img.previewUrl || img.url) || [],
+      images: moment.images?.map((img) => getMomentImageUrl(img, "medium")) || [],
       date: dateStr,
       tags: moment.tags || [],
       likes: moment.likeCount ?? 0,

@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { Eye, Heart } from "lucide-react";
 import type { MomentListItem } from "@/lib/moments";
+import { getMomentImageUrl } from "@/lib/moment-images";
 import { MomentCardFooter } from "../moment-card-footer";
 
 interface ImageOnlyCardProps {
@@ -17,6 +18,7 @@ export function ImageOnlyCard({ moment, locale, onImageClick }: ImageOnlyCardPro
   const firstImage = moment.images?.[0];
 
   if (!firstImage) return null;
+  const displayUrl = getMomentImageUrl(firstImage, "medium");
 
   return (
     <div
@@ -28,7 +30,7 @@ export function ImageOnlyCard({ moment, locale, onImageClick }: ImageOnlyCardPro
     >
       <div className="relative aspect-auto">
         <Image
-          src={firstImage.previewUrl || firstImage.url}
+          src={displayUrl}
           alt={moment.content?.slice(0, 50) || "Moment image"}
           width={firstImage.w || 800}
           height={firstImage.h || 600}

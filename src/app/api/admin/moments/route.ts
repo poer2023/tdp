@@ -50,8 +50,20 @@ export async function POST(request: NextRequest) {
             h: typeof img?.h === "number" ? img.h : null,
             alt: typeof img?.alt === "string" ? img.alt : null,
             previewUrl: typeof img?.previewUrl === "string" ? img.previewUrl : null,
+            microThumbUrl: typeof img?.microThumbUrl === "string" ? img.microThumbUrl : null,
+            smallThumbUrl: typeof img?.smallThumbUrl === "string" ? img.smallThumbUrl : null,
+            mediumUrl: typeof img?.mediumUrl === "string" ? img.mediumUrl : null,
           }))
-          .filter((img: { url: string; w: number | null; h: number | null; alt: string | null; previewUrl: string | null }) => {
+          .filter((img: {
+            url: string;
+            w: number | null;
+            h: number | null;
+            alt: string | null;
+            previewUrl: string | null;
+            microThumbUrl: string | null;
+            smallThumbUrl: string | null;
+            mediumUrl: string | null;
+          }) => {
             // Reject blob URLs - they are temporary browser URLs that won't work on server
             if (img.url.startsWith("blob:")) {
               console.warn("[Admin] Rejected blob URL in moment images:", img.url);

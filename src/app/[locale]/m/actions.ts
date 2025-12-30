@@ -94,6 +94,9 @@ export async function createMomentAction(
           let h: number | null = null;
           let previewUrl: string | undefined;
           let displayUrl: string | undefined;
+          let microThumbUrl: string | undefined;
+          let smallThumbUrl: string | undefined;
+          let mediumUrl: string | undefined;
           try {
             const img = sharp(buf).rotate(); // Auto-apply EXIF orientation
             const meta = await img.metadata();
@@ -107,11 +110,12 @@ export async function createMomentAction(
               storage.upload(thumbs.medium, getThumbnailFilename(key, "medium"), "image/webp"),
             ]);
 
-            previewUrl = storage.getPublicUrl(smallPath);
+            microThumbUrl = storage.getPublicUrl(microPath);
+            smallThumbUrl = storage.getPublicUrl(smallPath);
+            mediumUrl = storage.getPublicUrl(mediumPath);
+            previewUrl = smallThumbUrl;
             // Use medium webp for display/open; fall back to original
-            displayUrl = storage.getPublicUrl(mediumPath);
-            // Micro is uploaded for potential future use (map/film strip)
-            void microPath;
+            displayUrl = mediumUrl;
           } catch (err) {
             console.warn("[Moment] Thumbnail generation failed, using original", err);
           }
@@ -121,6 +125,9 @@ export async function createMomentAction(
             w,
             h,
             previewUrl: previewUrl || storage.getPublicUrl(originalPath),
+            microThumbUrl,
+            smallThumbUrl,
+            mediumUrl,
           } as MomentImage;
         } catch (err) {
           console.error("[Moment] Image upload failed", err);

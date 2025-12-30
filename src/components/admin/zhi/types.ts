@@ -56,6 +56,9 @@ export interface MomentImage {
   h?: number;
   alt?: string;
   previewUrl?: string;
+  microThumbUrl?: string;
+  smallThumbUrl?: string;
+  mediumUrl?: string;
 }
 
 export interface Moment {

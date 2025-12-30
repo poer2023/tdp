@@ -14,6 +14,9 @@ export type MomentImage = {
   h?: number | null;
   alt?: string | null;
   previewUrl?: string | null;
+  microThumbUrl?: string | null;
+  smallThumbUrl?: string | null;
+  mediumUrl?: string | null;
 };
 
 export type MomentListItem = {

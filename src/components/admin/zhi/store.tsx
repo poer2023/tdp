@@ -990,7 +990,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     w: img.w,
                     h: img.h,
                     alt: img.alt,
-                    previewUrl: img.previewUrl
+                    previewUrl: img.previewUrl,
+                    microThumbUrl: img.microThumbUrl,
+                    smallThumbUrl: img.smallThumbUrl,
+                    mediumUrl: img.mediumUrl
                 }
         ))
         .filter(img => isValidImageUrl(img.url));
