@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useActionState, useEffect, useState, startTransition, Suspense } from "react";
+import React, { useEffect, useState, startTransition, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { createMomentAction, type CreateMomentState } from "@/app/[locale]/m/actions";
 import { useSession } from "next-auth/react";
 
 type LocalImage = { file: File; url: string };
+type CreateMomentState =
+  | { status: "idle" }
+  | { status: "error"; message: string }
+  | { status: "success"; id: string };
 
 // Inner component that uses useSearchParams - must be wrapped in Suspense
 function MomentComposerCore() {
@@ -15,9 +18,8 @@ function MomentComposerCore() {
   const pathname = usePathname();
   const sp = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [state, action, pending] = useActionState<CreateMomentState, FormData>(createMomentAction, {
-    status: "idle",
-  });
+  const [state, setState] = useState<CreateMomentState>({ status: "idle" });
+  const [pending, setPending] = useState(false);
   const formRef = React.useRef<HTMLFormElement>(null);
   const [text, setText] = useState("");
   const [images, setImages] = useState<LocalImage[]>([]);
@@ -104,20 +106,113 @@ function MomentComposerCore() {
     };
   }, [isAdmin]);
 
-  useEffect(() => {
-    if (state.status === "success") {
-      console.log("✅ Moment created successfully:", state.id);
-      startTransition(() => {
-        setText("");
-        revokeUrls(imagesRef.current);
-        setImages([]);
-        setOpen(false);
-      });
-      formRef.current?.reset();
-    } else if (state.status === "error") {
-      console.error("❌ Moment creation error:", state.message);
+  const resetForm = () => {
+    setText("");
+    revokeUrls(imagesRef.current);
+    setImages([]);
+    setOpen(false);
+    formRef.current?.reset();
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (pending) return;
+
+    const content = text.trim();
+    if (!content) {
+      setState({ status: "error", message: "内容为空" });
+      return;
     }
-  }, [state]);
+
+    setPending(true);
+    setState({ status: "idle" });
+
+    try {
+      const visibility =
+        (
+          formRef.current?.querySelector(
+            'select[name="visibility"]'
+          ) as HTMLSelectElement | null
+        )?.value || "PUBLIC";
+
+      const tagsField =
+        (
+          formRef.current?.querySelector('input[name="tags"]') as HTMLInputElement | null
+        )?.value || "";
+      const tags = tagsField
+        .split(/[,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 5);
+
+      const locationName =
+        (
+          formRef.current?.querySelector('input[name="locationName"]') as HTMLInputElement | null
+        )?.value?.trim() || "";
+      const location = locationName ? { name: locationName } : null;
+
+      const uploadedImages: Array<{ url: string }> = [];
+      for (const item of images) {
+        try {
+          const formData = new FormData();
+          formData.append("image", item.file);
+          formData.append("title", `Moment image ${new Date().toLocaleDateString()}`);
+
+          const uploadRes = await fetch("/api/admin/gallery/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!uploadRes.ok) {
+            console.error("Failed to upload image:", await uploadRes.text());
+            continue;
+          }
+
+          const uploadData = await uploadRes.json().catch(() => ({}));
+          const filePath =
+            uploadData.image?.filePath ??
+            uploadData.images?.[0]?.filePath ??
+            uploadData.url;
+
+          if (filePath) {
+            uploadedImages.push({ url: filePath });
+          }
+        } catch (error) {
+          console.error("Image upload failed:", error);
+        }
+      }
+
+      const res = await fetch("/api/admin/moments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content,
+          images: uploadedImages,
+          tags,
+          visibility,
+          status: "PUBLISHED",
+          ...(location ? { location } : {}),
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create moment");
+      }
+
+      console.log("✅ Moment created successfully:", data.moment?.id ?? data.id);
+      setState({ status: "success", id: data.moment?.id ?? data.id });
+      startTransition(() => resetForm());
+    } catch (error) {
+      console.error("❌ Moment creation error:", error);
+      setState({
+        status: "error",
+        message: error instanceof Error ? error.message : "发布失败",
+      });
+    } finally {
+      setPending(false);
+    }
+  };
 
   // Don't render anything if not admin or on admin routes
   if (!isAdmin || isAdminRoute) return null;
@@ -171,27 +266,7 @@ function MomentComposerCore() {
                 </div>
               </div>
             ) : (
-              <form
-                ref={formRef}
-                className="space-y-4"
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const fd = new FormData();
-                  fd.set("content", text);
-                  const vis =
-                    (
-                      formRef.current?.querySelector(
-                        'select[name="visibility"]'
-                      ) as HTMLSelectElement | null
-                    )?.value || "PUBLIC";
-                  fd.set("visibility", vis);
-                  for (const im of images) fd.append("images", im.file, im.file.name);
-                  // Trigger server action inside a transition so isPending works correctly
-                  startTransition(() => {
-                    void action(fd);
-                  });
-                }}
-              >
+              <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
                 <textarea
                   name="content"
                   maxLength={1000}
@@ -299,7 +374,7 @@ function MomentComposerCore() {
                   </div>
                   <button
                     type="submit"
-                    disabled={pending || (!text && images.length === 0)}
+                    disabled={pending || text.trim().length === 0}
                     className="inline-flex items-center gap-2 rounded-xl bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
                   >
                     {pending && (
