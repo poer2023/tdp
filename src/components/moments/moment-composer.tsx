@@ -151,7 +151,15 @@ function MomentComposerCore() {
         )?.value?.trim() || "";
       const location = locationName ? { name: locationName } : null;
 
-      const uploadedImages: Array<{ url: string }> = [];
+      const uploadedImages: Array<{
+        url: string;
+        microThumbUrl?: string;
+        smallThumbUrl?: string;
+        mediumUrl?: string;
+        previewUrl?: string;
+        w?: number;
+        h?: number;
+      }> = [];
       for (const item of images) {
         try {
           const formData = new FormData();
@@ -169,13 +177,16 @@ function MomentComposerCore() {
           }
 
           const uploadData = await uploadRes.json().catch(() => ({}));
-          const filePath =
-            uploadData.image?.filePath ??
-            uploadData.images?.[0]?.filePath ??
-            uploadData.url;
-
-          if (filePath) {
-            uploadedImages.push({ url: filePath });
+          if (uploadData.image) {
+            uploadedImages.push({
+              url: uploadData.image.filePath,
+              microThumbUrl: uploadData.image.microThumbPath,
+              smallThumbUrl: uploadData.image.smallThumbPath,
+              mediumUrl: uploadData.image.mediumPath,
+              previewUrl: uploadData.image.smallThumbPath,
+              w: uploadData.image.width,
+              h: uploadData.image.height,
+            });
           }
         } catch (error) {
           console.error("Image upload failed:", error);
