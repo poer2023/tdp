@@ -3,7 +3,7 @@
 import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Heart, MessageCircle, Share2, Sparkles } from "lucide-react";
+import { Heart, MessageCircle, Share2 } from "lucide-react";
 import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Image from "next/image";
 
@@ -180,56 +180,55 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                 </p>
               </div>
             </div>
-            {/* Visual flair icon */}
-            {hasImages && <Sparkles size={16} className="animate-pulse text-yellow-200" />}
+            {/* Remove decorative sparkles - no functional use */}
           </div>
 
           {/* Main Content */}
           <div className="mt-auto">
             <p
-              className={`mb-6 line-clamp-4 font-serif text-xl leading-relaxed md:text-2xl ${hasImages ? "text-white drop-shadow-md" : "text-stone-800 dark:text-stone-100"}`}
+              className={`line-clamp-4 font-serif text-xl leading-relaxed md:text-2xl ${hasImages ? "text-white drop-shadow-md" : "text-stone-800 dark:text-stone-100"}`}
             >
               {moment.content}
             </p>
+          </div>
 
-            {/* Actions Bar */}
-            <div
-              className={`flex items-center justify-between rounded-2xl p-2 backdrop-blur-md transition-all duration-300 ${hasImages
-                ? "border border-white/10 bg-white/10 text-white hover:bg-white/20"
-                : "border border-stone-200 bg-stone-100/50 text-stone-600 hover:bg-stone-100 dark:border-[#2a2a2e] dark:bg-[#1f1f23]/50 dark:text-stone-400 dark:hover:bg-[#27272a]"
-                }`}
-            >
-              <div className="flex gap-1">
-                <button
-                  onClick={handleLike}
-                  className="group/heart rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10"
+          {/* Actions Bar - Absolutely positioned, overlapping content on hover */}
+          <div
+            className={`absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl p-2 backdrop-blur-md transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 z-30 ${hasImages
+              ? "border border-white/10 bg-black/40 text-white hover:bg-black/60"
+              : "border border-stone-200 bg-white/80 text-stone-600 hover:bg-white dark:border-[#2a2a2e] dark:bg-[#1f1f23]/80 dark:text-stone-400 dark:hover:bg-[#27272a]"
+              }`}
+          >
+            <div className="flex gap-1">
+              <button
+                onClick={handleLike}
+                className="group/heart rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10"
+              >
+                <motion.div
+                  animate={moment.liked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
                 >
-                  <motion.div
-                    animate={moment.liked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                  >
-                    <Heart
-                      size={18}
-                      className={`transition-colors duration-200 ${moment.liked
-                        ? "fill-rose-500 text-rose-500"
-                        : moment.likes > 0
-                          ? "text-rose-500 group-hover/heart:fill-rose-200"
-                          : "group-hover/heart:text-rose-400"
-                        }`}
-                    />
-                  </motion.div>
-                </button>
-                <button className="rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10">
-                  <MessageCircle size={18} />
-                </button>
-                <button className="rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 md:hidden dark:hover:bg-white/10">
-                  <Share2 size={18} />
-                </button>
-              </div>
-              <span className="px-3 text-xs font-medium opacity-80">
-                {moment.likes} {moment.likes === 1 ? "like" : "likes"}
-              </span>
+                  <Heart
+                    size={18}
+                    className={`transition-colors duration-200 ${moment.liked
+                      ? "fill-rose-500 text-rose-500"
+                      : moment.likes > 0
+                        ? "text-rose-500 group-hover/heart:fill-rose-200"
+                        : "group-hover/heart:text-rose-400"
+                      }`}
+                  />
+                </motion.div>
+              </button>
+              <button className="rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10">
+                <MessageCircle size={18} />
+              </button>
+              <button className="rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 md:hidden dark:hover:bg-white/10">
+                <Share2 size={18} />
+              </button>
             </div>
+            <span className="px-3 text-xs font-medium opacity-80">
+              {moment.likes} {moment.likes === 1 ? "like" : "likes"}
+            </span>
           </div>
         </div>
       </motion.div>
