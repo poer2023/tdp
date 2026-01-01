@@ -29,7 +29,7 @@
   },
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "next build",
+    "build": "prisma migrate deploy && prisma generate && tsx scripts/production-data-migration.ts && next build",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
