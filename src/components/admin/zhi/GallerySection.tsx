@@ -29,6 +29,7 @@ export const GallerySection: React.FC = () => {
     const [manualUrl, setManualUrl] = useState('');
     const [isDragOver, setIsDragOver] = useState(false);
     const [isBatchMode, setIsBatchMode] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<'ORIGINAL' | 'REPOST' | 'MOMENT'>('ORIGINAL');
 
     // Delete confirmation dialog state
     const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({
@@ -211,6 +212,7 @@ export const GallerySection: React.FC = () => {
                     await upload.uploadItem(item, '/api/admin/gallery/upload', {
                         title: isBatchMode && newUploadItems.length > 1 ? `${title} ${i + 1}` : title,
                         description,
+                        category: selectedCategory,
                     });
                 } catch (err) {
                     console.error('Upload failed:', err);
@@ -289,6 +291,33 @@ export const GallerySection: React.FC = () => {
                                 </div>
 
                                 <TextArea label={t('description')} value={editingGallery?.description || ''} onChange={v => setEditingGallery(prev => ({ ...prev!, description: v }))} />
+
+                                {/* Category selector - only show for new uploads */}
+                                {!editingGallery?.id && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
+                                            分类
+                                        </label>
+                                        <div className="flex gap-2">
+                                            {[
+                                                { value: 'ORIGINAL', label: '自行发布' },
+                                                { value: 'REPOST', label: '转发' },
+                                            ].map((cat) => (
+                                                <button
+                                                    key={cat.value}
+                                                    type="button"
+                                                    onClick={() => setSelectedCategory(cat.value as 'ORIGINAL' | 'REPOST' | 'MOMENT')}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedCategory === cat.value
+                                                            ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900'
+                                                            : 'bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700'
+                                                        }`}
+                                                >
+                                                    {cat.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="mt-6 flex justify-end gap-3">

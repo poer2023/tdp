@@ -91,7 +91,7 @@ export async function POST(req: Request) {
       smallThumbPath: storage.getPublicUrl(smallPath),
       mediumPath: storage.getPublicUrl(mediumPath),
       postId,
-      category: category as "REPOST" | "ORIGINAL" | "AI",
+      category: category as "REPOST" | "ORIGINAL" | "MOMENT",
       latitude: exif?.latitude ?? null,
       longitude: exif?.longitude ?? null,
       locationName: location?.locationName ?? null,

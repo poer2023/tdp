@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get("limit"); // Legacy support
     const pageParam = searchParams.get("page");
     const pageSizeParam = searchParams.get("pageSize");
-    const category = searchParams.get("category") as "REPOST" | "ORIGINAL" | "AI" | null;
+    const category = searchParams.get("category") as "REPOST" | "ORIGINAL" | "MOMENT" | null;
 
     let limit: number | { take: number; skip: number } | undefined;
 

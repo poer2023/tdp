@@ -7,7 +7,7 @@ import { withDbFallback } from "@/lib/utils/db-fallback";
 // Cache tag for gallery data (exported for external revalidation)
 export const GALLERY_TAG = "gallery:location";
 
-export type GalleryCategory = "REPOST" | "ORIGINAL" | "AI";
+export type GalleryCategory = "REPOST" | "ORIGINAL" | "MOMENT";
 
 export type GalleryImage = {
   id: string;

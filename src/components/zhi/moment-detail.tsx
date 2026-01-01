@@ -446,17 +446,18 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
         >
           {/* Left Side: Images (Scrollable if multiple) */}
           {hasImages && (
-            <div className="w-full overflow-y-auto bg-stone-950 md:w-3/5 md:max-h-[90vh]">
+            <div className="w-full overflow-y-auto bg-stone-950 md:w-3/5 md:max-h-[90vh] flex items-center">
               <div className="flex w-full flex-col">
                 {moment.images!.map((img, idx) => (
-                  <div key={idx} className="relative w-full">
+                  <div key={idx} className="relative w-full flex items-center justify-center">
                     <Image
                       src={img}
                       alt={`Detail ${idx + 1}`}
-                      width={800}
-                      height={600}
-                      className="h-auto w-full object-contain"
+                      width={1200}
+                      height={900}
+                      className="w-full h-auto object-contain max-h-[90vh]"
                       priority={idx === 0}
+                      sizes="(max-width: 768px) 100vw, 60vw"
                     />
                   </div>
                 ))}

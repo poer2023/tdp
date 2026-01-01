@@ -65,7 +65,7 @@ function PhotoPopupContent({
   locale: "zh" | "en";
 }) {
   return (
-    <div className="w-[280px] overflow-hidden">
+    <div className="w-[280px] overflow-hidden rounded-xl bg-white shadow-xl dark:bg-stone-800">
       {/* Image Preview */}
       <div className="relative aspect-[4/3] w-full">
         <Image
@@ -73,7 +73,7 @@ function PhotoPopupContent({
           alt={image.title || "Photo"}
           fill
           sizes="280px"
-          className="object-cover"
+          className="rounded-t-xl object-cover"
         />
         {image.isLivePhoto && (
           <div className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-[10px] font-medium text-white backdrop-blur-sm">
@@ -135,7 +135,11 @@ function PhotoPopupContent({
         {/* Action Button */}
         <Link
           href={localePath(locale, `/gallery/${image.id}`)}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-stone-900 py-2 text-xs font-medium text-white transition-colors hover:bg-stone-800 dark:bg-white dark:text-stone-900 dark:hover:bg-stone-100"
+          className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-medium transition-colors"
+          style={{
+            backgroundColor: 'rgb(28, 25, 23)',
+            color: 'white'
+          }}
         >
           {locale === "zh" ? "查看详情" : "View Details"}
           <svg

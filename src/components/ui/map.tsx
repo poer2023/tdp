@@ -323,7 +323,7 @@ function MarkerPopup({
                 <button
                     type="button"
                     onClick={handleClose}
-                    className="absolute top-2 right-2 z-10 rounded-full bg-black/50 p-1 text-white opacity-70 transition-opacity hover:opacity-100"
+                    className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-all hover:bg-black/70 focus:outline-none"
                     aria-label="Close popup"
                 >
                     <X className="h-4 w-4" />

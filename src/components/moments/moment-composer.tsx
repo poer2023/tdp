@@ -165,6 +165,7 @@ function MomentComposerCore() {
           const formData = new FormData();
           formData.append("image", item.file);
           formData.append("title", `Moment image ${new Date().toLocaleDateString()}`);
+          formData.append("category", "MOMENT");
 
           const uploadRes = await fetch("/api/admin/gallery/upload", {
             method: "POST",

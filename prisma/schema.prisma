@@ -777,7 +777,7 @@ enum PostLocale {
 enum GalleryCategory {
   REPOST
   ORIGINAL
-  AI
+  MOMENT
 }
 
 enum SyncJobStatus {
