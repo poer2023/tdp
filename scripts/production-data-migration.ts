@@ -22,8 +22,7 @@ async function migrateGalleryCategories() {
         console.log(`  ${stat.category}: ${stat._count.id} images`);
     });
 
-    // Step 1: Migrate REPOST images to ORIGINAL (except moment images)
-    // First, get moment image filePaths
+    // Step 1: Get moment image filenames (extract from URLs)
     const moments = await prisma.moment.findMany({
         where: {
             NOT: { images: { equals: Prisma.DbNull } }
@@ -31,30 +30,60 @@ async function migrateGalleryCategories() {
         select: { images: true },
     });
 
-    const momentImageUrls = new Set<string>();
+    // Extract filenames from moment image URLs
+    // Moments store URLs like "/api/uploads/gallery/xxx.jpg" or full R2 URLs
+    const momentImageFilenames = new Set<string>();
     for (const moment of moments) {
         if (moment.images && Array.isArray(moment.images)) {
             for (const img of moment.images as any[]) {
-                if (img.url) {
-                    momentImageUrls.add(img.url);
+                const url = img.url || img.filePath;
+                if (url) {
+                    // Extract filename from path (last segment after last /)
+                    const filename = url.split('/').pop();
+                    if (filename) {
+                        // Remove size suffix (_micro, _small, _medium) if present
+                        const baseFilename = filename.replace(/_(micro|small|medium)\.(webp|jpg|jpeg|png)$/, '');
+                        momentImageFilenames.add(baseFilename);
+                    }
                 }
             }
         }
     }
-    console.log(`[Migration] Found ${momentImageUrls.size} moment image URLs`);
+    console.log(`[Migration] Found ${momentImageFilenames.size} moment image filenames`);
 
-    // Step 2: Update moment images to MOMENT category
-    if (momentImageUrls.size > 0) {
-        const urlArray = Array.from(momentImageUrls);
-        const momentResult = await prisma.galleryImage.updateMany({
-            where: {
-                filePath: { in: urlArray },
-                category: { not: 'MOMENT' },
-            },
-            data: { category: 'MOMENT' },
+    // Step 2: Update gallery images that match moment filenames to MOMENT category
+    // We need to check each gallery image's filename against moment filenames
+    if (momentImageFilenames.size > 0) {
+        const allGalleryImages = await prisma.galleryImage.findMany({
+            where: { category: { not: 'MOMENT' } },
+            select: { id: true, filePath: true },
         });
-        if (momentResult.count > 0) {
+
+        const idsToUpdate: string[] = [];
+        for (const img of allGalleryImages) {
+            const filename = img.filePath.split('/').pop();
+            if (filename) {
+                // Check base filename without extension
+                const baseFilename = filename.replace(/\.(webp|jpg|jpeg|png)$/, '');
+                // Also check with extension
+                if (momentImageFilenames.has(filename) ||
+                    momentImageFilenames.has(baseFilename) ||
+                    Array.from(momentImageFilenames).some(mf =>
+                        filename.includes(mf.replace(/\.[^.]+$/, ''))
+                    )) {
+                    idsToUpdate.push(img.id);
+                }
+            }
+        }
+
+        if (idsToUpdate.length > 0) {
+            const momentResult = await prisma.galleryImage.updateMany({
+                where: { id: { in: idsToUpdate } },
+                data: { category: 'MOMENT' },
+            });
             console.log(`✅ [Migration] Migrated ${momentResult.count} images to MOMENT category`);
+        } else {
+            console.log('[Migration] No new images to migrate to MOMENT category');
         }
     }
 
