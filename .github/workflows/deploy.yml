@@ -351,6 +351,10 @@ jobs:
               echo "==> Skipping GHCR login (using public images or pre-authenticated daemon)"
             fi
 
+            echo "==> Ensuring external networks exist"
+            # Create the coolify network if it doesn't exist (required for Traefik routing)
+            docker network inspect coolify >/dev/null 2>&1 || docker network create coolify
+
             echo "==> Pulling latest Docker images"
             docker compose pull
 
