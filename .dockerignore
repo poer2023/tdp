@@ -63,6 +63,8 @@ claudedocs/
 
 # Scripts (开发脚本不需要在生产镜像中)
 scripts/
+!scripts/build.js
+!scripts/production-data-migration.ts
 !scripts/generate-encryption-key.ts
 !scripts/migrate-encrypt-credentials.ts
 
