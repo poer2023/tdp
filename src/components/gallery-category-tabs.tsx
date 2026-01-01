@@ -15,10 +15,10 @@ type CategoryTab = {
 };
 
 const categories: CategoryTab[] = [
-  { value: null, label: { zh: "全部", en: "All" } },
+  { value: "ORIGINAL", label: { zh: "自行发布", en: "Original" } },
   { value: "REPOST", label: { zh: "转发", en: "Repost" } },
-  { value: "ORIGINAL", label: { zh: "拍照", en: "Original" } },
-  { value: "AI", label: { zh: "AI", en: "AI" } },
+  { value: "MOMENT", label: { zh: "Moment", en: "Moment" } },
+  { value: null, label: { zh: "全部", en: "All" } },
 ];
 
 export function GalleryCategoryTabs({ locale, currentCategory }: Props) {
@@ -32,18 +32,17 @@ export function GalleryCategoryTabs({ locale, currentCategory }: Props) {
         const isActive = currentCategory === cat.value;
         const href =
           cat.value === null
-            ? localePath(locale, "/gallery")
+            ? localePath(locale, "/gallery?category=all")
             : localePath(locale, `/gallery?category=${cat.value}`);
 
         return (
           <Link
             key={cat.value ?? "all"}
             href={href}
-            className={`text-sm font-medium transition-colors ${
-              isActive
-                ? "text-stone-900 underline decoration-stone-400 decoration-2 underline-offset-4 dark:text-stone-50"
-                : "text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-50"
-            }`}
+            className={`text-sm font-medium transition-colors ${isActive
+              ? "text-stone-900 underline decoration-stone-400 decoration-2 underline-offset-4 dark:text-stone-50"
+              : "text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-50"
+              }`}
             aria-current={isActive ? "page" : undefined}
           >
             {cat.label[locale]}

@@ -68,6 +68,12 @@ export function useImageCache() {
 
   const preload = useCallback(
     async (key: string, url: string): Promise<void> => {
+      // Skip invalid URLs
+      if (!url || url.startsWith("blob:") || url.startsWith("data:")) {
+        console.log(`[ImageCache] Skip preload (invalid URL): ${key}`);
+        return;
+      }
+
       if (cacheRef.current.has(key)) {
         console.log(`[ImageCache] Skip preload (already cached): ${key}`);
         return;
@@ -75,11 +81,16 @@ export function useImageCache() {
 
       try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+        if (!response.ok) {
+          // Silently skip non-existent images
+          console.log(`[ImageCache] Preload skipped (not found): ${key}`);
+          return;
+        }
         const blob = await response.blob();
         set(key, blob);
-      } catch (error) {
-        console.error(`[ImageCache] Preload failed for ${key}:`, error);
+      } catch {
+        // Silently handle fetch errors (e.g., network issues, invalid URLs)
+        console.log(`[ImageCache] Preload skipped (fetch error): ${key}`);
       }
     },
     [set]

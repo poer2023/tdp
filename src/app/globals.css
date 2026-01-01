@@ -10,9 +10,19 @@
   box-shadow: none !important;
   padding: 0 !important;
   border-radius: 0 !important;
+  overflow: visible !important;
 }
 
 .maplibregl-popup-tip {
+  display: none !important;
+}
+
+.maplibregl-popup {
+  max-width: none !important;
+}
+
+/* Ensure popup close button is properly positioned */
+.maplibregl-popup-close-button {
   display: none !important;
 }
 

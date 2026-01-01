@@ -5,6 +5,7 @@ import { ZhiHeader, ZhiFooter, ZhiGallery } from "@/components/zhi";
 import type { ZhiGalleryItem } from "@/components/zhi";
 import { GalleryCategoryTabs } from "@/components/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
+import { GalleryMapWrapper } from "@/components/gallery-map-wrapper";
 
 // ISR: Revalidate every 5 minutes for gallery updates with CDN caching
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ const GALLERY_PAGE_LIMIT = 100;
 
 type PageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; view?: string }>;
 };
 
 // Convert database gallery image to Zhi gallery item format
@@ -63,18 +64,23 @@ function toGalleryItem(image: GalleryImage, locale: string): ZhiGalleryItem {
 
 export default async function LocalizedGalleryPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
-  const { category } = await searchParams;
+  const { category, view } = await searchParams;
   const l = locale === "zh" ? "zh" : "en";
+  const isMapView = view === "map";
 
   // Parse and validate category
-  const validCategories: GalleryCategory[] = ["REPOST", "ORIGINAL", "AI"];
-  const currentCategory =
-    category && validCategories.includes(category as GalleryCategory)
+  const validCategories: GalleryCategory[] = ["REPOST", "ORIGINAL", "MOMENT"];
+  // When category=all, show all images (null = no filter)
+  // When no category specified, default to ORIGINAL (自行发布)
+  const isAllCategory = category === "all";
+  const currentCategory: GalleryCategory | null = isAllCategory
+    ? null
+    : category && validCategories.includes(category as GalleryCategory)
       ? (category as GalleryCategory)
-      : undefined;
+      : "ORIGINAL";
 
   // Use cached function for gallery list page
-  const images = await listCachedGalleryImages(GALLERY_PAGE_LIMIT, currentCategory);
+  const images = await listCachedGalleryImages(GALLERY_PAGE_LIMIT, currentCategory ?? undefined);
   const imagesWithLocation = images.filter((img) => img.latitude && img.longitude);
 
   // Convert to Zhi gallery format
@@ -101,27 +107,65 @@ export default async function LocalizedGalleryPage({ params, searchParams }: Pag
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <GalleryCategoryTabs locale={l} currentCategory={currentCategory} />
 
-            {imagesWithLocation.length > 0 && (
-              <nav className="flex items-center gap-6">
-                <Link
-                  href={localePath(l, "/gallery")}
-                  className="text-sm font-medium text-stone-800 underline decoration-sage-500 decoration-2 underline-offset-4 dark:text-stone-200"
-                >
-                  {l === "zh" ? "全部照片" : "All Photos"}
-                </Link>
-                <Link
-                  href={localePath(l, "/gallery/map")}
-                  className="text-sm font-medium text-stone-500 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
-                >
-                  {l === "zh" ? "地图视图" : "Map View"}
-                  <span className="ml-1.5 text-xs text-stone-400">({imagesWithLocation.length})</span>
-                </Link>
-              </nav>
-            )}
+            {imagesWithLocation.length > 0 && (() => {
+              // Build category query param - preserve current category when switching views
+              const categoryParam = isAllCategory
+                ? "category=all"
+                : currentCategory && currentCategory !== "ORIGINAL"
+                  ? `category=${currentCategory}`
+                  : "";
+
+              return (
+                <div className="flex items-center rounded-lg bg-stone-100 p-1 dark:bg-stone-800">
+                  <Link
+                    href={localePath(l, `/gallery${categoryParam ? `?${categoryParam}` : ""}`)}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-all ${!isMapView
+                      ? "bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-stone-100"
+                      : "text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
+                      }`}
+                  >
+                    {l === "zh" ? "网格" : "Grid"}
+                  </Link>
+                  <Link
+                    href={localePath(l, `/gallery?view=map${categoryParam ? `&${categoryParam}` : ""}`)}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-all ${isMapView
+                      ? "bg-white text-stone-900 shadow-sm dark:bg-stone-700 dark:text-stone-100"
+                      : "text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
+                      }`}
+                  >
+                    {l === "zh" ? "地图" : "Map"}
+                    <span className="ml-1 text-xs text-stone-400">({imagesWithLocation.length})</span>
+                  </Link>
+                </div>
+              );
+            })()}
           </div>
 
-          {/* Gallery Grid */}
-          <ZhiGallery items={galleryItems} />
+          {/* Gallery Content - Grid or Map */}
+          {isMapView ? (
+            <GalleryMapWrapper
+              images={imagesWithLocation.map((img) => ({
+                id: img.id,
+                title: img.title,
+                description: img.description,
+                latitude: img.latitude!,
+                longitude: img.longitude!,
+                locationName: img.locationName || null,
+                city: img.city || null,
+                country: img.country || null,
+                capturedAt: img.capturedAt || null,
+                microThumbPath: img.microThumbPath || null,
+                smallThumbPath: img.smallThumbPath || null,
+                mediumPath: img.mediumPath || null,
+                filePath: img.filePath,
+                isLivePhoto: img.isLivePhoto,
+                createdAt: img.createdAt,
+              }))}
+              locale={l}
+            />
+          ) : (
+            <ZhiGallery items={galleryItems} />
+          )}
 
           {/* Footer Info */}
           {images.length > 0 && (
