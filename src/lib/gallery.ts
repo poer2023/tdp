@@ -243,6 +243,7 @@ export type UpdateGalleryImageInput = {
   description?: string | null;
   category?: GalleryCategory | null;
   capturedAt?: Date | null;
+  hideLocation?: boolean;
 };
 
 export type GalleryLocationImage = {
@@ -274,6 +275,7 @@ export async function updateGalleryImage(
       description: typeof input.description === "string" ? input.description.trim() : undefined,
       category: input.category ?? undefined,
       capturedAt: input.capturedAt ?? undefined,
+      hideLocation: input.hideLocation ?? undefined,
     },
   });
   // Invalidate gallery location cache
@@ -439,7 +441,11 @@ async function _fetchGalleryImagesWithLocation(limit?: number): Promise<GalleryL
   return withDbFallback(
     async () => {
       const images = await prisma.galleryImage.findMany({
-        where: { latitude: { not: null }, longitude: { not: null } },
+        where: {
+          latitude: { not: null },
+          longitude: { not: null },
+          hideLocation: false,  // Only show images that are not hidden
+        },
         orderBy: { createdAt: "desc" },
         ...(typeof limit === "number" ? { take: limit } : {}),
         select: {

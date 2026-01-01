@@ -30,6 +30,8 @@ export const GallerySection: React.FC = () => {
     const [isDragOver, setIsDragOver] = useState(false);
     const [isBatchMode, setIsBatchMode] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<'ORIGINAL' | 'REPOST' | 'MOMENT'>('ORIGINAL');
+    const [filterCategory, setFilterCategory] = useState<'ALL' | 'ORIGINAL' | 'REPOST' | 'MOMENT'>('ALL');
+    const [reExtractingId, setReExtractingId] = useState<string | null>(null);
 
     // Delete confirmation dialog state
     const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({
@@ -63,10 +65,11 @@ export const GallerySection: React.FC = () => {
         onError: handleUploadError,
     });
 
-    const fetchGallery = React.useCallback(async (pageNum: number, append = false) => {
+    const fetchGallery = React.useCallback(async (pageNum: number, category: string, append = false) => {
         setLoadingLocal(true);
         try {
-            const res = await fetch(`/api/admin/gallery?page=${pageNum}&pageSize=${pageSize}`);
+            const categoryParam = category !== 'ALL' ? `&category=${category}` : '';
+            const res = await fetch(`/api/admin/gallery?page=${pageNum}&pageSize=${pageSize}${categoryParam}`);
             const data = await res.json();
             if (res.ok && Array.isArray(data.images)) {
                 if (append) {
@@ -90,8 +93,10 @@ export const GallerySection: React.FC = () => {
     }, [pageSize]);
 
     useEffect(() => {
-        fetchGallery(1);
-    }, [fetchGallery]);
+        setPage(1);
+        setHasMore(true);
+        fetchGallery(1, filterCategory);
+    }, [fetchGallery, filterCategory]);
 
     // Cleanup blob URLs on unmount to prevent memory leaks
     useEffect(() => {
@@ -104,7 +109,7 @@ export const GallerySection: React.FC = () => {
     const handleLoadMore = () => {
         const nextPage = page + 1;
         setPage(nextPage);
-        fetchGallery(nextPage, true);
+        fetchGallery(nextPage, filterCategory, true);
     };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -308,14 +313,85 @@ export const GallerySection: React.FC = () => {
                                                     type="button"
                                                     onClick={() => setSelectedCategory(cat.value as 'ORIGINAL' | 'REPOST' | 'MOMENT')}
                                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedCategory === cat.value
-                                                            ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900'
-                                                            : 'bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700'
+                                                        ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900'
+                                                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700'
                                                         }`}
                                                 >
                                                     {cat.label}
                                                 </button>
                                             ))}
                                         </div>
+                                    </div>
+                                )}
+
+                                {/* Location info section - only show when editing existing image */}
+                                {editingGallery?.id && (
+                                    <div className="p-4 rounded-lg bg-stone-50 dark:bg-stone-800/50 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
+                                                📍 位置信息
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={async () => {
+                                                    if (!editingGallery?.id) return;
+                                                    setReExtractingId(editingGallery.id);
+                                                    try {
+                                                        const res = await fetch('/api/admin/gallery/re-extract-exif', {
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ imageId: editingGallery.id }),
+                                                        });
+                                                        const data = await res.json();
+                                                        if (data.ok && data.image) {
+                                                            setEditingGallery(prev => ({
+                                                                ...prev!,
+                                                                latitude: data.image.latitude,
+                                                                longitude: data.image.longitude,
+                                                                locationName: data.extracted?.locationName,
+                                                                city: data.extracted?.city,
+                                                            }));
+                                                            setGalleryItems(prev => prev.map(i =>
+                                                                i.id === editingGallery.id ? { ...i, ...data.image } : i
+                                                            ));
+                                                            alert(data.extracted?.locationName ? `提取成功: ${data.extracted.locationName}` : '已更新位置数据');
+                                                        } else {
+                                                            alert(data.message || '未找到 GPS 数据');
+                                                        }
+                                                    } catch (err) {
+                                                        console.error('Re-extract failed:', err);
+                                                        alert('提取失败');
+                                                    } finally {
+                                                        setReExtractingId(null);
+                                                    }
+                                                }}
+                                                disabled={reExtractingId === editingGallery.id}
+                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-wait"
+                                            >
+                                                {reExtractingId === editingGallery.id ? '提取中...' : '重新提取 EXIF'}
+                                            </button>
+                                        </div>
+
+                                        {(editingGallery as any)?.latitude && (editingGallery as any)?.longitude ? (
+                                            <div className="text-xs text-stone-600 dark:text-stone-400 space-y-1">
+                                                <p>📍 {(editingGallery as any).locationName || (editingGallery as any).city || '未知位置'}</p>
+                                                <p className="text-stone-400">经度: {(editingGallery as any).longitude?.toFixed(6)} | 纬度: {(editingGallery as any).latitude?.toFixed(6)}</p>
+                                            </div>
+                                        ) : (
+                                            <p className="text-xs text-stone-400">暂无位置数据</p>
+                                        )}
+
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={(editingGallery as any)?.hideLocation || false}
+                                                onChange={(e) => setEditingGallery(prev => ({ ...prev!, hideLocation: e.target.checked }))}
+                                                className="w-4 h-4 rounded border-stone-300 text-stone-900 focus:ring-stone-500"
+                                            />
+                                            <span className="text-sm text-stone-600 dark:text-stone-400">
+                                                隐藏位置（不在地图上显示）
+                                            </span>
+                                        </label>
                                     </div>
                                 )}
                             </div>
@@ -334,84 +410,101 @@ export const GallerySection: React.FC = () => {
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {loadingLocal && page === 1 ? (
-                        <div className="col-span-full py-12 text-center text-stone-400">
-                            {t('loadingGallery')}
-                        </div>
-                    ) : galleryItems.length === 0 && pendingUploads.length === 0 ? (
-                        <div className="col-span-full py-12 text-center text-stone-400">
-                            {t('noGalleryItems')}
-                        </div>
-                    ) : (
-                        <>
-                            {/* Pending uploads - optimistic UI */}
-                            {pendingUploads.map((item) => (
-                                <div key={item.id} className="relative rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
-                                    <Image
-                                        src={item.preview}
-                                        alt="Uploading"
-                                        fill
-                                        className="object-cover"
-                                        unoptimized
-                                    />
-                                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
-                                        {item.status === 'uploading' && (
-                                            <>
-                                                <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
-                                                <div className="w-3/4 h-1.5 bg-white/30 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full bg-white rounded-full transition-all duration-300"
-                                                        style={{ width: `${item.progress}%` }}
-                                                    />
+                <>
+                    {/* Category Filter Tabs */}
+                    <div className="flex items-center gap-2 mb-4 flex-wrap">
+                        {(['ALL', 'ORIGINAL', 'REPOST', 'MOMENT'] as const).map((cat) => (
+                            <button
+                                key={cat}
+                                onClick={() => setFilterCategory(cat)}
+                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${filterCategory === cat
+                                    ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900'
+                                    : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
+                                    }`}
+                            >
+                                {cat === 'ALL' ? '全部' : cat === 'ORIGINAL' ? '自行发布' : cat === 'REPOST' ? '转发' : 'Moment'}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {loadingLocal && page === 1 ? (
+                            <div className="col-span-full py-12 text-center text-stone-400">
+                                {t('loadingGallery')}
+                            </div>
+                        ) : galleryItems.length === 0 && pendingUploads.length === 0 ? (
+                            <div className="col-span-full py-12 text-center text-stone-400">
+                                {t('noGalleryItems')}
+                            </div>
+                        ) : (
+                            <>
+                                {/* Pending uploads - optimistic UI */}
+                                {pendingUploads.map((item) => (
+                                    <div key={item.id} className="relative rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
+                                        <Image
+                                            src={item.preview}
+                                            alt="Uploading"
+                                            fill
+                                            className="object-cover"
+                                            unoptimized
+                                        />
+                                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
+                                            {item.status === 'uploading' && (
+                                                <>
+                                                    <Loader2 className="w-8 h-8 text-white animate-spin mb-2" />
+                                                    <div className="w-3/4 h-1.5 bg-white/30 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-white rounded-full transition-all duration-300"
+                                                            style={{ width: `${item.progress}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-white text-xs mt-1">{item.progress}%</span>
+                                                </>
+                                            )}
+                                            {item.status === 'error' && (
+                                                <div className="text-center px-2">
+                                                    <X className="w-8 h-8 text-rose-400 mx-auto mb-1" />
+                                                    <span className="text-rose-300 text-xs">Upload failed</span>
                                                 </div>
-                                                <span className="text-white text-xs mt-1">{item.progress}%</span>
-                                            </>
-                                        )}
-                                        {item.status === 'error' && (
-                                            <div className="text-center px-2">
-                                                <X className="w-8 h-8 text-rose-400 mx-auto mb-1" />
-                                                <span className="text-rose-300 text-xs">Upload failed</span>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
 
-                            {galleryItems.map((item, index) => (
-                                <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
-                                    <AdminImage
-                                        src={item.smallThumbPath || item.thumbnail || item.url}
-                                        alt={item.title || ''}
-                                        className="w-full h-full"
-                                        containerClassName="w-full h-full"
-                                        priority={index < 4}
-                                    />
-                                    {item.type === 'video' && <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white"><Play size={12} /></div>}
-                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                        <button onClick={() => setEditingGallery(item)} className="p-2 bg-white rounded-full text-stone-900 hover:scale-110 transition-transform"><Edit2 size={16} /></button>
-                                        <button onClick={() => setDeleteConfirm({ open: true, id: item.id })} className="p-2 bg-rose-500 rounded-full text-white hover:scale-110 transition-transform"><Trash2 size={16} /></button>
+                                {galleryItems.map((item, index) => (
+                                    <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
+                                        <AdminImage
+                                            src={item.smallThumbPath || item.thumbnail || item.url}
+                                            alt={item.title || ''}
+                                            className="w-full h-full"
+                                            containerClassName="w-full h-full"
+                                            priority={index < 4}
+                                        />
+                                        {item.type === 'video' && <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white"><Play size={12} /></div>}
+                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                            <button onClick={() => setEditingGallery(item)} className="p-2 bg-white rounded-full text-stone-900 hover:scale-110 transition-transform"><Edit2 size={16} /></button>
+                                            <button onClick={() => setDeleteConfirm({ open: true, id: item.id })} className="p-2 bg-rose-500 rounded-full text-white hover:scale-110 transition-transform"><Trash2 size={16} /></button>
+                                        </div>
+                                        <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs truncate">
+                                            {item.title}
+                                        </div>
                                     </div>
-                                    <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs truncate">
-                                        {item.title}
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
 
-                            {hasMore && (
-                                <div className="col-span-full mt-8 text-center">
-                                    <button
-                                        onClick={handleLoadMore}
-                                        disabled={loadingLocal}
-                                        className="px-6 py-2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-50"
-                                    >
-                                        {loadingLocal ? t('loadingImages') : t('loadMore')}
-                                    </button>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
+                                {hasMore && (
+                                    <div className="col-span-full mt-8 text-center">
+                                        <button
+                                            onClick={handleLoadMore}
+                                            disabled={loadingLocal}
+                                            className="px-6 py-2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-50"
+                                        >
+                                            {loadingLocal ? t('loadingImages') : t('loadMore')}
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+                </>
             )}
 
             {/* Delete Confirmation Dialog */}

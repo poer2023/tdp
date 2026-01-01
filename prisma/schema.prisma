@@ -144,6 +144,7 @@ model GalleryImage {
   microThumbPath     String?
   smallThumbPath     String?
   category           GalleryCategory @default(REPOST)
+  hideLocation       Boolean         @default(false)
   post               Post?           @relation(fields: [postId], references: [id])
 
   @@index([locationName(ops: raw("gin_trgm_ops"))], map: "idx_gallery_location_trgm", type: Gin)
