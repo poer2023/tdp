@@ -25,24 +25,26 @@ export async function POST(
       return NextResponse.json({ error: "Moment not found" }, { status: 404 });
     }
 
+    const userId = session.user.id;
+
     let liked = false;
     let likeCount = 0;
 
     await prisma.$transaction(async (tx) => {
       const existing = await tx.momentLike.findUnique({
         where: {
-          momentId_userId: { momentId: id, userId: session.user.id },
+          momentId_userId: { momentId: id, userId },
         },
       });
 
       if (existing) {
         await tx.momentLike.delete({
-          where: { momentId_userId: { momentId: id, userId: session.user.id } },
+          where: { momentId_userId: { momentId: id, userId } },
         });
         liked = false;
       } else {
         await tx.momentLike.create({
-          data: { momentId: id, userId: session.user.id },
+          data: { momentId: id, userId },
         });
         liked = true;
       }
@@ -57,7 +59,10 @@ export async function POST(
 
     return NextResponse.json({ liked, likeCount });
   } catch (error) {
-    console.error("[Moment Like] error", error);
-    return NextResponse.json({ error: "Failed to toggle like" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error("[Moment Like] error:", errorMessage);
+    if (errorStack) console.error("[Moment Like] stack:", errorStack);
+    return NextResponse.json({ error: "Failed to toggle like", details: errorMessage }, { status: 500 });
   }
 }

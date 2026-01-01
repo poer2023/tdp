@@ -247,6 +247,66 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
   // Image container ref for wheel zoom
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
+  // Touch swipe state for mobile navigation
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (touch) {
+      touchStartX.current = touch.clientX;
+      touchEndX.current = null;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (touch) {
+      touchEndX.current = touch.clientX;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchStartX.current || !touchEndX.current) return;
+
+    const distance = touchStartX.current - touchEndX.current;
+    const isSwipe = Math.abs(distance) > minSwipeDistance;
+
+    if (isSwipe && zoomLevel === 1) {
+      if (distance > 0) {
+        // Swiped left -> next image
+        const nextIdx = (currentIndex + 1) % items.length;
+        const targetItem = items[nextIdx];
+        if (targetItem) {
+          setSlideDirection("left");
+          setSelectedItem(targetItem);
+          setCurrentIndex(nextIdx);
+          setZoomLevel(1);
+          requestAnimationFrame(() => {
+            setTimeout(() => setSlideDirection(null), 250);
+          });
+        }
+      } else {
+        // Swiped right -> previous image
+        const prevIdx = (currentIndex - 1 + items.length) % items.length;
+        const targetItem = items[prevIdx];
+        if (targetItem) {
+          setSlideDirection("right");
+          setSelectedItem(targetItem);
+          setCurrentIndex(prevIdx);
+          setZoomLevel(1);
+          requestAnimationFrame(() => {
+            setTimeout(() => setSlideDirection(null), 250);
+          });
+        }
+      }
+    }
+
+    touchStartX.current = null;
+    touchEndX.current = null;
+  }, [currentIndex, items, zoomLevel]);
+
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
       en: {
@@ -633,6 +693,9 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
               ref={imageContainerRef}
               className={`relative flex flex-1 items-center justify-center overflow-hidden pb-24 lg:pb-28 ${isDark ? 'bg-black' : 'bg-stone-100'}`}
               onClick={handleClose}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
               {/* Image with slide animation */}
               <motion.div
@@ -653,13 +716,14 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
                       controls
                       autoPlay
                       loop
-                      className="max-h-[60vh] max-w-[90vw] shadow-2xl lg:max-h-[70vh] lg:max-w-[55vw]"
+                      className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
                     />
                   ) : (
                     <img
                       src={displaySrc || selectedItem.mediumPath || selectedItem.thumbnail || selectedItem.url}
                       alt={selectedItem.title}
-                      className="max-h-[60vh] max-w-[90vw] select-none object-contain shadow-2xl lg:max-h-[70vh] lg:max-w-[55vw]"
+                      className="w-[95vw] max-h-[75vh] h-auto select-none object-contain shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw] pointer-events-none"
+                      draggable={false}
                     />
                   )}
                 </div>
