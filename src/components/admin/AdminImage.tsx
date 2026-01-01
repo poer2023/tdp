@@ -87,22 +87,10 @@ export function AdminImage({
   // 检查是否为 blob URL 或 data URL（预览图片）
   const isPreviewUrl = src.startsWith("blob:") || src.startsWith("data:");
 
-  // 对于预览图片，使用原生 img 标签
-  if (isPreviewUrl) {
-    return (
-      <div className={`relative ${containerClassName}`} onClick={onClick}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt={alt}
-          className={`${className} ${objectFit === "cover" ? "object-cover" : objectFit === "contain" ? "object-contain" : ""}`}
-          onError={handleError}
-        />
-      </div>
-    );
-  }
+  // 检查是否为外部 URL
+  const isExternalUrl = src.startsWith("http://") || src.startsWith("https://");
 
-  // 检查是否为外部 URL 且不在已知域名列表中
+  // 检查是否为已知域名（可以使用 Next.js Image 优化）
   const isKnownDomain = (url: string) => {
     const knownDomains = [
       "avatars.githubusercontent.com",
@@ -123,7 +111,29 @@ export function AdminImage({
     }
   };
 
-  const isExternalUrl = src.startsWith("http://") || src.startsWith("https://");
+  // 对于预览图片或未知域名的外部图片，使用原生 img 标签
+  // 这样可以避免需要在 next.config.ts 中配置所有可能的图片域名
+  const useNativeImg = isPreviewUrl || (isExternalUrl && !isKnownDomain(src));
+
+  if (useNativeImg) {
+    return (
+      <div className={`relative ${containerClassName}`} onClick={onClick}>
+        {isLoading && (
+          <div className="absolute inset-0 bg-stone-200 dark:bg-stone-800 animate-pulse" />
+        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={alt}
+          className={`${fill ? 'absolute inset-0 w-full h-full' : ''} ${className} ${objectFit === "cover" ? "object-cover" : objectFit === "contain" ? "object-contain" : ""}`}
+          onError={handleError}
+          onLoad={handleLoad}
+          loading={priority ? "eager" : "lazy"}
+        />
+      </div>
+    );
+  }
+
   const shouldOptimize = !isExternalUrl || isKnownDomain(src);
 
   // 使用 fill 模式
