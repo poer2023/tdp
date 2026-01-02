@@ -28,6 +28,44 @@ if [ -z "${DATABASE_URL:-}" ]; then
   echo "⚠️  DATABASE_URL not set; using fallback: ${MASKED_URL}"
 fi
 
+# Hotfix: dedupe daily stats to unblock unique constraints
+echo "==> Deduping daily stats (StepsData/PhotoStats)"
+if ! node /app/node_modules/prisma/build/index.js db execute --stdin --schema /app/prisma/schema.prisma <<'SQL'
+DO $dedupe$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'StepsData'
+  ) THEN
+    EXECUTE $sql$
+      DELETE FROM "StepsData" s
+      USING (
+        SELECT id, ROW_NUMBER() OVER (PARTITION BY date ORDER BY id DESC) AS rn
+        FROM "StepsData"
+      ) d
+      WHERE s.id = d.id AND d.rn > 1
+    $sql$;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name = 'PhotoStats'
+  ) THEN
+    EXECUTE $sql$
+      DELETE FROM "PhotoStats" s
+      USING (
+        SELECT id, ROW_NUMBER() OVER (PARTITION BY date ORDER BY id DESC) AS rn
+        FROM "PhotoStats"
+      ) d
+      WHERE s.id = d.id AND d.rn > 1
+    $sql$;
+  END IF;
+END $dedupe$;
+SQL
+then
+  echo "⚠️  Daily stats dedupe skipped (tables missing or not yet created)"
+fi
+
 # Hotfix: unblock failed 20251202120000_add_performance_indexes migration (idempotent)
 # - Ensures the indexes exist (IF NOT EXISTS) - only if tables exist
 # - Clears unfinished migration record so migrate deploy can re-run cleanly
