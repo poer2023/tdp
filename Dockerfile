@@ -36,6 +36,9 @@ RUN chown -R node:node /app
 USER node
 RUN pnpm exec prisma generate && pnpm run build
 
+# Pre-compile TypeScript scripts to JavaScript for runtime use (avoids tsx/esbuild at runtime)
+RUN pnpm exec tsc --esModuleInterop --module commonjs --moduleResolution node --target es2022 --outDir /app/scripts-dist /app/scripts/production-data-migration.ts || echo "Script pre-compilation skipped"
+
 # === Migration Stage: Database migrations ===
 FROM cgr.dev/chainguard/node:latest-dev AS migrator
 WORKDIR /app
@@ -63,16 +66,19 @@ COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 # Bring over dev-only tooling that is still required at runtime (tsx for scripts)
 # Copy the entire .pnpm store entries that tsx and esbuild need
 # pnpm uses symlinks, so we need to copy both the actual module and its dependencies
+# NOTE: esbuild is included in .pnpm directory via symlinks
 COPY --from=builder --chown=node:node /app/node_modules/.pnpm ./node_modules/.pnpm
 COPY --from=builder --chown=node:node /app/node_modules/tsx ./node_modules/tsx
-COPY --from=builder --chown=node:node /app/node_modules/esbuild ./node_modules/esbuild
 COPY --from=builder --chown=node:node /app/node_modules/.bin ./node_modules/.bin
 
 # Copy prisma schema and migrations from builder (not from build context)
 # This ensures .dockerignore doesn't exclude any prisma files
 COPY --from=builder --chown=node:node /app/prisma ./prisma
 
-# Copy scripts for maintenance operations (thumbnail generation, etc.)
+# Copy pre-compiled scripts from builder (TypeScript -> JavaScript)
+COPY --from=builder --chown=node:node /app/scripts-dist ./scripts-dist
+
+# Copy original scripts for maintenance operations (thumbnail generation, etc.)
 COPY --chown=node:node scripts ./scripts
 COPY --chown=node:node package.json ./
 

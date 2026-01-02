@@ -149,20 +149,28 @@ fi
 
 # Run production data migration (gallery category normalization)
 # NOTE: This is a non-critical step - if it fails, deployment should NOT be blocked
-if [ -f "/app/scripts/production-data-migration.ts" ]; then
-  if [ -x "/app/node_modules/.bin/tsx" ] || [ -f "/app/node_modules/.bin/tsx" ]; then
-    echo "==> Running production data migration..."
+# Prefer pre-compiled JS version (avoids tsx/esbuild dependency issues)
+if [ -f "/app/scripts-dist/production-data-migration.js" ]; then
+  echo "==> Running production data migration (pre-compiled JS)..."
+  if node /app/scripts-dist/production-data-migration.js; then
+    echo "✅ Production data migration complete"
+  else
+    echo "⚠️  Production data migration failed, but continuing deployment"
+    echo "   You can run this manually later"
+  fi
+elif [ -f "/app/scripts/production-data-migration.ts" ]; then
+  if [ -f "/app/node_modules/.bin/tsx" ]; then
+    echo "==> Running production data migration (tsx)..."
     if /app/node_modules/.bin/tsx /app/scripts/production-data-migration.ts; then
       echo "✅ Production data migration complete"
     else
       echo "⚠️  Production data migration failed, but continuing deployment"
-      echo "   You can run this manually later via: npx tsx scripts/production-data-migration.ts"
     fi
   else
-    echo "⚠️  tsx not found; skipping production data migration"
+    echo "⚠️  tsx not found and no pre-compiled script; skipping production data migration"
   fi
 else
-  echo "⚠️  production-data-migration.ts not found, skipping data migration"
+  echo "⚠️  No production data migration script found, skipping"
 fi
 
 echo "✅ Migration service completed successfully"
