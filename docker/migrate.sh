@@ -16,6 +16,18 @@ fi
 
 cd /app
 
+# Ensure DATABASE_URL is available; fall back to compose defaults when missing
+if [ -z "${DATABASE_URL:-}" ]; then
+  DB_USER="${POSTGRES_USER:-tdp}"
+  DB_PASS="${POSTGRES_PASSWORD:-tdp_password}"
+  DB_NAME="${POSTGRES_DB:-tdp}"
+  DB_HOST="${POSTGRES_HOST:-postgres}"
+  DB_PORT="${POSTGRES_PORT:-5432}"
+  export DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?schema=public"
+  MASKED_URL=$(printf '%s' "$DATABASE_URL" | sed -E 's#(://[^:]+):[^@]+@#\\1:***@#')
+  echo "⚠️  DATABASE_URL not set; using fallback: ${MASKED_URL}"
+fi
+
 # Hotfix: unblock failed 20251202120000_add_performance_indexes migration (idempotent)
 # - Ensures the indexes exist (IF NOT EXISTS) - only if tables exist
 # - Clears unfinished migration record so migrate deploy can re-run cleanly
@@ -99,9 +111,13 @@ fi
 
 # Run production data migration (gallery category normalization)
 if [ -f "/app/scripts/production-data-migration.ts" ]; then
-  echo "==> Running production data migration..."
-  /app/node_modules/.bin/tsx /app/scripts/production-data-migration.ts
-  echo "✅ Production data migration complete"
+  if [ -x "/app/node_modules/.bin/tsx" ]; then
+    echo "==> Running production data migration..."
+    /app/node_modules/.bin/tsx /app/scripts/production-data-migration.ts
+    echo "✅ Production data migration complete"
+  else
+    echo "⚠️  tsx not found; skipping production data migration"
+  fi
 else
   echo "⚠️  production-data-migration.ts not found, skipping data migration"
 fi
