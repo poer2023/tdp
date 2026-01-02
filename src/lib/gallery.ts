@@ -188,6 +188,7 @@ export async function addGalleryImage(input: CreateGalleryImageInput): Promise<G
         title: input.title?.trim() || existing.title,
         description: input.description?.trim() || existing.description,
         postId: input.postId ?? existing.postId,
+        category: input.category ?? existing.category,
         latitude: input.latitude ?? existing.latitude,
         longitude: input.longitude ?? existing.longitude,
         locationName: input.locationName?.trim() || existing.locationName,
@@ -215,6 +216,7 @@ export async function addGalleryImage(input: CreateGalleryImageInput): Promise<G
       smallThumbPath: input.smallThumbPath ?? null,
       mediumPath: input.mediumPath ?? null,
       postId: input.postId ?? null,
+      category: input.category ?? undefined,
 
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,

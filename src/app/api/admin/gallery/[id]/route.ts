@@ -26,7 +26,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
     const category =
-      body.category === "REPOST" || body.category === "AI" || body.category === "ORIGINAL"
+      body.category === "REPOST" || body.category === "ORIGINAL" || body.category === "MOMENT"
         ? body.category
         : undefined;
     const capturedAt =

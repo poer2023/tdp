@@ -135,7 +135,7 @@ export interface GalleryItem {
   microThumbPath?: string;
   smallThumbPath?: string;
   mediumPath?: string;
-  category?: 'REPOST' | 'ORIGINAL' | 'AI';
+  category?: 'REPOST' | 'ORIGINAL' | 'MOMENT';
   locationName?: string;
   capturedAt?: string;
 }

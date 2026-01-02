@@ -58,7 +58,7 @@ export function SearchResultImage({ image, query, locale, onSelect }: Props) {
           <span className="mt-2 inline-block rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600 dark:bg-stone-800 dark:text-stone-400">
             {image.category === "ORIGINAL" && "原创"}
             {image.category === "REPOST" && "转载"}
-            {image.category === "AI" && "AI"}
+            {image.category === "MOMENT" && "Moment"}
           </span>
         )}
       </div>

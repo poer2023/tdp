@@ -66,6 +66,7 @@ export const MomentsSection: React.FC = () => {
                 const formData = new FormData();
                 formData.append('image', item.file);  // Use 'image' as field name, matching gallery upload
                 formData.append('title', `Moment image ${new Date().toLocaleDateString()}`);
+                formData.append('category', 'MOMENT');
 
                 const uploadRes = await fetch('/api/admin/gallery/upload', {
                     method: 'POST',

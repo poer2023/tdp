@@ -52,41 +52,56 @@ echo "==> Checking migration status..."
 MIGRATE_STATUS=$(node /app/node_modules/prisma/build/index.js migrate status 2>&1) || true
 echo "$MIGRATE_STATUS"
 
+NEED_SCHEMA_MIGRATION=true
+
 # Check for pending migrations - if there are pending, we proceed with deploy
 # If there's a drift or other issue, fail early
 if echo "$MIGRATE_STATUS" | grep -q "Database schema is up to date"; then
-  echo "✅ Database schema is already up to date, no migrations needed"
-  exit 0
+  echo "✅ Database schema is already up to date, no schema migrations needed"
+  NEED_SCHEMA_MIGRATION=false
 fi
 
-if echo "$MIGRATE_STATUS" | grep -q "have not yet been applied"; then
-  echo "⚠️  Pending migrations detected, proceeding with deployment..."
-elif echo "$MIGRATE_STATUS" | grep -q "drift detected"; then
-  echo "❌ Schema drift detected! Manual intervention required."
-  echo "   Run 'npx prisma migrate diff' to investigate."
-  exit 1
-elif echo "$MIGRATE_STATUS" | grep -q "failed"; then
-  echo "❌ Failed migration detected! Manual intervention required."
-  exit 1
-fi
+if [ "$NEED_SCHEMA_MIGRATION" = true ]; then
+  if echo "$MIGRATE_STATUS" | grep -q "have not yet been applied"; then
+    echo "⚠️  Pending migrations detected, proceeding with deployment..."
+  elif echo "$MIGRATE_STATUS" | grep -q "drift detected"; then
+    echo "❌ Schema drift detected! Manual intervention required."
+    echo "   Run 'npx prisma migrate diff' to investigate."
+    exit 1
+  elif echo "$MIGRATE_STATUS" | grep -q "failed"; then
+    echo "❌ Failed migration detected! Manual intervention required."
+    exit 1
+  fi
 
-# Execute migrations
-echo "==> Executing: node /app/node_modules/prisma/build/index.js migrate deploy"
-node /app/node_modules/prisma/build/index.js migrate deploy
+  # Execute migrations
+  echo "==> Executing: node /app/node_modules/prisma/build/index.js migrate deploy"
+  node /app/node_modules/prisma/build/index.js migrate deploy
 
-# Post-deploy verification
-echo "==> Verifying migration status..."
-POST_STATUS=$(node /app/node_modules/prisma/build/index.js migrate status 2>&1) || true
-if echo "$POST_STATUS" | grep -q "Database schema is up to date"; then
-  echo "✅ Migrations completed and verified successfully"
+  # Post-deploy verification
+  echo "==> Verifying migration status..."
+  POST_STATUS=$(node /app/node_modules/prisma/build/index.js migrate status 2>&1) || true
+  if echo "$POST_STATUS" | grep -q "Database schema is up to date"; then
+    echo "✅ Migrations completed and verified successfully"
+  else
+    echo "⚠️  Migration completed but status check shows:"
+    echo "$POST_STATUS"
+  fi
+
+  # Sync any schema changes not in migrations (handles drift)
+  echo "==> Running db push to sync schema..."
+  node /app/node_modules/prisma/build/index.js db push --skip-generate --accept-data-loss 2>&1 || {
+    echo "⚠️  db push had issues but continuing - schema may need manual review"
+  }
+  echo "✅ Schema sync complete"
 else
-  echo "⚠️  Migration completed but status check shows:"
-  echo "$POST_STATUS"
+  echo "==> Skipping schema migration (already up to date)"
 fi
 
-# Sync any schema changes not in migrations (handles drift)
-echo "==> Running db push to sync schema..."
-node /app/node_modules/prisma/build/index.js db push --skip-generate --accept-data-loss 2>&1 || {
-  echo "⚠️  db push had issues but continuing - schema may need manual review"
-}
-echo "✅ Schema sync complete"
+# Run production data migration (gallery category normalization)
+if [ -f "/app/scripts/production-data-migration.ts" ]; then
+  echo "==> Running production data migration..."
+  /app/node_modules/.bin/tsx /app/scripts/production-data-migration.ts
+  echo "✅ Production data migration complete"
+else
+  echo "⚠️  production-data-migration.ts not found, skipping data migration"
+fi

@@ -348,7 +348,7 @@ type GalleryUploadInput = {
     title?: string;
     description?: string;
     date?: string;
-    category?: 'REPOST' | 'ORIGINAL' | 'AI';
+    category?: 'REPOST' | 'ORIGINAL' | 'MOMENT';
 };
 
 type GalleryUpdateInput = GalleryUploadInput & { id: string };

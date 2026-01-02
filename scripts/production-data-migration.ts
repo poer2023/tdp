@@ -35,8 +35,15 @@ async function migrateGalleryCategories() {
     const momentImageFilenames = new Set<string>();
     for (const moment of moments) {
         if (moment.images && Array.isArray(moment.images)) {
-            for (const img of moment.images as any[]) {
-                const url = img.url || img.filePath;
+            for (const img of moment.images as unknown[]) {
+                let url: string | undefined;
+                if (typeof img === 'string') {
+                    url = img;
+                } else if (img && typeof img === 'object') {
+                    const record = img as { url?: unknown; filePath?: unknown };
+                    url = typeof record.url === 'string' ? record.url : typeof record.filePath === 'string' ? record.filePath : undefined;
+                }
+
                 if (url) {
                     // Extract filename from path (last segment after last /)
                     const filename = url.split('/').pop();
