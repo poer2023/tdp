@@ -41,12 +41,14 @@ function extractMomentImages(
         return { url: img, index };
       }
       if (img && typeof img === "object" && "url" in img && typeof img.url === "string") {
-        // Prefer previewUrl (WebP) if available
-        const previewUrl =
-          "previewUrl" in img && typeof img.previewUrl === "string"
-            ? img.previewUrl
-            : null;
-        return { url: previewUrl || img.url, index };
+        const record = img as {
+          url: string;
+          previewUrl?: string;
+          smallThumbUrl?: string;
+        };
+        // Prefer small WebP thumbnails when available
+        const thumbUrl = record.smallThumbUrl || record.previewUrl || record.url;
+        return { url: thumbUrl, index };
       }
       return null;
     })
@@ -90,7 +92,7 @@ export async function GET(request: NextRequest) {
             id: true,
             filePath: true,
             smallThumbPath: true,
-            mediumPath: true, // Use medium for better quality but optimized
+            mediumPath: true,
             title: true,
             createdAt: true,
           },
@@ -100,10 +102,17 @@ export async function GET(request: NextRequest) {
       total += count;
 
       for (const img of galleryImages) {
-        const displayUrl = img.mediumPath || img.filePath;
+        const displayUrl = img.smallThumbPath || img.mediumPath || img.filePath;
         const originalUrl = img.filePath;
 
         if (displayUrl) {
+          const isSelected = [
+            displayUrl,
+            originalUrl,
+            img.smallThumbPath,
+            img.mediumPath,
+          ].some((u) => typeof u === "string" && heroUrls.has(u));
+
           allImages.push({
             id: `gallery-${img.id}`,
             url: displayUrl,
@@ -112,7 +121,7 @@ export async function GET(request: NextRequest) {
             sourceId: img.id,
             title: img.title || undefined,
             createdAt: img.createdAt.toISOString(),
-            isSelected: heroUrls.has(displayUrl) || heroUrls.has(originalUrl),
+            isSelected,
           });
         }
       }
