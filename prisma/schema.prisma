@@ -238,6 +238,7 @@ model Moment {
   friendVisibility FriendVisibility     @default(PUBLIC)
   friendId         String?
   happenedAt       DateTime?
+  showLocation     Boolean              @default(true)
   author           User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
   replyTo          Moment?              @relation("MomentThread", fields: [replyToId], references: [id])
   replies          Moment[]             @relation("MomentThread")

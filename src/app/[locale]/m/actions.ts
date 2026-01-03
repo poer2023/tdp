@@ -70,9 +70,8 @@ export async function createMomentAction(
       lng: isFinite(locLng) ? locLng : undefined,
     }
     : null;
-  // Schedule
-  const scheduledAtStr = (formData.get("scheduledAt") as string | null) || "";
-  const scheduledAt = scheduledAtStr ? new Date(scheduledAtStr) : null;
+  // Show location toggle (checkbox) - defaults to true
+  const showLocation = formData.get("showLocation") === "on";
 
   const images: MomentImage[] = [];
   const files = (formData.getAll("images") as File[]).slice(0, 9);
@@ -145,7 +144,8 @@ export async function createMomentAction(
       images,
       visibility,
       lang,
-      status: scheduledAt && scheduledAt.getTime() > Date.now() ? "SCHEDULED" : "PUBLISHED",
+      status: "PUBLISHED",
+      showLocation,
       tags,
       location,
     });

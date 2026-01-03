@@ -351,7 +351,7 @@ function MomentComposerCore() {
                 )}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700">
+                    <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300">
                       <input
                         type="file"
                         name="images"
@@ -373,16 +373,18 @@ function MomentComposerCore() {
                         <circle cx="8.5" cy="8.5" r="1.5" />
                         <path d="M21 15l-5-5L5 21" />
                       </svg>
-                      添加图片
+                      图片
                     </label>
-                    <select
-                      name="visibility"
-                      className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
-                    >
-                      <option value="PUBLIC">公开</option>
-                      <option value="UNLISTED">未收录</option>
-                      <option value="PRIVATE">私密</option>
-                    </select>
+                    <label className="inline-flex cursor-pointer items-center gap-1.5 text-xs text-stone-600 dark:text-stone-400">
+                      <input
+                        type="checkbox"
+                        name="showLocation"
+                        defaultChecked
+                        className="peer sr-only"
+                      />
+                      <span className="relative h-5 w-9 rounded-full bg-stone-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-sage-500 peer-checked:after:translate-x-4 dark:bg-stone-600 dark:peer-checked:bg-sage-500" />
+                      <span className="whitespace-nowrap">显示位置</span>
+                    </label>
                   </div>
                   <button
                     type="submit"
@@ -397,26 +399,6 @@ function MomentComposerCore() {
                     )}
                     {pending ? "发布中…" : "发布"}
                   </button>
-                </div>
-                {/* Advanced options: tags, location, schedule */}
-                <div className="space-y-2 border-t border-stone-200 pt-3 dark:border-stone-700">
-                  <input
-                    name="tags"
-                    placeholder="标签（逗号分隔，最多5个）"
-                    className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700 outline-none transition-colors focus:border-stone-400 focus:bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:focus:border-stone-500"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      name="locationName"
-                      placeholder="地点（可选）"
-                      className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700 outline-none transition-colors focus:border-stone-400 focus:bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:focus:border-stone-500"
-                    />
-                    <input
-                      type="datetime-local"
-                      name="scheduledAt"
-                      className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-700 outline-none transition-colors focus:border-stone-400 focus:bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:focus:border-stone-500"
-                    />
-                  </div>
                 </div>
                 {state.status === "error" && (
                   <p className="text-xs text-red-600 dark:text-red-400">{state.message}</p>

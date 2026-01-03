@@ -553,17 +553,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                                             <TextArea label="What's happening?" value={editingMoment.content} onChange={v => setEditingMoment({ ...editingMoment, content: v })} />
                                             <Input label="Tags (Comma separated)" value={editingMoment.tags?.join(', ')} onChange={v => setEditingMoment({ ...editingMoment, tags: v.split(',').map(s => s.trim()).filter(Boolean) })} />
                                             <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Status</label>
-                                                    <select
-                                                        className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
-                                                        value={editingMoment.status || 'PUBLISHED'}
-                                                        onChange={e => setEditingMoment({ ...editingMoment, status: e.target.value as Moment['status'] })}
-                                                    >
-                                                        <option value="PUBLISHED">Published</option>
-                                                        <option value="DRAFT">Draft</option>
-                                                    </select>
-                                                </div>
+                                                <Input label="Location (地点)" value={editingMoment.location || ''} onChange={v => setEditingMoment({ ...editingMoment, location: v })} />
                                                 <div>
                                                     <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Visibility</label>
                                                     <select
@@ -577,7 +567,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                                                     </select>
                                                 </div>
                                             </div>
-                                            <Input label="Happened At" type="datetime-local" value={editingMoment.happenedAt || ''} onChange={v => setEditingMoment({ ...editingMoment, happenedAt: v })} />
+                                            <div className="flex items-center gap-3">
+                                                <label className="inline-flex cursor-pointer items-center gap-3 text-sm text-stone-600 dark:text-stone-400">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editingMoment.showLocation ?? true}
+                                                        onChange={e => setEditingMoment({ ...editingMoment, showLocation: e.target.checked })}
+                                                        className="peer sr-only"
+                                                    />
+                                                    <span className="relative h-6 w-11 rounded-full bg-stone-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-sage-500 peer-checked:after:translate-x-5 dark:bg-stone-600 dark:peer-checked:bg-sage-500" />
+                                                    <span>显示位置信息</span>
+                                                </label>
+                                            </div>
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Attached Images</label>
@@ -752,14 +753,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {galleryItems.map((item: GalleryItem) => (
+                                    {galleryItems.map((item: GalleryItem) => (
                                         <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
                                             <AdminImage src={item.type === 'video' ? item.thumbnail : item.url} alt={item.title || ''} className="w-full h-full" containerClassName="w-full h-full" />
                                             {item.type === 'video' && <div className="absolute top-2 right-2 bg-black/50 p-1 rounded-full text-white"><Play size={12} /></div>}
-                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                                    <button onClick={() => setEditingGallery(item)} className="p-2 bg-white rounded-full text-stone-900 hover:scale-110 transition-transform"><Edit2 size={16} /></button>
-                                                    <button onClick={() => handleDeleteGalleryItem(item.id)} className="p-2 bg-rose-500 rounded-full text-white hover:scale-110 transition-transform"><Trash2 size={16} /></button>
-                                                </div>
+                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                <button onClick={() => setEditingGallery(item)} className="p-2 bg-white rounded-full text-stone-900 hover:scale-110 transition-transform"><Edit2 size={16} /></button>
+                                                <button onClick={() => handleDeleteGalleryItem(item.id)} className="p-2 bg-rose-500 rounded-full text-white hover:scale-110 transition-transform"><Trash2 size={16} /></button>
+                                            </div>
                                             <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs truncate">
                                                 {item.title}
                                             </div>

@@ -139,33 +139,18 @@ export const MomentsSection: React.FC = () => {
                     <div className="grid grid-cols-1 gap-6">
                         <div className="space-y-4">
                             <TextArea label={t('whatsHappening')} value={editingMoment.content} onChange={v => setEditingMoment({ ...editingMoment, content: v })} />
-                            <Input label={t('tagsCommaSeparated')} value={editingMoment.tags?.join(', ')} onChange={v => setEditingMoment({ ...editingMoment, tags: v.split(',').map(s => s.trim()).filter(Boolean) })} />
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('status')}</label>
-                                    <select
-                                        className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
-                                        value={editingMoment.status || 'PUBLISHED'}
-                                        onChange={e => setEditingMoment({ ...editingMoment, status: e.target.value as Moment['status'] })}
-                                    >
-                                        <option value="PUBLISHED">{t('published')}</option>
-                                        <option value="DRAFT">{t('draft')}</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('visibility')}</label>
-                                    <select
-                                        className="w-full p-3 border rounded-lg bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-100 outline-none"
-                                        value={editingMoment.visibility || 'PUBLIC'}
-                                        onChange={e => setEditingMoment({ ...editingMoment, visibility: e.target.value as Moment['visibility'] })}
-                                    >
-                                        <option value="PUBLIC">{t('public')}</option>
-                                        <option value="FRIENDS_ONLY">{t('friendsOnly')}</option>
-                                        <option value="PRIVATE">{t('private')}</option>
-                                    </select>
-                                </div>
+                            <div className="flex items-center justify-end">
+                                <label className="inline-flex cursor-pointer items-center gap-3 text-sm text-stone-600 dark:text-stone-400">
+                                    <input
+                                        type="checkbox"
+                                        checked={editingMoment.showLocation ?? true}
+                                        onChange={e => setEditingMoment({ ...editingMoment, showLocation: e.target.checked })}
+                                        className="peer sr-only"
+                                    />
+                                    <span className="relative h-6 w-11 rounded-full bg-stone-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-sage-500 peer-checked:after:translate-x-5 dark:bg-stone-600 dark:peer-checked:bg-sage-500" />
+                                    <span>显示位置信息</span>
+                                </label>
                             </div>
-                            <Input label={t('happenedAt')} type="datetime-local" value={editingMoment.happenedAt || ''} onChange={v => setEditingMoment({ ...editingMoment, happenedAt: v })} />
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">{t('attachedImages')}</label>
