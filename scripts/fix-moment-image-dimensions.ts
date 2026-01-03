@@ -22,6 +22,29 @@ interface MomentImage {
   smallThumbUrl?: string;
   mediumUrl?: string;
 }
+type MomentImageLike = MomentImage | string;
+
+const ORIENTATION_SWAPS = new Set([5, 6, 7, 8]);
+
+function resolveFetchUrl(url: string): string {
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const base = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  return `${base.replace(/\/$/, '')}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
+function pickThumbUrl(img: MomentImage): string | null {
+  return img.smallThumbUrl || img.previewUrl || img.mediumUrl || img.url || null;
+}
+
+async function readDimensions(buffer: Buffer): Promise<{ width: number | null; height: number | null }> {
+  const metadata = await sharp(buffer).metadata();
+  let width = metadata.width ?? null;
+  let height = metadata.height ?? null;
+  if (metadata.orientation && ORIENTATION_SWAPS.has(metadata.orientation) && width && height) {
+    [width, height] = [height, width];
+  }
+  return { width, height };
+}
 
 async function fixMomentImageDimensions() {
   console.log('🔍 Fetching all moments with images...');
@@ -44,7 +67,7 @@ async function fixMomentImageDimensions() {
 
   for (const moment of moments) {
     try {
-      const images = moment.images as MomentImage[];
+      const images = moment.images as MomentImageLike[];
 
       if (!Array.isArray(images) || images.length === 0) {
         skippedCount++;
@@ -57,10 +80,13 @@ async function fixMomentImageDimensions() {
       const updatedImages: MomentImage[] = [];
 
       for (let i = 0; i < images.length; i++) {
-        const img = images[i]!;
+        const raw = images[i];
+        if (!raw) continue;
+        const wasString = typeof raw === 'string';
+        const img: MomentImage = wasString ? { url: raw } : raw;
 
-        // Get the URL to fetch - prefer mediumUrl for faster download
-        const fetchUrl = img.mediumUrl || img.url;
+        // Get the URL to fetch - prefer WebP thumbnails when available
+        const fetchUrl = pickThumbUrl(img);
 
         if (!fetchUrl) {
           console.log(`   Image ${i + 1}: No URL, keeping as-is`);
@@ -72,7 +98,7 @@ async function fixMomentImageDimensions() {
 
         try {
           // Download and check actual dimensions
-          const response = await fetch(fetchUrl);
+          const response = await fetch(resolveFetchUrl(fetchUrl));
           if (!response.ok) {
             console.log(`   ❌ Failed to fetch: ${response.status}`);
             updatedImages.push(img);
@@ -81,15 +107,12 @@ async function fixMomentImageDimensions() {
           }
 
           const buffer = Buffer.from(await response.arrayBuffer());
-          const metadata = await sharp(buffer).metadata();
-
-          const actualWidth = metadata.width ?? null;
-          const actualHeight = metadata.height ?? null;
+          const { width: actualWidth, height: actualHeight } = await readDimensions(buffer);
 
           console.log(`   Actual size: ${actualWidth}×${actualHeight}`);
 
           // Check if dimensions need fixing
-          if (img.w === actualWidth && img.h === actualHeight) {
+          if (!wasString && img.w === actualWidth && img.h === actualHeight) {
             console.log(`   ✅ Already correct`);
             updatedImages.push(img);
           } else {
