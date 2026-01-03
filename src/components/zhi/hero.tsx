@@ -57,11 +57,11 @@ export function ZhiHero({ heroImages = DEFAULT_HERO_IMAGES }: ZhiHeroProps) {
   };
 
   return (
-    <section className="relative w-full overflow-hidden py-12 sm:py-16 md:py-24">
-      <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-10 px-4 sm:px-6 lg:flex-row lg:gap-16 lg:px-8">
+    <section className="relative w-full overflow-hidden py-6 sm:py-12 md:py-24">
+      <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 sm:gap-10 sm:px-6 lg:flex-row lg:gap-16 lg:px-8">
         {/* Content Column */}
-        <div className="order-2 flex w-full max-w-2xl flex-1 flex-col space-y-10 text-center lg:order-1 lg:max-w-none lg:text-left">
-          <div className="space-y-6">
+        <div className="order-2 flex w-full max-w-2xl flex-1 flex-col space-y-0 text-center sm:space-y-10 lg:order-1 lg:max-w-none lg:text-left">
+          <div className="space-y-4 sm:space-y-6">
             {/* Decorative Label */}
             <div className="flex items-center justify-center gap-3 lg:justify-start">
               <span className="h-[2px] w-8 rounded-full bg-sage-500 opacity-60"></span>
@@ -92,8 +92,8 @@ export function ZhiHero({ heroImages = DEFAULT_HERO_IMAGES }: ZhiHeroProps) {
             </p>
           </div>
 
-          {/* Info Grid - 2x2 Layout */}
-          <div className="mx-auto w-full max-w-sm border-t border-stone-200 pt-6 lg:mx-0 dark:border-[#27272a]">
+          {/* Info Grid - 2x2 Layout (hidden on mobile to show content faster) */}
+          <div className="mx-auto hidden w-full max-w-sm border-t border-stone-200 pt-6 sm:block lg:mx-0 dark:border-[#27272a]">
             <div className="grid grid-cols-2 gap-x-8 gap-y-4">
               <InfoItem icon={<Briefcase size={16} />} label={t("Product Manager")} />
               <InfoItem icon={<Aperture size={16} />} label={t("Photographer")} />

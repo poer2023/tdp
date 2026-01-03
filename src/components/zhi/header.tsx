@@ -166,6 +166,7 @@ export function ZhiHeader() {
             <div className="mr-1 flex items-center gap-2 border-r border-stone-200 pr-4 dark:border-[#27272a]">
               <Link
                 href={localePath(locale, "/search")}
+                prefetch={false}
                 className="hidden cursor-pointer rounded-full p-1.5 text-stone-500 transition-all hover:bg-stone-100 hover:text-stone-800 md:flex dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
                 aria-label={t("Search")}
               >
@@ -226,6 +227,7 @@ export function ZhiHeader() {
                     {isAdmin && (
                       <Link
                         href="/admin"
+                        prefetch={false}
                         onClick={() => setIsUserMenuOpen(false)}
                         className="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                       >
@@ -251,6 +253,7 @@ export function ZhiHeader() {
             ) : (
               <Link
                 href="/login"
+                prefetch={false}
                 className="cursor-pointer text-sm font-medium text-stone-900 transition-colors hover:text-sage-600 dark:text-stone-100 dark:hover:text-sage-400"
               >
                 {t("Login")}
@@ -263,6 +266,7 @@ export function ZhiHeader() {
             {/* Search */}
             <Link
               href={localePath(locale, "/search")}
+              prefetch={false}
               className="cursor-pointer rounded-full p-2 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
               aria-label={t("Search")}
             >
@@ -340,6 +344,7 @@ export function ZhiHeader() {
                 {!session ? (
                   <Link
                     href="/login"
+                    prefetch={false}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="block w-full cursor-pointer rounded-md px-3 py-3 text-left text-base font-medium text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                   >
@@ -350,6 +355,7 @@ export function ZhiHeader() {
                     {isAdmin && (
                       <Link
                         href="/admin"
+                        prefetch={false}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="block w-full cursor-pointer rounded-md px-3 py-3 text-left text-base font-medium text-stone-800 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800"
                       >

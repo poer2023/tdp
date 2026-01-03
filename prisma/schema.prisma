@@ -238,6 +238,7 @@ model Moment {
   friendVisibility FriendVisibility     @default(PUBLIC)
   friendId         String?
   happenedAt       DateTime?
+  showLocation     Boolean              @default(true)
   author           User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
   replyTo          Moment?              @relation("MomentThread", fields: [replyToId], references: [id])
   replies          Moment[]             @relation("MomentThread")
@@ -916,6 +917,20 @@ model SiteConfig {
   encrypted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+/// Now Playing - Music history synced from Apple Music via iOS Shortcuts
+model NowPlaying {
+  id         String   @id @default(cuid())
+  trackName  String
+  artistName String
+  albumName  String?
+  artworkUrl String?
+  duration   Int?     // Duration in seconds
+  playedAt   DateTime @default(now())
+  source     String   @default("apple_music")
+
+  @@index([playedAt])
 }
 
 // ============================================================================

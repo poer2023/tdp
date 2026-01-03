@@ -1,7 +1,20 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Twitter, Github, Linkedin, Mail } from "lucide-react";
+import { Github, Mail } from "lucide-react";
+
+// X (Twitter) Logo Component
+const XLogo = ({ size = 20 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 import { usePathname, useRouter } from "next/navigation";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
@@ -53,11 +66,11 @@ export function ZhiFooter() {
     const translations: Record<string, Record<string, string>> = {
       en: {
         "Let's connect": "Let's connect",
-        "Designed with": "Designed with",
+        "Updated casually": "Updated casually.",
       },
       zh: {
         "Let's connect": "保持联系",
-        "Designed with": "精心设计",
+        "Updated casually": "随性更新。",
       },
     };
     return translations[locale]?.[key] || key;
@@ -72,25 +85,23 @@ export function ZhiFooter() {
 
         <div className="mb-8 flex gap-6">
           <a
-            href="#"
+            href="https://x.com/poerpo5"
+            target="_blank"
+            rel="noopener noreferrer"
             className="cursor-pointer rounded-full p-2 text-stone-400 transition-all hover:bg-stone-50 hover:text-stone-800 dark:hover:bg-[#1f1f23] dark:hover:text-stone-100"
           >
-            <Twitter size={20} />
+            <XLogo size={20} />
           </a>
           <a
-            href="#"
+            href="https://github.com/poer2023/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="cursor-pointer rounded-full p-2 text-stone-400 transition-all hover:bg-stone-50 hover:text-stone-800 dark:hover:bg-[#1f1f23] dark:hover:text-stone-100"
           >
             <Github size={20} />
           </a>
           <a
-            href="#"
-            className="cursor-pointer rounded-full p-2 text-stone-400 transition-all hover:bg-stone-50 hover:text-stone-800 dark:hover:bg-[#1f1f23] dark:hover:text-stone-100"
-          >
-            <Linkedin size={20} />
-          </a>
-          <a
-            href="#"
+            href="mailto:dj521522@gmail.com"
             className="cursor-pointer rounded-full p-2 text-stone-400 transition-all hover:bg-stone-50 hover:text-stone-800 dark:hover:bg-[#1f1f23] dark:hover:text-stone-100"
           >
             <Mail size={20} />
@@ -112,7 +123,7 @@ export function ZhiFooter() {
           >
             Zhi
           </span>
-          . {t("Designed with")} React, Tailwind & Caffeine.
+          . {t("Updated casually")}
         </p>
       </div>
     </footer>

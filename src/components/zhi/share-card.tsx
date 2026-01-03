@@ -52,7 +52,7 @@ export function ZhiShareCard({ item, onLike }: ShareCardProps) {
 
   return (
     <div className="group mb-8 break-inside-avoid">
-      <Link href={detailPath} className="block cursor-pointer">
+      <Link href={detailPath} prefetch={false} className="block cursor-pointer">
         <div className="relative overflow-hidden rounded-xl border border-stone-200 bg-white transition-all duration-300 hover:shadow-lg dark:border-stone-800 dark:bg-stone-900">
           {/* Top: Image (if any) or pattern */}
           {item.imageUrl ? (

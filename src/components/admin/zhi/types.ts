@@ -73,6 +73,8 @@ export interface Moment {
   comments: Comment[];
   visibility?: 'PUBLIC' | 'PRIVATE' | 'FRIENDS_ONLY';
   status?: 'PUBLISHED' | 'DRAFT';
+  location?: string;
+  showLocation?: boolean;
 }
 
 // New Type: For Daily Shares / Curations (Websites, Products, Stuff)

@@ -28,11 +28,18 @@ export interface FeedPost {
   sortKey?: number;
 }
 
+// Image type with dimension info for proper display
+export interface FeedImage {
+  url: string;
+  w?: number | null;
+  h?: number | null;
+}
+
 export interface FeedMoment {
   id: string;
   type: "moment";
   content: string;
-  images?: string[];
+  images?: FeedImage[];
   date: string;
   tags: string[];
   likes: number;
@@ -300,65 +307,122 @@ export function ZhiFeed({ initialItems, onPostClick, onMomentLike }: ZhiFeedProp
           </div>
         </div>
 
-        {/* Feed Content - Masonry Layout with Row-first ordering */}
-        <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-2">
-          {columns.map((column, colIndex) => (
-            <div key={colIndex} className="flex flex-col gap-8">
-              {column.map((item) => (
-                <React.Fragment key={item.id}>
-                  {item.type === "article" ? (
-                    <ZhiPostCard
-                      post={{
-                        id: item.id,
-                        title: item.title,
-                        excerpt: item.excerpt,
-                        category: item.category,
-                        date: item.date,
-                        readTime: item.readTime,
-                        imageUrl: item.imageUrl,
-                        tags: item.tags,
-                        likes: item.likes,
-                      }}
-                      onClick={() => onPostClick?.(item)}
-                      onLike={handlePostLike}
-                    />
-                  ) : item.type === "moment" ? (
-                    <ZhiMomentCard
-                      moment={{
-                        id: item.id,
-                        content: item.content,
-                        images: item.images,
-                        date: item.date,
-                        tags: item.tags,
-                        likes: item.likes,
-                        liked: item.liked,
-                        author: item.author,
-                      }}
-                      onClick={() => setSelectedMoment(item)}
-                      onLike={() => handleMomentLike(item.id)}
-                    />
-                  ) : (
-                    <ZhiShareCard
-                      item={{
-                        id: item.id,
-                        title: item.title,
-                        description: item.description,
-                        url: item.url,
-                        domain: item.domain,
-                        imageUrl: item.imageUrl,
-                        date: item.date,
-                        tags: item.tags,
-                        likes: item.likes,
-                      }}
-                    />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          ))}
+        {/* Feed Content - Mobile: Threads-style, Desktop: Masonry Layout */}
+        <div className="mb-12">
+          {/* Mobile: Single column, no gap (Threads-style) */}
+          <div className="block md:hidden">
+            {visibleItems.map((item) => (
+              <React.Fragment key={item.id}>
+                {item.type === "article" ? (
+                  <ZhiPostCard
+                    post={{
+                      id: item.id,
+                      title: item.title,
+                      excerpt: item.excerpt,
+                      category: item.category,
+                      date: item.date,
+                      readTime: item.readTime,
+                      imageUrl: item.imageUrl,
+                      tags: item.tags,
+                      likes: item.likes,
+                    }}
+                    onClick={() => onPostClick?.(item)}
+                    onLike={handlePostLike}
+                  />
+                ) : item.type === "moment" ? (
+                  <ZhiMomentCard
+                    moment={{
+                      id: item.id,
+                      content: item.content,
+                      images: item.images,
+                      date: item.date,
+                      tags: item.tags,
+                      likes: item.likes,
+                      liked: item.liked,
+                      author: item.author,
+                    }}
+                    onClick={() => setSelectedMoment(item)}
+                    onLike={() => handleMomentLike(item.id)}
+                  />
+                ) : (
+                  <ZhiShareCard
+                    item={{
+                      id: item.id,
+                      title: item.title,
+                      description: item.description,
+                      url: item.url,
+                      domain: item.domain,
+                      imageUrl: item.imageUrl,
+                      date: item.date,
+                      tags: item.tags,
+                      likes: item.likes,
+                    }}
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Desktop: Masonry Layout with Row-first ordering */}
+          <div className="hidden grid-cols-2 gap-8 md:grid">
+            {columns.map((column, colIndex) => (
+              <div key={colIndex} className="flex flex-col gap-8">
+                {column.map((item) => (
+                  <React.Fragment key={item.id}>
+                    {item.type === "article" ? (
+                      <ZhiPostCard
+                        post={{
+                          id: item.id,
+                          title: item.title,
+                          excerpt: item.excerpt,
+                          category: item.category,
+                          date: item.date,
+                          readTime: item.readTime,
+                          imageUrl: item.imageUrl,
+                          tags: item.tags,
+                          likes: item.likes,
+                        }}
+                        onClick={() => onPostClick?.(item)}
+                        onLike={handlePostLike}
+                      />
+                    ) : item.type === "moment" ? (
+                      <ZhiMomentCard
+                        moment={{
+                          id: item.id,
+                          content: item.content,
+                          images: item.images,
+                          date: item.date,
+                          tags: item.tags,
+                          likes: item.likes,
+                          liked: item.liked,
+                          author: item.author,
+                        }}
+                        onClick={() => setSelectedMoment(item)}
+                        onLike={() => handleMomentLike(item.id)}
+                      />
+                    ) : (
+                      <ZhiShareCard
+                        item={{
+                          id: item.id,
+                          title: item.title,
+                          description: item.description,
+                          url: item.url,
+                          domain: item.domain,
+                          imageUrl: item.imageUrl,
+                          date: item.date,
+                          tags: item.tags,
+                          likes: item.likes,
+                        }}
+                      />
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            ))}
+          </div>
 
           {visibleItems.length === 0 && (
-            <div className="col-span-full rounded-xl border border-dashed border-stone-200 bg-white py-20 text-center transition-colors dark:border-[#27272a] dark:bg-[#141416]">
+            <div className="rounded-xl border border-dashed border-stone-200 bg-white py-20 text-center transition-colors dark:border-[#27272a] dark:bg-[#141416]">
               <p className="text-stone-400">{t("No content found here yet.")}</p>
             </div>
           )}

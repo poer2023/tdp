@@ -600,11 +600,11 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
   useEffect(() => {
     const updateColumnCount = () => {
       if (window.innerWidth >= 1024) {
-        setColumnCount(3); // lg:columns-3
+        setColumnCount(4); // lg: 4 columns for more content
       } else if (window.innerWidth >= 640) {
-        setColumnCount(2); // sm:columns-2
+        setColumnCount(3); // sm: 3 columns
       } else {
-        setColumnCount(1); // columns-1
+        setColumnCount(2); // mobile: 2 columns for more content density
       }
     };
     updateColumnCount();
@@ -616,10 +616,10 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
 
   return (
     <div className="w-full">
-      {/* Masonry Grid - Row-first ordering */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Masonry Grid - Row-first ordering, mobile-first 2-column layout */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
         {columns.map((column, colIndex) => (
-          <div key={colIndex} className="flex flex-col gap-6">
+          <div key={colIndex} className="flex flex-col gap-3 sm:gap-4 lg:gap-6">
             {column.map((item, index) => (
               <div
                 key={item.id}
@@ -798,12 +798,12 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
                       {t("Location")}
                     </h3>
 
-                    <div className="Zhi-map mb-3 h-[160px] w-full overflow-hidden rounded-xl grayscale-[0.2] transition-all duration-500 hover:grayscale-0">
+                    <div className="Zhi-map aspect-square w-full overflow-hidden rounded-xl grayscale-[0.2] transition-all duration-500 hover:grayscale-0">
                       <LocationMap
                         lat={selectedItem.latitude}
                         lng={selectedItem.longitude}
                         _isDark={isDark}
-                        height="160px"
+                        height="100%"
                         showZoomControl={true}
                       />
                     </div>
@@ -963,12 +963,12 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
 
             {/* Mobile Bottom Drawer */}
             <div
-              className={`fixed inset-x-0 bottom-0 z-[75] transform transition-transform duration-300 ease-out lg:hidden ${drawerOpen ? "translate-y-0" : "translate-y-[calc(100%-120px)]"}`}
+              className={`fixed inset-x-0 bottom-0 z-[75] transform transition-transform duration-300 ease-out lg:hidden backdrop-blur-xl rounded-t-2xl overflow-hidden ${drawerOpen ? "translate-y-0" : "translate-y-[calc(100%-120px)]"} ${isDark ? 'bg-black/70' : 'bg-white/80'}`}
             >
               {/* Drawer Handle */}
               <button
                 onClick={() => setDrawerOpen(!drawerOpen)}
-                className={`mx-auto flex w-full items-center justify-center border-t py-2 ${isDark ? 'border-stone-800 bg-stone-900' : 'border-stone-200 bg-white'}`}
+                className="mx-auto flex w-full items-center justify-center py-3"
               >
                 <ChevronUp
                   size={20}
@@ -977,7 +977,7 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
               </button>
 
               {/* Drawer Content */}
-              <div className={`max-h-[70vh] overflow-y-auto px-4 pb-4 ${isDark ? 'bg-stone-900' : 'bg-white'}`}>
+              <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
                 {/* Title Preview (always visible) */}
                 <div className="mb-4">
                   <h2 className={`font-serif text-xl ${isDark ? 'text-white' : 'text-stone-900'}`}>{selectedItem.title}</h2>
@@ -996,12 +996,12 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
                     {selectedItem.latitude && selectedItem.longitude && (
                       <section className="mb-4">
                         <div className="overflow-hidden rounded-xl border border-stone-700/50">
-                          <div className="Zhi-map h-[120px] w-full">
+                          <div className="Zhi-map aspect-square w-full">
                             <LocationMap
                               lat={selectedItem.latitude}
                               lng={selectedItem.longitude}
                               _isDark={true}
-                              height="120px"
+                              height="100%"
                               showZoomControl={false}
                             />
                           </div>

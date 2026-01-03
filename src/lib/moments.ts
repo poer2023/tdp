@@ -306,6 +306,7 @@ export async function createMoment(input: {
   location?: { name?: string; lat?: number; lng?: number } | null;
   lang?: string;
   status?: MomentStatus;
+  showLocation?: boolean;
 }) {
   const moment = await prisma.moment.create({
     data: {
@@ -317,6 +318,7 @@ export async function createMoment(input: {
       location: (input.location ?? null) as Prisma.InputJsonValue,
       lang: input.lang ?? "en-US",
       status: input.status ?? "PUBLISHED",
+      showLocation: input.showLocation ?? true,
     },
     select: { id: true },
   });

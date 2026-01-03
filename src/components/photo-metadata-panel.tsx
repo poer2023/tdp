@@ -130,7 +130,7 @@ export function PhotoMetadataPanel({ image, locale = "zh" }: PhotoMetadataPanelP
             </h2>
           </div>
           <div className="overflow-hidden rounded-xl border border-stone-200/60 shadow-sm dark:border-stone-700/50">
-            <div className="h-[140px] w-full">
+            <div className="aspect-square w-full">
               <LocationMapMini
                 latitude={image.latitude!}
                 longitude={image.longitude!}

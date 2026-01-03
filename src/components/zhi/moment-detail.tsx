@@ -247,7 +247,7 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
             <>
               {/* Current Image */}
               <Image
-                src={moment.images?.[currentImageIndex] || ""}
+                src={moment.images?.[currentImageIndex]?.url || ""}
                 alt={`Moment image ${currentImageIndex + 1}`}
                 width={1200}
                 height={900}
@@ -451,7 +451,7 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
                 {moment.images!.map((img, idx) => (
                   <div key={idx} className="relative w-full flex items-center justify-center">
                     <Image
-                      src={img}
+                      src={img.url}
                       alt={`Detail ${idx + 1}`}
                       width={1200}
                       height={900}

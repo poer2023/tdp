@@ -69,7 +69,7 @@ function PhotoPopupContent({
       {/* Image Preview */}
       <div className="relative aspect-[4/3] w-full">
         <Image
-          src={image.mediumPath || image.smallThumbPath || image.filePath}
+          src={image.smallThumbPath || image.microThumbPath || image.filePath}
           alt={image.title || "Photo"}
           fill
           sizes="280px"
@@ -135,6 +135,7 @@ function PhotoPopupContent({
         {/* Action Button */}
         <Link
           href={localePath(locale, `/gallery/${image.id}`)}
+          prefetch={false}
           className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-medium transition-colors"
           style={{
             backgroundColor: 'rgb(28, 25, 23)',
