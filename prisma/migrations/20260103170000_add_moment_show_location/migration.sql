@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Moment" ADD COLUMN IF NOT EXISTS "showLocation" BOOLEAN NOT NULL DEFAULT true;
