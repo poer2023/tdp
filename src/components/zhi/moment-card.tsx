@@ -73,25 +73,29 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
       const width = getImageWidth(img);
       // Container sized to exact aspect ratio, left-aligned with rounded corners
       return (
-        <div className="px-4">
+        <div className="pl-4">
           <div
-            className="relative cursor-pointer overflow-hidden rounded-xl"
-            style={{
-              height: GALLERY_HEIGHT,
-              width: width,
-              maxWidth: "100%",
-            }}
-            onClick={onImageClick}
+            className="overflow-x-auto scrollbar-hide pr-4"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            <Image
-              src={img.url}
-              alt=""
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="rounded-xl"
-              style={{ objectFit: "cover" }}
-              quality={80}
-            />
+            <div
+              className="relative cursor-pointer overflow-hidden rounded-xl"
+              style={{
+                height: GALLERY_HEIGHT,
+                width: width,
+              }}
+              onClick={onImageClick}
+            >
+              <Image
+                src={img.url}
+                alt=""
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="rounded-xl"
+                style={{ objectFit: "cover" }}
+                quality={80}
+              />
+            </div>
           </div>
         </div>
       );
@@ -475,4 +479,3 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
 }
 
 export default ZhiMomentCard;
-
