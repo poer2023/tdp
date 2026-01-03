@@ -90,20 +90,8 @@ export default async function LocalizedGalleryPage({ params, searchParams }: Pag
     <>
       <ZhiHeader />
       <main className="min-h-screen bg-stone-50 dark:bg-stone-950">
-        {/* Header Section */}
-        <div className="mx-auto max-w-6xl px-4 py-8 text-center md:py-12">
-          <h1 className="mb-4 font-serif text-4xl text-stone-900 md:text-5xl dark:text-stone-100">
-            {l === "zh" ? "相册" : "Gallery"}
-          </h1>
-          <p className="mx-auto max-w-lg font-light text-stone-500 dark:text-stone-400">
-            {l === "zh"
-              ? "光影与时刻的收藏。一帧一帧，记录这个世界。"
-              : "A collection of light, shadow, and motion. Capturing the world one frame at a time."}
-          </p>
-        </div>
-
         {/* Category Tabs & Navigation */}
-        <div className="mx-auto max-w-7xl px-4 pb-8">
+        <div className="mx-auto max-w-7xl px-4 pt-6 pb-8">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <GalleryCategoryTabs locale={l} currentCategory={currentCategory} />
 
@@ -167,27 +155,23 @@ export default async function LocalizedGalleryPage({ params, searchParams }: Pag
             <ZhiGallery items={galleryItems} />
           )}
 
-          {/* Footer Info */}
+          {/* Footer Info - Compact stats */}
           {images.length > 0 && (
-            <footer className="mt-12 border-t border-stone-200 pt-6 text-center text-xs leading-relaxed text-stone-500 dark:border-stone-800 dark:text-stone-400">
-              <p>
-                {l === "zh" ? (
-                  <>
-                    共 {images.length} 张照片
-                    {imagesWithLocation.length > 0 &&
-                      `，其中 ${imagesWithLocation.length} 张包含地理位置信息`}
-                    。
-                  </>
-                ) : (
-                  <>
-                    {images.length} photo{images.length !== 1 ? "s" : ""} in total
-                    {imagesWithLocation.length > 0 &&
-                      `, ${imagesWithLocation.length} with location data`}
-                    .
-                  </>
-                )}
-              </p>
-            </footer>
+            <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-stone-400 sm:mt-8 dark:text-stone-500">
+              <span className="inline-flex items-center gap-1">
+                <span className="font-medium text-stone-500 dark:text-stone-400">{images.length}</span>
+                {l === "zh" ? "张照片" : "photos"}
+              </span>
+              {imagesWithLocation.length > 0 && (
+                <>
+                  <span className="text-stone-300 dark:text-stone-600">·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <span className="font-medium text-stone-500 dark:text-stone-400">{imagesWithLocation.length}</span>
+                    {l === "zh" ? "有位置信息" : "with GPS"}
+                  </span>
+                </>
+              )}
+            </div>
           )}
         </div>
       </main>

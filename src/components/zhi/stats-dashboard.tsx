@@ -150,7 +150,7 @@ function CodeFrequencyHeatmap({ heatmapData, gitHubStats, locale }: CodeFrequenc
   };
 
   return (
-    <div className="group col-span-1 min-h-[320px] overflow-hidden rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md md:col-span-2 relative dark:border-stone-800 dark:bg-stone-900">
+    <div className="group col-span-2 min-h-[320px] overflow-hidden rounded-2xl border border-stone-100 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md relative sm:p-6 dark:border-stone-800 dark:bg-stone-900">
       {/* Subtle gradient background */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.08]"
@@ -454,24 +454,9 @@ export function ZhiStatsDashboard({
         }
       `}</style>
 
-      {/* Header */}
-      <div className="mb-8 border-b border-stone-200 bg-white px-4 pb-16 pt-12 dark:border-stone-800 dark:bg-stone-900">
-        <div className="mx-auto max-w-5xl text-center">
-          <span className="mb-6 inline-block rounded-full bg-stone-100 p-3 text-stone-600 dark:bg-stone-800 dark:text-stone-300">
-            <Activity size={24} strokeWidth={1.5} />
-          </span>
-          <h3 className="mb-4 font-serif text-4xl text-stone-900 md:text-5xl dark:text-stone-100">
-            {t("Life Log")}
-          </h3>
-          <p className="mx-auto max-w-lg text-lg font-light text-stone-500 dark:text-stone-400">
-            {t("subtitle")}
-          </p>
-        </div>
-      </div>
-
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 px-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Card 1: Interactive Shutter Count */}
-        <div className="relative col-span-1 select-none overflow-hidden rounded-2xl border border-stone-800 bg-[#171717] p-6 text-white shadow-2xl md:col-span-2">
+      <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 px-4 pt-6 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        {/* Card 1: Interactive Shutter Count - Always spans full width */}
+        <div className="relative col-span-2 select-none overflow-hidden rounded-2xl border border-stone-800 bg-[#171717] p-4 text-white shadow-2xl sm:p-6 lg:col-span-2">
           {/* Flash Overlay */}
           {isFlashing && (
             <div className="flash-overlay absolute inset-0 z-50 bg-white"></div>
@@ -592,7 +577,7 @@ export function ZhiStatsDashboard({
         </div>
 
         {/* Card 2: Weekly Routine */}
-        <div className="group col-span-1 rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900">
+        <div className="group col-span-1 rounded-2xl border border-stone-100 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md sm:p-6 dark:border-stone-800 dark:bg-stone-900">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-xl bg-indigo-50 p-2 text-indigo-500 transition-colors group-hover:bg-indigo-100 dark:bg-indigo-900/10 dark:group-hover:bg-indigo-900/20">
               <Clock size={20} strokeWidth={1.5} />
@@ -638,8 +623,17 @@ export function ZhiStatsDashboard({
           </div>
         </div>
 
-        {/* Card 3: Media Diet */}
-        <div className="col-span-1 flex flex-col overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm md:col-span-2 md:flex-row lg:col-span-2 dark:border-stone-800 dark:bg-stone-900">
+        {/* Card 2.5: Now Playing Music - Paired with Weekly Routine on mobile */}
+        <div className="col-span-1">
+          <NowPlayingCard
+            track={stats.nowPlaying?.[0] as MusicTrack | null}
+            recentTracks={(stats.nowPlaying?.slice(1) ?? []) as MusicTrack[]}
+            locale={locale}
+          />
+        </div>
+
+        {/* Card 3: Media Diet - Spans full width for complex charts */}
+        <div className="col-span-2 flex flex-col overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm md:flex-row lg:col-span-2 dark:border-stone-800 dark:bg-stone-900">
           {/* Movies Section */}
           <div className="group flex-1 border-b border-stone-100 p-6 transition-colors hover:bg-stone-50 md:border-b-0 md:border-r dark:border-stone-800 dark:hover:bg-stone-800/30">
             <div className="mb-4 flex items-center justify-between">
@@ -728,17 +722,8 @@ export function ZhiStatsDashboard({
           </div>
         </div>
 
-        {/* Card 3.5: Now Playing Music */}
-        <div className="col-span-1">
-          <NowPlayingCard
-            track={stats.nowPlaying?.[0] as MusicTrack | null}
-            recentTracks={(stats.nowPlaying?.slice(1) ?? []) as MusicTrack[]}
-            locale={locale}
-          />
-        </div>
-
         {/* Card 4: Daily Steps */}
-        <div className="group col-span-1 rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900">
+        <div className="group col-span-1 rounded-2xl border border-stone-100 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md sm:p-6 dark:border-stone-800 dark:bg-stone-900">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-sage-50 p-2 text-sage-600 transition-colors group-hover:bg-sage-100 dark:bg-sage-900/10 dark:text-sage-400 dark:group-hover:bg-sage-900/20">
@@ -801,17 +786,8 @@ export function ZhiStatsDashboard({
           </div>
         </div>
 
-        {/* Card 4.5: Code Frequency (Enhanced Heatmap) */}
-        {stats.gitHubContributions && stats.gitHubContributions.length > 0 && (
-          <CodeFrequencyHeatmap
-            heatmapData={heatmapData}
-            gitHubStats={stats.gitHubStats}
-            locale={locale}
-          />
-        )}
-
-        {/* Card 5: Languages (Donut) */}
-        <div className="group relative col-span-1 overflow-hidden rounded-2xl border border-stone-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:border-stone-800 dark:bg-stone-900">
+        {/* Card 5: Languages (Donut) - Paired with Daily Steps on mobile */}
+        <div className="group relative col-span-1 overflow-hidden rounded-2xl border border-stone-100 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md sm:p-6 dark:border-stone-800 dark:bg-stone-900">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-xl bg-orange-50 p-2 text-orange-500 transition-colors group-hover:bg-orange-100 dark:bg-orange-900/10 dark:text-orange-400 dark:group-hover:bg-orange-900/20">
               <Code size={20} strokeWidth={1.5} />
@@ -899,9 +875,18 @@ export function ZhiStatsDashboard({
           </div>
         </div>
 
+        {/* Card 6: Code Frequency (Enhanced Heatmap) - Full width */}
+        {stats.gitHubContributions && stats.gitHubContributions.length > 0 && (
+          <CodeFrequencyHeatmap
+            heatmapData={heatmapData}
+            gitHubStats={stats.gitHubStats}
+            locale={locale}
+          />
+        )}
+
         {/* Quick Links */}
         {highlights && highlights.length > 0 && (
-          <div className="col-span-1 md:col-span-3">
+          <div className="col-span-2 lg:col-span-3">
             <h3 className="mb-4 font-serif text-xl text-stone-800 dark:text-stone-100">
               {t("View Details")}
             </h3>

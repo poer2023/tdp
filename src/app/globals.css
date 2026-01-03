@@ -420,6 +420,19 @@ html.dark {
   /* stone-600 */
 }
 
+/* Hide scrollbar utility - for horizontal carousels */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+
 /* Zhi Animations */
 @keyframes fade-in {
   from {

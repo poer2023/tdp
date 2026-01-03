@@ -97,12 +97,15 @@ export async function createMomentAction(
           let smallThumbUrl: string | undefined;
           let mediumUrl: string | undefined;
           try {
-            const img = sharp(buf).rotate(); // Auto-apply EXIF orientation
-            const meta = await img.metadata();
-            w = meta.width ?? null;
-            h = meta.height ?? null;
-
+            // Generate thumbnails first (applies EXIF rotation)
             const thumbs = await generateThumbnails(buf, { small: 720, medium: 1600, quality: 82 });
+
+            // Extract dimensions from medium thumbnail (after EXIF rotation applied)
+            // This gives us the correct display dimensions matching what users see
+            const mediumMeta = await sharp(thumbs.medium).metadata();
+            w = mediumMeta.width ?? null;
+            h = mediumMeta.height ?? null;
+
             const [microPath, smallPath, mediumPath] = await Promise.all([
               storage.upload(thumbs.micro, getThumbnailFilename(key, "micro"), "image/webp"),
               storage.upload(thumbs.small, getThumbnailFilename(key, "small"), "image/webp"),
