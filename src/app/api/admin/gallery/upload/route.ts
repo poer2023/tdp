@@ -7,6 +7,7 @@ import { getStorageProviderAsync } from "@/lib/storage";
 import { addGalleryImage } from "@/lib/gallery";
 import { revalidatePath } from "next/cache";
 import { generateThumbnails, getThumbnailFilename } from "@/lib/image-processor";
+import sharp from "sharp";
 
 export const runtime = "nodejs";
 // Ensure no caching interferes with uploads
@@ -54,6 +55,11 @@ export async function POST(req: Request) {
     // Generate thumbnails
     const thumbnails = await generateThumbnails(imageBuf);
 
+    // Derive display dimensions from rotated WebP thumbnail (avoids EXIF orientation issues)
+    const thumbMeta = await sharp(thumbnails.medium).metadata().catch(() => null);
+    const thumbWidth = thumbMeta?.width ?? null;
+    const thumbHeight = thumbMeta?.height ?? null;
+
     // Upload original + 3 thumbnails in batch
     const [imgPath, microPath, smallPath, mediumPath] = (await storage.uploadBatch([
       { buffer: imageBuf, filename: imgKey, mimeType: image.type || "application/octet-stream" },
@@ -100,8 +106,8 @@ export async function POST(req: Request) {
       livePhotoVideoPath: videoPublic,
       isLivePhoto: !!videoPublic,
       fileSize: image.size || null,
-      width: exif?.width ?? null,
-      height: exif?.height ?? null,
+      width: thumbWidth ?? exif?.width ?? null,
+      height: thumbHeight ?? exif?.height ?? null,
       mimeType: image.type || null,
       capturedAt: capturedAt ?? exif?.capturedAt ?? null,
       storageType: process.env.STORAGE_TYPE || "local",

@@ -5,8 +5,124 @@
  */
 
 import { PrismaClient, Prisma } from '@prisma/client';
+import sharp from 'sharp';
 
 const prisma = new PrismaClient();
+const MOMENT_IMAGE_DIMENSIONS_KEY = 'moment-image-dimensions-webp-2026-01-04';
+const ORIENTATION_SWAPS = new Set([5, 6, 7, 8]);
+
+type MomentImage = {
+    url: string;
+    w?: number | null;
+    h?: number | null;
+    alt?: string | null;
+    previewUrl?: string | null;
+    microThumbUrl?: string | null;
+    smallThumbUrl?: string | null;
+    mediumUrl?: string | null;
+};
+
+type MomentImageLike = MomentImage | string;
+
+function resolveFetchUrl(url: string): string {
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    const base = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    return `${base.replace(/\/$/, '')}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
+function pickThumbUrl(img: MomentImage): string | null {
+    return img.smallThumbUrl || img.previewUrl || img.mediumUrl || img.url || null;
+}
+
+async function readDimensions(buffer: Buffer): Promise<{ width: number | null; height: number | null }> {
+    const metadata = await sharp(buffer).metadata();
+    let width = metadata.width ?? null;
+    let height = metadata.height ?? null;
+    if (metadata.orientation && ORIENTATION_SWAPS.has(metadata.orientation) && width && height) {
+        [width, height] = [height, width];
+    }
+    return { width, height };
+}
+
+async function fixMomentImageDimensionsOnce() {
+    const marker = await prisma.siteConfig.findUnique({ where: { key: MOMENT_IMAGE_DIMENSIONS_KEY } });
+    if (marker?.value) {
+        console.log(`[Migration] Moment image dimension fix already applied (${marker.value})`);
+        return;
+    }
+
+    console.log('🔄 [Migration] Fixing moment image dimensions from WebP thumbnails...');
+    const moments = await prisma.moment.findMany({
+        where: {
+            NOT: { images: { equals: Prisma.DbNull } },
+        },
+        select: { id: true, images: true },
+    });
+
+    let fixedMoments = 0;
+    let fixedImages = 0;
+    let errorCount = 0;
+
+    for (const moment of moments) {
+        const images = moment.images as MomentImageLike[] | null;
+        if (!images || !Array.isArray(images) || images.length === 0) continue;
+
+        let needsUpdate = false;
+        const updatedImages: MomentImage[] = [];
+
+        for (const raw of images) {
+            if (!raw) continue;
+            const wasString = typeof raw === 'string';
+            const img: MomentImage = wasString ? { url: raw } : raw;
+            const fetchUrl = pickThumbUrl(img);
+
+            if (!fetchUrl) {
+                updatedImages.push(img);
+                continue;
+            }
+
+            try {
+                const response = await fetch(resolveFetchUrl(fetchUrl));
+                if (!response.ok) {
+                    updatedImages.push(img);
+                    errorCount++;
+                    continue;
+                }
+
+                const buffer = Buffer.from(await response.arrayBuffer());
+                const { width, height } = await readDimensions(buffer);
+
+                if (!wasString && img.w === width && img.h === height) {
+                    updatedImages.push(img);
+                } else {
+                    updatedImages.push({ ...img, w: width, h: height });
+                    needsUpdate = true;
+                    fixedImages++;
+                }
+            } catch (error) {
+                updatedImages.push(img);
+                errorCount++;
+                console.error(`[Migration] Failed to process moment ${moment.id}:`, error);
+            }
+        }
+
+        if (needsUpdate) {
+            await prisma.moment.update({
+                where: { id: moment.id },
+                data: { images: updatedImages as unknown as Prisma.InputJsonValue },
+            });
+            fixedMoments++;
+        }
+    }
+
+    await prisma.siteConfig.upsert({
+        where: { key: MOMENT_IMAGE_DIMENSIONS_KEY },
+        create: { key: MOMENT_IMAGE_DIMENSIONS_KEY, value: new Date().toISOString(), encrypted: false },
+        update: { value: new Date().toISOString() },
+    });
+
+    console.log(`✅ [Migration] Moment image dimensions updated. Moments: ${fixedMoments}, images: ${fixedImages}, errors: ${errorCount}`);
+}
 
 async function migrateGalleryCategories() {
     console.log('🔄 [Migration] Checking gallery image categories...');
@@ -143,6 +259,7 @@ async function main() {
     try {
         await migrateGalleryCategories();
         await extractMissingExifData();
+        await fixMomentImageDimensionsOnce();
         console.log('\n🎉 Production data migration completed successfully!');
     } catch (error) {
         console.error('\n❌ Migration error:', error);
