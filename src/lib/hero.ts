@@ -17,7 +17,9 @@ function isLikelyInternalUrl(url: string): boolean {
 }
 
 function toHeroThumbUrl(url: string): string {
-  const [path, query] = url.split("?");
+  const [rawPath, rawQuery] = url.split("?");
+  const path = rawPath ?? "";
+  const query = rawQuery ?? "";
   const isInternal = isLikelyInternalUrl(url);
   const isCover = path.includes("/covers/") || path.includes("covers/");
 
