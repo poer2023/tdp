@@ -211,6 +211,27 @@ jobs:
               exit 1
             fi
 
+            # Increase client timeouts to reduce Docker Hub flakiness on slow links
+            export DOCKER_CLIENT_TIMEOUT="${DOCKER_CLIENT_TIMEOUT:-300}"
+            export COMPOSE_HTTP_TIMEOUT="${COMPOSE_HTTP_TIMEOUT:-300}"
+
+            retry() {
+              local max_attempts="$1"
+              local delay="$2"
+              shift 2
+              local attempt=1
+              local current_delay="$delay"
+              until "$@"; do
+                if [ "$attempt" -ge "$max_attempts" ]; then
+                  return 1
+                fi
+                echo "Retry $attempt/$max_attempts failed. Sleeping ${current_delay}s..."
+                sleep "$current_delay"
+                attempt=$((attempt + 1))
+                current_delay=$((current_delay * 2))
+              done
+            }
+
             # First-time setup: clone repository if PROJECT_DIR is not a git repo
             if [ ! -d "${PROJECT_DIR}/.git" ]; then
               echo "==> First-time setup: cloning repo into ${PROJECT_DIR}"
@@ -356,7 +377,10 @@ jobs:
             docker network inspect coolify >/dev/null 2>&1 || docker network create coolify
 
             echo "==> Pulling latest Docker images"
-            docker compose pull
+            if ! retry 4 5 docker compose pull; then
+              echo "❌ docker compose pull failed after retries" >&2
+              exit 1
+            fi
 
             echo "==> Starting deployment with automatic backup and migration"
             echo "Docker Compose will handle: backup → migrate → app startup"
