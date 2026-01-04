@@ -87,7 +87,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       content: moment.content,
       // Pass image objects with url, w, h for proper display
       images: moment.images?.map((img) => ({
-        url: getMomentImageUrl(img, "medium"),
+        url: getMomentImageUrl(img, "small"),
         w: img.w,
         h: img.h,
       })) || [],

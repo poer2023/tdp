@@ -141,7 +141,7 @@ export function SearchPageContent() {
                                 placeholder={isZh ? "搜索文章、图片、动态..." : "Search posts, images, moments..."}
                                 aria-label={isZh ? "搜索输入框" : "Search input"}
                                 role="searchbox"
-                                className="flex-1 bg-transparent text-base text-stone-900 placeholder:text-stone-400 focus:outline-none focus-visible:outline-none dark:text-stone-100 dark:placeholder:text-stone-500"
+                                className="flex-1 bg-transparent text-base text-stone-900 placeholder:text-stone-400 focus:outline-none dark:text-stone-100 dark:placeholder:text-stone-500"
                                 autoFocus
                             />
                             {query && (

@@ -245,7 +245,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
             }
             aria-label={locale === "zh" ? "搜索输入框" : "Search input"}
             role="searchbox"
-            className="flex-1 bg-transparent text-base text-stone-900 placeholder:text-stone-400 focus:outline-none focus-visible:outline-none dark:text-stone-100 dark:placeholder:text-stone-500"
+            className="flex-1 bg-transparent text-base text-stone-900 placeholder:text-stone-400 focus:outline-none dark:text-stone-100 dark:placeholder:text-stone-500"
           />
           {q && (
             <button
@@ -515,7 +515,7 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
           aria-label={locale === "zh" ? "搜索输入框" : "Search input"}
           aria-describedby="search-hint"
           role="searchbox"
-          className="search-focus-reset w-full bg-transparent text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus-visible:outline-none dark:text-stone-100 dark:placeholder:text-stone-500"
+          className="search-focus-reset w-full bg-transparent text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none dark:text-stone-100 dark:placeholder:text-stone-500"
         />
         {q && (
           <button

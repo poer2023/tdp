@@ -340,7 +340,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                 src={moment.images![0].url}
                 alt="Background"
                 fill
-                sizes="(max-width: 1280px) 50vw, 400px"
+                sizes="(max-width: 1024px) 50vw, 384px"
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                 quality={75}
               />

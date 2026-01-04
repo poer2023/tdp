@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import { getAllowedImageProxyDomains } from "@/lib/image-proxy";
+import { isAllowedImageHost } from "@/lib/image-hosts";
 
 // Allowed image domains (security measure)
 const ALLOWED_DOMAINS = getAllowedImageProxyDomains();
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Security: Only allow whitelisted domains
-    if (!ALLOWED_DOMAINS.includes(parsedUrl.hostname)) {
+    if (!isAllowedImageHost(parsedUrl.hostname, ALLOWED_DOMAINS)) {
       return NextResponse.json(
         { error: "Domain not allowed", allowed: ALLOWED_DOMAINS },
         { status: 403 }
@@ -50,15 +51,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch image from external source with proper headers
+    const headers: Record<string, string> = {
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    };
+
+    if (parsedUrl.hostname.includes("hdslb.com")) {
+      headers.Referer = "https://www.bilibili.com/";
+    } else if (parsedUrl.hostname.includes("doubanio.com")) {
+      headers.Referer = "https://movie.douban.com/";
+    }
+
     const response = await fetch(parsedUrl.toString(), {
-      headers: {
-        // Bilibili and Douban accept requests from their own domains
-        Referer: parsedUrl.hostname.includes("hdslb.com")
-          ? "https://www.bilibili.com/"
-          : "https://movie.douban.com/",
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      },
+      headers,
       // Add timeout to prevent hanging requests
       signal: AbortSignal.timeout(10000), // 10 seconds
     });

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { useTheme } from "next-themes";
+import { buildImageSrcSet, buildImageUrl } from "@/lib/image-resize";
 
 // Dynamically import the entire map component to avoid SSR issues
 const LocationMap = dynamic(
@@ -72,6 +73,8 @@ const THUMB_FULL_WIDTH = 120;
 const THUMB_COLLAPSED_WIDTH = 35;
 const THUMB_GAP = 2;
 const THUMB_MARGIN = 2;
+const GRID_IMAGE_WIDTHS = [320, 480, 640];
+const GRID_IMAGE_SIZES = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px";
 
 // Memoized thumbnail item component - uses CSS transitions for better performance
 const ThumbnailItem = React.memo(function ThumbnailItem({
@@ -620,43 +623,55 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
         {columns.map((column, colIndex) => (
           <div key={colIndex} className="flex flex-col gap-3 sm:gap-4 lg:gap-6">
-            {column.map((item, index) => (
-              <div
-                key={item.id}
-                className="group relative cursor-pointer overflow-hidden rounded-lg bg-stone-200 dark:bg-stone-800"
-                onClick={() => handleOpen(item)}
-              >
-                <div className="relative">
-                  <img
-                    src={
-                      item.type === "video"
-                        ? item.thumbnail || item.url
-                        : item.smallThumbPath || item.mediumPath || item.thumbnail || item.url
-                    }
-                    alt={item.title}
-                    width={item.width || undefined}
-                    height={item.height || undefined}
-                    className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    loading={colIndex * column.length + index < 6 ? "eager" : "lazy"}
-                    decoding={colIndex * column.length + index < 6 ? "sync" : "async"}
-                    fetchPriority={colIndex * column.length + index < 3 ? "high" : "auto"}
-                  />
-                  {/* Video Indicator */}
-                  {item.type === "video" && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/10">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/20 text-white backdrop-blur-md">
-                        <Play size={20} fill="currentColor" />
+            {column.map((item, index) => {
+              const isAboveFold = colIndex * column.length + index < 6;
+              const baseSrc =
+                item.type === "video"
+                  ? item.thumbnail || item.url
+                  : item.mediumPath || item.url;
+              const fallbackSrc =
+                item.type === "video"
+                  ? item.thumbnail || item.url
+                  : item.smallThumbPath || item.mediumPath || item.thumbnail || item.url;
+              const srcSet = buildImageSrcSet(baseSrc, GRID_IMAGE_WIDTHS);
+              const src = buildImageUrl(fallbackSrc, 640);
+
+              return (
+                <div
+                  key={item.id}
+                  className="group relative cursor-pointer overflow-hidden rounded-lg bg-stone-200 dark:bg-stone-800"
+                  onClick={() => handleOpen(item)}
+                >
+                  <div className="relative">
+                    <img
+                      src={src}
+                      srcSet={srcSet}
+                      sizes={GRID_IMAGE_SIZES}
+                      alt={item.title}
+                      width={item.width || undefined}
+                      height={item.height || undefined}
+                      className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      loading={isAboveFold ? "eager" : "lazy"}
+                      decoding={isAboveFold ? "sync" : "async"}
+                      fetchPriority={isAboveFold ? "high" : "auto"}
+                    />
+                    {/* Video Indicator */}
+                    {item.type === "video" && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/10">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/20 text-white backdrop-blur-md">
+                          <Play size={20} fill="currentColor" />
+                        </div>
                       </div>
+                    )}
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                      <h3 className="font-serif text-lg font-medium text-white">{item.title}</h3>
+                      <span className="text-xs text-stone-300">{item.date}</span>
                     </div>
-                  )}
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-6 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <h3 className="font-serif text-lg font-medium text-white">{item.title}</h3>
-                    <span className="text-xs text-stone-300">{item.date}</span>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ))}
       </div>
