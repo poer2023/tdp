@@ -53,7 +53,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log("[Monitor Sync] Starting monitor sync job...");
 
     // Validate Uptime Kuma connection
     const isConnected = await validateConnection();
@@ -64,7 +63,6 @@ export async function GET(request: NextRequest) {
 
     // Step 1: Fetch monitors from Uptime Kuma
     const uptimeKumaMonitors = await fetchMonitors();
-    console.log(`[Monitor Sync] Fetched ${uptimeKumaMonitors.length} monitors from Uptime Kuma`);
 
     // Step 2: Upsert monitors to database
     const monitorResults = await Promise.allSettled(
@@ -95,8 +93,6 @@ export async function GET(request: NextRequest) {
 
     const successfulMonitors = monitorResults.filter((r) => r.status === "fulfilled").length;
     const failedMonitors = monitorResults.filter((r) => r.status === "rejected").length;
-
-    console.log(`[Monitor Sync] Synced ${successfulMonitors} monitors (${failedMonitors} failed)`);
 
     // Step 3: Fetch and store heartbeats for each monitor
     let totalHeartbeats = 0;
@@ -148,8 +144,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log(`[Monitor Sync] Stored ${totalHeartbeats} heartbeats (${heartbeatErrors} errors)`);
-
     // Step 4: Clean up old heartbeat data (older than 3 months)
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
@@ -162,11 +156,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    console.log(`[Monitor Sync] Cleaned up ${deletedHeartbeats.count} old heartbeats`);
-
     const duration = Date.now() - startTime;
-
-    console.log(`[Monitor Sync] Completed in ${duration}ms`);
 
     return NextResponse.json({
       success: true,

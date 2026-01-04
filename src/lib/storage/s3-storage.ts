@@ -58,7 +58,6 @@ export class S3Storage implements StorageProvider {
       this.cdnUrl = config.cdnUrl || undefined;
       this.lastConfigHash = configHash;
 
-      console.log(`[S3Storage] Client initialized/refreshed - bucket: ${bucket}, CDN: ${this.cdnUrl || 'none'}`);
     }
 
     return { client: this.client, bucket: this.bucket, cdnUrl: this.cdnUrl };
@@ -90,7 +89,7 @@ export class S3Storage implements StorageProvider {
     });
 
     await upload.done();
-    console.log(`[S3Storage] Uploaded: ${key}`);
+
     return key;
   }
 
@@ -113,7 +112,7 @@ export class S3Storage implements StorageProvider {
       })
         .done()
         .then(() => {
-          console.log(`[S3Storage] Batch uploaded: ${key}`);
+
           return key;
         });
     });
@@ -130,7 +129,7 @@ export class S3Storage implements StorageProvider {
           Key: key,
         })
       );
-      console.log(`[S3Storage] Deleted: ${key}`);
+
     } catch (error) {
       console.error("Failed to delete from S3:", error);
     }

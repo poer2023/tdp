@@ -212,7 +212,6 @@ function MomentComposerCore() {
         throw new Error(data.error || "Failed to create moment");
       }
 
-      console.log("✅ Moment created successfully:", data.moment?.id ?? data.id);
       setState({ status: "success", id: data.moment?.id ?? data.id });
       startTransition(() => resetForm());
     } catch (error) {

@@ -34,17 +34,14 @@ export async function runAutoBackup(config: Partial<AutoBackupConfig> = {}): Pro
     const cfg = { ...DEFAULT_CONFIG, ...config };
 
     try {
-        console.log('[AutoBackup] Starting automatic backup...');
 
         // Create new backup
         const backup = await createBackup({
             includeMedia: cfg.includeMedia,
             onProgress: (phase, progress, message) => {
-                console.log(`[AutoBackup] ${phase}: ${progress}% - ${message}`);
+
             },
         });
-
-        console.log(`[AutoBackup] Backup created: ${backup.filename}`);
 
         // Apply retention policy
         const deletedBackups = await applyRetentionPolicy(cfg.retention);
@@ -80,7 +77,7 @@ async function applyRetentionPolicy(retention: number): Promise<string[]> {
             try {
                 await deleteBackup(backup.id);
                 deletedBackups.push(backup.id);
-                console.log(`[AutoBackup] Deleted old backup: ${backup.filename}`);
+
             } catch (error) {
                 console.error(`[AutoBackup] Failed to delete ${backup.filename}:`, error);
             }

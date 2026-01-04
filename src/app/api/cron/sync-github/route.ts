@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log("[GitHub Cron] Starting GitHub sync job...");
 
     // Fetch all valid GitHub credentials
     const credentials = await prisma.externalCredential.findMany({
@@ -35,15 +34,13 @@ export async function GET(request: NextRequest) {
     });
 
     if (credentials.length === 0) {
-      console.log("[GitHub Cron] No valid GitHub credentials found");
+
       return NextResponse.json({
         success: true,
         message: "No GitHub credentials to sync",
         results: [],
       });
     }
-
-    console.log(`[GitHub Cron] Found ${credentials.length} GitHub credential(s)`);
 
     // Sync all GitHub accounts concurrently
     const syncPromises = credentials.map(async (credential) => {
@@ -56,10 +53,6 @@ export async function GET(request: NextRequest) {
         // Extract username from metadata if available
         const metadata = credential.metadata as { username?: string } | null;
         const username = metadata?.username;
-
-        console.log(
-          `[GitHub Cron] Syncing GitHub account: ${username || credential.id.slice(0, 8)}...`
-        );
 
         // Run sync
         const result = await syncGitHub({ token, username }, credential.id);
@@ -104,10 +97,6 @@ export async function GET(request: NextRequest) {
       failedAccounts: results.filter((r) => !r.success).length,
       totalDuration: results.reduce((sum, r) => sum + (r.duration || 0), 0),
     };
-
-    console.log(
-      `[GitHub Cron] Sync completed: ${summary.successAccounts}/${summary.totalAccounts} accounts succeeded in ${summary.totalDuration}ms`
-    );
 
     return NextResponse.json({
       success: true,

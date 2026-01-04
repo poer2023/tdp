@@ -29,24 +29,19 @@ export async function fetchBilibiliIncremental(
   const isFullSync = shouldDoFullSync(lastSync);
   const syncMode = isFullSync ? "full" : "incremental";
 
-  console.log(`[${platform}] Sync mode: ${syncMode}`);
   if (!isFullSync && lastSync?.lastSyncedAt) {
-    console.log(`[${platform}] Last synced at: ${lastSync.lastSyncedAt.toISOString()}`);
+
   }
 
   // 2. Calculate start timestamp for incremental sync
   const startTimestamp = isFullSync ? 0 : getIncrementalStartTimestamp(lastSync?.lastSyncedAt);
 
   if (!isFullSync) {
-    console.log(
-      `[${platform}] Incremental start timestamp: ${new Date(startTimestamp * 1000).toISOString()} (with ${SYNC_CONFIG.LOOKBACK_SECONDS / 3600}h lookback)`
-    );
+
   }
 
   // 3. Set max pages based on sync mode
   const maxPages = isFullSync ? SYNC_CONFIG.FULL_SYNC_MAX_PAGES : SYNC_CONFIG.INCREMENTAL_MAX_PAGES;
-
-  console.log(`[${platform}] Max pages: ${maxPages}`);
 
   // 4. Fetch items with intelligent early stopping
   const allItems: BilibiliHistoryItem[] = [];
@@ -95,7 +90,7 @@ export async function fetchBilibiliIncremental(
       }
 
       if (!data.data?.list || data.data.list.length === 0) {
-        console.log(`[${platform}] No more items at page ${page}`);
+
         break;
       }
 
@@ -107,9 +102,7 @@ export async function fetchBilibiliIncremental(
         : pageItems;
 
       if (relevantItems.length < pageItems.length) {
-        console.log(
-          `[${platform}] Page ${page}: ${relevantItems.length}/${pageItems.length} items within timeframe`
-        );
+
       }
 
       // Add to results
@@ -124,12 +117,9 @@ export async function fetchBilibiliIncremental(
         if (existingIds.size === relevantItems.length) {
           // All items already exist
           earlyStopCount++;
-          console.log(
-            `[${platform}] Page ${page}: All items exist (early stop count: ${earlyStopCount}/${SYNC_CONFIG.EARLY_STOP_THRESHOLD})`
-          );
 
           if (earlyStopCount >= SYNC_CONFIG.EARLY_STOP_THRESHOLD) {
-            console.log(`[${platform}] Early stop triggered after ${page} pages`);
+
             earlyStopTriggered = true;
             break;
           }
@@ -151,10 +141,6 @@ export async function fetchBilibiliIncremental(
       break;
     }
   }
-
-  console.log(
-    `[${platform}] Fetched ${allItems.length} items from ${pagesRequested} pages (mode: ${syncMode}${earlyStopTriggered ? ", early stop" : ""})`
-  );
 
   return {
     items: allItems,

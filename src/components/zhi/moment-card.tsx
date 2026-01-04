@@ -39,26 +39,12 @@ const MULTI_IMAGE_SIZE = 280; // Square thumbnails for multi-image galleries
 
 function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData[]; onImageClick?: () => void }) {
   // DEBUG: Log image dimension data
-  console.log('[ThreadsImageGallery] images received:', images.map(img => ({
-    url: img.url.substring(0, 50) + '...',
-    w: img.w,
-    h: img.h,
-    hasValidDimensions: !!(img.w && img.h && img.h > 0)
-  })));
 
   // Calculate width from aspect ratio for single images
   const getImageWidth = (img: MomentImageData): number => {
     const calculatedWidth = (img.w && img.h && img.h > 0)
       ? Math.round(GALLERY_HEIGHT * (img.w / img.h))
       : Math.round(GALLERY_HEIGHT * (4 / 3));
-
-    console.log('[getImageWidth]', {
-      originalW: img.w,
-      originalH: img.h,
-      galleryHeight: GALLERY_HEIGHT,
-      calculatedWidth,
-      aspectRatio: img.w && img.h ? (img.w / img.h).toFixed(2) : 'N/A'
-    });
 
     return calculatedWidth;
   };

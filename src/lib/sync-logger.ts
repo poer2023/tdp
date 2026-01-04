@@ -49,7 +49,6 @@ export async function startSyncLog(input: CreateSyncLogInput) {
             },
         });
 
-        console.log(`[Sync Log] Started: ${log.id} for ${input.platform}`);
         return log;
     } catch (error) {
         console.error('[Sync Log] Failed to start log:', error);
@@ -86,7 +85,6 @@ export async function completeSyncLog(
             },
         });
 
-        console.log(`[Sync Log] Completed: ${logId} - ${result.success ? 'SUCCESS' : 'FAILED'}`);
         return log;
     } catch (error) {
         console.error('[Sync Log] Failed to complete log:', error);

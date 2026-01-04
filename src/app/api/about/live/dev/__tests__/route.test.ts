@@ -21,7 +21,7 @@ describe("/api/about/live/dev", () => {
 
     // Skip test if no data available
     if (response.status === 404) {
-      console.log("Skipping: No GitHub data available in database");
+
       return;
     }
 
@@ -50,7 +50,7 @@ describe("/api/about/live/dev", () => {
 
     // Skip test if no data available
     if (response.status === 404) {
-      console.log("Skipping: No GitHub data available in database");
+
       return;
     }
 
@@ -73,7 +73,7 @@ describe("/api/about/live/dev", () => {
 
     // Skip test if no data available
     if (response.status === 404) {
-      console.log("Skipping: No GitHub data available in database");
+
       return;
     }
 
@@ -101,7 +101,7 @@ describe("/api/about/live/dev", () => {
 
     // Skip test if no data available
     if (response.status === 404) {
-      console.log("Skipping: No GitHub data available in database");
+
       return;
     }
 
@@ -125,7 +125,7 @@ describe("/api/about/live/dev", () => {
 
     // Skip test if no data available
     if (response.status === 404) {
-      console.log("Skipping: No GitHub data available in database");
+
       return;
     }
 

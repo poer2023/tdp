@@ -99,7 +99,7 @@ describe("About Live Dashboard Integration", () => {
       if (response.status === 404) {
         const data = await response.json();
         expect(data).toBeNull();
-        console.log("Skipping: No dev data available in database");
+
         return;
       }
 
@@ -131,7 +131,7 @@ describe("About Live Dashboard Integration", () => {
       if (response.status === 404) {
         const data = await response.json();
         expect(data).toBeNull();
-        console.log("Skipping: No reading data available in database");
+
         return;
       }
 

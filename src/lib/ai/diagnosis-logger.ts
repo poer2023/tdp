@@ -55,7 +55,6 @@ export async function logAIDiagnosis(input: CreateAIDiagnosisInput) {
             },
         });
 
-        console.log(`[AI Log] Diagnosis logged: ${log.id} for ${input.platform}`);
         return log;
     } catch (error) {
         console.error('[AI Log] Failed to log diagnosis:', error);
@@ -80,7 +79,6 @@ export async function updateAutoFixStatus(
             },
         });
 
-        console.log(`[AI Log] Auto-fix status updated: ${logId}`);
         return log;
     } catch (error) {
         console.error('[AI Log] Failed to update auto-fix status:', error);

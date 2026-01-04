@@ -30,7 +30,6 @@ export async function GET(request: Request) {
     }
 
     try {
-        console.log('[Cron Backup] Starting scheduled backup...');
 
         const result = await runAutoBackup({
             enabled: true,

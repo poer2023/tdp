@@ -12,7 +12,6 @@ const prisma = (prismaNamed ?? prismaDefault) as unknown as PrismaClient;
  */
 async function fetchGitHubDataFromDB(): Promise<DevData | null> {
   try {
-    console.log("[GitHub DB] Fetching synced GitHub data from database");
 
     // Access optional delegates dynamically to avoid type errors when models are absent
     const p: any = prisma as unknown as any;
@@ -26,7 +25,7 @@ async function fetchGitHubDataFromDB(): Promise<DevData | null> {
     }
 
     if (!latestStats) {
-      console.log("[GitHub DB] No stats data found in database");
+
       return null;
     }
 
@@ -137,7 +136,6 @@ async function fetchGitHubDataFromDB(): Promise<DevData | null> {
       languages: languages.length > 0 ? languages : undefined,
     };
 
-    console.log("[GitHub DB] Successfully fetched GitHub data from database");
     return data;
   } catch (error) {
     console.error("[GitHub DB] Error fetching data from database:", error);
@@ -180,7 +178,7 @@ export async function GET() {
     }
 
     // No data available - return null instead of mock data
-    console.log("[GitHub API] No data available in database");
+
     return NextResponse.json(null, {
       headers: {
         "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",

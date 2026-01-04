@@ -53,7 +53,7 @@ export function AnalyticsTracker({ locale }: { locale: string }) {
         }
       } catch (error) {
         // Silent failure - don't break page functionality
-        console.debug("Analytics tracking failed:", error);
+
       }
     };
 

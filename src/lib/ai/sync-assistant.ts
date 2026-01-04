@@ -76,9 +76,6 @@ ${additionalContext ? `附加信息: ${JSON.stringify(additionalContext)}` : ''}
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         const diagnosis = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
 
-        console.log(`[AI] Diagnosis completed for ${platform}:`, diagnosis);
-        console.log(`[AI] Cost: ¥${client.calculateCost(response.usage.total_tokens).toFixed(4)}`);
-
         return {
             platform,
             ...diagnosis,
@@ -145,9 +142,6 @@ ${truncatedHTML}
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         const selectors = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
 
-        console.log(`[AI] Selectors generated for ${platform}:`, selectors);
-        console.log(`[AI] Cost: ¥${client.calculateCost(response.usage.total_tokens).toFixed(4)}`);
-
         return selectors;
     } catch (error) {
         console.error('[AI] Selector generation failed:', error);
@@ -186,7 +180,6 @@ export async function suggestFix(
         });
 
         const fixSteps = response.choices[0]?.message?.content;
-        console.log(`[AI] Fix suggestion for ${platform} generated`);
 
         return fixSteps || null;
     } catch (error) {

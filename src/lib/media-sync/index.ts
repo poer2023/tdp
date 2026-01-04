@@ -96,15 +96,10 @@ export async function syncBilibili(
   });
 
   try {
-    console.log(`[${platform}] Starting sync...`);
 
     // Fetch history with intelligent incremental sync
     const fetchResult = await fetchBilibiliIncremental(config, platform);
     const { items, syncMode, pagesRequested, earlyStopTriggered } = fetchResult;
-
-    console.log(
-      `[${platform}] Fetched ${items.length} items from API (${syncMode} mode, ${pagesRequested} pages)`
-    );
 
     // Normalize first to derive external IDs consistently (tests may omit certain fields)
     const normalizedAll = items.map((it) => normalizeBilibiliItem(it));
@@ -112,11 +107,9 @@ export async function syncBilibili(
 
     // Batch query existing items from database
     const existingSet = await getExistingExternalIds(platform, externalIds);
-    console.log(`[${platform}] Found ${existingSet.size} existing items in database`);
 
     // Filter out items that already exist
     const newItems = normalizedAll.filter((n) => !existingSet.has(n.externalId));
-    console.log(`[${platform}] ${newItems.length} new items to sync`);
 
     let successCount = 0;
     let failedCount = 0;
@@ -189,10 +182,6 @@ export async function syncBilibili(
       }
     );
 
-    console.log(
-      `[${platform}] Sync completed: ${successCount} new, ${itemsExisting} existing, ${failedCount} failed in ${duration}ms`
-    );
-
     // Invalidate dashboard cache so new data appears immediately
     if (successCount > 0) {
       revalidateTag(DASHBOARD_TAG, "max");
@@ -262,11 +251,9 @@ export async function syncDouban(config: DoubanConfig, credentialId?: string): P
   });
 
   try {
-    console.log(`[${platform}] Starting sync...`);
 
     // Fetch watched items from Douban (fetch 25 pages = 375 items to ensure we get everything)
     const items = await fetchDoubanWatched(config, 25);
-    console.log(`[${platform}] Fetched ${items.length} items from API`);
 
     // Extract external IDs for all items
     const externalIds = items.map((item) => item.id);
@@ -288,11 +275,9 @@ export async function syncDouban(config: DoubanConfig, credentialId?: string): P
     }
 
     const existingSet = new Set(existingRecords.map((r: { externalId: string }) => r.externalId));
-    console.log(`[${platform}] Found ${existingSet.size} existing items in database`);
 
     // Filter out items that already exist
     const newItems = items.filter((item) => !existingSet.has(item.id));
-    console.log(`[${platform}] ${newItems.length} new items to sync`);
 
     let successCount = 0;
     let failedCount = 0;
@@ -355,10 +340,6 @@ export async function syncDouban(config: DoubanConfig, credentialId?: string): P
         itemsFailed: failedCount,
         message: `Synced ${successCount} new items (${itemsExisting} existing, ${failedCount} failed)`,
       }
-    );
-
-    console.log(
-      `[${platform}] Sync completed: ${successCount} new, ${itemsExisting} existing, ${failedCount} failed in ${duration}ms`
     );
 
     // Invalidate dashboard cache so new data appears immediately
@@ -430,11 +411,9 @@ export async function syncSteam(config: SteamConfig, credentialId?: string): Pro
   });
 
   try {
-    console.log(`[${platform}] Starting sync...`);
 
     // Fetch recently played games from Steam (last 2 weeks, max 20 games)
     const games = await fetchSteamRecentlyPlayed(config, 20);
-    console.log(`[${platform}] Fetched ${games.length} games from API`);
 
     // Extract external IDs for all games
     const externalIds = games.map((game) => game.appid.toString());
@@ -456,11 +435,9 @@ export async function syncSteam(config: SteamConfig, credentialId?: string): Pro
     }
 
     const existingSet = new Set(existingRecords.map((r: { externalId: string }) => r.externalId));
-    console.log(`[${platform}] Found ${existingSet.size} existing games in database`);
 
     // Filter out games that already exist
     const newGames = games.filter((game) => !existingSet.has(game.appid.toString()));
-    console.log(`[${platform}] ${newGames.length} new games to sync`);
 
     let successCount = 0;
     let failedCount = 0;
@@ -525,10 +502,6 @@ export async function syncSteam(config: SteamConfig, credentialId?: string): Pro
       }
     );
 
-    console.log(
-      `[${platform}] Sync completed: ${successCount} new, ${itemsExisting} existing, ${failedCount} failed in ${duration}ms`
-    );
-
     // Invalidate dashboard cache so new data appears immediately
     if (successCount > 0) {
       revalidateTag(DASHBOARD_TAG, "max");
@@ -582,7 +555,6 @@ export async function syncSteam(config: SteamConfig, credentialId?: string): Pro
  * Sync all platforms using credentials from database
  */
 export async function syncAllPlatforms(): Promise<SyncResult[]> {
-  console.log("[Media Sync] Starting sync for all platforms...");
 
   const results: SyncResult[] = [];
 
@@ -650,7 +622,7 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
       process.env.BILIBILI_BILI_JCT &&
       process.env.BILIBILI_BUVID3
     ) {
-      console.log("[Bilibili] No credentials in database, using environment variables");
+
       const bilibiliResult = await syncBilibili({
         sessdata: process.env.BILIBILI_SESSDATA,
         biliJct: process.env.BILIBILI_BILI_JCT,
@@ -692,7 +664,7 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
 
     // Fallback to environment variables if no Douban credentials configured
     if (doubanCredentials.length === 0 && process.env.DOUBAN_USER_ID) {
-      console.log("[Douban] No credentials in database, using environment variables");
+
       const doubanResult = await syncDouban({
         userId: process.env.DOUBAN_USER_ID,
         cookie: process.env.DOUBAN_COOKIE,
@@ -733,7 +705,7 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
 
     // Fallback to environment variables if no Steam credentials configured
     if (steamCredentials.length === 0 && process.env.STEAM_API_KEY && process.env.STEAM_ID) {
-      console.log("[Steam] No credentials in database, using environment variables");
+
       const steamResult = await syncSteam({
         apiKey: process.env.STEAM_API_KEY,
         steamId: process.env.STEAM_ID,
@@ -782,10 +754,6 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
 
   const totalSuccess = results.filter((r) => r.success).length;
   const totalFailed = results.filter((r) => !r.success).length;
-
-  console.log(
-    `[Media Sync] All platforms completed: ${totalSuccess} success, ${totalFailed} failed`
-  );
 
   return results;
 }

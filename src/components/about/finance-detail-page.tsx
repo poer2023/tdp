@@ -80,7 +80,7 @@ export function FinanceDetailPage({ locale }: FinanceDetailPageProps) {
   }, []);
 
   if (process.env.NODE_ENV === "test") {
-    console.log("Finance subscriptions label", t.subscriptions);
+
   }
 
   if (loading) {

@@ -58,7 +58,7 @@ export async function POST(request: Request) {
             restoreDatabase,
             restoreMedia,
         }, (phase, progress, message) => {
-            console.log(`[Restore] ${phase}: ${progress}% - ${message}`);
+
         });
 
         return NextResponse.json({

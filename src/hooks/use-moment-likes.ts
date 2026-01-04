@@ -74,7 +74,7 @@ export function useMomentLikes(momentIds: string[]) {
                 // Ignore storage errors
             }
         } catch (error) {
-            console.debug("[useMomentLikes] Failed to fetch:", error);
+
         } finally {
             setIsLoading(false);
         }

@@ -93,7 +93,6 @@ export const authConfig: NextAuthConfig = {
             locale: "zh", // TODO: detect user locale
           });
 
-          console.log(`✅ Verification code sent to ${email}`);
         } catch (error) {
           console.error(`❌ Failed to send verification code to ${email}:`, error);
           throw error;
@@ -170,15 +169,15 @@ export const authConfig: NextAuthConfig = {
   events: {
     async createUser({ user }) {
       if (!user.id) {
-        console.log(`ℹ️ Regular user created: ${user.email || "unknown"} (role: READER)`);
+
         return;
       }
 
       const role = await syncUserRole(user.id, user.email);
       if (role === UserRole.ADMIN) {
-        console.log(`✅ Admin user created: ${user.email}`);
+
       } else {
-        console.log(`ℹ️ Regular user created: ${user.email || "unknown"} (role: ${role})`);
+
       }
     },
   },

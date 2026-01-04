@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         const backup = await createBackup({
             includeMedia,
             onProgress: (phase, progress, message) => {
-                console.log(`[Backup] ${phase}: ${progress}% - ${message}`);
+
             },
         });
 

@@ -47,7 +47,7 @@ async function sendWithResend(
   }
 
   const result = await response.json();
-  console.log(`✅ Email sent via Resend to ${to}, id: ${result.id}`);
+
 }
 
 /**
@@ -82,7 +82,7 @@ async function sendWithSMTP(
 
   const mailOptions: SendMailOptions = { from, to, subject, html, text };
   const info = await transporter.sendMail(mailOptions);
-  console.log(`✅ Email sent via SMTP to ${to}, messageId: ${info.messageId}`);
+
 }
 
 /**
