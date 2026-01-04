@@ -191,12 +191,6 @@ export async function GET(request: NextRequest) {
     const credentialsToSync = syncSchedules.filter((s) => s.shouldSync);
     const skippedCredentials = syncSchedules.filter((s) => !s.shouldSync);
 
-    // Log sync decisions
-    syncSchedules.forEach((schedule) => {
-      const prefix = schedule.shouldSync ? "✅ SYNC" : "⏭️  SKIP";
-
-    });
-
     // Execute syncs
     const syncResults: Array<{ platform: string; success: boolean; message?: string }> = [];
 

@@ -60,12 +60,7 @@ export async function POST(request: Request) {
         const body = await request.json().catch(() => ({}));
         const includeMedia = body.includeMedia !== false; // Default to true
 
-        const backup = await createBackup({
-            includeMedia,
-            onProgress: (phase, progress, message) => {
-
-            },
-        });
+        const backup = await createBackup({ includeMedia });
 
         return NextResponse.json({
             success: true,

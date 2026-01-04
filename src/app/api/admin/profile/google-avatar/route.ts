@@ -53,11 +53,8 @@ export async function GET() {
                     if (userInfo.picture) {
                         return NextResponse.json({ avatarUrl: userInfo.picture });
                     }
-                } else {
-
                 }
-            } catch (err) {
-
+            } catch {
                 // Access token might be expired, try to decode id_token
             }
         }

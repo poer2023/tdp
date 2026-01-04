@@ -35,11 +35,8 @@ interface MomentCardProps {
 // Fixed height (320px), width calculated from aspect ratio for single image
 // For multiple images: uniform square thumbnails with object-cover
 const GALLERY_HEIGHT = 320;
-const MULTI_IMAGE_SIZE = 280; // Square thumbnails for multi-image galleries
 
 function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData[]; onImageClick?: () => void }) {
-  // DEBUG: Log image dimension data
-
   // Calculate width from aspect ratio for single images
   const getImageWidth = (img: MomentImageData): number => {
     const calculatedWidth = (img.w && img.h && img.h > 0)

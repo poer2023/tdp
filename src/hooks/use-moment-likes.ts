@@ -73,8 +73,7 @@ export function useMomentLikes(momentIds: string[]) {
             } catch {
                 // Ignore storage errors
             }
-        } catch (error) {
-
+        } catch {
         } finally {
             setIsLoading(false);
         }
@@ -139,4 +138,3 @@ export function useMomentLikes(momentIds: string[]) {
 }
 
 export default useMomentLikes;
-

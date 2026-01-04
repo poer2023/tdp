@@ -46,7 +46,7 @@ async function sendWithResend(
     throw new Error(`Resend API error: ${response.status}`);
   }
 
-  const result = await response.json();
+  await response.json();
 
 }
 
@@ -81,7 +81,7 @@ async function sendWithSMTP(
   });
 
   const mailOptions: SendMailOptions = { from, to, subject, html, text };
-  const info = await transporter.sendMail(mailOptions);
+  await transporter.sendMail(mailOptions);
 
 }
 
@@ -137,4 +137,3 @@ export async function sendVerificationEmail({
     throw new Error("发送邮件失败，请稍后重试");
   }
 }
-
