@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { UserRole } from "@prisma/client";
+import { UserRole, GalleryCategory } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -28,31 +28,85 @@ async function requireAdmin() {
 }
 
 // Extract images from Moment's JSON images field
+// Returns ONE best thumbnail per image, avoiding duplicates
 function extractMomentImages(
   _momentId: string,
   images: unknown,
   _createdAt: Date
-): Array<{ url: string; index: number }> {
+): Array<{ url: string; originalUrl: string; index: number }> {
   if (!Array.isArray(images)) return [];
 
   return images
     .map((img, index) => {
       if (typeof img === "string") {
-        return { url: img, index };
+        return { url: img, originalUrl: img, index };
       }
       if (img && typeof img === "object" && "url" in img && typeof img.url === "string") {
         const record = img as {
           url: string;
           previewUrl?: string;
           smallThumbUrl?: string;
+          mediumThumbUrl?: string;
         };
-        // Prefer small WebP thumbnails when available
-        const thumbUrl = record.smallThumbUrl || record.previewUrl || record.url;
-        return { url: thumbUrl, index };
+        // Prefer small WebP thumbnails for display, keep original url for dedup
+        const displayUrl = record.smallThumbUrl || record.previewUrl || record.url;
+        const originalUrl = record.url;
+        return { url: displayUrl, originalUrl, index };
       }
       return null;
     })
-    .filter((item): item is { url: string; index: number } => item !== null);
+    .filter((item): item is { url: string; originalUrl: string; index: number } => item !== null);
+}
+
+function normalizeImageKey(rawUrl: string): string {
+  const cleanUrl = rawUrl.split("?")[0] ?? rawUrl;
+  const marker = cleanUrl.toLowerCase().lastIndexOf("/gallery/");
+  if (marker === -1) return cleanUrl;
+
+  const pathPart = cleanUrl.slice(marker + "/gallery/".length);
+  if (!pathPart) return cleanUrl;
+
+  const segments = pathPart.split("/").filter(Boolean);
+  const filename = segments.pop();
+  if (!filename) return cleanUrl;
+
+  const withoutExt = filename.replace(/\.(webp|jpe?g|png)$/i, "");
+  const withoutSize = withoutExt.replace(/_(micro|small|medium|preview|thumb|large)$/i, "");
+  const normalizedPath = [...segments, withoutSize].join("/");
+  return `gallery:${normalizedPath.toLowerCase()}`;
+}
+
+function isPreferredImage(current: SourceImage, candidate: SourceImage): boolean {
+  const currentTime = Date.parse(current.createdAt);
+  const candidateTime = Date.parse(candidate.createdAt);
+
+  if (Number.isFinite(currentTime) && Number.isFinite(candidateTime) && candidateTime !== currentTime) {
+    return candidateTime > currentTime;
+  }
+
+  const sourcePriority: Record<ImageSource, number> = {
+    moment: 0,
+    post: 1,
+    gallery: 2,
+  };
+
+  return sourcePriority[candidate.source] < sourcePriority[current.source];
+}
+
+function dedupeImages(images: SourceImage[]): { images: SourceImage[]; duplicates: number } {
+  const byKey = new Map<string, SourceImage>();
+
+  for (const image of images) {
+    const key = normalizeImageKey(image.originalUrl || image.url || image.id);
+    const existing = byKey.get(key);
+
+    if (!existing || isPreferredImage(existing, image)) {
+      byKey.set(key, image);
+    }
+  }
+
+  const uniqueImages = Array.from(byKey.values());
+  return { images: uniqueImages, duplicates: images.length - uniqueImages.length };
 }
 
 export async function GET(request: NextRequest) {
@@ -77,14 +131,21 @@ export async function GET(request: NextRequest) {
     // Total count for pagination
     let total = 0;
 
-    // Fetch from Gallery
+    // Fetch from Gallery (exclude MOMENT category to avoid duplicates with Moments source)
     if (!sourceFilter || sourceFilter === "all" || sourceFilter === "gallery") {
       const take = sourceFilter === "gallery" ? pageSize : pageSize * page;
       const skip = sourceFilter === "gallery" ? startIndex : 0;
 
+      // When fetching "all" (sourceFilter is null or "all"), exclude MOMENT category 
+      // since those images will come from the Moments source
+      const categoryFilter = !sourceFilter || sourceFilter === "all"
+        ? { category: { not: GalleryCategory.MOMENT } }
+        : {};
+
       const [count, galleryImages] = await Promise.all([
-        prisma.galleryImage.count(),
+        prisma.galleryImage.count({ where: categoryFilter }),
         prisma.galleryImage.findMany({
+          where: categoryFilter,
           orderBy: { createdAt: "desc" },
           take,
           skip,
@@ -201,7 +262,7 @@ export async function GET(request: NextRequest) {
       for (const moment of moments) {
         const momentImages = extractMomentImages(moment.id, moment.images, moment.createdAt);
 
-        for (const { url, index } of momentImages) {
+        for (const { url, originalUrl, index } of momentImages) {
           const imageId = `moment-${moment.id}-${index}`;
           const title = moment.content
             ? moment.content.slice(0, 50) + (moment.content.length > 50 ? "..." : "")
@@ -210,12 +271,12 @@ export async function GET(request: NextRequest) {
           allImages.push({
             id: imageId,
             url: url,
-            originalUrl: url,
+            originalUrl: originalUrl,
             source: "moment",
             sourceId: moment.id,
             title,
             createdAt: moment.createdAt.toISOString(),
-            isSelected: heroUrls.has(url),
+            isSelected: heroUrls.has(url) || heroUrls.has(originalUrl),
           });
         }
       }
@@ -224,20 +285,24 @@ export async function GET(request: NextRequest) {
     // If "all" filter, we fetched top (page*pageSize) from each.
     // Now sort and slice the correct window.
     if (!sourceFilter || sourceFilter === "all") {
-      allImages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      const { images: dedupedImages, duplicates } = dedupeImages(allImages);
+
+      dedupedImages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
       // Since we fetched (page*pageSize) from EACH source, 
       // we have enough data to cover the requested page even after inter-leaving.
       // We just need to take the slice for the current page.
-      const paginatedImages = allImages.slice(startIndex, startIndex + pageSize);
+      const paginatedImages = dedupedImages.slice(startIndex, startIndex + pageSize);
+
+      const adjustedTotal = Math.max(0, total - duplicates);
 
       return NextResponse.json({
         images: paginatedImages,
         pagination: {
-          total, // Approximation (sum of counts)
+          total: adjustedTotal, // Approximation (sum of counts minus local duplicates)
           page,
           pageSize,
-          totalPages: Math.ceil(total / pageSize),
+          totalPages: Math.ceil(adjustedTotal / pageSize),
         },
       });
     } else {

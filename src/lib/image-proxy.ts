@@ -1,3 +1,5 @@
+import { INTERNAL_IMAGE_HOST_HINTS, isAllowedImageHost } from "@/lib/image-hosts";
+
 const DEFAULT_ALLOWED_DOMAINS = [
   "i0.hdslb.com",
   "i1.hdslb.com",
@@ -7,6 +9,7 @@ const DEFAULT_ALLOWED_DOMAINS = [
   "img3.doubanio.com",
   "img9.doubanio.com",
   "lh3.googleusercontent.com", // Google avatars
+  ...INTERNAL_IMAGE_HOST_HINTS,
 ];
 
 /**
@@ -29,9 +32,9 @@ export function toOptimizedImageUrl(url?: string | null): string | undefined {
     .map((d) => d.trim())
     .filter(Boolean);
 
-  const allowed = new Set([...DEFAULT_ALLOWED_DOMAINS, ...extra]);
+  const allowed = [...DEFAULT_ALLOWED_DOMAINS, ...extra];
 
-  if (!allowed.has(parsed.hostname)) {
+  if (!isAllowedImageHost(parsed.hostname, allowed)) {
     return url;
   }
 

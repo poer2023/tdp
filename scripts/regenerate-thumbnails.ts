@@ -9,7 +9,7 @@
 
 import prisma from "../src/lib/prisma";
 import { generateThumbnails, getThumbnailFilename } from "../src/lib/image-processor";
-import { getStorageProvider } from "../src/lib/storage";
+import { getStorageProviderAsync } from "../src/lib/storage";
 import fs from "fs";
 import path from "path";
 
@@ -57,7 +57,8 @@ async function regenerateThumbnails() {
 
     console.log(`📊 Found ${images.length} images to process.\n`);
 
-    const storage = getStorageProvider();
+    // Use async version to ensure correct storage config from database
+    const storage = await getStorageProviderAsync();
     let processed = 0;
     let failed = 0;
     let skipped = 0;

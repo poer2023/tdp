@@ -311,6 +311,8 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
     // Revalidate Next.js cache to ensure fresh data is served
     try {
       await revalidateTag("github-dev-data", "max");
+      // Also revalidate dashboard cache so Code Frequency updates immediately
+      await revalidateTag("dashboard", "max");
 
     } catch (error) {
       console.error(`[${platform}] Failed to revalidate cache:`, error);
