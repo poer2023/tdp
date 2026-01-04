@@ -158,7 +158,7 @@ function SocialBtn({ icon, label, href, color }: SocialBtnProps) {
         target="_blank"
         rel="noopener noreferrer"
         className={`${baseClasses} ${hoverClasses}`}
-        title={label}
+        aria-label={label}
       >
         {icon}
       </a>
@@ -166,7 +166,7 @@ function SocialBtn({ icon, label, href, color }: SocialBtnProps) {
   }
 
   return (
-    <button className={`${baseClasses} ${hoverClasses}`} title={label}>
+    <button className={`${baseClasses} ${hoverClasses}`} aria-label={label}>
       {icon}
     </button>
   );
@@ -307,4 +307,3 @@ function StatusRow({ label, value, icon, url }: StatusRowProps) {
 
   return content;
 }
-

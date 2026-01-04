@@ -254,13 +254,14 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
         >
           <Image
             src={sq.src}
-            alt=""
+            alt={`Hero image ${sq.id + 1}`}
             fill
             sizes={imageSizes}
             className="object-cover transition-transform duration-300 hover:scale-105"
             quality={imageQuality}
-            priority={sq.id < 4}
-            loading={sq.id < 4 ? "eager" : "lazy"}
+            priority={sq.id === 0}
+            loading={sq.id === 0 ? "eager" : "lazy"}
+            fetchPriority={sq.id === 0 ? "high" : "auto"}
           />
           <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
         </motion.a>

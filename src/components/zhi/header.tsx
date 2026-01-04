@@ -128,21 +128,16 @@ export function ZhiHeader() {
 
   const isAdmin = session?.user?.role === "ADMIN";
 
-  // Avoid SSR/CSR className差异导致的 hydration mismatch
-  if (!mounted) {
-    return <div className="h-16 w-full" aria-hidden />;
-  }
-
   return (
     <header className="sticky top-0 z-50 w-full bg-stone-50/80 backdrop-blur-md transition-colors duration-300 dark:bg-[#0a0a0b]/80">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <div className="shrink-0 cursor-pointer" onClick={() => handleNavClick("/")}>
+          <Link href={localePath(locale, "/")} className="shrink-0">
             <h1 className="font-serif text-2xl font-bold tracking-tighter text-stone-900 dark:text-stone-100">
               ZHI<span className="text-sage-600 dark:text-sage-400">.</span>
             </h1>
-          </div>
+          </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden space-x-8 md:flex">
@@ -380,4 +375,3 @@ export function ZhiHeader() {
 }
 
 export default ZhiHeader;
-
