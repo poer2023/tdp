@@ -47,10 +47,11 @@ export default [
     ignores: Array.from(new Set([...(ignoreConfig.ignores ?? []), ...customIgnores])),
   },
   {
-    files: ["src/**/__tests__/**", "e2e/**", "scripts/**"],
+    files: ["src/**/__tests__/**", "e2e/**", "scripts/**", "prisma/**"],
     rules: {
       "@typescript-eslint/no-unused-vars": "off",
       "@next/next/no-img-element": "off",
+      "no-console": "off",
     },
   },
 ];
