@@ -9,7 +9,9 @@ import sharp from 'sharp';
 
 const prisma = new PrismaClient();
 const MOMENT_IMAGE_DIMENSIONS_KEY = 'moment-image-dimensions-webp-2026-01-04';
+const HERO_IMAGE_THUMB_KEY = 'hero-image-small-thumbs-2026-01-04';
 const ORIENTATION_SWAPS = new Set([5, 6, 7, 8]);
+const INTERNAL_HOST_HINTS = ['r2.dev', 'r2.cloudflarestorage.com', 'dybzy.com'];
 
 type MomentImage = {
     url: string;
@@ -34,6 +36,40 @@ function pickThumbUrl(img: MomentImage): string | null {
     return img.smallThumbUrl || img.previewUrl || img.mediumUrl || img.url || null;
 }
 
+function isLikelyInternalUrl(url: string): boolean {
+    if (url.startsWith('/')) return true;
+    try {
+        const host = new URL(url).hostname;
+        return INTERNAL_HOST_HINTS.some((hint) => host.includes(hint));
+    } catch {
+        return false;
+    }
+}
+
+function normalizeHeroImageUrl(url: string): string {
+    const [rawPath, rawQuery] = url.split('?');
+    const path = rawPath ?? '';
+    const query = rawQuery ?? '';
+    if (!path) return url;
+    if (!isLikelyInternalUrl(url)) return url;
+
+    const isCover = path.includes('/covers/') || path.includes('covers/');
+    if (isCover) return url;
+
+    if (path.includes('_small.webp')) return url;
+    if (path.includes('_medium.webp')) {
+        const replaced = path.replace('_medium.webp', '_small.webp');
+        return query ? `${replaced}?${query}` : replaced;
+    }
+
+    if (/\.(jpe?g|png|webp|heic|heif)$/i.test(path)) {
+        const replaced = `${path.replace(/\.[^.]+$/, '')}_small.webp`;
+        return query ? `${replaced}?${query}` : replaced;
+    }
+
+    return url;
+}
+
 async function readDimensions(buffer: Buffer): Promise<{ width: number | null; height: number | null }> {
     const metadata = await sharp(buffer).metadata();
     let width = metadata.width ?? null;
@@ -42,6 +78,41 @@ async function readDimensions(buffer: Buffer): Promise<{ width: number | null; h
         [width, height] = [height, width];
     }
     return { width, height };
+}
+
+async function normalizeHeroImageUrlsOnce() {
+    const marker = await prisma.siteConfig.findUnique({ where: { key: HERO_IMAGE_THUMB_KEY } });
+    if (marker?.value) {
+        console.log(`[Migration] Hero image thumbnail normalization already applied (${marker.value})`);
+        return;
+    }
+
+    console.log('🔄 [Migration] Normalizing hero image URLs to small thumbnails...');
+    const heroImages = await prisma.heroImage.findMany({
+        select: { id: true, url: true },
+    });
+
+    let updatedCount = 0;
+
+    for (const hero of heroImages) {
+        const normalized = normalizeHeroImageUrl(hero.url);
+        if (normalized !== hero.url) {
+            await prisma.heroImage.update({
+                where: { id: hero.id },
+                data: { url: normalized },
+            });
+            updatedCount++;
+        }
+    }
+
+    const appliedAt = new Date().toISOString();
+    await prisma.siteConfig.upsert({
+        where: { key: HERO_IMAGE_THUMB_KEY },
+        create: { key: HERO_IMAGE_THUMB_KEY, value: appliedAt, encrypted: false },
+        update: { value: appliedAt },
+    });
+
+    console.log(`✅ [Migration] Hero images normalized: ${updatedCount}`);
 }
 
 async function fixMomentImageDimensionsOnce() {
@@ -260,6 +331,7 @@ async function main() {
         await migrateGalleryCategories();
         await extractMissingExifData();
         await fixMomentImageDimensionsOnce();
+        await normalizeHeroImageUrlsOnce();
         console.log('\n🎉 Production data migration completed successfully!');
     } catch (error) {
         console.error('\n❌ Migration error:', error);
