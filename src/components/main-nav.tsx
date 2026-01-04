@@ -54,9 +54,9 @@ export function MainNav() {
       exact: false,
     },
     {
-      href: localePath(locale, "/m"),
+      href: localePath(locale, "/moments"),
       label: locale === "zh" ? "瞬间" : "Moments",
-      match: "/m",
+      match: "/moments",
       exact: false,
     },
     {

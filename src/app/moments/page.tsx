@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import LocalizedMomentsPage from "../[locale]/m/page";
+import LocalizedMomentsPage from "../[locale]/moments/page";
 
 // ISR: Match localized page revalidate (300s)
 export const runtime = "nodejs";

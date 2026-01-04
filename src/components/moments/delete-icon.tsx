@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { softDeleteMomentAction } from "@/app/[locale]/m/manage-actions";
+import { softDeleteMomentAction } from "@/app/[locale]/moments/manage-actions";
 import { useConfirm } from "@/hooks/use-confirm";
 
 export function DeleteIcon({ id }: { id: string }) {

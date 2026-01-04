@@ -259,8 +259,8 @@ export async function softDeleteMoment(id: string, requester: { id: string; role
   if (!can) throw new Error("forbidden");
   await prisma.moment.update({ where: { id }, data: { deletedAt: new Date() } });
   // Invalidate cache so deleted moment disappears from lists
-  revalidatePath("/m");
-  revalidatePath("/zh/m");
+  revalidatePath("/moments");
+  revalidatePath("/zh/moments");
   revalidateTag(MOMENTS_PUBLIC_TAG, "max");
 }
 
@@ -271,8 +271,8 @@ export async function restoreMoment(id: string, requester: { id: string; role?: 
   if (!can) throw new Error("forbidden");
   await prisma.moment.update({ where: { id }, data: { deletedAt: null } });
   // Invalidate cache so restored moment appears in lists
-  revalidatePath("/m");
-  revalidatePath("/zh/m");
+  revalidatePath("/moments");
+  revalidatePath("/zh/moments");
   revalidateTag(MOMENTS_PUBLIC_TAG, "max");
 }
 
@@ -283,8 +283,8 @@ export async function purgeMoment(id: string, requester: { id: string; role?: st
   if (!can) throw new Error("forbidden");
   await prisma.moment.delete({ where: { id } });
   // Invalidate cache so purged moment disappears from lists
-  revalidatePath("/m");
-  revalidatePath("/zh/m");
+  revalidatePath("/moments");
+  revalidatePath("/zh/moments");
   revalidateTag(MOMENTS_PUBLIC_TAG, "max");
 }
 
@@ -324,8 +324,8 @@ export async function createMoment(input: {
   });
 
   // Revalidate key pages and cache
-  revalidatePath("/m");
-  revalidatePath("/zh/m");
+  revalidatePath("/moments");
+  revalidatePath("/zh/moments");
   revalidateTag(MOMENTS_PUBLIC_TAG, "max");
   return moment.id;
 }

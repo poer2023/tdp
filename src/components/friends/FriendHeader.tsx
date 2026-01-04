@@ -39,7 +39,7 @@ export function FriendHeader({ friend, locale }: FriendHeaderProps) {
       console.error("朋友退出失败", error);
     } finally {
       setLoading(false);
-      router.push(localePath(locale, "/m/friends"));
+      router.push(localePath(locale, "/friends"));
       router.refresh();
     }
   };
