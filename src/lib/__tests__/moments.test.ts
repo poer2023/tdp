@@ -120,8 +120,8 @@ describe("moments lib", () => {
     const id = await createMoment({ authorId: "u1", content: "hi" });
     expect(id).toBe("m3");
     const cache = (await import("next/cache")) as unknown as CacheModuleMock;
-    expect(cache.revalidatePath).toHaveBeenCalledWith("/m");
-    expect(cache.revalidatePath).toHaveBeenCalledWith("/zh/m");
+    expect(cache.revalidatePath).toHaveBeenCalledWith("/moments");
+    expect(cache.revalidatePath).toHaveBeenCalledWith("/zh/moments");
   });
 
   it("publishDueScheduled updates many", async () => {

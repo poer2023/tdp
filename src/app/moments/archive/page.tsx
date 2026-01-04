@@ -1,4 +1,4 @@
-import LocalizedArchivePage from "../../[locale]/m/archive/page";
+import LocalizedArchivePage from "../../[locale]/moments/archive/page";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

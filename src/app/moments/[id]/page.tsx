@@ -1,4 +1,4 @@
-import LocalizedMomentDetailPage from "../../[locale]/m/[id]/page";
+import LocalizedMomentDetailPage from "../../[locale]/moments/[id]/page";
 
 type PageProps = { params: Promise<{ id: string }> };
 

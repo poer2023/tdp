@@ -13,8 +13,8 @@ export async function softDeleteMomentAction(form: FormData) {
     role: (session.user as { role?: string }).role,
   });
   // Revalidate both English (no prefix) and Chinese (/zh) routes
-  revalidatePath("/m", "page");
-  revalidatePath("/zh/m", "page");
+  revalidatePath("/moments", "page");
+  revalidatePath("/zh/moments", "page");
   return;
 }
 
@@ -24,8 +24,8 @@ export async function restoreMomentAction(form: FormData) {
   const id = (form.get("id") as string) || "";
   await restoreMoment(id, { id: session.user.id, role: (session.user as { role?: string }).role });
   // Revalidate both English (no prefix) and Chinese (/zh) routes
-  revalidatePath("/m/trash", "page");
-  revalidatePath("/zh/m/trash", "page");
+  revalidatePath("/moments/trash", "page");
+  revalidatePath("/zh/moments/trash", "page");
   return;
 }
 
@@ -35,7 +35,7 @@ export async function purgeMomentAction(form: FormData) {
   const id = (form.get("id") as string) || "";
   await purgeMoment(id, { id: session.user.id, role: (session.user as { role?: string }).role });
   // Revalidate both English (no prefix) and Chinese (/zh) routes
-  revalidatePath("/m/trash", "page");
-  revalidatePath("/zh/m/trash", "page");
+  revalidatePath("/moments/trash", "page");
+  revalidatePath("/zh/moments/trash", "page");
   return;
 }

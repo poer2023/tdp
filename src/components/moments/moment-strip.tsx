@@ -10,7 +10,7 @@ export async function MomentStrip({ locale = "en" }: { locale?: "en" | "zh" }) {
         <h3 className="text-sm font-semibold text-stone-700 dark:text-stone-300">
           {locale === "zh" ? "最近瞬间" : "Recent Moments"}
         </h3>
-        <a href={localePath(locale, "/m")} className="text-xs text-stone-500 hover:underline">
+        <a href={localePath(locale, "/moments")} className="text-xs text-stone-500 hover:underline">
           {locale === "zh" ? "查看全部" : "View all"}
         </a>
       </div>
@@ -19,7 +19,7 @@ export async function MomentStrip({ locale = "en" }: { locale?: "en" | "zh" }) {
           {moments.map((m) => (
             <a
               key={m.id}
-              href={localePath(locale, `/m/${m.slug || m.id}`)}
+              href={localePath(locale, `/moments/${m.slug || m.id}`)}
               className="w-[200px] flex-shrink-0 rounded-xl border border-stone-200 bg-white p-3 text-sm shadow-sm transition hover:bg-stone-50 sm:w-[220px] dark:border-stone-800 dark:bg-stone-900 dark:hover:bg-stone-800/80"
             >
               <p className="line-clamp-3 text-stone-800 dark:text-stone-200">{m.content}</p>
