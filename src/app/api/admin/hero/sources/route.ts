@@ -59,7 +59,7 @@ function extractMomentImages(
 }
 
 function normalizeImageKey(rawUrl: string): string {
-  const cleanUrl = rawUrl.split("?")[0];
+  const cleanUrl = rawUrl.split("?")[0] ?? rawUrl;
   const marker = cleanUrl.toLowerCase().lastIndexOf("/gallery/");
   if (marker === -1) return cleanUrl;
 
