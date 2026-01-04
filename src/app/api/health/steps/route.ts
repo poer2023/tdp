@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
 
         // Debug log to see what iOS Shortcuts is sending
-        console.log("[Health Steps] Received body:", JSON.stringify(body, null, 2));
 
         // Handle both single entry and batch formats
         let entries: Array<{ date: string; steps: number }> = [];
@@ -96,10 +95,6 @@ export async function POST(request: NextRequest) {
 
         const successCount = results.filter((r) => "success" in r && r.success).length;
         const errorCount = results.filter((r) => "error" in r).length;
-
-        console.log(
-            `[Health Steps] Synced ${successCount} entries, ${errorCount} errors`
-        );
 
         return NextResponse.json({
             ok: true,

@@ -56,7 +56,6 @@ export async function syncWithAI<T extends (config: any, credentialId?: string) 
 
         if (enableAI) {
             try {
-                console.log(`[${platform}] Requesting AI diagnosis...`);
 
                 aiDiagnosis = await diagnoseError(
                     new Error(errorMessage),
@@ -79,11 +78,9 @@ export async function syncWithAI<T extends (config: any, credentialId?: string) 
                     });
 
                     diagnosisLogId = diagnosisLog.id;
-                    console.log(`[${platform}] AI diagnosis logged: ${diagnosisLogId}`);
 
                     // Attempt auto-fix if enabled and possible
                     if (enableAutoFix && aiDiagnosis.canAutoFix) {
-                        console.log(`[${platform}] Attempting auto-fix...`);
 
                         try {
                             // TODO: Implement actual auto-fix logic based on error type
@@ -98,7 +95,6 @@ export async function syncWithAI<T extends (config: any, credentialId?: string) 
                                 },
                             });
 
-                            console.log(`[${platform}] Auto-fix attempt recorded`);
                         } catch (fixError) {
                             console.error(`[${platform}] Auto-fix failed:`, fixError);
 

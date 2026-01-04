@@ -47,19 +47,17 @@ export async function GET() {
                     }
                 );
 
-                console.log("Google UserInfo API response status:", response.status);
-
                 if (response.ok) {
                     const userInfo = await response.json();
-                    console.log("Google UserInfo:", JSON.stringify(userInfo, null, 2));
+
                     if (userInfo.picture) {
                         return NextResponse.json({ avatarUrl: userInfo.picture });
                     }
                 } else {
-                    console.log("Google UserInfo API failed, status:", response.status);
+
                 }
             } catch (err) {
-                console.log("Google UserInfo API error:", err);
+
                 // Access token might be expired, try to decode id_token
             }
         }

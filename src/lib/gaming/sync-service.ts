@@ -521,7 +521,7 @@ export class GamingSyncService {
 
       // Fallback to environment variable if no Steam credentials configured
       if (steamCredentials.length === 0 && process.env.STEAM_USER_ID) {
-        console.log("No Steam credentials in database, using environment variable");
+
         const steamResult = await this.syncSteamData(process.env.STEAM_USER_ID);
         results.push(steamResult);
       }
@@ -541,7 +541,7 @@ export class GamingSyncService {
 
       // Fallback to environment variable if no HoYoverse credentials configured
       if (hoyoCredentials.length === 0 && process.env.HOYO_UID) {
-        console.log("No HoYoverse credentials in database, using environment variable");
+
         const zzzResult = await this.syncZZZData(process.env.HOYO_UID);
         results.push(zzzResult);
       }

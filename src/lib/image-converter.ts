@@ -111,7 +111,7 @@ export async function processImage(
 ): Promise<ConversionResult & { converted: boolean; originalFormat?: string }> {
   // 检查是否为 HEIC
   if (isHEIC(buffer, filename)) {
-    console.log(`检测到 HEIC 格式图片: ${filename}，开始转换...`);
+
     const result = await convertHEICToJPEG(buffer, options);
     return {
       ...result,

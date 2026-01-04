@@ -59,7 +59,6 @@ export function ProfilePage({ user }: ProfilePageProps) {
         throw new Error(data.error || "获取失败");
       }
 
-      console.log("Google avatar API response:", data);
       setAvatarPreview(data.avatarUrl);
       setAvatarFile(null); // Clear any pending upload
       setGoogleAvatarUrl(data.avatarUrl); // Store the fetched Google avatar URL

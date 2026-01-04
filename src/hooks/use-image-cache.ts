@@ -32,7 +32,7 @@ export function useImageCache() {
       if (entry) {
         URL.revokeObjectURL(entry.url);
         cache.delete(oldestKey);
-        console.log(`[ImageCache] Evicted ${oldestKey}`);
+
       }
     }
   }, []);
@@ -41,7 +41,7 @@ export function useImageCache() {
     const entry = cacheRef.current.get(key);
     if (entry) {
       entry.lastAccessed = Date.now();
-      console.log(`[ImageCache] Cache hit for ${key}`);
+
       return entry.url;
     }
     return null;
@@ -56,7 +56,7 @@ export function useImageCache() {
         url,
         lastAccessed: Date.now(),
       });
-      console.log(`[ImageCache] Cached ${key}, size: ${cacheRef.current.size}/${MAX_CACHE_SIZE}`);
+
       return url;
     },
     [evictLRU]
@@ -70,12 +70,12 @@ export function useImageCache() {
     async (key: string, url: string): Promise<void> => {
       // Skip invalid URLs
       if (!url || url.startsWith("blob:") || url.startsWith("data:")) {
-        console.log(`[ImageCache] Skip preload (invalid URL): ${key}`);
+
         return;
       }
 
       if (cacheRef.current.has(key)) {
-        console.log(`[ImageCache] Skip preload (already cached): ${key}`);
+
         return;
       }
 
@@ -83,14 +83,14 @@ export function useImageCache() {
         const response = await fetch(url);
         if (!response.ok) {
           // Silently skip non-existent images
-          console.log(`[ImageCache] Preload skipped (not found): ${key}`);
+
           return;
         }
         const blob = await response.blob();
         set(key, blob);
       } catch {
         // Silently handle fetch errors (e.g., network issues, invalid URLs)
-        console.log(`[ImageCache] Preload skipped (fetch error): ${key}`);
+
       }
     },
     [set]
@@ -101,7 +101,7 @@ export function useImageCache() {
       URL.revokeObjectURL(entry.url);
     }
     cacheRef.current.clear();
-    console.log("[ImageCache] Cleared all cache");
+
   }, []);
 
   return { get, set, has, preload, clear };

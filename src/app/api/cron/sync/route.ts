@@ -150,7 +150,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log("[Cron Sync] Starting automatic sync job...");
 
     // Fetch all valid credentials with auto-sync enabled
     const credentials = await prisma.externalCredential.findMany({
@@ -167,8 +166,6 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-
-    console.log(`[Cron Sync] Found ${credentials.length} credentials with auto-sync enabled`);
 
     // Determine which credentials need syncing
     const syncSchedules: SyncSchedule[] = credentials.map((credential) => {
@@ -194,13 +191,10 @@ export async function GET(request: NextRequest) {
     const credentialsToSync = syncSchedules.filter((s) => s.shouldSync);
     const skippedCredentials = syncSchedules.filter((s) => !s.shouldSync);
 
-    console.log(`[Cron Sync] Syncing ${credentialsToSync.length} credentials`);
-    console.log(`[Cron Sync] Skipping ${skippedCredentials.length} credentials`);
-
     // Log sync decisions
     syncSchedules.forEach((schedule) => {
       const prefix = schedule.shouldSync ? "✅ SYNC" : "⏭️  SKIP";
-      console.log(`${prefix} ${schedule.platform} (${schedule.frequency}): ${schedule.reason}`);
+
     });
 
     // Execute syncs
@@ -221,7 +215,6 @@ export async function GET(request: NextRequest) {
     // Sync each platform group
     for (const [platform, schedules] of Object.entries(platformGroups)) {
       try {
-        console.log(`[Cron Sync] Syncing ${platform} (${schedules.length} credentials)...`);
 
         if (platform === "BILIBILI" || platform === "DOUBAN") {
           // Media platforms: sync all at once
@@ -304,10 +297,6 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime;
     const successCount = syncResults.filter((r) => r.success).length;
     const failCount = syncResults.filter((r) => !r.success).length;
-
-    console.log(
-      `[Cron Sync] Completed in ${duration}ms: ${successCount} success, ${failCount} failed`
-    );
 
     return NextResponse.json({
       success: true,

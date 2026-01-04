@@ -20,9 +20,6 @@ beforeAll(async () => {
     console.error("   3. 示例: TEST_DATABASE_URL=postgresql://user:pass@localhost:5432/tdp_test");
     throw new Error("数据库保护: 禁止在非测试数据库上运行集成测试");
   }
-
-  console.log("🧪 Setting up integration test environment...");
-  console.log(`📊 Database: ${dbUrl.replace(/:[^:]*@/, ":***@")}`); // 隐藏密码
 });
 
 // 每个测试前清理数据库
@@ -32,7 +29,7 @@ beforeEach(async () => {
 
 // 全局测试清理
 afterAll(async () => {
-  console.log("🧹 Cleaning up integration test environment...");
+
   await cleanDatabase();
   await closeDatabase();
 });

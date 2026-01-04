@@ -47,7 +47,7 @@ async function ensureSiteConfigTable(): Promise<void> {
         await prisma.$queryRaw`SELECT 1 FROM "SiteConfig" LIMIT 1`;
     } catch {
         // Table doesn't exist, create it
-        console.log("[Storage Config] Creating SiteConfig table...");
+
         await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "SiteConfig" (
         "key" TEXT PRIMARY KEY,
@@ -57,7 +57,7 @@ async function ensureSiteConfigTable(): Promise<void> {
         "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP
       )
     `;
-        console.log("[Storage Config] SiteConfig table created successfully");
+
     }
 }
 

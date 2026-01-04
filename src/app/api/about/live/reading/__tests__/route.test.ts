@@ -27,7 +27,7 @@ describe("/api/about/live/reading", () => {
 
     // Skip test if no data available or error
     if (response.status === 404 || response.status === 500) {
-      console.log("Skipping: No reading data available in database or error occurred");
+
       return;
     }
 
@@ -53,7 +53,7 @@ describe("/api/about/live/reading", () => {
 
     // Skip test if no data available or error
     if (response.status === 404 || response.status === 500) {
-      console.log("Skipping: No reading data available in database or error occurred");
+
       return;
     }
 
@@ -85,7 +85,7 @@ describe("/api/about/live/reading", () => {
 
     // Skip test if no data available or error
     if (response.status === 404 || response.status === 500) {
-      console.log("Skipping: No reading data available in database or error occurred");
+
       return;
     }
 
@@ -111,7 +111,7 @@ describe("/api/about/live/reading", () => {
 
     // Skip test if no data available or error
     if (response.status === 404 || response.status === 500) {
-      console.log("Skipping: No reading data available in database or error occurred");
+
       return;
     }
 
@@ -143,7 +143,7 @@ describe("/api/about/live/reading", () => {
 
     // Skip test if no data available or error
     if (response.status === 404 || response.status === 500) {
-      console.log("Skipping: No reading data available in database or error occurred");
+
       return;
     }
 

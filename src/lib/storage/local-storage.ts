@@ -26,11 +26,11 @@ export class LocalStorage implements StorageProvider {
 
         // 如果是权限错误，尝试修复
         if (nodeError.code === "EACCES" || nodeError.code === "EPERM") {
-          console.log(`尝试修复目录权限: ${dirPath}`);
+
           try {
             // 尝试更改目录权限为 755
             await chmod(dirPath, 0o755);
-            console.log(`已修复目录权限: ${dirPath}`);
+
           } catch (chmodError) {
             console.error(`无法修复目录权限: ${dirPath}`, chmodError);
             throw new Error(
@@ -64,8 +64,6 @@ export class LocalStorage implements StorageProvider {
 
       // 写入文件
       await writeFile(filePath, buffer, { mode: 0o644 });
-
-      console.log(`文件上传成功: ${filename} (${(buffer.length / 1024).toFixed(2)} KB)`);
 
       return `/api/uploads/gallery/${filename}`;
     } catch (error) {
@@ -104,7 +102,7 @@ export class LocalStorage implements StorageProvider {
         files.map(async (file) => {
           const filePath = path.join(dir, file.filename);
           await writeFile(filePath, file.buffer, { mode: 0o644 });
-          console.log(`批量上传: ${file.filename} (${(file.buffer.length / 1024).toFixed(2)} KB)`);
+
           return `/api/uploads/gallery/${file.filename}`;
         })
       );

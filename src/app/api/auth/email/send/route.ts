@@ -83,9 +83,6 @@ export async function POST(request: NextRequest) {
       locale: locale === "en" ? "en" : "zh",
     });
 
-    console.info(
-      `✉️  Verification code sent to ${normalizedEmail}${clientIp ? ` (ip: ${clientIp})` : ""}`
-    );
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof Error && error.message === "Rate limit exceeded") {

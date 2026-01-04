@@ -52,6 +52,8 @@
     "validate:data": "tsx scripts/migration/validate-migration.ts",
     "setup:local": "bash scripts/setup-local.sh",
     "health-check": "bash scripts/health-check.sh",
+    "cleanup:console": "node scripts/remove-console-logs.js",
+    "cleanup:console:preview": "node scripts/remove-console-logs.js --dry-run",
     "test:cleanup": "pkill -9 -f 'node.*vitest' || true",
     "pretest": "pnpm run test:cleanup",
     "test": "vitest",

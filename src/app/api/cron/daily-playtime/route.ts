@@ -26,8 +26,6 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        console.log("[Cron] Starting daily playtime sync...");
-
         // Get all valid Steam credentials
         const credentials = await prisma.externalCredential.findMany({
             where: {
@@ -35,8 +33,6 @@ export async function GET(request: NextRequest) {
                 isValid: true,
             },
         });
-
-        console.log(`[Cron] Found ${credentials.length} Steam credentials`);
 
         const results = [];
 
@@ -56,7 +52,7 @@ export async function GET(request: NextRequest) {
                     : credential.value;
 
                 // Create snapshots
-                console.log(`[Cron] Processing Steam ID: ${steamId}`);
+
                 const result = await createPlaytimeSnapshots(steamId, apiKey);
 
                 results.push({
@@ -66,9 +62,6 @@ export async function GET(request: NextRequest) {
                     gamesUpdated: result.gamesUpdated,
                 });
 
-                console.log(
-                    `[Cron] Completed for ${steamId}: ${result.gamesUpdated}/${result.totalGames} games`
-                );
             } catch (error) {
                 console.error(
                     `[Cron] Failed to process credential ${credential.id}:`,
@@ -81,8 +74,6 @@ export async function GET(request: NextRequest) {
                 });
             }
         }
-
-        console.log("[Cron] Daily playtime sync completed");
 
         return NextResponse.json({
             success: true,

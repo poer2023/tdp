@@ -68,7 +68,6 @@ export async function POST(request: NextRequest) {
 }
 
 async function fixDuplicates() {
-    console.log("[Maintenance] Starting duplicate gallery fix...");
 
     // Find duplicates
     const duplicates = await prisma.$queryRaw<Array<{ filePath: string; count: bigint }>>`
@@ -94,8 +93,6 @@ async function fixDuplicates() {
       AND a."filePath" = b."filePath"
   `;
 
-    console.log(`[Maintenance] Fixed ${result} duplicate records`);
-
     return NextResponse.json({
         success: true,
         message: `Fixed ${result} duplicate records`,
@@ -105,7 +102,6 @@ async function fixDuplicates() {
 }
 
 async function regenerateThumbnails(limit: number) {
-    console.log(`[Maintenance] Starting thumbnail regeneration (limit: ${limit})...`);
 
     const images = await prisma.galleryImage.findMany({
         where: {

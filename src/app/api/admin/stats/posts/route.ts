@@ -17,7 +17,6 @@ export async function GET() {
   }
 
   try {
-    console.log("[Admin Stats] Fetching top posts data...");
 
     // 获取浏览量 Top 10 文章
     const topPosts = await prisma.post.findMany({
@@ -51,12 +50,6 @@ export async function GET() {
       _avg: {
         viewCount: true,
       },
-    });
-
-    console.log("[Admin Stats] Data fetched successfully:", {
-      topPostsCount: topPosts.length,
-      totalPosts: totalStats._count.id,
-      totalViews: totalStats._sum.viewCount,
     });
 
     return NextResponse.json({

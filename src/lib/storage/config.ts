@@ -28,7 +28,7 @@ async function readConfigFromDB(): Promise<StorageConfigData | null> {
         if (!record) return null;
         return JSON.parse(record.value) as StorageConfigData;
     } catch (error) {
-        console.log("[Storage] Failed to read config from database:", error);
+
         return null;
     }
 }
@@ -42,7 +42,7 @@ export function getStorageConfig(): StorageConfigData {
     const envType = (process.env.STORAGE_TYPE || process.env.STORAGE_DRIVER) as StorageConfigData["storageType"] | undefined;
 
     if (process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY && process.env.S3_BUCKET) {
-        console.log("[Storage] Using config from environment variables");
+
         return {
             storageType: envType || "r2",
             endpoint: process.env.S3_ENDPOINT,
@@ -87,7 +87,7 @@ export async function getStorageConfigAsync(): Promise<StorageConfigData> {
     const dbConfig = await readConfigFromDB();
     if (dbConfig && dbConfig.storageType !== "local") {
         if (dbConfig.endpoint && dbConfig.accessKeyId && dbConfig.secretAccessKey && dbConfig.bucket) {
-            console.log(`[Storage] Using config from database: ${dbConfig.storageType}`);
+
             // Update cache
             cachedConfig = dbConfig;
             cacheTime = Date.now();

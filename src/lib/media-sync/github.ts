@@ -63,7 +63,6 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
   });
 
   try {
-    console.log(`[${platform}] Starting sync...`);
 
     // Initialize GitHub client
     const client = new GitHubClient(config);
@@ -95,8 +94,6 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
       client.getRepositories({ perPage: 100 }),
     ]);
 
-    console.log(`[${platform}] Fetched data from GitHub API`);
-
     // Calculate repo counts
     const reposThisWeek = activeRepos.filter((repo) => {
       const pushedAt = new Date(repo.pushed_at || 0);
@@ -108,7 +105,6 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
       return createdAt >= oneYearAgo;
     }).length;
 
-
     // Calculate language statistics via GitHub repo languages API (byte-based)
     // Only process the 20 most recently updated repos to improve performance
     const aggregateLanguageBytes: Record<string, number> = {};
@@ -117,8 +113,6 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
     const recentRepos = [...allRepos]
       .sort((a, b) => new Date(b.pushed_at || 0).getTime() - new Date(a.pushed_at || 0).getTime())
       .slice(0, 20);
-
-    console.log(`[${platform}] Fetching languages for ${recentRepos.length} most active repos (out of ${allRepos.length})`);
 
     // Process repos in batches of 5 to reduce parallel requests
     const batchSize = 5;
@@ -178,7 +172,7 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
         });
       }
       successCount++;
-      console.log(`[${platform}] Saved GitHubStats snapshot`);
+
     } catch (error) {
       console.error(`[${platform}] Failed to save GitHubStats:`, error);
       failedCount++;
@@ -204,7 +198,7 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
         }
       }
       successCount++;
-      console.log(`[${platform}] Upserted ${contributionGraph.length} contribution records`);
+
     } catch (error) {
       console.error(`[${platform}] Failed to upsert GitHubContribution:`, error);
       failedCount++;
@@ -270,7 +264,7 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
         }
       }
       successCount++;
-      console.log(`[${platform}] Updated ${activeRepos.length} active repositories`);
+
     } catch (error) {
       console.error(`[${platform}] Failed to update GitHubRepo:`, error);
       failedCount++;
@@ -292,9 +286,7 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
         });
       }
       successCount++;
-      console.log(
-        `[${platform}] Saved ${languages.length} language statistics (replaced snapshot)`
-      );
+
     } catch (error) {
       console.error(`[${platform}] Failed to save GitHubLanguage:`, error);
       failedCount++;
@@ -316,14 +308,10 @@ export async function syncGitHub(config: GitHubConfig, credentialId?: string): P
       }
     );
 
-    console.log(
-      `[${platform}] Sync completed: ${successCount} successful, ${failedCount} failed in ${duration}ms`
-    );
-
     // Revalidate Next.js cache to ensure fresh data is served
     try {
       await revalidateTag("github-dev-data", "max");
-      console.log(`[${platform}] Cache revalidated successfully`);
+
     } catch (error) {
       console.error(`[${platform}] Failed to revalidate cache:`, error);
       // Non-critical error, continue anyway
