@@ -27,8 +27,7 @@ async function readConfigFromDB(): Promise<StorageConfigData | null> {
         });
         if (!record) return null;
         return JSON.parse(record.value) as StorageConfigData;
-    } catch (error) {
-
+    } catch {
         return null;
     }
 }

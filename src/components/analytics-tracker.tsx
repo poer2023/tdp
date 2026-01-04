@@ -51,9 +51,8 @@ export function AnalyticsTracker({ locale }: { locale: string }) {
             keepalive: true,
           }).catch(() => { }); // Silent failure
         }
-      } catch (error) {
+      } catch {
         // Silent failure - don't break page functionality
-
       }
     };
 
@@ -63,4 +62,3 @@ export function AnalyticsTracker({ locale }: { locale: string }) {
 
   return null; // No UI, just tracking
 }
-

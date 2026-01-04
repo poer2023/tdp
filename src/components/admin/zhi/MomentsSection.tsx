@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useData } from './store';
 import type { Moment, MomentImage } from './types';
 import {
-    SectionContainer, EditForm, Input, TextArea,
+    SectionContainer, EditForm, TextArea,
     ImageUploadArea, RichMomentItem
 } from './AdminComponents';
 import { useAdminLocale } from './useAdminLocale';

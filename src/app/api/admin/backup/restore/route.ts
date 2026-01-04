@@ -57,8 +57,6 @@ export async function POST(request: Request) {
         const result = await restoreFromBackup(buffer, {
             restoreDatabase,
             restoreMedia,
-        }, (phase, progress, message) => {
-
         });
 
         return NextResponse.json({

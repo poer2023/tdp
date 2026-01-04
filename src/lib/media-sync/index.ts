@@ -752,8 +752,5 @@ export async function syncAllPlatforms(): Promise<SyncResult[]> {
     }
   }
 
-  const totalSuccess = results.filter((r) => r.success).length;
-  const totalFailed = results.filter((r) => !r.success).length;
-
   return results;
 }
