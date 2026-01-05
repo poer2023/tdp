@@ -318,40 +318,6 @@ model RateLimitHit {
   @@index([key, createdAt])
 }
 
-model DailyStats {
-  id             String   @id @default(cuid())
-  date           DateTime @unique
-  totalViews     Int      @default(0)
-  uniqueVisitors Int      @default(0)
-  createdAt      DateTime @default(now())
-
-  @@index([date])
-}
-
-model PageView {
-  id        String     @id @default(cuid())
-  path      String
-  locale    String?
-  referer   String?
-  userAgent String?
-  device    DeviceType @default(UNKNOWN)
-  createdAt DateTime   @default(now())
-
-  @@index([createdAt])
-  @@index([path])
-}
-
-model Visitor {
-  id          String   @id @default(cuid())
-  fingerprint String   @unique
-  firstVisit  DateTime @default(now())
-  lastVisit   DateTime
-  visitCount  Int      @default(1)
-
-  @@index([fingerprint])
-  @@index([lastVisit])
-}
-
 model Subscription {
   id                String                   @id @default(cuid())
   userId            String
@@ -813,14 +779,6 @@ enum CredentialType {
   API_KEY
   OAUTH_TOKEN
   PERSONAL_ACCESS_TOKEN
-}
-
-enum DeviceType {
-  MOBILE
-  DESKTOP
-  TABLET
-  BOT
-  UNKNOWN
 }
 
 // Infrastructure Monitoring Models

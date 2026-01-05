@@ -15,7 +15,7 @@ import type { Tab, BlogPost, Moment, Project, ShareItem, GalleryItem, Friend, Su
 import {
     NavBtn, SectionContainer, ListContainer, ListItem, ActionBtn,
     EditForm, Input, TextArea, DataSection, OverviewSection,
-    TrafficStatsSection, ImageUploadArea, RichPostItem, RichMomentItem
+    ImageUploadArea, RichPostItem, RichMomentItem
 } from './AdminComponents';
 import { AdminImage, AdminAvatar } from '../AdminImage';
 
@@ -31,7 +31,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
     const {
         posts, moments, projects, shareItems, galleryItems, galleryCount,
         movieData, gameData, skillData, photoStats, routineData, stepsData, heroImages,
-        trafficData, sourceData, pageVisitData, deviceData,
         friends, subscriptions, credentials, syncJobs,
         addPost, updatePost, deletePost,
         addMoment, updateMoment, deleteMoment,
@@ -442,15 +441,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                             projects={projects}
                             shareItems={shareItems}
                             onQuickAction={setActiveTab}
-                        />
-                    )}
-
-                    {activeTab === 'stats' && (
-                        <TrafficStatsSection
-                            trafficData={trafficData}
-                            sourceData={sourceData}
-                            pageVisitData={pageVisitData}
-                            deviceData={deviceData}
                         />
                     )}
 

@@ -18,15 +18,15 @@ function validateTestDatabaseUrl(url: string | undefined): void {
   if (!isTestDatabase) {
     throw new Error(
       "🚨 数据库保护: 禁止在非测试数据库上运行集成测试！\n\n" +
-        "当前数据库URL: " +
-        url.replace(/:[^:@]+@/, ":***@") +
-        "\n\n" +
-        "解决方案:\n" +
-        '1. 使用独立的测试数据库，URL必须包含 "test" 关键字\n' +
-        '2. 在 .env.test 文件中配置: TEST_DATABASE_URL="postgresql://...test..."\n' +
-        "3. 或者在数据库名称中添加 test 标识: database_name_test\n\n" +
-        "⚠️  集成测试会清空数据库所有数据！\n" +
-        "⚠️  绝不能在生产或开发数据库上运行！"
+      "当前数据库URL: " +
+      url.replace(/:[^:@]+@/, ":***@") +
+      "\n\n" +
+      "解决方案:\n" +
+      '1. 使用独立的测试数据库，URL必须包含 "test" 关键字\n' +
+      '2. 在 .env.test 文件中配置: TEST_DATABASE_URL="postgresql://...test..."\n' +
+      "3. 或者在数据库名称中添加 test 标识: database_name_test\n\n" +
+      "⚠️  集成测试会清空数据库所有数据！\n" +
+      "⚠️  绝不能在生产或开发数据库上运行！"
     );
   }
 }
@@ -68,9 +68,7 @@ export async function cleanDatabase() {
   await db.galleryImage.deleteMany({});
   await db.moment.deleteMany({});
   await db.rateLimitHit.deleteMany({});
-  await db.dailyStats.deleteMany({});
-  await db.pageView.deleteMany({});
-  await db.visitor.deleteMany({});
+  // Analytics tables removed - using Cloudflare Web Analytics
   await db.session.deleteMany({});
   await db.account.deleteMany({});
   await db.verificationToken.deleteMany({});

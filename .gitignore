@@ -56,6 +56,7 @@ next-env.d.ts
 /public/uploads/*
 !/public/uploads/.gitkeep
 /prisma/prisma/dev.db
+/prisma/tdp.db
 
 # Notion临时文件
 notion_page*.html

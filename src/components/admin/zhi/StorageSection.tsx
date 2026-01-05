@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
     HardDrive, Image, Video, File, Trash2, RefreshCw,
     ExternalLink, Search, Grid, List, Cloud, Check, X,
-    AlertCircle, Loader2, Settings, Info, Eye, EyeOff, Save
+    AlertCircle, Loader2, Settings, Info, Eye, EyeOff, Save,
+    Link2, FileImage, Newspaper, Star, Package, Share2, Users
 } from 'lucide-react';
 import NextImage from 'next/image';
 import { useAdminLocale } from './useAdminLocale';
@@ -47,6 +48,21 @@ interface StorageConfig {
     bucket: string;
     cdnUrl: string;
 }
+
+// Usage tracking types
+interface ImageReference {
+    type: 'GalleryImage' | 'Post' | 'Moment' | 'HeroImage' | 'Project' | 'ShareItem' | 'Friend';
+    id: string;
+    title?: string;
+    url: string;
+}
+
+interface UsageResult {
+    used: boolean;
+    references: ImageReference[];
+}
+
+type UsageMap = Record<string, UsageResult>;
 
 // Toast Component
 interface ToastProps {
@@ -111,6 +127,11 @@ export const StorageSection: React.FC = () => {
     const [showSecretKey, setShowSecretKey] = useState(false);
     const [isTesting, setIsTesting] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Usage tracking state
+    const [usageMap, setUsageMap] = useState<UsageMap>({});
+    const [loadingUsage, setLoadingUsage] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<StorageFile | null>(null);
 
     const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
         setToast({ message, type });
@@ -234,6 +255,13 @@ export const StorageSection: React.FC = () => {
     };
 
     const handleDelete = async (key: string) => {
+        // Check if file is in use
+        const usage = usageMap[key];
+        if (usage?.used) {
+            showToast('此图片正在被使用，无法删除。请先移除所有引用。', 'error');
+            return;
+        }
+
         if (!confirm(t('confirmDeleteFile'))) return;
 
         setDeletingKey(key);
@@ -242,15 +270,83 @@ export const StorageSection: React.FC = () => {
                 method: 'DELETE',
             });
 
-            if (!res.ok) throw new Error('Failed to delete');
+            const data = await res.json();
 
-            showToast('File deleted successfully', 'success');
+            if (!res.ok) {
+                if (data.inUse) {
+                    showToast(`图片被 ${data.referenceCount} 处引用，无法删除`, 'error');
+                } else {
+                    throw new Error(data.error || 'Failed to delete');
+                }
+                return;
+            }
+
+            showToast('文件删除成功', 'success');
+            setSelectedFile(null);
             fetchStorageData();
         } catch (error) {
             console.error('Failed to delete file:', error);
-            showToast('Failed to delete file', 'error');
+            showToast('删除文件失败', 'error');
         } finally {
             setDeletingKey(null);
+        }
+    };
+
+    // Fetch usage info for all files
+    const fetchUsageInfo = useCallback(async (files: StorageFile[]) => {
+        if (files.length === 0) return;
+
+        setLoadingUsage(true);
+        try {
+            const keys = files.map(f => f.key);
+            const res = await fetch('/api/admin/storage/check-usage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ keys }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setUsageMap(data.usage || {});
+            }
+        } catch (error) {
+            console.error('Failed to fetch usage info:', error);
+        } finally {
+            setLoadingUsage(false);
+        }
+    }, []);
+
+    // Fetch usage info when storage data changes
+    useEffect(() => {
+        if (storageData?.files) {
+            fetchUsageInfo(storageData.files);
+        }
+    }, [storageData?.files, fetchUsageInfo]);
+
+    // Get reference type icon
+    const getReferenceIcon = (type: ImageReference['type']) => {
+        switch (type) {
+            case 'GalleryImage': return <FileImage size={14} className="text-purple-500" />;
+            case 'Post': return <Newspaper size={14} className="text-blue-500" />;
+            case 'Moment': return <Star size={14} className="text-amber-500" />;
+            case 'HeroImage': return <Image size={14} className="text-emerald-500" />;
+            case 'Project': return <Package size={14} className="text-indigo-500" />;
+            case 'ShareItem': return <Share2 size={14} className="text-rose-500" />;
+            case 'Friend': return <Users size={14} className="text-cyan-500" />;
+            default: return <Link2 size={14} className="text-stone-400" />;
+        }
+    };
+
+    const getReferenceLabel = (type: ImageReference['type']) => {
+        switch (type) {
+            case 'GalleryImage': return '图库';
+            case 'Post': return '文章';
+            case 'Moment': return '动态';
+            case 'HeroImage': return '首页轮播';
+            case 'Project': return '项目';
+            case 'ShareItem': return '分享';
+            case 'Friend': return '好友';
+            default: return '引用';
         }
     };
 
@@ -595,6 +691,148 @@ export const StorageSection: React.FC = () => {
                 </>
             )}
 
+            {/* File Detail Modal */}
+            {selectedFile && (
+                <>
+                    <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setSelectedFile(null)} />
+                    <div className="fixed inset-4 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg bg-white dark:bg-stone-900 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[90vh]">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-800">
+                            <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100 truncate flex-1 mr-4">
+                                {selectedFile.key.split('/').pop()}
+                            </h3>
+                            <button
+                                onClick={() => setSelectedFile(null)}
+                                className="p-2 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors"
+                            >
+                                <X size={20} className="text-stone-500" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                            {/* Image Preview */}
+                            {selectedFile.type === 'image' && (
+                                <div className="aspect-video relative bg-stone-100 dark:bg-stone-800 rounded-lg overflow-hidden">
+                                    <NextImage
+                                        src={selectedFile.url}
+                                        alt={selectedFile.key}
+                                        fill
+                                        className="object-contain"
+                                    />
+                                </div>
+                            )}
+
+                            {/* File Info */}
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div className="text-stone-500 mb-1">文件大小</div>
+                                    <div className="font-medium text-stone-800 dark:text-stone-200">
+                                        {formatSize(selectedFile.size)}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="text-stone-500 mb-1">修改时间</div>
+                                    <div className="font-medium text-stone-800 dark:text-stone-200">
+                                        {formatDate(selectedFile.lastModified)}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Usage Status */}
+                            <div className="border-t border-stone-200 dark:border-stone-800 pt-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Link2 size={16} className="text-stone-400" />
+                                    <span className="font-medium text-stone-800 dark:text-stone-200">使用状态</span>
+                                    {loadingUsage && (
+                                        <Loader2 size={14} className="animate-spin text-stone-400 ml-auto" />
+                                    )}
+                                </div>
+
+                                {(() => {
+                                    const usage = usageMap[selectedFile.key];
+                                    if (usage?.used) {
+                                        return (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+                                                    <AlertCircle size={14} />
+                                                    <span>此图片正在被 {usage.references.length} 处引用</span>
+                                                </div>
+
+                                                {/* Reference List */}
+                                                <div className="bg-stone-50 dark:bg-stone-800 rounded-lg p-3 space-y-2">
+                                                    {usage.references.map((ref, idx) => (
+                                                        <a
+                                                            key={idx}
+                                                            href={ref.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center gap-2 p-2 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-lg transition-colors group"
+                                                        >
+                                                            {getReferenceIcon(ref.type)}
+                                                            <span className="text-xs font-medium text-stone-500">
+                                                                {getReferenceLabel(ref.type)}
+                                                            </span>
+                                                            <span className="text-sm text-stone-800 dark:text-stone-200 truncate flex-1">
+                                                                {ref.title}
+                                                            </span>
+                                                            <ExternalLink size={12} className="text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+                                            <Check size={14} />
+                                            <span>此图片未被使用，可安全删除</span>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex items-center justify-between p-4 border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50">
+                            <a
+                                href={selectedFile.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-lg transition-colors"
+                            >
+                                <ExternalLink size={16} />
+                                查看原图
+                            </a>
+
+                            {usageMap[selectedFile.key]?.used ? (
+                                <button
+                                    disabled
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-stone-200 dark:bg-stone-700 text-stone-400 cursor-not-allowed"
+                                    title="图片正在被使用，无法删除"
+                                >
+                                    <Trash2 size={16} />
+                                    无法删除
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => handleDelete(selectedFile.key)}
+                                    disabled={deletingKey === selectedFile.key}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-rose-500 hover:bg-rose-600 text-white transition-colors disabled:opacity-50"
+                                >
+                                    {deletingKey === selectedFile.key ? (
+                                        <Loader2 size={16} className="animate-spin" />
+                                    ) : (
+                                        <Trash2 size={16} />
+                                    )}
+                                    删除文件
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
+
             {/* Configuration Status Card */}
             <div className="bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 mb-6">
                 <div className="flex items-center justify-between mb-4">
@@ -790,137 +1028,192 @@ export const StorageSection: React.FC = () => {
                         </div>
                     ) : viewMode === 'grid' ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {filteredFiles.map((file) => (
-                                <div
-                                    key={file.key}
-                                    className="group relative bg-stone-50 dark:bg-stone-800 rounded-lg overflow-hidden border border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 transition-colors"
-                                >
-                                    {/* Preview */}
-                                    <div className="aspect-square relative bg-stone-100 dark:bg-stone-800">
-                                        {file.type === 'image' ? (
-                                            <NextImage
-                                                src={file.thumbnailUrl || file.url}
-                                                alt={file.key}
-                                                fill
-                                                className="object-cover"
-                                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                                            />
-                                        ) : file.type === 'video' ? (
-                                            <video
-                                                src={file.url}
-                                                className="w-full h-full object-cover"
-                                                muted
-                                                onMouseEnter={(e) => e.currentTarget.play()}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.pause();
-                                                    e.currentTarget.currentTime = 0;
-                                                }}
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <File size={32} className="text-stone-400" />
-                                            </div>
-                                        )}
+                            {filteredFiles.map((file) => {
+                                const fileUsage = usageMap[file.key];
+                                const isUsed = fileUsage?.used ?? false;
 
-                                        {/* Actions Overlay */}
-                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                return (
+                                    <div
+                                        key={file.key}
+                                        className="group relative bg-stone-50 dark:bg-stone-800 rounded-lg overflow-hidden border border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 transition-colors cursor-pointer"
+                                        onClick={() => setSelectedFile(file)}
+                                    >
+                                        {/* Usage Badge */}
+                                        <div className="absolute top-2 left-2 z-10">
+                                            {loadingUsage ? (
+                                                <div className="w-5 h-5 rounded-full bg-stone-200 dark:bg-stone-600 animate-pulse" />
+                                            ) : isUsed ? (
+                                                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 text-[10px] font-medium">
+                                                    <Link2 size={10} />
+                                                    {fileUsage?.references.length || 0}
+                                                </div>
+                                            ) : (
+                                                <div className="w-2 h-2 rounded-full bg-emerald-500" title="未使用，可删除" />
+                                            )}
+                                        </div>
+
+                                        {/* Preview */}
+                                        <div className="aspect-square relative bg-stone-100 dark:bg-stone-800">
+                                            {file.type === 'image' ? (
+                                                <NextImage
+                                                    src={file.thumbnailUrl || file.url}
+                                                    alt={file.key}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                                                />
+                                            ) : file.type === 'video' ? (
+                                                <video
+                                                    src={file.url}
+                                                    className="w-full h-full object-cover"
+                                                    muted
+                                                    onMouseEnter={(e) => e.currentTarget.play()}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.pause();
+                                                        e.currentTarget.currentTime = 0;
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <File size={32} className="text-stone-400" />
+                                                </div>
+                                            )}
+
+                                            {/* Actions Overlay */}
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                <a
+                                                    href={file.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <ExternalLink size={16} />
+                                                </a>
+                                                {!isUsed && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDelete(file.key);
+                                                        }}
+                                                        disabled={deletingKey === file.key}
+                                                        className="p-2 bg-rose-500/80 hover:bg-rose-500 rounded-lg text-white transition-colors disabled:opacity-50"
+                                                    >
+                                                        {deletingKey === file.key ? (
+                                                            <Loader2 size={16} className="animate-spin" />
+                                                        ) : (
+                                                            <Trash2 size={16} />
+                                                        )}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* File Info */}
+                                        <div className="p-2">
+                                            <div className="flex items-center gap-1.5">
+                                                {getFileIcon(file.type)}
+                                                <span className="text-xs text-stone-600 dark:text-stone-400 truncate flex-1">
+                                                    {file.key.split('/').pop()}
+                                                </span>
+                                            </div>
+                                            <div className="text-[10px] text-stone-400 mt-1">
+                                                {formatSize(file.size)} • {formatDate(file.lastModified)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            {filteredFiles.map((file) => {
+                                const fileUsage = usageMap[file.key];
+                                const isUsed = fileUsage?.used ?? false;
+
+                                return (
+                                    <div
+                                        key={file.key}
+                                        className="flex items-center gap-4 p-3 bg-stone-50 dark:bg-stone-800 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700/50 transition-colors cursor-pointer"
+                                        onClick={() => setSelectedFile(file)}
+                                    >
+                                        {/* Thumbnail */}
+                                        <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-700 relative">
+                                            {file.type === 'image' ? (
+                                                <NextImage
+                                                    src={file.url}
+                                                    alt={file.key}
+                                                    width={48}
+                                                    height={48}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    {getFileIcon(file.type)}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Usage Badge */}
+                                        <div className="flex-shrink-0">
+                                            {loadingUsage ? (
+                                                <div className="w-5 h-5 rounded-full bg-stone-200 dark:bg-stone-600 animate-pulse" />
+                                            ) : isUsed ? (
+                                                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 text-xs font-medium">
+                                                    <Link2 size={12} />
+                                                    <span>{fileUsage?.references.length || 0} 处引用</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-xs font-medium">
+                                                    <Check size={12} />
+                                                    <span>可删除</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-medium text-stone-800 dark:text-stone-200 truncate">
+                                                {file.key}
+                                            </div>
+                                            <div className="text-xs text-stone-400 flex items-center gap-2">
+                                                <span>{formatSize(file.size)}</span>
+                                                <span>•</span>
+                                                <span>{formatDate(file.lastModified)}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex items-center gap-2">
                                             <a
                                                 href={file.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="p-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors"
+                                                className="p-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-600 rounded-lg transition-colors"
+                                                onClick={(e) => e.stopPropagation()}
                                             >
                                                 <ExternalLink size={16} />
                                             </a>
-                                            <button
-                                                onClick={() => handleDelete(file.key)}
-                                                disabled={deletingKey === file.key}
-                                                className="p-2 bg-rose-500/80 hover:bg-rose-500 rounded-lg text-white transition-colors disabled:opacity-50"
-                                            >
-                                                {deletingKey === file.key ? (
-                                                    <Loader2 size={16} className="animate-spin" />
-                                                ) : (
-                                                    <Trash2 size={16} />
-                                                )}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* File Info */}
-                                    <div className="p-2">
-                                        <div className="flex items-center gap-1.5">
-                                            {getFileIcon(file.type)}
-                                            <span className="text-xs text-stone-600 dark:text-stone-400 truncate flex-1">
-                                                {file.key.split('/').pop()}
-                                            </span>
-                                        </div>
-                                        <div className="text-[10px] text-stone-400 mt-1">
-                                            {formatSize(file.size)} • {formatDate(file.lastModified)}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            {filteredFiles.map((file) => (
-                                <div
-                                    key={file.key}
-                                    className="flex items-center gap-4 p-3 bg-stone-50 dark:bg-stone-800 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700/50 transition-colors"
-                                >
-                                    {/* Thumbnail */}
-                                    <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-700">
-                                        {file.type === 'image' ? (
-                                            <NextImage
-                                                src={file.url}
-                                                alt={file.key}
-                                                width={48}
-                                                height={48}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                {getFileIcon(file.type)}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Info */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="text-sm font-medium text-stone-800 dark:text-stone-200 truncate">
-                                            {file.key}
-                                        </div>
-                                        <div className="text-xs text-stone-400 flex items-center gap-2">
-                                            <span>{formatSize(file.size)}</span>
-                                            <span>•</span>
-                                            <span>{formatDate(file.lastModified)}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Actions */}
-                                    <div className="flex items-center gap-2">
-                                        <a
-                                            href={file.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="p-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-600 rounded-lg transition-colors"
-                                        >
-                                            <ExternalLink size={16} />
-                                        </a>
-                                        <button
-                                            onClick={() => handleDelete(file.key)}
-                                            disabled={deletingKey === file.key}
-                                            className="p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors disabled:opacity-50"
-                                        >
-                                            {deletingKey === file.key ? (
-                                                <Loader2 size={16} className="animate-spin" />
-                                            ) : (
-                                                <Trash2 size={16} />
+                                            {!isUsed && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDelete(file.key);
+                                                    }}
+                                                    disabled={deletingKey === file.key}
+                                                    className="p-2 text-stone-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors disabled:opacity-50"
+                                                >
+                                                    {deletingKey === file.key ? (
+                                                        <Loader2 size={16} className="animate-spin" />
+                                                    ) : (
+                                                        <Trash2 size={16} />
+                                                    )}
+                                                </button>
                                             )}
-                                        </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
