@@ -121,7 +121,7 @@ export async function GET(request: Request) {
 
     const zone = data.data?.viewer?.zones?.[0];
     if (!zone) {
-      console.log("No zone data found, returning empty arrays");
+      console.warn("No zone data found, returning empty arrays");
       return NextResponse.json({
         trafficData: [],
         sourceData: [],

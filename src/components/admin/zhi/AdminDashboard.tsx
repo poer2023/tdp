@@ -8,7 +8,7 @@ import {
     LayoutTemplate, Home, FileText, Image as ImageIcon,
     Briefcase, Link2, Camera, Layers, Users, CreditCard,
     Key, LogOut, Menu, X, Play, Edit2, Trash2,
-    Database, TrendingUp, RefreshCw, Terminal, Sun, Moon
+    Database, RefreshCw, Terminal, Sun, Moon
 } from 'lucide-react';
 import { useData, useSettings } from './store';
 import type { Tab, BlogPost, Moment, Project, ShareItem, GalleryItem, Friend, Subscription, Credential } from './types';
