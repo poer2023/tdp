@@ -35,6 +35,7 @@ type NavItem = {
 
 const contentNavItems: NavItem[] = [
     { id: 'overview', href: '/admin', icon: <LayoutTemplate size={18} />, labelKey: 'overview' },
+    { id: 'analytics', href: '/admin/analytics', icon: <TrendingUp size={18} />, labelKey: 'analytics' },
     { id: 'posts', href: '/admin/articles', icon: <FileText size={18} />, labelKey: 'posts' },
     { id: 'moments', href: '/admin/moments', icon: <ImageIcon size={18} />, labelKey: 'moments' },
     { id: 'projects', href: '/admin/projects', icon: <Briefcase size={18} />, labelKey: 'projects' },
