@@ -29,7 +29,7 @@ RUN pnpm exec tsc --esModuleInterop --module commonjs --moduleResolution node --
 
 # === Production Dependencies Stage: Prune and generate Prisma client ===
 FROM deps AS prod-deps
-RUN pnpm prune --prod
+RUN CI=true pnpm prune --prod
 COPY prisma ./prisma
 RUN pnpm exec prisma generate
 
