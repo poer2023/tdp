@@ -132,6 +132,7 @@ jobs:
             .next
             !.next/cache
           retention-days: 7
+          include-hidden-files: true
 
   db_tests:
     name: Unit & Integration Tests
