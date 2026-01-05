@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const isCI = Boolean(process.env.CI);
+
 /**
  * Critical E2E tests configuration for CI/CD pipeline
  * Only runs stable, non-auth tests that must pass before deployment
@@ -80,9 +82,9 @@ export default defineConfig({
 
   // Dev server for testing (both local and CI)
   webServer: {
-    command: "npm run dev",
+    command: isCI ? "pnpm run start" : "pnpm run dev",
     url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !isCI,
     timeout: 120000,
   },
 });
