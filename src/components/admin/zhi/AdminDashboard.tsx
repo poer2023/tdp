@@ -355,7 +355,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
                     <div className="text-xs font-bold text-stone-500 uppercase tracking-wider px-4 mb-2 mt-4">Content</div>
                     <NavBtn active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={<LayoutTemplate size={18} />} label="Overview" />
-                    <NavBtn active={activeTab === 'stats'} onClick={() => router.push('/admin/analytics')} icon={<TrendingUp size={18} />} label="Analytics" />
                     <NavBtn active={activeTab === 'posts'} onClick={() => router.push('/admin/articles')} icon={<FileText size={18} />} label="Articles" />
                     <NavBtn active={activeTab === 'moments'} onClick={() => router.push('/admin/moments')} icon={<ImageIcon size={18} />} label="Moments" />
                     <NavBtn active={activeTab === 'projects'} onClick={() => router.push('/admin/projects')} icon={<Briefcase size={18} />} label="Projects" />

@@ -23,7 +23,6 @@ export function AdminOverviewContent() {
           gallery: "/admin/gallery",
           projects: "/admin/projects",
           curated: "/admin/curated",
-          stats: "/admin/analytics",
         };
         const target = map[tab as string];
         if (target) router.push(target);
