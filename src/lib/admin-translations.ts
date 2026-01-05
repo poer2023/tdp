@@ -500,7 +500,10 @@ export const adminTranslations = {
     // Analytics
     analyticsTitle: "Traffic Analytics",
     insightsDescription: "Insights into your audience growth and behavior.",
+    totalVisits: "Total Visits",
     totalVisits30d: "Total Visits (30d)",
+    avgVisitsPerDay: "Avg. Visits/Day",
+    uniqueRatio: "Unique Ratio",
     avgDuration: "Avg. Duration",
     bounceRate: "Bounce Rate",
     trafficOverview: "Traffic Overview",
@@ -1050,7 +1053,10 @@ export const adminTranslations = {
     // Analytics
     analyticsTitle: "流量分析",
     insightsDescription: "了解您的受众增长和行为。",
+    totalVisits: "总访问量",
     totalVisits30d: "总访问量（30天）",
+    avgVisitsPerDay: "日均访问",
+    uniqueRatio: "独立访客占比",
     avgDuration: "平均时长",
     bounceRate: "跳出率",
     trafficOverview: "流量概览",

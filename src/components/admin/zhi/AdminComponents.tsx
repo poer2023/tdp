@@ -610,11 +610,27 @@ export const TrafficStatsSection: React.FC<{
         { key: 'all' as const, label: t('allTime') },
     ];
 
+    // Dynamic period label for stats cards
+    const periodLabel = selectedPeriod === '7d' ? t('last7Days')
+        : selectedPeriod === '30d' ? t('last30Days')
+            : selectedPeriod === '90d' ? t('last90Days')
+                : t('allTime');
+
+    // Calculate average visits per day
+    const avgVisitsPerDay = filteredTrafficData.length > 0
+        ? Math.round(totalVisits / filteredTrafficData.length)
+        : 0;
+
+    // Calculate unique visitor ratio (unique/total as percentage)
+    const uniqueRatio = totalVisits > 0
+        ? ((totalUnique / totalVisits) * 100).toFixed(1) + '%'
+        : '0%';
+
     const kpiCards = [
-        { label: t('totalVisits30d'), value: totalVisits.toLocaleString(), change: '+12.5%', icon: Users, color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
-        { label: t('uniqueVisitors'), value: totalUnique.toLocaleString(), change: '+8.2%', icon: MousePointer, color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
-        { label: t('avgDuration'), value: '2m 45s', change: '-1.2%', icon: Clock, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
-        { label: t('bounceRate'), value: '42.3%', change: '-0.5%', icon: Activity, color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
+        { label: `${t('totalVisits')} (${periodLabel})`, value: totalVisits.toLocaleString(), change: '', icon: Users, color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
+        { label: `${t('uniqueVisitors')} (${periodLabel})`, value: totalUnique.toLocaleString(), change: '', icon: MousePointer, color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
+        { label: t('avgVisitsPerDay'), value: avgVisitsPerDay.toLocaleString(), change: '', icon: Clock, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
+        { label: t('uniqueRatio'), value: uniqueRatio, change: '', icon: Activity, color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
     ];
 
     return (
