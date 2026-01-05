@@ -12,27 +12,25 @@ USER node
 
 # === Dependencies Stage: Install all dependencies ===
 FROM base AS deps
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN --mount=type=cache,target=/pnpm-store,uid=65532,gid=65532 \
+    pnpm install --frozen-lockfile --store-dir=/pnpm-store
 
 # === Builder Stage: Build application ===
 FROM deps AS builder
 WORKDIR /app
 
-# Copy source code with root privileges then hand ownership back to node user
-USER root
-COPY . .
-RUN chown -R node:node /app
-USER node
-RUN pnpm run build
+COPY --chown=node:node . .
+RUN --mount=type=cache,target=/app/.next/cache,uid=65532,gid=65532 \
+    pnpm run build
 
 # Pre-compile TypeScript scripts to JavaScript for runtime use (avoids tsx/esbuild at runtime)
 RUN pnpm exec tsc --esModuleInterop --module commonjs --moduleResolution node --target es2022 --outDir /app/scripts-dist /app/scripts/production-data-migration.ts || echo "Script pre-compilation skipped"
 
 # === Production Dependencies Stage: Prune and generate Prisma client ===
 FROM deps AS prod-deps
-COPY prisma ./prisma
 RUN pnpm prune --prod
+COPY prisma ./prisma
 RUN pnpm exec prisma generate
 
 # === Migration Stage: Database migrations ===
@@ -58,14 +56,6 @@ COPY --from=builder --chown=node:node /app/public ./public
 
 # Copy production dependencies for the Next.js standalone server and Prisma CLI
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
-
-# Bring over dev-only tooling that is still required at runtime (tsx for scripts)
-# Copy the entire .pnpm store entries that tsx and esbuild need
-# pnpm uses symlinks, so we need to copy both the actual module and its dependencies
-# NOTE: esbuild is included in .pnpm directory via symlinks
-COPY --from=builder --chown=node:node /app/node_modules/.pnpm ./node_modules/.pnpm
-COPY --from=builder --chown=node:node /app/node_modules/tsx ./node_modules/tsx
-COPY --from=builder --chown=node:node /app/node_modules/.bin ./node_modules/.bin
 
 # Copy prisma schema and migrations from builder (not from build context)
 # This ensures .dockerignore doesn't exclude any prisma files
