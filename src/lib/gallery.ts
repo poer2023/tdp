@@ -676,7 +676,12 @@ function toGalleryImage(image: {
 
         // 选择策略：S3/CDN 直接推导；本地存储在生产环境也直接推导
         const ensure = (suffix: "_micro" | "_small" | "_medium") => {
-          if (mapped.storageType && mapped.storageType !== "local") {
+          // Check if file path is explicitly a remote URL (starts with http)
+          // or storageType is not local
+          const isRemote = (mapped.storageType && mapped.storageType !== "local") ||
+            mapped.filePath.startsWith("http");
+
+          if (isRemote) {
             return ensureFromOrigin(suffix);
           }
           const name = filename.replace(/\.[^.]+$/, "") + suffix + ".webp";

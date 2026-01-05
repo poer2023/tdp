@@ -6,6 +6,7 @@
  * 
  * 1. GalleryImage table: filePath, microThumbPath, smallThumbPath, mediumPath
  * 2. Moment table: images JSON array (url, previewUrl, thumbnails, etc.)
+ * 3. Storage Type: Updates storageType to "r2" if filePath is remote but storageType is "local"
  * 
  * Usage:
  *   Dry run (preview only):  npx tsx scripts/fix-all-local-paths.ts --dry-run
@@ -153,12 +154,50 @@ async function fixMoments(cdnUrl: string, dryRun: boolean): Promise<Fix[]> {
     return fixes;
 }
 
+// Ensure storageType is 'r2' if filePath is a remote URL
+async function fixStorageType(dryRun: boolean): Promise<Fix[]> {
+    const images = await prisma.galleryImage.findMany({
+        where: {
+            storageType: "local",
+            filePath: { startsWith: "http" }
+        },
+        select: { id: true, filePath: true, storageType: true }
+    });
+
+    const fixes: Fix[] = [];
+    if (images.length === 0) return fixes;
+
+    for (const image of images) {
+        fixes.push({
+            table: "GalleryImage",
+            recordId: image.id,
+            field: "storageType",
+            oldValue: image.storageType,
+            newValue: "r2"
+        });
+    }
+
+    if (!dryRun) {
+        await prisma.galleryImage.updateMany({
+            where: {
+                storageType: "local",
+                filePath: { startsWith: "http" }
+            },
+            data: {
+                storageType: "r2"
+            }
+        });
+    }
+
+    return fixes;
+}
+
 async function main() {
     const args = process.argv.slice(2);
     const dryRun = args.includes("--dry-run") || args.includes("-n");
 
     console.log("═══════════════════════════════════════════════════════════════");
-    console.log("        FIX ALL LOCAL PATHS TO R2 CDN URLs");
+    console.log("        FIX ALL LOCAL PATHS & STORAGE TYPES");
     console.log("═══════════════════════════════════════════════════════════════");
     console.log(dryRun ? "\n🔍 MODE: DRY RUN - No changes will be made\n" : "\n⚡ MODE: EXECUTE - Changes will be applied\n");
 
@@ -172,19 +211,25 @@ async function main() {
     const cdnUrl = config.cdnUrl;
     console.log(`📡 R2 CDN URL: ${cdnUrl}\n`);
 
-    // Fix GalleryImage table
+    // Fix GalleryImage paths
     console.log("───────────────────────────────────────────────────────────────");
-    console.log("📷 Scanning GalleryImage table...");
+    console.log("📷 Scanning GalleryImage paths...");
     console.log("───────────────────────────────────────────────────────────────");
-    const galleryFixes = await fixGalleryImages(cdnUrl, dryRun);
+    const galleryPathFixes = await fixGalleryImages(cdnUrl, dryRun);
 
-    // Fix Moment table
+    // Fix Moment paths
     console.log("\n───────────────────────────────────────────────────────────────");
-    console.log("📝 Scanning Moment table...");
+    console.log("📝 Scanning Moment paths...");
     console.log("───────────────────────────────────────────────────────────────");
-    const momentFixes = await fixMoments(cdnUrl, dryRun);
+    const momentPathFixes = await fixMoments(cdnUrl, dryRun);
 
-    const allFixes = [...galleryFixes, ...momentFixes];
+    // Fix Storage Types
+    console.log("\n───────────────────────────────────────────────────────────────");
+    console.log("💾 Scanning storage types...");
+    console.log("───────────────────────────────────────────────────────────────");
+    const storageTypeFixes = await fixStorageType(dryRun);
+
+    const allFixes = [...galleryPathFixes, ...momentPathFixes, ...storageTypeFixes];
 
     // Print detailed report
     console.log("\n───────────────────────────────────────────────────────────────");
@@ -192,7 +237,7 @@ async function main() {
     console.log("───────────────────────────────────────────────────────────────\n");
 
     if (allFixes.length === 0) {
-        console.log("✅ No local paths found! All paths are already correct.\n");
+        console.log("✅ No issues found! All paths and types are correct.\n");
     } else {
         // Group by table
         const fixesByTable = allFixes.reduce((acc, fix) => {
@@ -207,8 +252,9 @@ async function main() {
 
             // Group by record
             const byRecord = fixes.reduce((acc, fix) => {
-                if (!acc[fix.recordId]) acc[fix.recordId] = [];
-                acc[fix.recordId].push(fix);
+                key = fix.recordId;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(fix);
                 return acc;
             }, {} as Record<string, Fix[]>);
 
@@ -227,10 +273,11 @@ async function main() {
     console.log("\n═══════════════════════════════════════════════════════════════");
     console.log("📈 SUMMARY");
     console.log("═══════════════════════════════════════════════════════════════");
-    console.log(`   GalleryImage fixes:  ${galleryFixes.length}`);
-    console.log(`   Moment fixes:        ${momentFixes.length}`);
+    console.log(`   GalleryImage path fixes: ${galleryPathFixes.length}`);
+    console.log(`   Moment path fixes:       ${momentPathFixes.length}`);
+    console.log(`   Storage type fixes:      ${storageTypeFixes.length}`);
     console.log(`   ─────────────────────────────`);
-    console.log(`   Total fixes:         ${allFixes.length}`);
+    console.log(`   Total fixes:             ${allFixes.length}`);
 
     if (dryRun && allFixes.length > 0) {
         console.log("\n⚠️  DRY RUN - No changes were made.");
@@ -243,6 +290,8 @@ async function main() {
 
     await prisma.$disconnect();
 }
+
+let key: string; // Helper for typescript limitation in reduce key inference above
 
 main().catch((error) => {
     console.error("❌ Fatal error:", error);
