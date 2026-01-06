@@ -148,9 +148,12 @@ export function ZhiFeed({ initialItems, onPostClick, onMomentLike }: ZhiFeedProp
   }, [filteredItems, visibleCount]);
 
   // Get column count based on screen size (matches Tailwind md: breakpoint)
-  const [columnCount, setColumnCount] = React.useState(1);
+  // Use isClient to prevent hydration mismatch - SSR and first CSR render must match
+  const [isClient, setIsClient] = React.useState(false);
+  const [columnCount, setColumnCount] = React.useState(2); // Default to desktop (SSR value)
 
   React.useEffect(() => {
+    setIsClient(true);
     const updateColumnCount = () => {
       if (window.innerWidth >= 768) {
         setColumnCount(2); // md:columns-2
