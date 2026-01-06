@@ -31,6 +31,7 @@ export interface FeedPost {
 // Image type with dimension info for proper display
 export interface FeedImage {
   url: string;
+  mediumUrl?: string; // Higher quality for detail views (1200px)
   w?: number | null;
   h?: number | null;
 }

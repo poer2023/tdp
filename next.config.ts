@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
     globalNotFound: true,
   },
   images: {
+    qualities: [75, 80],
     unoptimized: false,
     loader: "custom",
     loaderFile: "./image-loader.ts",
