@@ -17,10 +17,13 @@ const DEFAULT_HERO_IMAGES: HeroImageItem[] = [
 
 // Hero image item with source info for navigation
 export interface HeroImageItem {
-  src: string;
+  src: string; // Image URL (or video poster for videos)
   href: string;
   type: "gallery" | "moment" | "post";
+  mediaType?: "image" | "video"; // Default: "image"
+  videoSrc?: string; // Video URL (when mediaType is "video")
 }
+
 
 interface ZhiHeroProps {
   heroImages?: HeroImageItem[];
@@ -186,15 +189,22 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
 
   const initialSquares = useMemo(() => {
     const needed = Math.min(maxImages, imageCount);
-    const result: { id: number; src: string; href: string }[] = [];
+    const result: { id: number; src: string; href: string; mediaType?: "image" | "video"; videoSrc?: string }[] = [];
     for (let i = 0; i < needed; i++) {
       const item = heroImages[i % heroImages.length];
       if (item) {
-        result.push({ id: i, src: item.src, href: item.href });
+        result.push({
+          id: i,
+          src: item.src,
+          href: item.href,
+          mediaType: item.mediaType || "image",
+          videoSrc: item.videoSrc,
+        });
       }
     }
     return result;
   }, [heroImages, imageCount, maxImages]);
+
 
   const [squares, setSquares] = useState(initialSquares);
 
@@ -252,19 +262,32 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
           className="relative cursor-pointer overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
           style={{ aspectRatio: "1 / 1" }}
         >
-          <Image
-            src={sq.src}
-            alt=""
-            fill
-            sizes={imageSizes}
-            className="object-cover transition-transform duration-300 hover:scale-105"
-            quality={imageQuality}
-            priority={sq.id < 4}
-            loading={sq.id < 4 ? "eager" : "lazy"}
-          />
+          {sq.mediaType === "video" && sq.videoSrc ? (
+            <video
+              src={sq.videoSrc}
+              poster={sq.src}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            />
+          ) : (
+            <Image
+              src={sq.src}
+              alt=""
+              fill
+              sizes={imageSizes}
+              className="object-cover transition-transform duration-300 hover:scale-105"
+              quality={imageQuality}
+              priority={sq.id < 4}
+              loading={sq.id < 4 ? "eager" : "lazy"}
+            />
+          )}
           <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
         </motion.a>
       ))}
+
     </div>
   );
 }

@@ -61,10 +61,21 @@ export interface MomentImage {
   mediumUrl?: string;
 }
 
+export interface MomentVideo {
+  url: string; // Original video URL
+  previewUrl: string; // Compressed preview URL (~50-200KB)
+  thumbnailUrl: string; // Poster image URL
+  duration: number;
+  w?: number;
+  h?: number;
+}
+
+
 export interface Moment {
   id: string;
   content: string;
   images?: (string | MomentImage)[];
+  videos?: MomentVideo[];
   date: string;
   happenedAt?: string;
   tags: string[];
@@ -229,6 +240,9 @@ export interface HeroImage {
   url: string;
   sortOrder: number;
   active: boolean;
+  mediaType?: 'image' | 'video';
+  videoUrl?: string;
+  posterUrl?: string;
 }
 
 // Hero Image Source Types (for image selection)

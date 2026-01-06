@@ -17,7 +17,25 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/heif", // Live Photo
   "video/quicktime", // Live Photo MOV
   "video/mp4", // Live Photo alternative
+  "video/webm", // Optimized web video
 ]);
+
+// Video MIME types for detection
+const VIDEO_MIME_TYPES = new Set([
+  "video/quicktime",
+  "video/mp4",
+  "video/webm",
+  "video/x-msvideo",
+  "video/x-matroska",
+]);
+
+/**
+ * Check if a file is a video based on MIME type
+ */
+export function isVideoFile(mimeType: string): boolean {
+  return VIDEO_MIME_TYPES.has(mimeType) || mimeType.startsWith("video/");
+}
+
 
 export type UploadCategory = "covers" | "gallery" | "avatars";
 

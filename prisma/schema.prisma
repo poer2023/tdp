@@ -186,6 +186,9 @@ model ShareItem {
 model HeroImage {
   id        String   @id @default(cuid())
   url       String
+  mediaType String   @default("image") // "image" | "video"
+  videoUrl  String?                     // Compressed video URL (WebM/AV1)
+  posterUrl String?                     // Video poster/thumbnail URL
   sortOrder Int      @default(0)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -224,6 +227,7 @@ model Moment {
   authorId         String
   content          String
   images           Json?
+  videos           Json?                // Video array: [{url, thumbnailUrl, duration, width, height}]
   visibility       MomentVisibility     @default(PUBLIC)
   slug             String?              @unique
   tags             String[]

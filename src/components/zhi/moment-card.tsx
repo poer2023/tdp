@@ -14,10 +14,22 @@ interface MomentImageData {
   h?: number | null;
 }
 
+// Video type matching FeedVideo
+interface MomentVideoData {
+  url: string; // Original video URL
+  previewUrl: string; // Compressed preview (~50-200KB)
+  thumbnailUrl: string; // Poster image
+  duration: number;
+  w?: number | null;
+  h?: number | null;
+}
+
+
 interface Moment {
   id: string;
   content: string;
   images?: MomentImageData[];
+  videos?: MomentVideoData[];
   date: string;
   tags: string[];
   likes: number;
@@ -30,6 +42,8 @@ interface MomentCardProps {
   onClick?: () => void;
   onLike?: (id: string) => void;
 }
+
+
 
 // Threads-style horizontal image gallery for mobile
 // Fixed height (320px), width calculated from aspect ratio for single image
