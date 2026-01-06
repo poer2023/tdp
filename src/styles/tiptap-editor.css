@@ -2,7 +2,7 @@
 
 /* Editor container */
 .ProseMirror {
-    min-height: 300px;
+    min-height: 500px;
     padding: 1rem;
     outline: none;
 }

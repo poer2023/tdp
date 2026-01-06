@@ -81,22 +81,8 @@ export const ArticlesSection: React.FC = () => {
     }, []);
 
     const handleSavePost = async () => {
-        if (!editingPost?.title) {
+        if (!editingPost?.title?.trim()) {
             showToast(t('titleRequired'), 'error');
-            return;
-        }
-
-        // Client-side validation
-        if ((editingPost.title?.length || 0) < 3) {
-            showToast(t('titleMinLength'), 'error');
-            return;
-        }
-        if ((editingPost.excerpt?.length || 0) < 10) {
-            showToast(t('excerptMinLength'), 'error');
-            return;
-        }
-        if ((editingPost.content?.length || 0) < 30) {
-            showToast(t('contentMinLength'), 'error');
             return;
         }
 
