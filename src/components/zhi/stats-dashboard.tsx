@@ -455,9 +455,9 @@ export function ZhiStatsDashboard({
         }
       `}</style>
 
-      <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 px-4 pt-6 sm:gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-3 px-4 pt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-6">
         {/* Card 1: Interactive Shutter Count - Always spans full width */}
-        <div className="relative col-span-2 select-none overflow-hidden rounded-2xl border border-stone-800 bg-[#171717] p-4 text-white shadow-2xl sm:p-6 lg:col-span-2">
+        <div className="relative col-span-1 sm:col-span-2 select-none overflow-hidden rounded-2xl border border-stone-800 bg-[#171717] p-4 text-white shadow-2xl sm:p-6 lg:col-span-2">
           {/* Flash Overlay */}
           {isFlashing && (
             <div className="flash-overlay absolute inset-0 z-50 bg-white"></div>
@@ -540,7 +540,7 @@ export function ZhiStatsDashboard({
 
             {/* Right: Chart */}
             <div className="relative flex-1">
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <BarChart
                   key={animationTrigger}
                   data={stats.photosByWeek}
@@ -593,7 +593,7 @@ export function ZhiStatsDashboard({
             </div>
           </div>
           <div className="relative h-40 min-h-40 w-full">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <PieChart>
                 <Pie
                   data={stats.routineData}
@@ -634,7 +634,7 @@ export function ZhiStatsDashboard({
         </div>
 
         {/* Card 3: Media Diet - Spans full width for complex charts */}
-        <div className="col-span-2 flex flex-col overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm md:flex-row lg:col-span-2 dark:border-stone-800 dark:bg-stone-900">
+        <div className="col-span-1 sm:col-span-2 flex flex-col overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-sm md:flex-row lg:col-span-2 dark:border-stone-800 dark:bg-stone-900">
           {/* Movies Section */}
           <div className="group flex-1 border-b border-stone-100 p-6 transition-colors hover:bg-stone-50 md:border-b-0 md:border-r dark:border-stone-800 dark:hover:bg-stone-800/30">
             <div className="mb-4 flex items-center justify-between">
@@ -651,7 +651,7 @@ export function ZhiStatsDashboard({
               </span>
             </div>
             <div className="h-24 min-h-24">
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <BarChart data={stats.movieData}>
                   <Bar dataKey="movies" fill="#fb7185" radius={[2, 2, 0, 0]} />
                   <XAxis
@@ -751,7 +751,7 @@ export function ZhiStatsDashboard({
             </div>
           </div>
           <div className="h-24 min-h-24 w-full">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <BarChart data={stats.stepsData.entries}>
                 <Tooltip
                   cursor={{ fill: "transparent" }}
@@ -788,7 +788,7 @@ export function ZhiStatsDashboard({
         </div>
 
         {/* Card 5: Languages (Donut) - Paired with Daily Steps on mobile */}
-        <div className="group relative col-span-1 overflow-hidden rounded-2xl border border-stone-100 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md sm:p-6 dark:border-stone-800 dark:bg-stone-900">
+        <div className="group col-span-1 rounded-2xl border border-stone-100 bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md sm:p-6 dark:border-stone-800 dark:bg-stone-900">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-xl bg-orange-50 p-2 text-orange-500 transition-colors group-hover:bg-orange-100 dark:bg-orange-900/10 dark:text-orange-400 dark:group-hover:bg-orange-900/20">
               <Code size={20} strokeWidth={1.5} />
@@ -802,16 +802,25 @@ export function ZhiStatsDashboard({
               </p>
             </div>
           </div>
-
-          <div className="relative h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+          <div className="relative h-40 min-h-40 w-full">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <PieChart>
                 <Pie
-                  data={stats.skillData}
+                  data={stats.skillData.map((skill) => {
+                    const colors: Record<string, string> = {
+                      "Python": "#3572A5",
+                      "TypeScript": "#3178c6",
+                      "Jupyter Notebook": "#DA5B0B",
+                      "HTML": "#e34c26",
+                      "CSS": "#563d7c",
+                      "JavaScript": "#f1e05a"
+                    };
+                    return { ...skill, color: colors[skill.name] || "#a8a29e" };
+                  })}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
+                  innerRadius={50}
+                  outerRadius={70}
                   paddingAngle={5}
                   dataKey="level"
                   stroke="none"
@@ -834,15 +843,10 @@ export function ZhiStatsDashboard({
                     borderRadius: "8px",
                     border: "none",
                     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                    fontSize: "12px",
                   }}
-                  itemStyle={{ color: "#333" }}
-                  formatter={(value: number) => [`${value}%`]}
                 />
               </PieChart>
             </ResponsiveContainer>
-
-            {/* Center Text */}
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-3xl font-bold text-stone-800 dark:text-stone-100">
                 {stats.skillData.length}
@@ -851,28 +855,6 @@ export function ZhiStatsDashboard({
                 Langs
               </span>
             </div>
-          </div>
-
-          {/* Legend */}
-          <div className="mt-2 flex flex-wrap justify-center gap-3">
-            {stats.skillData.map((skill) => {
-              const colors: Record<string, string> = {
-                "Python": "#3572A5",
-                "TypeScript": "#3178c6",
-                "Jupyter Notebook": "#DA5B0B",
-                "HTML": "#e34c26",
-                "CSS": "#563d7c",
-                "JavaScript": "#f1e05a"
-              };
-              const color = colors[skill.name] || "#a8a29e";
-              return (
-                <div key={skill.name} className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }}></span>
-                  <span className="text-xs font-medium text-stone-600 dark:text-stone-400">{skill.name}</span>
-                  <span className="text-[10px] text-stone-400">({skill.level}%)</span>
-                </div>
-              );
-            })}
           </div>
         </div>
 
@@ -887,7 +869,7 @@ export function ZhiStatsDashboard({
 
         {/* Quick Links */}
         {highlights && highlights.length > 0 && (
-          <div className="col-span-2 lg:col-span-3">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-3">
             <h3 className="mb-4 font-serif text-xl text-stone-800 dark:text-stone-100">
               {t("View Details")}
             </h3>
