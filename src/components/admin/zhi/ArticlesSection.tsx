@@ -10,17 +10,32 @@ import {
 import { SimpleToast } from './Toast';
 import { useAdminLocale } from './useAdminLocale';
 import { TiptapEditor } from '../TiptapEditor';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 export const ArticlesSection: React.FC = () => {
     const { posts, addPost, updatePost, deletePost, loading } = useData();
     const { t } = useAdminLocale();
 
     const [editingPost, setEditingPost] = useState<Partial<BlogPost> | null>(null);
-    const [uploadQueue, setUploadQueue] = useState<{ file: File, preview: string }[]>([]);
     const [manualUrl, setManualUrl] = useState('');
     const [isDragOver, setIsDragOver] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Use the optimistic upload hook for cover images
+    const {
+        queue: uploadQueue,
+        addFiles,
+        removeFile,
+        retryFile,
+        clearQueue,
+        getUploadedData,
+        isUploading,
+    } = useImageUpload({
+        endpoint: '/api/admin/posts/upload',
+        fieldName: 'image',
+        autoUpload: true,
+    });
 
     const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
         setToast({ message, type });
@@ -34,33 +49,38 @@ export const ArticlesSection: React.FC = () => {
         }
     };
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            const files = Array.from(e.target.files) as File[];
-            const newQueue = files.map((file: File) => ({
-                file,
-                preview: URL.createObjectURL(file)
-            }));
-            setUploadQueue(prev => [...prev, ...newQueue]);
+            // For cover image, we only want one file, so clear queue first
+            clearQueue();
+            const files = Array.from(e.target.files).slice(0, 1);
+            addFiles(files);
         }
-    };
+    }, [addFiles, clearQueue]);
 
-    const handleDrop = (e: React.DragEvent) => {
+    const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         setIsDragOver(false);
         if (!e.dataTransfer) return;
-        const files = Array.from(e.dataTransfer.files) as File[];
+        // For cover image, we only want one file
+        clearQueue();
+        const files = Array.from(e.dataTransfer.files).slice(0, 1);
+        addFiles(files);
+    }, [addFiles, clearQueue]);
 
-        const newQueue = files.map((file: File) => ({
-            file,
-            preview: URL.createObjectURL(file)
-        }));
-        setUploadQueue(newQueue);
-    };
+    const handleRemoveFromQueue = useCallback((idx: number) => {
+        const item = uploadQueue[idx];
+        if (item) {
+            removeFile(item.id);
+        }
+    }, [uploadQueue, removeFile]);
 
-    const removeFileFromQueue = (idx: number) => {
-        setUploadQueue(prev => prev.filter((_, i) => i !== idx));
-    };
+    const handleRetry = useCallback((idx: number) => {
+        const item = uploadQueue[idx];
+        if (item) {
+            retryFile(item.id);
+        }
+    }, [uploadQueue, retryFile]);
 
     // Upload image for content (used by TiptapEditor)
     const handleContentImageUpload = useCallback(async (file: File): Promise<string> => {
@@ -94,23 +114,16 @@ export const ArticlesSection: React.FC = () => {
 
             if (manualUrl) {
                 finalCoverPath = manualUrl;
-            } else if (uploadQueue.length > 0) {
-                // Upload the cover image first
-                const formData = new FormData();
-                formData.append('image', uploadQueue[0]!.file);
-
-                const uploadRes = await fetch('/api/admin/posts/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!uploadRes.ok) {
-                    const errData = await uploadRes.json();
-                    throw new Error(errData.error || 'Failed to upload cover image');
+            } else {
+                // Get uploaded cover URL from the hook
+                const uploadedData = getUploadedData();
+                if (uploadedData.length > 0) {
+                    const data = uploadedData[0] as Record<string, unknown>;
+                    finalCoverPath = (data.coverUrl as string) ||
+                        (data.mediumUrl as string) ||
+                        (data.originalUrl as string) ||
+                        finalCoverPath;
                 }
-
-                const uploadData = await uploadRes.json();
-                finalCoverPath = uploadData.coverUrl;
             }
 
             const postData = {
@@ -135,7 +148,7 @@ export const ArticlesSection: React.FC = () => {
                 showToast(t('articleCreated'), 'success');
             }
             setEditingPost(null);
-            setUploadQueue([]);
+            clearQueue();
             setManualUrl('');
         } catch (error) {
             console.error('Failed to save article:', error);
@@ -146,14 +159,31 @@ export const ArticlesSection: React.FC = () => {
         }
     };
 
+    const handleCancel = () => {
+        setEditingPost(null);
+        clearQueue();
+        setManualUrl('');
+    };
+
+    const handleStartNew = () => {
+        setEditingPost({});
+        clearQueue();
+        setManualUrl('');
+    };
+
     return (
         <>
             {/* Toast Notification */}
             {toast && <SimpleToast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-            <SectionContainer title={t('articles')} onAdd={() => { setEditingPost({}); setUploadQueue([]); setManualUrl(''); }}>
+            <SectionContainer title={t('articles')} onAdd={handleStartNew}>
                 {editingPost ? (
-                    <EditForm title={editingPost.id ? t('editArticle') : t('newArticle')} onSave={handleSavePost} onCancel={() => setEditingPost(null)} isSaving={isSaving}>
+                    <EditForm
+                        title={editingPost.id ? t('editArticle') : t('newArticle')}
+                        onSave={handleSavePost}
+                        onCancel={handleCancel}
+                        isSaving={isSaving || isUploading}
+                    >
                         <Input label={t('title')} value={editingPost.title} onChange={v => setEditingPost({ ...editingPost, title: v })} />
                         <div className="grid grid-cols-2 gap-4">
                             <Input label={t('category')} value={editingPost.category} onChange={v => setEditingPost({ ...editingPost, category: v })} />
@@ -205,7 +235,8 @@ export const ArticlesSection: React.FC = () => {
                                 queue={uploadQueue}
                                 onDrop={handleDrop}
                                 onFileSelect={handleFileSelect}
-                                onRemove={removeFileFromQueue}
+                                onRemove={handleRemoveFromQueue}
+                                onRetry={handleRetry}
                                 isDragOver={isDragOver}
                                 setIsDragOver={setIsDragOver}
                                 multiple={false}
@@ -213,6 +244,11 @@ export const ArticlesSection: React.FC = () => {
                                 manualUrl={manualUrl}
                                 setManualUrl={setManualUrl}
                             />
+                            {isUploading && (
+                                <p className="text-xs text-blue-500 mt-2 animate-pulse">
+                                    Uploading cover image in background...
+                                </p>
+                            )}
                         </div>
                     </EditForm>
                 ) : (
@@ -239,3 +275,4 @@ export const ArticlesSection: React.FC = () => {
 };
 
 export default ArticlesSection;
+

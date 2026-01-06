@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { invalidateCuratedCache } from "@/lib/curated";
 
 export const runtime = "nodejs";
 
@@ -38,6 +39,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       },
     });
 
+    // Invalidate cache so frontend immediately sees updates
+    invalidateCuratedCache();
+
     return NextResponse.json({ item: updated });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
@@ -53,6 +57,10 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     await requireAdmin();
     const { id } = await params;
     await prisma.shareItem.delete({ where: { id } });
+
+    // Invalidate cache so frontend immediately sees deletion
+    invalidateCuratedCache();
+
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
@@ -62,3 +70,4 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     return NextResponse.json({ error: "Failed to delete curated item" }, { status: 500 });
   }
 }
+

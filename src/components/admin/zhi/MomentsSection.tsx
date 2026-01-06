@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useData } from './store';
 import type { Moment, MomentImage } from './types';
 import {
@@ -8,97 +8,85 @@ import {
     ImageUploadArea, RichMomentItem
 } from './AdminComponents';
 import { useAdminLocale } from './useAdminLocale';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 export const MomentsSection: React.FC = () => {
     const { moments, addMoment, updateMoment, deleteMoment, loading } = useData();
     const { t } = useAdminLocale();
 
     const [editingMoment, setEditingMoment] = useState<Partial<Moment> | null>(null);
-    const [uploadQueue, setUploadQueue] = useState<{ file: File, preview: string }[]>([]);
     const [manualUrl, setManualUrl] = useState('');
     const [isDragOver, setIsDragOver] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    const revokePreviewUrls = (items: { preview: string }[]) => {
-        items.forEach(item => URL.revokeObjectURL(item.preview));
-    };
+    // Use the optimistic upload hook
+    const {
+        queue: uploadQueue,
+        addFiles,
+        removeFile,
+        retryFile,
+        clearQueue,
+        getUploadedData,
+        isUploading,
+    } = useImageUpload({
+        endpoint: '/api/admin/gallery/upload',
+        fieldName: 'image',
+        extraFormData: {
+            title: `Moment image ${new Date().toLocaleDateString()}`,
+            category: 'MOMENT',
+        },
+        autoUpload: true,
+    });
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            const files = Array.from(e.target.files) as File[];
-            const newQueue = files.map((file: File) => ({
-                file,
-                preview: URL.createObjectURL(file)
-            }));
-            setUploadQueue(prev => [...prev, ...newQueue]);
+            const files = Array.from(e.target.files);
+            addFiles(files);
         }
-    };
+    }, [addFiles]);
 
-    const handleDrop = (e: React.DragEvent) => {
+    const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         setIsDragOver(false);
         if (!e.dataTransfer) return;
-        const files = Array.from(e.dataTransfer.files) as File[];
+        const files = Array.from(e.dataTransfer.files);
+        addFiles(files);
+    }, [addFiles]);
 
-        const newQueue = files.map((file: File) => ({
-            file,
-            preview: URL.createObjectURL(file)
-        }));
-        setUploadQueue(prev => [...prev, ...newQueue]);
-    };
+    const handleRemoveFromQueue = useCallback((idx: number) => {
+        const item = uploadQueue[idx];
+        if (item) {
+            removeFile(item.id);
+        }
+    }, [uploadQueue, removeFile]);
 
-    const removeFileFromQueue = (idx: number) => {
-        setUploadQueue(prev => {
-            const target = prev[idx];
-            if (target) URL.revokeObjectURL(target.preview);
-            return prev.filter((_, i) => i !== idx);
-        });
-    };
+    const handleRetry = useCallback((idx: number) => {
+        const item = uploadQueue[idx];
+        if (item) {
+            retryFile(item.id);
+        }
+    }, [uploadQueue, retryFile]);
 
     const handleSaveMoment = async () => {
         if (!editingMoment?.content) return;
         setIsSaving(true);
 
-        // Upload new images first to get real URLs
-        const uploadedImageUrls: (string | MomentImage)[] = [];
-        for (const item of uploadQueue) {
-            try {
-                const formData = new FormData();
-                formData.append('image', item.file);  // Use 'image' as field name, matching gallery upload
-                formData.append('title', `Moment image ${new Date().toLocaleDateString()}`);
-                formData.append('category', 'MOMENT');
-
-                const uploadRes = await fetch('/api/admin/gallery/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (uploadRes.ok) {
-                    const uploadData = await uploadRes.json();
-                    // The gallery upload returns the image object with filePath
-                    if (uploadData.image?.filePath) {
-                        uploadedImageUrls.push({
-                            url: uploadData.image.filePath,
-                            microThumbUrl: uploadData.image.microThumbPath,
-                            smallThumbUrl: uploadData.image.smallThumbPath,
-                            mediumUrl: uploadData.image.mediumPath,
-                            w: uploadData.image.width,
-                            h: uploadData.image.height
-                        });
-                    } else if (uploadData.images?.[0]?.filePath) {
-                        uploadedImageUrls.push(uploadData.images[0].filePath);
-                    } else if (uploadData.url) {
-                        uploadedImageUrls.push(uploadData.url);
-                    }
-                } else {
-                    console.error('Failed to upload image:', await uploadRes.text());
-                }
-            } catch (error) {
-                console.error('Image upload failed:', error);
+        // Get all successfully uploaded image data
+        const uploadedData = getUploadedData();
+        const uploadedImageUrls: (string | MomentImage)[] = uploadedData.map((data) => {
+            const img = data.image as Record<string, unknown> | undefined;
+            if (img?.filePath) {
+                return {
+                    url: img.filePath as string,
+                    microThumbUrl: img.microThumbPath as string | undefined,
+                    smallThumbUrl: img.smallThumbPath as string | undefined,
+                    mediumUrl: img.mediumPath as string | undefined,
+                    w: img.width as number | undefined,
+                    h: img.height as number | undefined,
+                };
             }
-            // Revoke blob URL after upload attempt
-            URL.revokeObjectURL(item.preview);
-        }
+            return data.url as string || '';
+        }).filter(Boolean);
 
         // Add manual URL if provided
         if (manualUrl && (manualUrl.startsWith('/') || manualUrl.startsWith('http'))) {
@@ -122,20 +110,37 @@ export const MomentsSection: React.FC = () => {
             else await addMoment(momentData);
         } catch (error) {
             console.error('Failed to save moment:', error);
+            setIsSaving(false);
             return;
         }
 
         setEditingMoment(null);
-        revokePreviewUrls(uploadQueue);
-        setUploadQueue([]);
+        clearQueue();
         setManualUrl('');
         setIsSaving(false);
     };
 
+    const handleCancel = () => {
+        setEditingMoment(null);
+        clearQueue();
+        setManualUrl('');
+    };
+
+    const handleStartNew = () => {
+        setEditingMoment({});
+        clearQueue();
+        setManualUrl('');
+    };
+
     return (
-        <SectionContainer title={t('momentsTitle')} onAdd={() => { setEditingMoment({}); revokePreviewUrls(uploadQueue); setUploadQueue([]); setManualUrl(''); }}>
+        <SectionContainer title={t('momentsTitle')} onAdd={handleStartNew}>
             {editingMoment ? (
-                <EditForm title={editingMoment.id ? t('editMoment') : t('newMoment')} onSave={handleSaveMoment} onCancel={() => { setEditingMoment(null); revokePreviewUrls(uploadQueue); setUploadQueue([]); setManualUrl(''); }} isSaving={isSaving}>
+                <EditForm
+                    title={editingMoment.id ? t('editMoment') : t('newMoment')}
+                    onSave={handleSaveMoment}
+                    onCancel={handleCancel}
+                    isSaving={isSaving || isUploading}
+                >
                     <div className="grid grid-cols-1 gap-6">
                         <div className="space-y-4">
                             <TextArea label={t('whatsHappening')} value={editingMoment.content} onChange={v => setEditingMoment({ ...editingMoment, content: v })} />
@@ -158,7 +163,8 @@ export const MomentsSection: React.FC = () => {
                                 queue={uploadQueue}
                                 onDrop={handleDrop}
                                 onFileSelect={handleFileSelect}
-                                onRemove={removeFileFromQueue}
+                                onRemove={handleRemoveFromQueue}
+                                onRetry={handleRetry}
                                 existingImages={editingMoment.images}
                                 onRemoveExisting={(idx) => {
                                     const newImages = [...(editingMoment.images || [])];
@@ -171,6 +177,11 @@ export const MomentsSection: React.FC = () => {
                                 manualUrl={manualUrl}
                                 setManualUrl={setManualUrl}
                             />
+                            {isUploading && (
+                                <p className="text-xs text-blue-500 mt-2 animate-pulse">
+                                    Uploading images in background...
+                                </p>
+                            )}
                         </div>
                     </div>
                 </EditForm>
@@ -197,3 +208,4 @@ export const MomentsSection: React.FC = () => {
 };
 
 export default MomentsSection;
+

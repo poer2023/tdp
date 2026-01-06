@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { UserRole } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { invalidateCuratedCache } from "@/lib/curated";
 
 export const runtime = "nodejs";
 
@@ -52,6 +53,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Invalidate cache so frontend immediately sees the new item
+    invalidateCuratedCache();
+
     return NextResponse.json({ item }, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
@@ -61,3 +65,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to create curated item" }, { status: 500 });
   }
 }
+

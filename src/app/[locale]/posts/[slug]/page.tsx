@@ -1,14 +1,12 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { PostLocale, PostStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { generateBlogPostingSchema, generateAlternateLinks } from "@/lib/seo";
 import { LikeButton } from "@/components/like-button";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { BackButton } from "@/components/back-button";
 import { safeJsonLd } from "@/lib/safe-json-ld";
 import { cache } from "react";
 import { Container } from "@/components/ui/container";
@@ -202,14 +200,16 @@ export default async function LocalizedPostPage({ params }: PageProps) {
               </div>
             )}
 
-            <div className="prose prose-zinc dark:prose-invert max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
-            </div>
+            <div
+              className="prose prose-zinc dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
 
             <footer className="mt-8 flex items-center justify-between border-t border-stone-200 pt-6 sm:mt-12 sm:pt-8 md:mt-16 dark:border-stone-800">
-              <Link href={`/${l}/posts`} className="text-blue-600 hover:underline dark:text-blue-400">
-                {l === "zh" ? "← 返回文章列表" : "← Back to posts"}
-              </Link>
+              <BackButton
+                label={l === "zh" ? "← 返回" : "← Back"}
+                fallbackHref={`/${l}`}
+              />
               <LikeButton slug={post.slug} locale={postLocale} />
             </footer>
           </article>

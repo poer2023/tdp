@@ -9,7 +9,7 @@ import {
     Activity, Clock, TrendingUp, PieChart as PieIcon,
     ShieldCheck, Globe, Calendar, Tag, Heart, MessageCircle,
     Users, MousePointer, Smartphone,
-    Eye
+    Eye, RefreshCw, AlertCircle
 } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -19,6 +19,7 @@ import type { BlogPost, Moment, MomentImage, Project, ShareItem, TrafficData, So
 import { AdminImage } from '../AdminImage';
 import { useAdminLocale } from './useAdminLocale';
 import { useData } from './store';
+import type { QueueItem, UploadStatus } from '@/hooks/useImageUpload';
 
 // Helper to get image URL from string or MomentImage
 const getImageUrl = (img: string | MomentImage): string => {
@@ -28,11 +29,20 @@ const getImageUrl = (img: string | MomentImage): string => {
 
 // --- Helper Components ---
 
+// Legacy queue item type for backward compatibility
+type LegacyQueueItem = { file: File; preview: string };
+
+// Check if item is new QueueItem type
+const isNewQueueItem = (item: LegacyQueueItem | QueueItem): item is QueueItem => {
+    return 'status' in item && 'progress' in item;
+};
+
 export const ImageUploadArea: React.FC<{
-    queue: { file: File, preview: string }[],
+    queue: (LegacyQueueItem | QueueItem)[],
     onDrop: (e: React.DragEvent) => void,
     onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void,
     onRemove: (idx: number) => void,
+    onRetry?: (idx: number) => void,
     isDragOver: boolean,
     setIsDragOver: (v: boolean) => void,
     multiple: boolean,
@@ -41,8 +51,26 @@ export const ImageUploadArea: React.FC<{
     onRemoveExisting?: (idx: number) => void,
     manualUrl: string,
     setManualUrl: (v: string) => void
-}> = ({ queue, onDrop, onFileSelect, onRemove, isDragOver, setIsDragOver, multiple, currentImageUrl, existingImages, onRemoveExisting, manualUrl, setManualUrl }) => {
+}> = ({ queue, onDrop, onFileSelect, onRemove, onRetry, isDragOver, setIsDragOver, multiple, currentImageUrl, existingImages, onRemoveExisting, manualUrl, setManualUrl }) => {
     const { t } = useAdminLocale();
+
+    const getStatusColor = (status: UploadStatus) => {
+        switch (status) {
+            case 'uploading': return 'border-blue-500';
+            case 'success': return 'border-emerald-500';
+            case 'error': return 'border-rose-500';
+            default: return 'border-sage-500';
+        }
+    };
+
+    const getStatusBg = (status: UploadStatus) => {
+        switch (status) {
+            case 'uploading': return 'bg-blue-600';
+            case 'success': return 'bg-emerald-600';
+            case 'error': return 'bg-rose-600';
+            default: return 'bg-sage-600';
+        }
+    };
 
     return (
         <div className="space-y-4">
@@ -121,24 +149,86 @@ export const ImageUploadArea: React.FC<{
                     </div>
                 ))}
 
-                {queue.map((item, idx) => (
-                    <div key={`queue-${idx}`} className="relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-sage-500 shadow-md">
-                        <AdminImage src={item.preview} alt="Upload preview" className="w-full h-full" containerClassName="w-full h-full" />
-                        <button
-                            onClick={() => onRemove(idx)}
-                            className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                {queue.map((item, idx) => {
+                    const isNew = isNewQueueItem(item);
+                    const status = isNew ? item.status : 'pending';
+                    const progress = isNew ? item.progress : 0;
+
+                    return (
+                        <div
+                            key={isNew ? item.id : `queue-${idx}`}
+                            className={`relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border-2 shadow-md ${getStatusColor(status)}`}
                         >
-                            <X size={12} />
-                        </button>
-                        <div className="absolute bottom-0 inset-x-0 bg-sage-600 text-white text-[9px] p-1 truncate text-center">
-                            {t('readyToUpload')}
+                            <AdminImage src={item.preview} alt="Upload preview" className="w-full h-full" containerClassName="w-full h-full" />
+
+                            {/* Progress overlay for uploading state */}
+                            {status === 'uploading' && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                    <div className="relative w-12 h-12">
+                                        <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 48 48">
+                                            <circle
+                                                cx="24" cy="24" r="20"
+                                                fill="none"
+                                                stroke="rgba(255,255,255,0.2)"
+                                                strokeWidth="4"
+                                            />
+                                            <circle
+                                                cx="24" cy="24" r="20"
+                                                fill="none"
+                                                stroke="white"
+                                                strokeWidth="4"
+                                                strokeDasharray={`${progress * 1.25} 125`}
+                                                strokeLinecap="round"
+                                            />
+                                        </svg>
+                                        <span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">
+                                            {progress}%
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Error overlay with retry */}
+                            {status === 'error' && (
+                                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
+                                    <AlertCircle className="w-6 h-6 text-rose-400" />
+                                    {onRetry && (
+                                        <button
+                                            onClick={() => onRetry(idx)}
+                                            className="px-2 py-1 bg-rose-500 text-white text-[10px] rounded flex items-center gap-1 hover:bg-rose-600"
+                                        >
+                                            <RefreshCw size={10} /> Retry
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Remove button */}
+                            <button
+                                onClick={() => onRemove(idx)}
+                                className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                            >
+                                <X size={12} />
+                            </button>
+
+                            {/* Status badge */}
+                            <div className={`absolute bottom-0 inset-x-0 ${getStatusBg(status)} text-white text-[9px] p-1 truncate text-center flex items-center justify-center gap-1`}>
+                                {status === 'uploading' && <Loader2 size={10} className="animate-spin" />}
+                                {status === 'success' && <Check size={10} />}
+                                {status === 'error' && <AlertCircle size={10} />}
+                                {status === 'pending' && t('readyToUpload')}
+                                {status === 'uploading' && 'Uploading...'}
+                                {status === 'success' && 'Uploaded'}
+                                {status === 'error' && 'Failed'}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
 };
+
 
 export const RichPostItem: React.FC<{ post: BlogPost, onEdit: () => void, onDelete: () => void }> = ({ post, onEdit, onDelete }) => (
     <div className="group bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 flex gap-4 transition-all hover:border-stone-300 dark:hover:border-stone-600">
