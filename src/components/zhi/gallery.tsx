@@ -1,6 +1,5 @@
 "use client";
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
@@ -16,7 +15,8 @@ import {
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { useTheme } from "next-themes";
-import { buildImageSrcSet, buildImageUrl } from "@/lib/image-resize";
+import { buildImageUrl } from "@/lib/image-resize";
+import { SmoothImage } from "@/components/ui/smooth-image";
 
 // Dynamically import the entire map component to avoid SSR issues
 const LocationMap = dynamic(
@@ -143,6 +143,7 @@ export interface ZhiGalleryItem {
   mediumPath?: string;
   smallThumbPath?: string;
   microThumbPath?: string;
+  blurDataURL?: string; // Base64 blur placeholder for smooth loading
   fileSize?: number;
   mimeType?: string;
   capturedAt?: string;
@@ -625,16 +626,13 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
           <div key={colIndex} className="flex flex-col gap-3 sm:gap-4 lg:gap-6">
             {column.map((item, index) => {
               const isAboveFold = colIndex * column.length + index < 6;
-              const baseSrc =
-                item.type === "video"
-                  ? item.thumbnail || item.url
-                  : item.mediumPath || item.url;
-              const fallbackSrc =
+              const imageSrc =
                 item.type === "video"
                   ? item.thumbnail || item.url
                   : item.smallThumbPath || item.mediumPath || item.thumbnail || item.url;
-              const srcSet = buildImageSrcSet(baseSrc, GRID_IMAGE_WIDTHS);
-              const src = buildImageUrl(fallbackSrc, 640);
+
+              // Calculate aspect ratio for proper sizing
+              const aspectRatio = item.width && item.height ? item.width / item.height : 4 / 3;
 
               return (
                 <div
@@ -642,18 +640,18 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
                   className="group relative cursor-pointer overflow-hidden rounded-lg bg-stone-200 dark:bg-stone-800"
                   onClick={() => handleOpen(item)}
                 >
-                  <div className="relative">
-                    <img
-                      src={src}
-                      srcSet={srcSet}
-                      sizes={GRID_IMAGE_SIZES}
+                  <div
+                    className="relative w-full"
+                    style={{ paddingBottom: `${100 / aspectRatio}%` }}
+                  >
+                    <SmoothImage
+                      src={imageSrc}
+                      blurDataURL={item.blurDataURL}
                       alt={item.title}
-                      width={item.width || undefined}
-                      height={item.height || undefined}
-                      className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      loading={isAboveFold ? "eager" : "lazy"}
-                      decoding={isAboveFold ? "sync" : "async"}
-                      fetchPriority={isAboveFold ? "high" : "auto"}
+                      fill
+                      sizes={GRID_IMAGE_SIZES}
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      priority={isAboveFold}
                     />
                     {/* Video Indicator */}
                     {item.type === "video" && (
@@ -672,6 +670,7 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
                 </div>
               );
             })}
+
           </div>
         ))}
       </div>

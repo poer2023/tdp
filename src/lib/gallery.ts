@@ -17,6 +17,7 @@ export type GalleryImage = {
   microThumbPath?: string | null;
   smallThumbPath?: string | null;
   mediumPath?: string | null;
+  blurDataURL?: string | null; // Base64 blur placeholder
   postId: string | null;
   category: GalleryCategory;
   createdAt: string;
@@ -557,6 +558,7 @@ function toGalleryImage(image: {
   microThumbPath: string | null;
   smallThumbPath: string | null;
   mediumPath: string | null;
+  blurDataURL: string | null;
   postId: string | null;
   category: GalleryCategory;
   createdAt: Date;
@@ -582,6 +584,7 @@ function toGalleryImage(image: {
     microThumbPath: image.microThumbPath,
     smallThumbPath: image.smallThumbPath,
     mediumPath: image.mediumPath,
+    blurDataURL: image.blurDataURL,
     postId: image.postId,
     category: image.category,
     createdAt: image.createdAt.toISOString(),
@@ -599,6 +602,7 @@ function toGalleryImage(image: {
     capturedAt: image.capturedAt?.toISOString() || null,
     storageType: image.storageType,
   };
+
 
   // In production (Vercel/Docker), skip local file existence checks
   // as files may be stored in persistent volumes or served via different paths

@@ -45,6 +45,7 @@ function toGalleryItem(image: GalleryImage, locale: string): ZhiGalleryItem {
     mediumPath: image.mediumPath || undefined,
     smallThumbPath: image.smallThumbPath || undefined,
     microThumbPath: image.microThumbPath || undefined,
+    blurDataURL: image.blurDataURL || undefined, // Base64 blur placeholder
     fileSize: image.fileSize || undefined,
     mimeType: image.mimeType || undefined,
     capturedAt: image.capturedAt || undefined,
@@ -61,6 +62,7 @@ function toGalleryItem(image: GalleryImage, locale: string): ZhiGalleryItem {
     exif: undefined,
   };
 }
+
 
 export default async function LocalizedGalleryPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
