@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Heart, MessageCircle } from "lucide-react";
 import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform } from "framer-motion";
-import Image from "next/image";
+import { SmoothImage } from "@/components/ui/smooth-image";
 
 // Image type matching FeedImage
 interface MomentImageData {
   url: string;
+  blurDataURL?: string; // Base64 blur placeholder
   w?: number | null;
   h?: number | null;
 }
@@ -83,8 +84,9 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
               }}
               onClick={onImageClick}
             >
-              <Image
+              <SmoothImage
                 src={img.url}
+                blurDataURL={img.blurDataURL}
                 alt=""
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -92,6 +94,7 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
                 style={{ objectFit: "cover" }}
                 quality={80}
               />
+
             </div>
           </div>
         </div>
@@ -101,8 +104,9 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
     // Fallback for images without dimension data: use auto width
     return (
       <div className="px-4">
-        <Image
+        <SmoothImage
           src={img.url}
+                blurDataURL={img.blurDataURL}
           alt=""
           width={0}
           height={0}
@@ -142,8 +146,9 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
                 style={{ height: GALLERY_HEIGHT, width }}
                 onClick={onImageClick}
               >
-                <Image
+                <SmoothImage
                   src={img.url}
+                blurDataURL={img.blurDataURL}
                   alt=""
                   fill
                   sizes="(max-width: 768px) 80vw, 400px"
@@ -157,9 +162,10 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
 
           // Fallback for images without dimension data
           return (
-            <Image
+            <SmoothImage
               key={idx}
               src={img.url}
+                blurDataURL={img.blurDataURL}
               alt=""
               width={0}
               height={0}
@@ -253,7 +259,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
       {/* Header: Avatar + Name + Time */}
       <div className="flex items-center gap-3 px-4 py-3">
         {moment.author?.image ? (
-          <Image
+          <SmoothImage
             src={moment.author.image}
             alt={moment.author.name || "Author"}
             width={36}
@@ -350,7 +356,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
           {/* 2. Image Layer */}
           {hasImages && moment.images![0] && (
             <div className="absolute inset-0 z-0">
-              <Image
+              <SmoothImage
                 src={moment.images![0].url}
                 alt="Background"
                 fill
@@ -372,7 +378,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
             <div className="mb-4 flex items-start justify-between">
               <div className="flex items-center gap-3">
                 {moment.author?.image ? (
-                  <Image
+                  <SmoothImage
                     src={moment.author.image}
                     alt={moment.author.name || "Author"}
                     width={40}

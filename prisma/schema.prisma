@@ -143,9 +143,11 @@ model GalleryImage {
   mediumPath         String?
   microThumbPath     String?
   smallThumbPath     String?
+  blurDataURL        String?          // Base64 blur placeholder for smooth loading
   category           GalleryCategory @default(REPOST)
   hideLocation       Boolean         @default(false)
   post               Post?           @relation(fields: [postId], references: [id])
+
 
   @@index([locationName(ops: raw("gin_trgm_ops"))], map: "idx_gallery_location_trgm", type: Gin)
   @@index([title(ops: raw("gin_trgm_ops"))], map: "idx_gallery_title_trgm", type: Gin)
@@ -184,15 +186,17 @@ model ShareItem {
 }
 
 model HeroImage {
-  id        String   @id @default(cuid())
-  url       String
-  mediaType String   @default("image") // "image" | "video"
-  videoUrl  String?                     // Compressed video URL (WebM/AV1)
-  posterUrl String?                     // Video poster/thumbnail URL
-  sortOrder Int      @default(0)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  url         String
+  blurDataURL String?                     // Base64 blur placeholder for smooth loading
+  mediaType   String   @default("image") // "image" | "video"
+  videoUrl    String?                     // Compressed video URL (WebM/AV1)
+  posterUrl   String?                     // Video poster/thumbnail URL
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
 }
+
 
 model SkillData {
   id        String   @id @default(cuid())

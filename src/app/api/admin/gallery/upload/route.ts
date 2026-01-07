@@ -6,7 +6,7 @@ import { reverseGeocode } from "@/lib/geocoding";
 import { getStorageProviderAsync } from "@/lib/storage";
 import { addGalleryImage } from "@/lib/gallery";
 import { revalidatePath } from "next/cache";
-import { generateThumbnails, getThumbnailFilename } from "@/lib/image-processor";
+import { generateThumbnails, getThumbnailFilename, generateBlurDataURL } from "@/lib/image-processor";
 import sharp from "sharp";
 
 export const runtime = "nodejs";
@@ -52,8 +52,11 @@ export async function POST(req: Request) {
     const imgExt = image.name.split(".").pop() || "bin";
     const imgKey = `${baseKey}.${imgExt}`;
 
-    // Generate thumbnails
-    const thumbnails = await generateThumbnails(imageBuf);
+    // Generate thumbnails and blur placeholder in parallel
+    const [thumbnails, blurDataURL] = await Promise.all([
+      generateThumbnails(imageBuf),
+      generateBlurDataURL(imageBuf),
+    ]);
 
     // Derive display dimensions from rotated WebP thumbnail (avoids EXIF orientation issues)
     const thumbMeta = await sharp(thumbnails.medium).metadata().catch(() => null);
@@ -96,6 +99,7 @@ export async function POST(req: Request) {
       microThumbPath: storage.getPublicUrl(microPath),
       smallThumbPath: storage.getPublicUrl(smallPath),
       mediumPath: storage.getPublicUrl(mediumPath),
+      blurDataURL,
       postId,
       category: category as "REPOST" | "ORIGINAL" | "MOMENT",
       latitude: exif?.latitude ?? null,
@@ -112,6 +116,7 @@ export async function POST(req: Request) {
       capturedAt: capturedAt ?? exif?.capturedAt ?? null,
       storageType: process.env.STORAGE_TYPE || "local",
     });
+
 
     // Revalidate root and localized homepages to reflect new uploads immediately
     revalidatePath("/");

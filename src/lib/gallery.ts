@@ -48,6 +48,7 @@ export type CreateGalleryImageInput = {
   microThumbPath?: string | null;
   smallThumbPath?: string | null;
   mediumPath?: string | null;
+  blurDataURL?: string | null;
   postId?: string | null;
   category?: GalleryCategory;
 
@@ -215,6 +216,7 @@ export async function addGalleryImage(input: CreateGalleryImageInput): Promise<G
       microThumbPath: input.microThumbPath ?? null,
       smallThumbPath: input.smallThumbPath ?? null,
       mediumPath: input.mediumPath ?? null,
+      blurDataURL: input.blurDataURL ?? null,
       postId: input.postId ?? null,
       category: input.category ?? undefined,
 

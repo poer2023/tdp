@@ -32,9 +32,11 @@ export interface FeedPost {
 export interface FeedImage {
   url: string;
   mediumUrl?: string; // Higher quality for detail views (1200px)
+  blurDataURL?: string; // Base64 blur placeholder for smooth loading
   w?: number | null;
   h?: number | null;
 }
+
 
 // Video type with metadata for playback
 export interface FeedVideo {

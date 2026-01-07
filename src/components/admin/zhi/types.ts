@@ -59,7 +59,9 @@ export interface MomentImage {
   microThumbUrl?: string;
   smallThumbUrl?: string;
   mediumUrl?: string;
+  blurDataURL?: string; // Base64 blur placeholder for smooth loading
 }
+
 
 export interface MomentVideo {
   url: string; // Original video URL
