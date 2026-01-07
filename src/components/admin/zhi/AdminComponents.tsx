@@ -30,6 +30,7 @@ export const ImageUploadArea: React.FC<{
     onDrop: (e: React.DragEvent) => void,
     onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void,
     onRemove: (idx: number) => void,
+    onRetry?: (idx: number) => void,
     isDragOver: boolean,
     setIsDragOver: (v: boolean) => void,
     multiple: boolean,
@@ -38,7 +39,7 @@ export const ImageUploadArea: React.FC<{
     onRemoveExisting?: (idx: number) => void,
     manualUrl: string,
     setManualUrl: (v: string) => void
-}> = ({ queue, onDrop, onFileSelect, onRemove, isDragOver, setIsDragOver, multiple, currentImageUrl, existingImages, onRemoveExisting, manualUrl, setManualUrl }) => {
+}> = ({ queue, onDrop, onFileSelect, onRemove, onRetry: _onRetry, isDragOver, setIsDragOver, multiple, currentImageUrl, existingImages, onRemoveExisting, manualUrl, setManualUrl }) => {
     const { t } = useAdminLocale();
 
     return (
