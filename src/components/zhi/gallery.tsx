@@ -601,7 +601,7 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
 
   // Get column count based on screen size (matches Tailwind breakpoints)
   // Use isClient to prevent hydration mismatch - SSR and first CSR render must match
-  const [isClient, setIsClient] = useState(false);
+  const [_isClient, setIsClient] = useState(false);
   const [columnCount, setColumnCount] = useState(2); // Default to mobile 2-col (SSR value)
 
   useEffect(() => {
