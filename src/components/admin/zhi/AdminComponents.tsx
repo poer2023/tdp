@@ -6,14 +6,11 @@ import {
     Plus, Trash2, Edit2, X,
     Briefcase, Camera,
     UploadCloud, Check, Loader2,
-    Activity, Clock, TrendingUp, PieChart as PieIcon,
-    ShieldCheck, Globe, Calendar, Tag, Heart, MessageCircle,
-    Users, MousePointer, Smartphone,
-    Eye
+    Clock, PieChart as PieIcon,
+    ShieldCheck, Globe, Calendar, Tag, Heart, MessageCircle
 } from 'lucide-react';
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
-    AreaChart, Area, CartesianGrid, PieChart, Pie, Sector
+    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
 import type { BlogPost, Moment, MomentImage, Project, ShareItem, TrafficData, SourceData, PageVisitData, DeviceData, Tab } from './types';
 import { AdminImage } from '../AdminImage';
@@ -472,150 +469,11 @@ export const TrafficStatsSection: React.FC<{
     sourceData: SourceData[],
     pageVisitData: PageVisitData[],
     deviceData: DeviceData[]
-}> = ({ trafficData, sourceData, pageVisitData, deviceData }) => {
-    const { t } = useAdminLocale();
-    const { refreshAnalytics } = useData();
-    const [selectedPeriod, setSelectedPeriod] = React.useState<'7d' | '30d' | '90d' | 'all'>('30d');
-    const [showAllPages, setShowAllPages] = React.useState(false);
-    const [searchQuery, setSearchQuery] = React.useState('');
-    const [activeIndex, setActiveIndex] = React.useState(0);
+}> = ({ trafficData: _trafficData, sourceData: _sourceData, pageVisitData: _pageVisitData, deviceData: _deviceData }) => {
+    const { t: _t } = useAdminLocale();
+    const { refreshAnalytics: _refreshAnalytics } = useData();
 
-    // Refresh analytics data when period changes
-    React.useEffect(() => {
-        refreshAnalytics(selectedPeriod);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedPeriod]);
 
-    const onPieEnter = (_: any, index: number) => {
-        setActiveIndex(index);
-    };
-
-    const renderActiveShape = (props: any) => {
-        const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, value } = props;
-
-        // Simplify label: remove protocol and domain if it looks like a URL
-        const formatLabel = (name: string) => {
-            if (!name) return name;
-            try {
-                // If it starts with http, parse it
-                if (name.startsWith('http')) {
-                    const url = new URL(name);
-                    return url.pathname === '/' ? '/' : url.pathname;
-                }
-                // If it looks like a path already (starts with /), return as is
-                if (name.startsWith('/')) return name;
-                // Otherwise return as is
-                return name;
-            } catch (_e) {
-                return name;
-            }
-        };
-
-        const displayName = formatLabel(payload.name);
-
-        return (
-            <g>
-                <text x={cx} y={cy} dy={-4} textAnchor="middle" fill={fill} className="text-xl font-bold font-mono">
-                    {value}
-                </text>
-                <text x={cx} y={cy} dy={16} textAnchor="middle" fill="#999" className="text-[10px] uppercase tracking-widest font-bold">
-                    {displayName.length > 15 ? displayName.substring(0, 15) + '...' : displayName}
-                </text>
-                <Sector
-                    cx={cx}
-                    cy={cy}
-                    innerRadius={innerRadius}
-                    outerRadius={outerRadius + 4} // Reduced from +6
-                    startAngle={startAngle}
-                    endAngle={endAngle}
-                    fill={fill}
-                    cornerRadius={6}
-                />
-                <Sector
-                    cx={cx}
-                    cy={cy}
-                    startAngle={startAngle}
-                    endAngle={endAngle}
-                    innerRadius={innerRadius - 4} // Reduced from -6
-                    outerRadius={innerRadius}
-                    fill={fill}
-                    fillOpacity={0.06} // Reduced from 0.1
-                    cornerRadius={6}
-                />
-            </g>
-        );
-    };
-
-    // Filter traffic data based on selected period
-    const filteredTrafficData = React.useMemo(() => {
-        if (selectedPeriod === 'all') return trafficData;
-        const days = selectedPeriod === '7d' ? 7 : selectedPeriod === '30d' ? 30 : 90;
-        return trafficData.slice(-days);
-    }, [trafficData, selectedPeriod]);
-
-    const totalVisits = filteredTrafficData.reduce((acc, curr) => acc + curr.visits, 0);
-    const totalUnique = filteredTrafficData.reduce((acc, curr) => acc + curr.unique, 0);
-
-    // Process pageVisitData to show top 9 + Others
-    const processedPageData = React.useMemo(() => {
-        if (pageVisitData.length <= 9) return { display: pageVisitData, others: null };
-        const top9 = pageVisitData.slice(0, 9);
-        const rest = pageVisitData.slice(9);
-        const othersTotal = rest.reduce((acc, p) => acc + p.visits, 0);
-        return {
-            display: top9,
-            others: { count: rest.length, visits: othersTotal }
-        };
-    }, [pageVisitData]);
-
-    // Process sourceData to show top 9 + Others
-    const processedSourceData = React.useMemo(() => {
-        // Sort by value descending first
-        const sorted = [...sourceData].sort((a, b) => b.value - a.value);
-        const total = sorted.reduce((acc, curr) => acc + curr.value, 0);
-
-        if (sorted.length <= 10) {
-            return { display: sorted, total };
-        }
-
-        const top9 = sorted.slice(0, 9);
-        const rest = sorted.slice(9);
-        const othersValue = rest.reduce((acc, curr) => acc + curr.value, 0);
-
-        const othersItem = {
-            name: t('othersCount'),
-            value: othersValue,
-            color: '#e5e5e5' // Neutral gray for others
-        };
-
-        return {
-            display: [...top9, othersItem],
-            total
-        };
-    }, [sourceData, t]);
-
-    // Filter pages for modal search
-    const filteredPages = React.useMemo(() => {
-        if (!searchQuery.trim()) return pageVisitData;
-        const q = searchQuery.toLowerCase();
-        return pageVisitData.filter(p =>
-            p.path.toLowerCase().includes(q) || p.title.toLowerCase().includes(q)
-        );
-    }, [pageVisitData, searchQuery]);
-
-    const periodOptions = [
-        { key: '7d' as const, label: t('last7Days') },
-        { key: '30d' as const, label: t('last30Days') },
-        { key: '90d' as const, label: t('last90Days') },
-        { key: 'all' as const, label: t('allTime') },
-    ];
-
-    const kpiCards = [
-        { label: t('totalVisits30d'), value: totalVisits.toLocaleString(), change: '+12.5%', icon: Users, color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
-        { label: t('uniqueVisitors'), value: totalUnique.toLocaleString(), change: '+8.2%', icon: MousePointer, color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
-        { label: t('avgDuration'), value: '2m 45s', change: '-1.2%', icon: Clock, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
-        { label: t('bounceRate'), value: '42.3%', change: '-0.5%', icon: Activity, color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
-    ];
 
     return (
         <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
