@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-    HardDrive, Image, Video, File, Trash2, RefreshCw,
+    HardDrive, Image as ImageIcon, Video, File, Trash2, RefreshCw,
     ExternalLink, Search, Grid, List, Cloud, Check, X,
     AlertCircle, Loader2, Settings, Info, Eye, EyeOff, Save,
     Link2, FileImage, Newspaper, Star, Package, Share2, Users
@@ -329,7 +329,7 @@ export const StorageSection: React.FC = () => {
             case 'GalleryImage': return <FileImage size={14} className="text-purple-500" />;
             case 'Post': return <Newspaper size={14} className="text-blue-500" />;
             case 'Moment': return <Star size={14} className="text-amber-500" />;
-            case 'HeroImage': return <Image size={14} className="text-emerald-500" />;
+            case 'HeroImage': return <ImageIcon size={14} className="text-emerald-500" />;
             case 'Project': return <Package size={14} className="text-indigo-500" />;
             case 'ShareItem': return <Share2 size={14} className="text-rose-500" />;
             case 'Friend': return <Users size={14} className="text-cyan-500" />;
@@ -373,7 +373,7 @@ export const StorageSection: React.FC = () => {
 
     const getFileIcon = (type: string) => {
         switch (type) {
-            case 'image': return <Image size={16} className="text-purple-500" aria-label="Image file" />;
+            case 'image': return <ImageIcon size={16} className="text-purple-500" aria-label="Image file" />;
             case 'video': return <Video size={16} className="text-blue-500" aria-label="Video file" />;
             default: return <File size={16} className="text-stone-400" aria-label="Other file" />;
         }
@@ -925,7 +925,7 @@ export const StorageSection: React.FC = () => {
                 <div className="bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg text-emerald-600">
-                            <Image size={20} aria-label="Image files" />
+                            <ImageIcon size={20} aria-label="Image files" />
                         </div>
                         <div>
                             <div className="text-xs text-stone-500 uppercase font-bold">{t('imageFiles')}</div>

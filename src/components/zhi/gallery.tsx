@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { useTheme } from "next-themes";
-import { buildImageUrl } from "@/lib/image-resize";
+
 import { SmoothImage } from "@/components/ui/smooth-image";
 
 // Dynamically import the entire map component to avoid SSR issues
@@ -73,7 +73,7 @@ const THUMB_FULL_WIDTH = 120;
 const THUMB_COLLAPSED_WIDTH = 35;
 const THUMB_GAP = 2;
 const THUMB_MARGIN = 2;
-const GRID_IMAGE_WIDTHS = [320, 480, 640];
+
 const GRID_IMAGE_SIZES = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px";
 
 // Memoized thumbnail item component - uses CSS transitions for better performance
@@ -103,6 +103,7 @@ const ThumbnailItem = React.memo(function ThumbnailItem({
       `}
       style={{ willChange: isActive ? 'auto' : 'opacity, filter' }}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element -- micro thumbnails, native img is fine for 32-60px images */}
       <img
         src={item.microThumbPath || item.smallThumbPath || item.thumbnail || item.url}
         alt={item.title}
@@ -733,6 +734,7 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
                       className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
                     />
                   ) : (
+                    /* eslint-disable-next-line @next/next/no-img-element -- supports blob URLs from XHR loading */
                     <img
                       src={displaySrc || selectedItem.mediumPath || selectedItem.thumbnail || selectedItem.url}
                       alt={selectedItem.title}

@@ -109,7 +109,7 @@ export function VideoPlayer({
 
     // Handle click
     const handleClick = useCallback(
-        (e: React.MouseEvent) => {
+        (_e: React.MouseEvent) => {
             if (onClick) {
                 onClick();
             } else if (!controls) {
@@ -309,7 +309,6 @@ export function HeroVideo({
     className?: string;
 }) {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [isInViewport, setIsInViewport] = useState(false);
 
     // IntersectionObserver for viewport-aware playback
     useEffect(() => {
@@ -319,8 +318,6 @@ export function HeroVideo({
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    setIsInViewport(entry.isIntersecting);
-
                     if (entry.isIntersecting) {
                         video.play().catch(() => {
                             // Autoplay might be blocked

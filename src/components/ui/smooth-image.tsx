@@ -38,6 +38,7 @@ export function SmoothImage({
     fadeDuration = 500,
     className,
     style,
+    alt,
     ...props
 }: SmoothImageProps) {
     const [loaded, setLoaded] = useState(false);
@@ -49,6 +50,7 @@ export function SmoothImage({
     return (
         <Image
             {...props}
+            alt={alt}
             placeholder={blurDataURL ? "blur" : "empty"}
             blurDataURL={blurDataURL}
             className={cn(
