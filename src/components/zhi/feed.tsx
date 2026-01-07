@@ -32,15 +32,29 @@ export interface FeedPost {
 export interface FeedImage {
   url: string;
   mediumUrl?: string; // Higher quality for detail views (1200px)
+  blurDataURL?: string; // Base64 blur placeholder for smooth loading
   w?: number | null;
   h?: number | null;
 }
+
+
+// Video type with metadata for playback
+export interface FeedVideo {
+  url: string; // Original video URL (for detail view)
+  previewUrl: string; // Compressed preview URL (for hero/card, ~50-200KB)
+  thumbnailUrl: string; // Poster image URL
+  duration: number; // Duration in seconds
+  w?: number | null;
+  h?: number | null;
+}
+
 
 export interface FeedMoment {
   id: string;
   type: "moment";
   content: string;
   images?: FeedImage[];
+  videos?: FeedVideo[]; // Video attachments
   date: string;
   tags: string[];
   likes: number;
@@ -48,6 +62,7 @@ export interface FeedMoment {
   author?: { name: string | null; image: string | null };
   sortKey?: number;
 }
+
 
 export interface FeedCurated {
   id: string;

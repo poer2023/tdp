@@ -6,20 +6,16 @@ import {
     Plus, Trash2, Edit2, X,
     Briefcase, Camera,
     UploadCloud, Check, Loader2,
-    Activity, Clock, TrendingUp, PieChart as PieIcon,
-    ShieldCheck, Globe, Calendar, Tag, Heart, MessageCircle,
-    Users, MousePointer, Smartphone,
-    Eye, RefreshCw, AlertCircle
+    Clock, PieChart as PieIcon,
+    ShieldCheck, Globe, Calendar, Tag, Heart, MessageCircle
 } from 'lucide-react';
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
-    AreaChart, Area, CartesianGrid, PieChart, Pie, Sector
+    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
 import type { BlogPost, Moment, MomentImage, Project, ShareItem, TrafficData, SourceData, PageVisitData, DeviceData, Tab } from './types';
 import { AdminImage } from '../AdminImage';
 import { useAdminLocale } from './useAdminLocale';
 import { useData } from './store';
-import type { QueueItem, UploadStatus } from '@/hooks/useImageUpload';
 
 // Helper to get image URL from string or MomentImage
 const getImageUrl = (img: string | MomentImage): string => {
@@ -29,20 +25,11 @@ const getImageUrl = (img: string | MomentImage): string => {
 
 // --- Helper Components ---
 
-// Legacy queue item type for backward compatibility
-type LegacyQueueItem = { file: File; preview: string };
-
-// Check if item is new QueueItem type
-const isNewQueueItem = (item: LegacyQueueItem | QueueItem): item is QueueItem => {
-    return 'status' in item && 'progress' in item;
-};
-
 export const ImageUploadArea: React.FC<{
-    queue: (LegacyQueueItem | QueueItem)[],
+    queue: { file: File, preview: string }[],
     onDrop: (e: React.DragEvent) => void,
     onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void,
     onRemove: (idx: number) => void,
-    onRetry?: (idx: number) => void,
     isDragOver: boolean,
     setIsDragOver: (v: boolean) => void,
     multiple: boolean,
@@ -51,26 +38,8 @@ export const ImageUploadArea: React.FC<{
     onRemoveExisting?: (idx: number) => void,
     manualUrl: string,
     setManualUrl: (v: string) => void
-}> = ({ queue, onDrop, onFileSelect, onRemove, onRetry, isDragOver, setIsDragOver, multiple, currentImageUrl, existingImages, onRemoveExisting, manualUrl, setManualUrl }) => {
+}> = ({ queue, onDrop, onFileSelect, onRemove, isDragOver, setIsDragOver, multiple, currentImageUrl, existingImages, onRemoveExisting, manualUrl, setManualUrl }) => {
     const { t } = useAdminLocale();
-
-    const getStatusColor = (status: UploadStatus) => {
-        switch (status) {
-            case 'uploading': return 'border-blue-500';
-            case 'success': return 'border-emerald-500';
-            case 'error': return 'border-rose-500';
-            default: return 'border-sage-500';
-        }
-    };
-
-    const getStatusBg = (status: UploadStatus) => {
-        switch (status) {
-            case 'uploading': return 'bg-blue-600';
-            case 'success': return 'bg-emerald-600';
-            case 'error': return 'bg-rose-600';
-            default: return 'bg-sage-600';
-        }
-    };
 
     return (
         <div className="space-y-4">
@@ -149,86 +118,24 @@ export const ImageUploadArea: React.FC<{
                     </div>
                 ))}
 
-                {queue.map((item, idx) => {
-                    const isNew = isNewQueueItem(item);
-                    const status = isNew ? item.status : 'pending';
-                    const progress = isNew ? item.progress : 0;
-
-                    return (
-                        <div
-                            key={isNew ? item.id : `queue-${idx}`}
-                            className={`relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border-2 shadow-md ${getStatusColor(status)}`}
+                {queue.map((item, idx) => (
+                    <div key={`queue-${idx}`} className="relative group aspect-square rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-sage-500 shadow-md">
+                        <AdminImage src={item.preview} alt="Upload preview" className="w-full h-full" containerClassName="w-full h-full" />
+                        <button
+                            onClick={() => onRemove(idx)}
+                            className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
                         >
-                            <AdminImage src={item.preview} alt="Upload preview" className="w-full h-full" containerClassName="w-full h-full" />
-
-                            {/* Progress overlay for uploading state */}
-                            {status === 'uploading' && (
-                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                    <div className="relative w-12 h-12">
-                                        <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 48 48">
-                                            <circle
-                                                cx="24" cy="24" r="20"
-                                                fill="none"
-                                                stroke="rgba(255,255,255,0.2)"
-                                                strokeWidth="4"
-                                            />
-                                            <circle
-                                                cx="24" cy="24" r="20"
-                                                fill="none"
-                                                stroke="white"
-                                                strokeWidth="4"
-                                                strokeDasharray={`${progress * 1.25} 125`}
-                                                strokeLinecap="round"
-                                            />
-                                        </svg>
-                                        <span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">
-                                            {progress}%
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Error overlay with retry */}
-                            {status === 'error' && (
-                                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
-                                    <AlertCircle className="w-6 h-6 text-rose-400" />
-                                    {onRetry && (
-                                        <button
-                                            onClick={() => onRetry(idx)}
-                                            className="px-2 py-1 bg-rose-500 text-white text-[10px] rounded flex items-center gap-1 hover:bg-rose-600"
-                                        >
-                                            <RefreshCw size={10} /> Retry
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Remove button */}
-                            <button
-                                onClick={() => onRemove(idx)}
-                                className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
-                            >
-                                <X size={12} />
-                            </button>
-
-                            {/* Status badge */}
-                            <div className={`absolute bottom-0 inset-x-0 ${getStatusBg(status)} text-white text-[9px] p-1 truncate text-center flex items-center justify-center gap-1`}>
-                                {status === 'uploading' && <Loader2 size={10} className="animate-spin" />}
-                                {status === 'success' && <Check size={10} />}
-                                {status === 'error' && <AlertCircle size={10} />}
-                                {status === 'pending' && t('readyToUpload')}
-                                {status === 'uploading' && 'Uploading...'}
-                                {status === 'success' && 'Uploaded'}
-                                {status === 'error' && 'Failed'}
-                            </div>
+                            <X size={12} />
+                        </button>
+                        <div className="absolute bottom-0 inset-x-0 bg-sage-600 text-white text-[9px] p-1 truncate text-center">
+                            {t('readyToUpload')}
                         </div>
-                    );
-                })}
+                    </div>
+                ))}
             </div>
         </div>
     );
 };
-
 
 export const RichPostItem: React.FC<{ post: BlogPost, onEdit: () => void, onDelete: () => void }> = ({ post, onEdit, onDelete }) => (
     <div className="group bg-white dark:bg-stone-900 p-4 rounded-xl border border-stone-200 dark:border-stone-800 flex gap-4 transition-all hover:border-stone-300 dark:hover:border-stone-600">
@@ -562,426 +469,19 @@ export const TrafficStatsSection: React.FC<{
     sourceData: SourceData[],
     pageVisitData: PageVisitData[],
     deviceData: DeviceData[]
-}> = ({ trafficData, sourceData, pageVisitData, deviceData }) => {
-    const { t } = useAdminLocale();
-    const { refreshAnalytics } = useData();
-    const [selectedPeriod, setSelectedPeriod] = React.useState<'7d' | '30d' | '90d' | 'all'>('30d');
-    const [showAllPages, setShowAllPages] = React.useState(false);
-    const [searchQuery, setSearchQuery] = React.useState('');
-    const [activeIndex, setActiveIndex] = React.useState(0);
+}> = ({ trafficData: _trafficData, sourceData: _sourceData, pageVisitData: _pageVisitData, deviceData: _deviceData }) => {
+    const { t: _t } = useAdminLocale();
+    const { refreshAnalytics: _refreshAnalytics } = useData();
 
-    // Refresh analytics data when period changes
-    React.useEffect(() => {
-        refreshAnalytics(selectedPeriod);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedPeriod]);
 
-    const onPieEnter = (_: any, index: number) => {
-        setActiveIndex(index);
-    };
-
-    const renderActiveShape = (props: any) => {
-        const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, value } = props;
-
-        // Simplify label: remove protocol and domain if it looks like a URL
-        const formatLabel = (name: string) => {
-            if (!name) return name;
-            try {
-                // If it starts with http, parse it
-                if (name.startsWith('http')) {
-                    const url = new URL(name);
-                    return url.pathname === '/' ? '/' : url.pathname;
-                }
-                // If it looks like a path already (starts with /), return as is
-                if (name.startsWith('/')) return name;
-                // Otherwise return as is
-                return name;
-            } catch (_e) {
-                return name;
-            }
-        };
-
-        const displayName = formatLabel(payload.name);
-
-        return (
-            <g>
-                <text x={cx} y={cy} dy={-4} textAnchor="middle" fill={fill} className="text-xl font-bold font-mono">
-                    {value}
-                </text>
-                <text x={cx} y={cy} dy={16} textAnchor="middle" fill="#999" className="text-[10px] uppercase tracking-widest font-bold">
-                    {displayName.length > 15 ? displayName.substring(0, 15) + '...' : displayName}
-                </text>
-                <Sector
-                    cx={cx}
-                    cy={cy}
-                    innerRadius={innerRadius}
-                    outerRadius={outerRadius + 4} // Reduced from +6
-                    startAngle={startAngle}
-                    endAngle={endAngle}
-                    fill={fill}
-                    cornerRadius={6}
-                />
-                <Sector
-                    cx={cx}
-                    cy={cy}
-                    startAngle={startAngle}
-                    endAngle={endAngle}
-                    innerRadius={innerRadius - 4} // Reduced from -6
-                    outerRadius={innerRadius}
-                    fill={fill}
-                    fillOpacity={0.06} // Reduced from 0.1
-                    cornerRadius={6}
-                />
-            </g>
-        );
-    };
-
-    // Filter traffic data based on selected period
-    const filteredTrafficData = React.useMemo(() => {
-        if (selectedPeriod === 'all') return trafficData;
-        const days = selectedPeriod === '7d' ? 7 : selectedPeriod === '30d' ? 30 : 90;
-        return trafficData.slice(-days);
-    }, [trafficData, selectedPeriod]);
-
-    const totalVisits = filteredTrafficData.reduce((acc, curr) => acc + curr.visits, 0);
-    const totalUnique = filteredTrafficData.reduce((acc, curr) => acc + curr.unique, 0);
-
-    // Process pageVisitData to show top 9 + Others
-    const processedPageData = React.useMemo(() => {
-        if (pageVisitData.length <= 9) return { display: pageVisitData, others: null };
-        const top9 = pageVisitData.slice(0, 9);
-        const rest = pageVisitData.slice(9);
-        const othersTotal = rest.reduce((acc, p) => acc + p.visits, 0);
-        return {
-            display: top9,
-            others: { count: rest.length, visits: othersTotal }
-        };
-    }, [pageVisitData]);
-
-    // Process sourceData to show top 9 + Others
-    const processedSourceData = React.useMemo(() => {
-        // Sort by value descending first
-        const sorted = [...sourceData].sort((a, b) => b.value - a.value);
-        const total = sorted.reduce((acc, curr) => acc + curr.value, 0);
-
-        if (sorted.length <= 10) {
-            return { display: sorted, total };
-        }
-
-        const top9 = sorted.slice(0, 9);
-        const rest = sorted.slice(9);
-        const othersValue = rest.reduce((acc, curr) => acc + curr.value, 0);
-
-        const othersItem = {
-            name: t('othersCount'),
-            value: othersValue,
-            color: '#e5e5e5' // Neutral gray for others
-        };
-
-        return {
-            display: [...top9, othersItem],
-            total
-        };
-    }, [sourceData, t]);
-
-    // Filter pages for modal search
-    const filteredPages = React.useMemo(() => {
-        if (!searchQuery.trim()) return pageVisitData;
-        const q = searchQuery.toLowerCase();
-        return pageVisitData.filter(p =>
-            p.path.toLowerCase().includes(q) || p.title.toLowerCase().includes(q)
-        );
-    }, [pageVisitData, searchQuery]);
-
-    const periodOptions = [
-        { key: '7d' as const, label: t('last7Days') },
-        { key: '30d' as const, label: t('last30Days') },
-        { key: '90d' as const, label: t('last90Days') },
-        { key: 'all' as const, label: t('allTime') },
-    ];
-
-    // Dynamic period label for stats cards
-    const periodLabel = selectedPeriod === '7d' ? t('last7Days')
-        : selectedPeriod === '30d' ? t('last30Days')
-            : selectedPeriod === '90d' ? t('last90Days')
-                : t('allTime');
-
-    // Calculate average visits per day
-    const avgVisitsPerDay = filteredTrafficData.length > 0
-        ? Math.round(totalVisits / filteredTrafficData.length)
-        : 0;
-
-    // Calculate unique visitor ratio (unique/total as percentage)
-    const uniqueRatio = totalVisits > 0
-        ? ((totalUnique / totalVisits) * 100).toFixed(1) + '%'
-        : '0%';
-
-    const kpiCards = [
-        { label: `${t('totalVisits')} (${periodLabel})`, value: totalVisits.toLocaleString(), change: '', icon: Users, color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
-        { label: `${t('uniqueVisitors')} (${periodLabel})`, value: totalUnique.toLocaleString(), change: '', icon: MousePointer, color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
-        { label: t('avgVisitsPerDay'), value: avgVisitsPerDay.toLocaleString(), change: '', icon: Clock, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
-        { label: t('uniqueRatio'), value: uniqueRatio, change: '', icon: Activity, color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
-    ];
 
     return (
         <div className="max-w-6xl mx-auto animate-in fade-in space-y-8 pb-12">
-            {/* Header with Period Filter */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">{t('analyticsTitle')}</h2>
-                    <p className="text-stone-500 dark:text-stone-400">{t('insightsDescription')}</p>
-                </div>
-                {/* Pill Button Group */}
-                <div className="inline-flex p-1 bg-stone-100 dark:bg-stone-800 rounded-full">
-                    {periodOptions.map(opt => (
-                        <button
-                            key={opt.key}
-                            onClick={() => setSelectedPeriod(opt.key)}
-                            className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${selectedPeriod === opt.key
-                                ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-sm'
-                                : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300'
-                                }`}
-                        >
-                            {opt.label}
-                        </button>
-                    ))}
-                </div>
+            {/* Component removed - using Cloudflare Web Analytics */}
+            <div className="text-center py-20 text-stone-400">
+                <p className="text-lg font-medium">Analytics has been migrated to Cloudflare Web Analytics</p>
+                <p className="text-sm mt-2">Visit your Cloudflare Dashboard to view analytics</p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {kpiCards.map((kpi, idx) => (
-                    <div key={idx} className="bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className={`p-3 rounded-lg ${kpi.color}`}>
-                                <kpi.icon size={20} />
-                            </div>
-                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${kpi.change.startsWith('+') ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20'}`}>
-                                {kpi.change}
-                            </span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-stone-900 dark:text-stone-100">{kpi.value}</h3>
-                        <p className="text-xs font-bold uppercase tracking-wider text-stone-400 mt-1">{kpi.label}</p>
-                    </div>
-                ))}
-            </div>
-
-            <div className="bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-bold text-lg text-stone-800 dark:text-stone-100 flex items-center gap-2">
-                        <TrendingUp size={18} /> {t('trafficOverview')}
-                    </h3>
-                </div>
-                <div className="h-80 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={filteredTrafficData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorVisits" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorUnique" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} opacity={0.5} />
-                            <XAxis dataKey="date" stroke="#888" fontSize={10} tickLine={false} axisLine={false} minTickGap={30} />
-                            <YAxis stroke="#888" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}`} />
-                            <Tooltip
-                                contentStyle={{ backgroundColor: '#1c1917', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                            />
-                            <Area type="monotone" dataKey="visits" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorVisits)" />
-                            <Area type="monotone" dataKey="unique" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorUnique)" />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
-                    <h3 className="font-bold text-lg text-stone-800 dark:text-stone-100 mb-6 flex items-center gap-2">
-                        <Globe size={18} /> {t('acquisition')}
-                    </h3>
-                    <div className="h-52 w-full relative">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    {...{ activeIndex, activeShape: renderActiveShape } as any}
-                                    data={processedSourceData.display}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={85}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                    onMouseEnter={onPieEnter}
-                                    cornerRadius={6}
-                                >
-                                    {processedSourceData.display.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                                    ))}
-                                </Pie>
-                            </PieChart>
-                        </ResponsiveContainer>
-                        {/* Centered Total or Label if needed, for now just chart */}
-                    </div>
-
-
-                    {/* Device Breakdown Integrated Here */}
-                    <div className="mt-4 pt-4 border-t border-stone-100 dark:border-stone-800">
-                        <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 mb-3 flex items-center gap-2">
-                            <Smartphone size={14} /> {t('deviceBreakdown')}
-                        </h4>
-                        <div className="space-y-3">
-                            {deviceData.map((device, idx) => (
-                                <div key={idx}>
-                                    <div className="flex items-center justify-between text-xs mb-1.5">
-                                        <span className="font-medium text-stone-600 dark:text-stone-400">{device.name}</span>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-bold text-stone-800 dark:text-stone-200">{device.value}%</span>
-                                        </div>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full rounded-full transition-all duration-500"
-                                            style={{ width: `${device.value}%`, backgroundColor: device.color }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="lg:col-span-2 bg-white dark:bg-stone-900 p-6 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="font-bold text-lg text-stone-800 dark:text-stone-100 flex items-center gap-2">
-                            <FileText size={18} /> {t('topPages')}
-                        </h3>
-                        {pageVisitData.length > 9 && (
-                            <button
-                                onClick={() => setShowAllPages(true)}
-                                className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center gap-1"
-                            >
-                                {t('viewAll')} <span className="text-xs">→</span>
-                            </button>
-                        )}
-                    </div>
-                    <div className="space-y-2">
-                        {processedPageData.display.map((page, idx) => (
-                            <div key={idx} className="flex items-center justify-between px-3 py-2 bg-stone-50 dark:bg-stone-800/50 rounded-lg">
-                                <div className="flex items-center gap-3 overflow-hidden">
-                                    <div className="w-6 h-6 rounded bg-stone-200 dark:bg-stone-700 flex items-center justify-center text-xs font-bold text-stone-500">
-                                        {idx + 1}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <div className="text-sm font-bold text-stone-800 dark:text-stone-200 truncate">{page.title}</div>
-                                        <div className="text-xs text-stone-400 truncate" title={page.path}>
-                                            {/* Logic to simplify path display for Top Pages as well */}
-                                            {(() => {
-                                                const path = page.path;
-                                                if (path.startsWith('http')) {
-                                                    try {
-                                                        const url = new URL(path);
-                                                        return url.pathname === '/' ? '/' : url.pathname;
-                                                    } catch { return path; }
-                                                }
-                                                return path;
-                                            })()}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2 text-stone-600 dark:text-stone-400 text-sm font-mono">
-                                    <Eye size={14} /> {page.visits.toLocaleString()}
-                                </div>
-                            </div>
-                        ))}
-                        {/* Others row */}
-                        {processedPageData.others && (
-                            <div
-                                className="flex items-center justify-between px-3 py-2 bg-stone-100 dark:bg-stone-700/50 rounded-lg border border-dashed border-stone-300 dark:border-stone-600 cursor-pointer hover:bg-stone-150 dark:hover:bg-stone-700 transition-colors"
-                                onClick={() => setShowAllPages(true)}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-6 h-6 rounded bg-stone-300 dark:bg-stone-600 flex items-center justify-center text-xs font-bold text-stone-500 dark:text-stone-400">
-                                        …
-                                    </div>
-                                    <div>
-                                        <div className="text-sm font-medium text-stone-600 dark:text-stone-300">
-                                            {t('othersCount')} ({processedPageData.others.count} pages)
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400 text-sm font-mono">
-                                    <Eye size={14} /> {processedPageData.others.visits.toLocaleString()}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Full Pages Modal */}
-            {showAllPages && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowAllPages(false)} />
-                    <div className="relative bg-white dark:bg-stone-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col animate-in zoom-in-95 fade-in duration-200">
-                        {/* Modal Header */}
-                        <div className="p-6 border-b border-stone-200 dark:border-stone-800">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-xl font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                                    <FileText size={20} /> {t('topPagesDetail')}
-                                </h3>
-                                <button
-                                    onClick={() => setShowAllPages(false)}
-                                    className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                                >
-                                    <X size={20} className="text-stone-500" />
-                                </button>
-                            </div>
-                            {/* Search Input */}
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder={t('searchPages')}
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full px-4 py-2.5 pl-10 bg-stone-100 dark:bg-stone-800 border-0 rounded-lg text-sm text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                />
-                                <Eye size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-                            </div>
-                        </div>
-                        {/* Modal Body */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-2">
-                            {filteredPages.map((page, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-800/50 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700/50 transition-colors">
-                                    <div className="flex items-center gap-3 overflow-hidden">
-                                        <div className="w-7 h-7 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center text-xs font-bold text-stone-500">
-                                            {idx + 1}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <div className="text-sm font-bold text-stone-800 dark:text-stone-200 truncate">{page.title}</div>
-                                            <div className="text-xs text-stone-400 truncate">{page.path}</div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-stone-600 dark:text-stone-400 text-sm font-mono whitespace-nowrap">
-                                        <Eye size={14} /> {page.visits.toLocaleString()}
-                                    </div>
-                                </div>
-                            ))}
-                            {filteredPages.length === 0 && (
-                                <div className="text-center py-8 text-stone-400">
-                                    {t('noDataYet')}
-                                </div>
-                            )}
-                        </div>
-                        {/* Modal Footer */}
-                        <div className="p-4 border-t border-stone-200 dark:border-stone-800 text-center text-xs text-stone-400">
-                            {pageVisitData.length} {t('topPages').toLowerCase()}
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

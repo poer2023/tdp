@@ -49,11 +49,18 @@ COPY prisma ./prisma
 CMD ["pnpm", "exec", "prisma", "migrate", "deploy"]
 
 # === Production Stage: Runtime environment ===
-FROM cgr.dev/chainguard/node:latest AS runner
+# Using -dev variant to include apk for FFmpeg installation
+FROM cgr.dev/chainguard/node:latest-dev AS runner
 ENV NODE_ENV=production
 ENV HUSKY=0
 ENV HOSTNAME=0.0.0.0
 WORKDIR /app
+
+# Install FFmpeg for video processing (requires root)
+USER root
+RUN apk add --no-cache ffmpeg
+USER node
+
 
 # Copy the standalone server build
 COPY --from=builder --chown=node:node /app/.next/standalone ./

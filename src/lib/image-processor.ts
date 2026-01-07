@@ -88,3 +88,22 @@ export function getThumbnailFilename(originalFilename: string, size: keyof Thumb
   const nameWithoutExt = originalFilename.replace(/\.[^.]+$/, "");
   return `${nameWithoutExt}${getThumbnailExtension(size)}`;
 }
+
+/**
+ * Generate a blur data URL for image placeholder (LQIP)
+ * Creates a tiny ~20px blurred image encoded as Base64
+ * Result is ~500-1500 bytes, suitable for inline embedding
+ * 
+ * @param imageBuffer - Original image buffer
+ * @returns Base64 data URL string (e.g., "data:image/webp;base64,...")
+ */
+export async function generateBlurDataURL(imageBuffer: Buffer): Promise<string> {
+  const blurBuffer = await sharp(imageBuffer)
+    .rotate() // Auto-apply EXIF orientation
+    .resize(20, 20, { fit: "inside" })
+    .blur(2)
+    .webp({ quality: 50 })
+    .toBuffer();
+
+  return `data:image/webp;base64,${blurBuffer.toString("base64")}`;
+}
