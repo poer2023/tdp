@@ -270,8 +270,10 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
               muted
               loop
               playsInline
+              preload="metadata"
               className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
             />
+
           ) : (
             <Image
               src={sq.src}

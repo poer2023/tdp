@@ -18,12 +18,18 @@ export interface VideoPlayerProps {
     height?: number;
     playOnHover?: boolean; // Play when hovering
     showPlayButton?: boolean; // Show play button overlay
+    pauseOutsideViewport?: boolean; // Pause when outside viewport (2026 best practice)
     onClick?: () => void;
 }
 
 /**
  * VideoPlayer component for displaying videos with optional controls
- * Supports autoplay, muted, loop, and hover-to-play functionality
+ * 
+ * 2026 Best Practices:
+ * - preload="metadata" - Only loads video metadata, not content
+ * - IntersectionObserver - Pause when outside viewport
+ * - poster image - Prevents layout shift
+ * - playsinline - Required for iOS
  */
 export function VideoPlayer({
     src,
@@ -38,13 +44,16 @@ export function VideoPlayer({
     height,
     playOnHover = false,
     showPlayButton = true,
+    pauseOutsideViewport = true,
     onClick,
 }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [isPlaying, setIsPlaying] = useState(autoPlay);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(muted);
     const [showControls, setShowControls] = useState(false);
-    const [hasStarted, setHasStarted] = useState(autoPlay);
+    const [hasStarted, setHasStarted] = useState(false);
+    const [isInViewport, setIsInViewport] = useState(false);
 
     // Handle video play/pause
     const togglePlay = useCallback(() => {
@@ -82,13 +91,13 @@ export function VideoPlayer({
 
     // Handle hover play
     const handleMouseEnter = useCallback(() => {
-        if (playOnHover && videoRef.current) {
+        if (playOnHover && videoRef.current && isInViewport) {
             videoRef.current.play();
             setIsPlaying(true);
             setHasStarted(true);
         }
         setShowControls(true);
-    }, [playOnHover]);
+    }, [playOnHover, isInViewport]);
 
     const handleMouseLeave = useCallback(() => {
         if (playOnHover && videoRef.current) {
@@ -127,6 +136,49 @@ export function VideoPlayer({
         };
     }, []);
 
+    // IntersectionObserver for viewport-aware playback (2026 best practice)
+    useEffect(() => {
+        const container = containerRef.current;
+        const video = videoRef.current;
+        if (!container || !video) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    const inViewport = entry.isIntersecting;
+                    setIsInViewport(inViewport);
+
+                    if (pauseOutsideViewport) {
+                        if (inViewport) {
+                            // In viewport: start playing if autoPlay or was playing before
+                            if (autoPlay || hasStarted) {
+                                video.play().catch(() => {
+                                    // Autoplay might be blocked, that's ok
+                                });
+                                setIsPlaying(true);
+                                setHasStarted(true);
+                            }
+                        } else {
+                            // Outside viewport: pause to save resources
+                            video.pause();
+                            setIsPlaying(false);
+                        }
+                    }
+                });
+            },
+            {
+                threshold: 0.3, // Trigger when 30% visible
+                rootMargin: "50px", // Start loading slightly before in view
+            }
+        );
+
+        observer.observe(container);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [autoPlay, pauseOutsideViewport, hasStarted]);
+
     // Calculate style
     const containerStyle: React.CSSProperties = {
         aspectRatio: aspectRatio,
@@ -136,6 +188,7 @@ export function VideoPlayer({
 
     return (
         <div
+            ref={containerRef}
             className={cn(
                 "relative overflow-hidden rounded-xl bg-stone-900",
                 className
@@ -145,17 +198,20 @@ export function VideoPlayer({
             onMouseLeave={handleMouseLeave}
             onClick={handleClick}
         >
-            {/* Video element */}
+            {/* Video element - preload="metadata" for performance */}
             <video
                 ref={videoRef}
                 src={src}
                 poster={poster}
-                autoPlay={autoPlay}
                 muted={muted}
                 loop={loop}
                 playsInline
+                preload="metadata"
                 controls={controls}
                 className="h-full w-full object-cover"
+                // Explicit dimensions prevent CLS (Cumulative Layout Shift)
+                width={width}
+                height={height}
             />
 
             {/* Play button overlay (when not playing and not autoPlay) */}
@@ -236,7 +292,12 @@ export function VideoPlayer({
 
 /**
  * Simplified video component for hero/background videos
- * Always muted, autoplays, loops, no controls
+ * Always muted, loops, no controls
+ * 
+ * 2026 Best Practices:
+ * - preload="metadata" - Only loads metadata initially
+ * - IntersectionObserver - Starts playing when in viewport
+ * - Pauses when outside viewport to save resources
  */
 export function HeroVideo({
     src,
@@ -247,14 +308,50 @@ export function HeroVideo({
     poster?: string;
     className?: string;
 }) {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [isInViewport, setIsInViewport] = useState(false);
+
+    // IntersectionObserver for viewport-aware playback
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    setIsInViewport(entry.isIntersecting);
+
+                    if (entry.isIntersecting) {
+                        video.play().catch(() => {
+                            // Autoplay might be blocked
+                        });
+                    } else {
+                        video.pause();
+                    }
+                });
+            },
+            {
+                threshold: 0.1,
+                rootMargin: "100px",
+            }
+        );
+
+        observer.observe(video);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
+
     return (
         <video
+            ref={videoRef}
             src={src}
             poster={poster}
-            autoPlay
             muted
             loop
             playsInline
+            preload="metadata"
             className={cn("h-full w-full object-cover", className)}
         />
     );
