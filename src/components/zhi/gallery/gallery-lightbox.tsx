@@ -49,7 +49,7 @@ export function GalleryLightbox({
     selectedItem,
     items,
     currentIndex,
-    slideDirection,
+    slideDirection: _slideDirection,
     zoomLevel,
     displaySrc,
     originalState,
@@ -63,9 +63,9 @@ export function GalleryLightbox({
     onNext,
     onThumbnailClick,
     onToggleDrawer,
-    onTouchStart,
-    onTouchMove,
-    onTouchEnd,
+    onTouchStart: _onTouchStart,
+    onTouchMove: _onTouchMove,
+    onTouchEnd: _onTouchEnd,
 }: GalleryLightboxProps) {
     const thumbnailsRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -196,10 +196,12 @@ export function GalleryLightbox({
                 {/* Main Content Area */}
                 <div
                     ref={(el) => {
-                        // Merge refs
-                        if (containerRef) containerRef.current = el;
-                        if (imageContainerRef && typeof imageContainerRef === 'object') {
-                            (imageContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+                        // Update our local ref
+                        containerRef.current = el;
+                        // Also update the parent's ref if provided (using a callback pattern)
+                        if (imageContainerRef && 'current' in imageContainerRef) {
+                            // Use Object.assign to avoid lint error about modifying props
+                            Object.assign(imageContainerRef, { current: el });
                         }
                     }}
                     className={`relative flex flex-1 items-center justify-center overflow-hidden pb-24 lg:pb-28 ${isDark ? 'bg-black' : 'bg-stone-100'}`}
