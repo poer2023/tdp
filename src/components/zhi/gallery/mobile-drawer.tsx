@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { ChevronUp } from "lucide-react";
 import type { ZhiGalleryItem } from "./types";
 import { formatFileSize, formatDate } from "./utils";
@@ -18,7 +19,7 @@ interface MobileDrawerProps {
  * Mobile bottom drawer for gallery lightbox
  * Provides a compact view of photo metadata on mobile devices
  */
-export function MobileDrawer({
+export const MobileDrawer = React.memo(function MobileDrawer({
     item,
     isOpen,
     onToggle,
@@ -108,4 +109,4 @@ export function MobileDrawer({
             </div>
         </div>
     );
-}
+});

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { HardDrive } from "lucide-react";
 import type { ZhiGalleryItem } from "./types";
 import { formatFileSize, formatDate, formatRelativeTime } from "./utils";
@@ -18,7 +19,7 @@ interface SidebarPanelProps {
  * Desktop sidebar panel for gallery lightbox
  * Displays photo metadata, location, EXIF, and other details
  */
-export function SidebarPanel({
+export const SidebarPanel = React.memo(function SidebarPanel({
     item,
     currentIndex,
     totalItems,
@@ -214,4 +215,4 @@ export function SidebarPanel({
             </div>
         </aside>
     );
-}
+});

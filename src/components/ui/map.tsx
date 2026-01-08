@@ -117,6 +117,16 @@ function Map({ children, className, onLoad, ...props }: MapProps) {
         }
     }, [resolvedTheme]);
 
+    // Handle center changes - fly to new location instead of recreating the map
+    useEffect(() => {
+        if (mapRef.current && props.center) {
+            mapRef.current.flyTo({
+                center: props.center as [number, number],
+                duration: 500,
+            });
+        }
+    }, [props.center]);
+
     const isLoading = !isLoaded && !isStyleLoaded;
 
     return (

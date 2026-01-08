@@ -27,6 +27,8 @@ export function useGalleryImageLoading({
     const progressHideTimerRef = useRef<number | null>(null);
     const xhrRef = useRef<XMLHttpRequest | null>(null);
     const objectUrlRef = useRef<string | null>(null);
+    const lastProgressUpdateRef = useRef<number>(0);
+    const PROGRESS_THROTTLE_MS = 100; // Throttle progress updates to avoid main thread blocking
 
     const cleanup = () => {
         xhrRef.current?.abort();
@@ -83,6 +85,11 @@ export function useGalleryImageLoading({
             xhr.responseType = "blob";
 
             xhr.onprogress = (event) => {
+                // Throttle progress updates to reduce main thread blocking
+                const now = Date.now();
+                if (now - lastProgressUpdateRef.current < PROGRESS_THROTTLE_MS) return;
+                lastProgressUpdateRef.current = now;
+
                 setOriginalState((prev) => ({
                     status: "loading",
                     loadedBytes: event.loaded,

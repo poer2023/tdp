@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, startTransition } from "react";
 import type { ZhiGalleryItem } from "../types";
 
 export type UseGalleryNavigationOptions = {
@@ -34,12 +34,16 @@ export function useGalleryNavigation({
     const navigateTo = useCallback((targetIndex: number, direction: "left" | "right") => {
         const targetItem = items[targetIndex];
         if (!targetItem) return;
+        // Use startTransition to mark these updates as non-urgent
+        // This allows the browser to prioritize user input responsiveness
         setSlideDirection(direction);
-        setSelectedItem(targetItem);
-        setCurrentIndex(targetIndex);
-        setZoomLevel(1);
+        startTransition(() => {
+            setSelectedItem(targetItem);
+            setCurrentIndex(targetIndex);
+            setZoomLevel(1);
+        });
         requestAnimationFrame(() => {
-            setTimeout(() => setSlideDirection(null), 250);
+            setTimeout(() => setSlideDirection(null), 200);
         });
     }, [items]);
 
