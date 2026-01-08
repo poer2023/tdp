@@ -179,8 +179,13 @@ const getCachedPostsForSitemap = unstable_cache(
 
 /**
  * Get cached posts for sitemap generation by locale
+ * Note: In CI environment, bypass cache to ensure E2E tests see freshly seeded data
  */
 export async function listPostsForSitemap(locale: "EN" | "ZH"): Promise<PostSitemapItem[]> {
+  // Bypass cache in CI to avoid stale data issues in E2E tests
+  if (process.env.CI === "true") {
+    return _fetchPostsForSitemap(locale);
+  }
   return getCachedPostsForSitemap(locale);
 }
 
