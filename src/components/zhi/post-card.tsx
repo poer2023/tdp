@@ -4,14 +4,23 @@ import type { PublicPost } from "@/lib/posts";
 import { toOptimizedImageUrl } from "@/lib/image-proxy";
 import { localePath } from "@/lib/locale-path";
 
+type PostCardPost = Pick<PublicPost, "id" | "title" | "slug" | "excerpt" | "tags"> & {
+  coverImagePath?: string | null;
+  imageUrl?: string;
+  publishedAt?: string | null;
+  date?: string;
+};
+
 interface PostCardProps {
-  post: PublicPost;
+  post: PostCardPost;
   locale?: "zh" | "en";
+  onClick?: () => void;
+  onLike?: (id: string) => void;
 }
 
-export function PostCard({ post, locale = "zh" }: PostCardProps) {
-  const cover = toOptimizedImageUrl(post.coverImagePath) ?? "/images/placeholder-cover.svg";
-  const formatted = post.publishedAt
+export function PostCard({ post, locale = "zh", onClick }: PostCardProps) {
+  const cover = toOptimizedImageUrl(post.coverImagePath ?? post.imageUrl) ?? "/images/placeholder-cover.svg";
+  const formatted = post.date || (post.publishedAt
     ? new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
       year: "numeric",
       month: "long",
@@ -19,10 +28,13 @@ export function PostCard({ post, locale = "zh" }: PostCardProps) {
     }).format(new Date(post.publishedAt))
     : locale === "zh"
       ? "草稿"
-      : "Draft";
+      : "Draft");
 
   return (
-    <article className="group overflow-hidden border border-stone-200 bg-white transition dark:border-stone-800 dark:bg-stone-900">
+    <article
+      className="group overflow-hidden border border-stone-200 bg-white transition dark:border-stone-800 dark:bg-stone-900"
+      onClick={onClick}
+    >
       <div className="relative aspect-[16/9] overflow-hidden bg-stone-100 dark:bg-stone-800">
         <Image
           src={cover}
