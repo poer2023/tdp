@@ -3,8 +3,10 @@ import { listPostsForSitemap } from "@/lib/posts";
 
 // Sitemaps query the DB – ensure Node.js runtime
 export const runtime = "nodejs";
-// Align with Cache-Control header (3600s = 1 hour)
-export const revalidate = 3600;
+// In CI, disable caching to ensure E2E tests see fresh data
+// In production, cache for 1 hour
+export const revalidate = process.env.CI === "true" ? 0 : 3600;
+export const dynamic = process.env.CI === "true" ? "force-dynamic" : "auto";
 
 export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
