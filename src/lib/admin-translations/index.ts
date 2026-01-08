@@ -1,24 +1,39 @@
 /**
  * Admin Translations Module
- * 
- * Provides both static and dynamic access to admin translations.
- * For dynamic loading based on locale, use getTranslations(locale).
- * For static access (backwards compatible), import { adminTranslations, t } from this module.
+ *
+ * Split by locale for better tree-shaking and lazy loading.
+ * Original file: src/lib/admin-translations.ts (now deprecated, kept for reference)
  */
 
-// Re-export everything from the original file for backwards compatibility
-export { adminTranslations, t, type AdminLocale } from "../admin-translations";
+import { en } from "./en";
+import { zh } from "./zh";
 
-// Re-export types
-export type { AdminTranslationKey, AdminTranslations } from "./types";
+export type AdminLocale = "en" | "zh";
+
+// Combined translations object (for backwards compatibility)
+export const adminTranslations = { en, zh } as const;
+
+// Type for translation keys (inferred from en)
+export type AdminTranslationKey = keyof typeof en;
+
+/**
+ * Get translated text
+ * @param locale - The locale to use
+ * @param key - The translation key
+ * @returns The translated string
+ */
+export function t(locale: AdminLocale, key: AdminTranslationKey): string {
+    return adminTranslations[locale][key];
+}
 
 /**
  * Get translations for a specific locale
- * This function can be used for future dynamic loading optimization
+ * Can be used for dynamic imports in the future
  */
-export function getTranslations(locale: "en" | "zh") {
-    // Currently returns from the static bundle
-    // In the future, this could be changed to use dynamic import
-    const { adminTranslations } = require("../admin-translations");
+export function getTranslations(locale: AdminLocale) {
     return adminTranslations[locale];
 }
+
+// Re-export individual locale modules for direct imports
+export { en } from "./en";
+export { zh } from "./zh";
