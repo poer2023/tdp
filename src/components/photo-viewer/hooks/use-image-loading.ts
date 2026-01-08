@@ -29,13 +29,18 @@ export function useImageLoading({
 
     // Auto-hide progress indicator when 100%
     useEffect(() => {
+        let cancelled = false;
         if (progressHideTimerRef.current) {
             window.clearTimeout(progressHideTimerRef.current);
             progressHideTimerRef.current = null;
         }
 
         if (originalState.status === "loading") {
-            setShowProgress(true);
+            queueMicrotask(() => {
+                if (!cancelled) {
+                    setShowProgress(true);
+                }
+            });
         }
 
         if (
@@ -45,12 +50,15 @@ export function useImageLoading({
             originalState.loadedBytes >= originalState.totalBytes
         ) {
             progressHideTimerRef.current = window.setTimeout(() => {
-                setShowProgress(false);
+                if (!cancelled) {
+                    setShowProgress(false);
+                }
                 progressHideTimerRef.current = null;
             }, 2000);
         }
 
         return () => {
+            cancelled = true;
             if (progressHideTimerRef.current) {
                 window.clearTimeout(progressHideTimerRef.current);
                 progressHideTimerRef.current = null;
@@ -72,6 +80,15 @@ export function useImageLoading({
 
     // Fetch original image with progress (with caching)
     useEffect(() => {
+        let cancelled = false;
+        const schedule = (fn: () => void) => {
+            queueMicrotask(() => {
+                if (!cancelled) {
+                    fn();
+                }
+            });
+        };
+
         xhrRef.current?.abort();
         xhrRef.current = null;
         if (objectUrlRef.current) {
@@ -79,34 +96,52 @@ export function useImageLoading({
             objectUrlRef.current = null;
         }
 
-        // Reset display src to medium on image change
-        setDisplaySrc(mediumPath || filePath);
+        const hasMedium = Boolean(mediumPath && mediumPath !== filePath);
 
         // No mediumPath or already using full resolution
-        if (!mediumPath || mediumPath === filePath) {
-            setDisplaySrc(filePath);
-            setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
-            return;
+        if (!hasMedium) {
+            schedule(() => {
+                setDisplaySrc(filePath);
+                setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
+            });
+            return () => {
+                cancelled = true;
+            };
         }
 
         // Check cache first
         const cachedUrl = imageCache.get(imageId);
         if (cachedUrl) {
-            setDisplaySrc(cachedUrl);
-            setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
-            return;
+            schedule(() => {
+                setDisplaySrc(cachedUrl);
+                setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
+            });
+            return () => {
+                cancelled = true;
+            };
         }
+
+        // Reset display src to medium on image change
+        schedule(() => {
+            setDisplaySrc(mediumPath || filePath);
+        });
 
         // SSR guard
         if (typeof window === "undefined" || typeof window.XMLHttpRequest === "undefined") {
-            setOriginalState({ status: "idle", loadedBytes: 0, totalBytes: null });
-            return;
+            schedule(() => {
+                setOriginalState({ status: "idle", loadedBytes: 0, totalBytes: null });
+            });
+            return () => {
+                cancelled = true;
+            };
         }
 
         // Start loading original image
         const xhr = new window.XMLHttpRequest();
         xhrRef.current = xhr;
-        setOriginalState({ status: "loading", loadedBytes: 0, totalBytes: null });
+        schedule(() => {
+            setOriginalState({ status: "loading", loadedBytes: 0, totalBytes: null });
+        });
 
         xhr.open("GET", filePath, true);
         xhr.responseType = "blob";
@@ -159,6 +194,7 @@ export function useImageLoading({
         }
 
         return () => {
+            cancelled = true;
             xhr.abort();
             if (xhrRef.current === xhr) {
                 xhrRef.current = null;

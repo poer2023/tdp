@@ -94,6 +94,8 @@ export function useSlideAnimation({
 
     // Handle slide animation when image changes
     useEffect(() => {
+        let cancelled = false;
+        let rafId: number | null = null;
         const prevSnapshot = previousSnapshotRef.current;
         let pending = pendingDirectionRef.current;
         let storedSnapshot: {
@@ -147,10 +149,24 @@ export function useSlideAnimation({
 
         if (snapshotToUse && pending) {
             const direction = pending === "next" ? "left" : "right";
-            startSlide(direction, snapshotToUse);
+            rafId = window.requestAnimationFrame(() => {
+                if (!cancelled) {
+                    startSlide(direction, snapshotToUse);
+                }
+            });
         } else {
-            setSlideContext(null);
+            queueMicrotask(() => {
+                if (!cancelled) {
+                    setSlideContext(null);
+                }
+            });
         }
+        return () => {
+            cancelled = true;
+            if (rafId !== null) {
+                window.cancelAnimationFrame(rafId);
+            }
+        };
     }, [imageId, title, locale, startSlide, clearStoredDirection]);
 
     // Update snapshot after image change

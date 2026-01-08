@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import type { ZhiGalleryItem, OriginalLoadState } from "../types";
+import { useState, useEffect, useCallback } from "react";
+import type { ZhiGalleryItem } from "../types";
 
 export type UseGalleryNavigationOptions = {
     items: ZhiGalleryItem[];

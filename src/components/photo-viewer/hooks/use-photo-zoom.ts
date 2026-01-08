@@ -20,12 +20,18 @@ export function usePhotoZoom(): UsePhotoZoomReturn {
 
     // Auto-hide zoom indicator when scale is 100%
     useEffect(() => {
+        let cancelled = false;
+
         if (zoomHideTimerRef.current) {
             window.clearTimeout(zoomHideTimerRef.current);
             zoomHideTimerRef.current = null;
         }
 
-        setShowZoomIndicator(true);
+        queueMicrotask(() => {
+            if (!cancelled) {
+                setShowZoomIndicator(true);
+            }
+        });
 
         if (scale === 1) {
             zoomHideTimerRef.current = window.setTimeout(() => {
@@ -35,6 +41,7 @@ export function usePhotoZoom(): UsePhotoZoomReturn {
         }
 
         return () => {
+            cancelled = true;
             if (zoomHideTimerRef.current) {
                 window.clearTimeout(zoomHideTimerRef.current);
                 zoomHideTimerRef.current = null;

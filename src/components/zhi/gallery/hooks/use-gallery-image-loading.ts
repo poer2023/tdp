@@ -39,6 +39,14 @@ export function useGalleryImageLoading({
     // Load original image with progress
     useEffect(() => {
         if (!selectedItem) return;
+        let cancelled = false;
+        const schedule = (fn: () => void) => {
+            queueMicrotask(() => {
+                if (!cancelled) {
+                    fn();
+                }
+            });
+        };
 
         // Abort previous request
         xhrRef.current?.abort();
@@ -49,19 +57,27 @@ export function useGalleryImageLoading({
 
         // Start with medium or thumbnail
         const initialSrc = selectedItem.mediumPath || selectedItem.thumbnail || selectedItem.url;
-        setDisplaySrc(initialSrc);
+        schedule(() => {
+            setDisplaySrc(initialSrc);
+        });
 
         // If we have medium path, load original in background
         if (selectedItem.mediumPath && selectedItem.mediumPath !== selectedItem.url) {
             if (typeof window === "undefined" || typeof window.XMLHttpRequest === "undefined") {
-                setOriginalState({ status: "idle", loadedBytes: 0, totalBytes: null });
-                return;
+                schedule(() => {
+                    setOriginalState({ status: "idle", loadedBytes: 0, totalBytes: null });
+                });
+                return () => {
+                    cancelled = true;
+                };
             }
 
             const xhr = new window.XMLHttpRequest();
             xhrRef.current = xhr;
-            setOriginalState({ status: "loading", loadedBytes: 0, totalBytes: null });
-            setShowProgress(true);
+            schedule(() => {
+                setOriginalState({ status: "loading", loadedBytes: 0, totalBytes: null });
+                setShowProgress(true);
+            });
 
             xhr.open("GET", selectedItem.url, true);
             xhr.responseType = "blob";
@@ -95,29 +111,44 @@ export function useGalleryImageLoading({
             xhr.send();
 
             return () => {
+                cancelled = true;
                 xhr.abort();
             };
         } else {
-            setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
-            return undefined;
+            schedule(() => {
+                setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
+            });
+            return () => {
+                cancelled = true;
+            };
         }
-    }, [selectedItem?.id, selectedItem?.url, selectedItem?.mediumPath, selectedItem?.thumbnail]);
+    }, [selectedItem]);
 
     // Auto-hide progress indicator
+    // Use setTimeout in callback instead of synchronous setState in effect
     useEffect(() => {
+        let cancelled = false;
         if (progressHideTimerRef.current) {
             window.clearTimeout(progressHideTimerRef.current);
             progressHideTimerRef.current = null;
         }
         if (originalState.status === "loading") {
-            setShowProgress(true);
+            // Schedule state update via setTimeout (async, not synchronous)
+            progressHideTimerRef.current = window.setTimeout(() => {
+                if (!cancelled) {
+                    setShowProgress(true);
+                }
+            }, 0);
         }
         if (originalState.status === "success" && originalState.loadedBytes > 0) {
             progressHideTimerRef.current = window.setTimeout(() => {
-                setShowProgress(false);
+                if (!cancelled) {
+                    setShowProgress(false);
+                }
             }, 2000);
         }
         return () => {
+            cancelled = true;
             if (progressHideTimerRef.current) {
                 window.clearTimeout(progressHideTimerRef.current);
             }

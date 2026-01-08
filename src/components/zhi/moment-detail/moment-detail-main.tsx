@@ -24,18 +24,28 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
   const [liked, setLiked] = useState(Boolean(moment.liked));
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    const resetTimer = window.setTimeout(() => {
+      if (!cancelled) {
+        setLikeCount(moment.likes);
+        setLiked(Boolean(moment.liked));
+      }
+    }, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(resetTimer);
+    };
+  }, [moment.id, moment.likes, moment.liked]);
+
   const imageCount = moment.images?.length || 0;
 
   // Use extracted hooks
   const commentsHook = useComments({ momentId: moment.id });
+  const { fetchComments } = commentsHook;
   const carousel = useImageCarousel({ imageCount });
 
   const t = (key: string) => getMomentDetailTranslation(locale, key);
-
-  useEffect(() => {
-    setLikeCount(moment.likes);
-    setLiked(Boolean(moment.liked));
-  }, [moment.id, moment.likes, moment.liked]);
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
@@ -58,13 +68,13 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     document.body.style.overflow = "hidden";
-    commentsHook.fetchComments();
+    fetchComments();
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
-  }, [handleKeyDown, commentsHook.fetchComments]);
+  }, [handleKeyDown, fetchComments]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();

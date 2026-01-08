@@ -24,7 +24,10 @@ export function AnimatedCounter({
         let frameId: number;
 
         const animate = (currentTime: number) => {
-            if (!startTime) startTime = currentTime;
+            if (startTime === null) {
+                startTime = currentTime;
+                setCount(0);
+            }
             const progress = Math.min((currentTime - startTime) / duration, 1);
 
             if (progress < 1) {
@@ -38,7 +41,6 @@ export function AnimatedCounter({
             }
         };
 
-        setCount(0);
         frameId = requestAnimationFrame(animate);
         return () => cancelAnimationFrame(frameId);
     }, [end, duration, trigger]);

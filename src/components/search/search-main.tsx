@@ -19,7 +19,12 @@ export function Search({ size = "md" }: { size?: "sm" | "md" }) {
 
     // Avoid hydration mismatches by deferring overlay render to client mount
     const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
+    useEffect(() => {
+        const mountTimer = window.setTimeout(() => {
+            setMounted(true);
+        }, 0);
+        return () => window.clearTimeout(mountTimer);
+    }, []);
 
     // Detect mobile viewport
     useEffect(() => {

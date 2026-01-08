@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { localePath } from "@/lib/locale-path";
 import { PhotoMetadataPanel } from "./photo-metadata-panel";
@@ -73,35 +73,36 @@ export function PhotoViewer({
     clampOffsetRef.current = zoom.clampOffset;
   }, [zoom.clampOffset]);
 
-  const [thumbnailIndex, setThumbnailIndex] = useState(0);
+  const visualAdjacentIds = useMemo(() => {
+    if (!thumbnails || !currentId) {
+      return { prev: null, next: null, index: 0 };
+    }
+    const currentIndex = thumbnails.findIndex((t) => t.id === currentId);
+    if (currentIndex === -1) {
+      return { prev: null, next: null, index: 0 };
+    }
+    const prevThumbnail = currentIndex > 0 ? thumbnails[currentIndex - 1] : null;
+    const nextThumbnail = currentIndex < thumbnails.length - 1 ? thumbnails[currentIndex + 1] : null;
+    return {
+      prev: prevThumbnail?.id ?? null,
+      next: nextThumbnail?.id ?? null,
+      index: currentIndex,
+    };
+  }, [thumbnails, currentId]);
 
-  // Calculate visual adjacent IDs from thumbnails array
-  const visualAdjacentIds = useRef<{ prev: string | null; next: string | null }>({
+  const visualAdjacentIdsRef = useRef<{ prev: string | null; next: string | null }>({
     prev: null,
     next: null,
   });
 
   useEffect(() => {
-    if (!thumbnails || !currentId) {
-      visualAdjacentIds.current = { prev: null, next: null };
-      setThumbnailIndex(0);
-      return;
-    }
-    const currentIndex = thumbnails.findIndex((t) => t.id === currentId);
-    if (currentIndex === -1) {
-      visualAdjacentIds.current = { prev: null, next: null };
-      setThumbnailIndex(0);
-      return;
-    }
-    setThumbnailIndex(currentIndex);
-    const prevThumbnail = currentIndex > 0 ? thumbnails[currentIndex - 1] : null;
-    const nextThumbnail =
-      currentIndex < thumbnails.length - 1 ? thumbnails[currentIndex + 1] : null;
-    visualAdjacentIds.current = {
-      prev: prevThumbnail?.id ?? null,
-      next: nextThumbnail?.id ?? null,
+    visualAdjacentIdsRef.current = {
+      prev: visualAdjacentIds.prev,
+      next: visualAdjacentIds.next,
     };
-  }, [thumbnails, currentId]);
+  }, [visualAdjacentIds.prev, visualAdjacentIds.next]);
+
+  const noopSetThumbnailIndex = useCallback(() => {}, []);
 
   const preventDefault = useCallback((event: Event) => {
     event.preventDefault();
@@ -232,8 +233,8 @@ export function PhotoViewer({
       const dragDistance = e.clientX - dragRef.current.startX;
 
       if (currentScale === 1 && Math.abs(dragDistance) > SWIPE_THRESHOLD) {
-        const visualNext = visualAdjacentIds.current.next;
-        const visualPrev = visualAdjacentIds.current.prev;
+        const visualNext = visualAdjacentIdsRef.current.next;
+        const visualPrev = visualAdjacentIdsRef.current.prev;
 
         if (dragDistance < 0 && visualNext) {
           slideAnimation.markPendingDirection("next");
@@ -274,8 +275,8 @@ export function PhotoViewer({
 
       <PhotoViewerNavigation
         locale={locale}
-        prevId={visualAdjacentIds.current.prev}
-        nextId={visualAdjacentIds.current.next}
+        prevId={visualAdjacentIds.prev}
+        nextId={visualAdjacentIds.next}
         onPrevClick={() => slideAnimation.markPendingDirection("prev")}
         onNextClick={() => slideAnimation.markPendingDirection("next")}
       />
@@ -330,8 +331,8 @@ export function PhotoViewer({
           <div className="px-4 py-3">
             <Thumbnails
               images={thumbnails}
-              index={thumbnailIndex}
-              setIndex={setThumbnailIndex}
+              index={visualAdjacentIds.index}
+              setIndex={noopSetThumbnailIndex}
               currentId={currentId || image.id}
               locale={locale}
               onImageClick={handleThumbnailClick}

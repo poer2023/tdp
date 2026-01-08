@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { localePath, type PublicLocale } from "@/lib/locale-path";
+import { localePath } from "@/lib/locale-path";
 import { LanguageBadge } from "@/components/ui/language-badge";
 import type { SearchResultsContainerProps } from "../types";
 
