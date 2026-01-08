@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { localePath } from "@/lib/locale-path";
 import type { GalleryImage } from "@/lib/gallery";
-import { PhotoMetadataPanel } from "@/components/photo-metadata-panel";
-import { LivePhotoPlayer } from "@/components/live-photo-player";
+import { PhotoMetadataPanel } from "@/components/photo-viewer/photo-metadata-panel";
+import { LivePhotoPlayer } from "@/components/shared/live-photo-player";
 import Image from "next/image";
 import { useImageCache } from "@/hooks/use-image-cache";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Thumbnails } from "@/components/ui/thumbnail-carousel";
 
 const SLIDE_STORAGE_KEY = "gallery-slide-direction";
@@ -134,6 +134,13 @@ export function PhotoViewer({
 
   const preventDefault = useCallback((event: Event) => {
     event.preventDefault();
+  }, []);
+
+  // Detect if we're on a mobile device
+  const isMobile = useCallback(() => {
+    if (typeof window === "undefined") return false;
+    // Check viewport width (more reliable than user agent)
+    return window.innerWidth < 768;
   }, []);
 
   // Drive transforms via CSS variables + RAF to avoid rerendering on every move.
@@ -472,12 +479,7 @@ export function PhotoViewer({
     };
   }, []);
 
-  // Detect if we're on a mobile device
-  const isMobile = useCallback(() => {
-    if (typeof window === "undefined") return false;
-    // Check viewport width (more reliable than user agent)
-    return window.innerWidth < 768;
-  }, []);
+
 
   // Fetch original image with progress (with caching)
   // On mobile: skip auto-download to avoid performance issues
