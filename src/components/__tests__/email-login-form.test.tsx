@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { EmailLoginForm } from "../email-login-form";
+import { EmailLoginForm } from "../auth/email-login-form";
 
 const { replaceMock, refreshMock, signInMock } = vi.hoisted(() => ({
   replaceMock: vi.fn(),

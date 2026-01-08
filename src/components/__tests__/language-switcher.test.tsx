@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { LanguageSwitcher } from "../language-switcher";
+import { LanguageSwitcher } from "../layout/language-switcher";
 import { PostLocale } from "@prisma/client";
 
 // Mock Prisma

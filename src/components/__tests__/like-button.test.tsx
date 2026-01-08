@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { LikeButton } from "../like-button";
+import { LikeButton } from "../shared/like-button";
 
 // Mock fetch
 global.fetch = vi.fn();
@@ -315,7 +315,7 @@ describe("LikeButton", () => {
   });
 
   it("should handle fetch error gracefully", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     vi.mocked(fetch).mockRejectedValueOnce(new Error("Network error"));
 
@@ -330,7 +330,7 @@ describe("LikeButton", () => {
   });
 
   it("should handle like error gracefully", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     vi.mocked(fetch)
       .mockResolvedValueOnce({

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { GalleryCard } from "../gallery-card";
+import { GalleryCard } from "../gallery/gallery-card";
 import type { GalleryImage } from "@/lib/gallery";
 
 // Mock Next.js Image component
 vi.mock("next/image", () => ({
-  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) => (
+  default: ({ src, alt, ...props }: { src: string; alt: string;[key: string]: unknown }) => (
     <img src={src} alt={alt} {...props} />
   ),
 }));
@@ -18,7 +18,7 @@ vi.mock("next/link", () => ({
 }));
 
 // Mock LivePhotoPlayer component
-vi.mock("../live-photo-player", () => ({
+vi.mock("@/components/shared/live-photo-player", () => ({
   LivePhotoPlayer: ({
     imageSrc,
     videoSrc,

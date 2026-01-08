@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { LivePhotoPlayer } from "../live-photo-player";
+import { LivePhotoPlayer } from "@/components/shared/live-photo-player";
 
 describe("LivePhotoPlayer", () => {
   const mockProps = {

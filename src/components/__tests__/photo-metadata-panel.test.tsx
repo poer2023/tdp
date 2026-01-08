@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
-import { PhotoMetadataPanel } from "../photo-metadata-panel";
+import { PhotoMetadataPanel } from "../photo-viewer/photo-metadata-panel";
 import type { GalleryImage } from "@/lib/gallery";
 
 // Mock next-themes
