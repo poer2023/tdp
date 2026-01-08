@@ -153,15 +153,21 @@ export type PostSitemapItem = {
 
 // Internal function for sitemap items by locale
 async function _fetchPostsForSitemap(localeCode: "EN" | "ZH"): Promise<PostSitemapItem[]> {
-  const posts = await prisma.post.findMany({
-    where: {
-      locale: localeCode,
-      status: PostStatus.PUBLISHED,
+  return withDbFallback(
+    async () => {
+      const posts = await prisma.post.findMany({
+        where: {
+          locale: localeCode,
+          status: PostStatus.PUBLISHED,
+        },
+        select: { slug: true, updatedAt: true },
+        orderBy: { publishedAt: "desc" },
+      });
+      return posts;
     },
-    select: { slug: true, updatedAt: true },
-    orderBy: { publishedAt: "desc" },
-  });
-  return posts;
+    async () => [],
+    "posts:sitemap"
+  );
 }
 
 // Cached version with 3600s TTL (matches Cache-Control header)
