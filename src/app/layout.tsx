@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Outfit, Lora } from "next/font/google";
 import "./globals.css";
-import { SessionProvider } from "@/components/session-provider";
-import { ThemeProvider } from "@/components/theme-provider";
+import { SessionProvider } from "@/components/layout/session-provider";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 import { getHtmlLang } from "@/lib/i18n";
-import { HtmlLangSync } from "@/components/html-lang-sync";
+import { HtmlLangSync } from "@/components/layout/html-lang-sync";
 import { ConfirmProvider } from "@/hooks/use-confirm";
 import { MomentComposerLoader } from "@/components/moments/moment-composer-loader";
 

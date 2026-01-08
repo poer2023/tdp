@@ -7,7 +7,7 @@ import type { GalleryImage } from "@/lib/gallery";
 import type { SiteStatistics } from "@/lib/statistics";
 import type { PublicLocale } from "@/lib/locale-path";
 import { localePath } from "@/lib/locale-path";
-import { ShuffleGridStats } from "@/components/shuffle-grid-stats";
+import { ShuffleGridStats } from "./shuffle-grid-stats";
 
 type ShuffleGridProps = {
   activities: RecentActivity[];

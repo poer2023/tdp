@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn, signOut } from "next-auth/react";
-import { EmailLoginForm } from "@/components/email-login-form";
+import { EmailLoginForm } from "@/components/auth/email-login-form";
 import { useState } from "react";
 
 export function LoginButtons({

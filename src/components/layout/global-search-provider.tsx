@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, createContext, useContext } from "react";
-import { SearchCommand } from "./search/search-command";
+import { SearchCommand } from "@/components/search/search-command";
 
 type SearchContextType = {
   open: boolean;

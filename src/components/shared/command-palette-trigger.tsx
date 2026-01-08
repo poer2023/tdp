@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearch } from "./global-search-provider";
+import { useSearch } from "@/components/layout/global-search-provider";
 
 type CommandPaletteTriggerProps = {
   size?: "sm" | "md";
@@ -14,9 +14,8 @@ export function CommandPaletteTrigger({ size = "md" }: CommandPaletteTriggerProp
       type="button"
       onClick={() => setOpen(true)}
       aria-label="Search"
-      className={`flex items-center justify-center rounded-full border border-stone-200 text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900 focus:ring-0 focus:outline-none dark:border-stone-800 dark:text-stone-400 dark:hover:border-stone-300 ${
-        size === "sm" ? "h-7 w-7" : "h-9 w-9"
-      }`}
+      className={`flex items-center justify-center rounded-full border border-stone-200 text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900 focus:ring-0 focus:outline-none dark:border-stone-800 dark:text-stone-400 dark:hover:border-stone-300 ${size === "sm" ? "h-7 w-7" : "h-9 w-9"
+        }`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

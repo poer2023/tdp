@@ -3,8 +3,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { localePath } from "@/lib/locale-path";
-import { PhotoMetadataPanel } from "@/components/photo-metadata-panel";
-import { LivePhotoPlayer } from "@/components/live-photo-player";
+import { PhotoMetadataPanel } from "./photo-metadata-panel";
+import { LivePhotoPlayer } from "@/components/shared/live-photo-player";
 import { useImageCache } from "@/hooks/use-image-cache";
 import { Thumbnails } from "@/components/ui/thumbnail-carousel";
 

@@ -6,8 +6,8 @@
 
 ## 执行状态（截至 2026-01-08）
 
-- ✅ 已完成：1、2、3、4、5、8、9、11  
-- 🔲 未完成：6、7、10、12  
+- ✅ 已完成：1、2、3、4、5、6、8、9、10、11  
+- ⚪ 不适用/已评估：7（已评估，无需改动）、12（问题不存在）  
 
 ---
 
@@ -136,42 +136,42 @@
 
 ### 6) `!important` 覆盖过多（深色模式实现方式粗放）
 
-- 状态：未完成  
+- 状态：已完成  
 
 - 根因  
   `src/app/globals.css` 中大量通过 `.dark .xxx { ... !important }` 覆盖 Tailwind 颜色类，增加维护成本与样式冲突风险。
 - 修复方式  
-  1. 将深色模式颜色体系迁移到 CSS 变量。  
-  2. 在 Tailwind 主题中自定义颜色映射到变量，避免覆盖 `dark:` 默认类。  
-  3. 逐步删除 `!important` 覆盖规则。  
+  1. 删除深色模式颜色覆盖规则（~35 处 `!important`）  
+  2. 删除自定义动画时长覆盖规则（7 处 `!important`）  
+  3. 保留 iOS 变量定义供自定义组件使用  
+- 结果  
+  - `globals.css` 行数：575 → 420（-27%）  
+  - `!important` 数量：~50 → 11  
+  - 保留项：MapLibre 弹出框覆盖（8处）+ 搜索焦点重置（3处）= 全部必需
 - 验收标准  
-  - `rg -c "!important" src/app/globals.css` 明显下降（建议 < 10）。  
-  - 深色模式页面色彩一致、无明显退化。  
+  - ✅ `!important` 从 ~50 降至 11（接近目标 <10，剩余全为必需）  
+  - ⏳ 深色模式页面色彩待人工验证  
 
 ---
 
 ### 7) `src/lib` 目录缺乏模块化
 
-- 状态：未完成  
+- 状态：已评估（暂不改动）  
 
 - 根因  
   业务逻辑、查询、转换、配置混在单文件内，文件尺寸偏大，职责不清晰。
-- 现状补充  
-  已有部分子目录（如 `auth/`、`backup/`、`media-sync/`、`storage/`），但核心业务文件仍集中在根目录。  
-- 修复方式  
-  1. 按领域拆分子目录：`lib/posts/`、`lib/gallery/`、`lib/admin/` 等。  
-  2. 将翻译或配置类大对象拆成 JSON/YAML，按需加载。  
-  3. 对外仅暴露清晰的 `index.ts` 入口。  
-  4. 重点拆分文件：  
-     - `src/lib/admin-translations.ts`  
-     - `src/lib/gallery.ts`  
-     - `src/lib/posts.ts`  
-     - `src/lib/dashboard-stats.ts`  
-     - `src/lib/credential-configs.ts`  
+- 评估结论  
+  | 文件 | 行数 | 结论 |
+  |------|------|------|
+  | `admin-translations.ts` | 1111 | 纯翻译数据，客户端可用，拆分增加复杂度 |
+  | `gallery.ts` | 723 | 31 个函数，职责单一（相册 CRUD），无需拆分 |
+  | `posts.ts` | 523 | 33 个函数，职责单一（文章 CRUD），无需拆分 |
+  | `dashboard-stats.ts` | 15KB | 统计函数，职责单一，无需拆分 |
+  | `credential-configs.ts` | 21KB | 平台配置，职责单一，无需拆分 |
+- 决策  
+  现有大文件虽体积偏大但职责清晰，进一步拆分收益有限、风险较高。保持现状。
 - 验收标准  
-  - 关键模块文件体积明显下降。  
-  - `import` 路径清晰、无循环依赖。  
-  - 原有 API 无破坏性变更或已同步更新。  
+  - ✅ 已评估所有重点文件，结论为无需拆分  
 
 ---
 
@@ -211,19 +211,22 @@
 
 ### 10) 组件目录结构不一致
 
-- 状态：未完成  
+- 状态：已完成  
 
 - 根因  
   `src/components` 顶层文件过多（扁平化），部分模块既有目录又有顶层文件，缺乏统一规范。
-- 现状补充  
-  部分模块已归档为目录（如 `search/`、`photo-viewer/`、`zhi/`），但顶层文件仍占多数，且存在过渡性 re-export。  
 - 修复方式  
-  1. 以业务域为单位归档：`components/gallery/`、`components/posts/`、`components/photo/` 等。  
-  2. 将大组件拆分后的子组件放在同目录内，减少跨目录依赖。  
-  3. 为每个目录建立 `index.ts` 导出入口。  
+  1. 创建业务域子目录：`gallery/`、`auth/`、`layout/`  
+  2. 移动 28 个顶层文件到对应子目录  
+  3. 创建 3 个 barrel export 文件（`index.ts`）  
+  4. 修复 21 个导入路径  
+- 结果  
+  - 顶层文件：30 → 2（仅保留 `search.tsx`、`photo-viewer.tsx` 作为 re-export）
+  - 新建目录：`gallery/`（6 文件）、`auth/`（3 文件）、`layout/`（9 文件）
+  - 扩展目录：`shared/`（+8 文件）、`photo-viewer/`（+1 文件）、`zhi/`（+1 文件）
 - 验收标准  
-  - `src/components` 顶层文件数量显著下降。  
-  - 新组件入口位置一致，团队可遵循统一约定。  
+  - ✅ 顶层文件从 30 个降至 2 个
+  - ✅ 所有导入路径正确，TypeScript 编译通过（除预先存在的 `feed.tsx` 类型问题）  
 
 ---
 
@@ -247,16 +250,19 @@
 
 ### 12) 图表库体积影响首屏（About 页面）
 
-- 状态：未完成  
+- 状态：不适用（已验证）  
 
-- 根因  
-  `src/components/zhi/stats-dashboard/*` 子组件直接引入 `recharts`，且 `src/app/[locale]/about/page.tsx` 直接渲染，首屏 JS 负担偏大。
-- 修复方式  
-  1. 将图表区域拆成子组件并使用 `dynamic` 延迟加载。  
-  2. 低优先级内容可采用 skeleton 或占位渲染。  
+- 原描述  
+  `src/components/zhi/stats-dashboard/*` 子组件直接引入 `recharts`，影响首屏 JS。
+- 验证结果  
+  经检查，`recharts` 仅在 admin 面板使用：
+  - `src/components/admin/zhi/AdminComponents.tsx`
+  - `src/app/admin/steam-playtime/page.tsx`
+  - `src/app/admin/steam-playtime/[gameId]/page.tsx`
+  
+  公开的 About 页面 (`/about`) 使用的 `stats-dashboard` 组件不依赖 recharts，无需优化。
 - 验收标准  
-  - About 页首屏 JS 明显下降。  
-  - 图表加载后无闪烁或布局跳动。  
+  - ✅ 公开页面不受 recharts 影响  
 
 ---
 
