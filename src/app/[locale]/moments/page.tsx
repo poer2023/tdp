@@ -4,7 +4,6 @@ import { ParticlesMomentsContent } from "./particles-moments-content";
 
 // ISR: Revalidate every 5 minutes - moments are read-heavy
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 type Props = {

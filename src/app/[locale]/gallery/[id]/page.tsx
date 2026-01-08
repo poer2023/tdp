@@ -3,7 +3,6 @@ import { getGalleryImageById, listGalleryThumbs, type GalleryThumb } from "@/lib
 import { PhotoViewer } from "@/components/photo-viewer";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 // ISR: Match gallery list page revalidate (300s)
 export const revalidate = 300;
 

@@ -838,12 +838,12 @@ export function PhotoViewer({
                 {slideContext && (
                   <div
                     className={`pointer-events-none absolute inset-0 transition-transform duration-300 ease-out ${slideContext.direction === "left"
-                        ? slideContext.phase === "pre"
-                          ? "translate-x-0"
-                          : "-translate-x-full"
-                        : slideContext.phase === "pre"
-                          ? "translate-x-0"
-                          : "translate-x-full"
+                      ? slideContext.phase === "pre"
+                        ? "translate-x-0"
+                        : "-translate-x-full"
+                      : slideContext.phase === "pre"
+                        ? "translate-x-0"
+                        : "translate-x-full"
                       }`}
                     style={{ willChange: "transform" }}
                   >
@@ -853,20 +853,21 @@ export function PhotoViewer({
                       fill
                       className="object-contain"
                       sizes="(max-width: 1024px) 100vw, 65vw"
+                      // unoptimized: dynamic transition src from previous image snapshot
                       unoptimized
                     />
                   </div>
                 )}
                 <div
                   className={`absolute inset-0 transition-transform duration-300 ease-out ${slideContext
-                      ? slideContext.direction === "left"
-                        ? slideContext.phase === "pre"
-                          ? "translate-x-full"
-                          : "translate-x-0"
-                        : slideContext.phase === "pre"
-                          ? "-translate-x-full"
-                          : "translate-x-0"
-                      : "translate-x-0"
+                    ? slideContext.direction === "left"
+                      ? slideContext.phase === "pre"
+                        ? "translate-x-full"
+                        : "translate-x-0"
+                      : slideContext.phase === "pre"
+                        ? "-translate-x-full"
+                        : "translate-x-0"
+                    : "translate-x-0"
                     }`}
                   style={{ willChange: "transform" }}
                 >
@@ -886,6 +887,7 @@ export function PhotoViewer({
                       fill
                       className="object-contain"
                       sizes="(max-width: 1024px) 100vw, 65vw"
+                      // unoptimized: displaySrc may be Blob URL from XHR download (not supported by Next.js optimization)
                       unoptimized
                       onLoad={(e) => {
                         const img = e.currentTarget;

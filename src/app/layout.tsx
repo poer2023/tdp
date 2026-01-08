@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Outfit, Lora } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -20,6 +21,22 @@ const geistSans = localFont({
 const geistMono = localFont({
   src: [{ path: "../../public/fonts/geist-mono/GeistMono-Variable.woff2", weight: "100 900" }],
   variable: "--font-geist-mono",
+  display: "swap",
+});
+
+// Google Fonts via next/font (replaces blocking @import in globals.css)
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-outfit",
+  display: "swap",
+});
+
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  style: ["normal", "italic"],
+  variable: "--font-lora",
   display: "swap",
 });
 
@@ -58,7 +75,7 @@ export default async function RootLayout({
   return (
     <html lang={htmlLang} suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col overflow-x-hidden bg-white text-stone-900 antialiased dark:bg-[#1C1C1E] dark:text-stone-100`}
+        className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${lora.variable} flex min-h-screen flex-col overflow-x-hidden bg-white text-stone-900 antialiased dark:bg-[#1C1C1E] dark:text-stone-100`}
       >
         {/* Early theme applier to avoid FOUC */}
         <script

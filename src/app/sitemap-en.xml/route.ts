@@ -3,7 +3,6 @@ import { listPostsForSitemap } from "@/lib/posts";
 
 // Sitemaps query the DB – ensure Node.js runtime
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 // Align with Cache-Control header (3600s = 1 hour)
 export const revalidate = 3600;
 

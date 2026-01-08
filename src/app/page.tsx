@@ -2,7 +2,6 @@ import LocalizedHomePage from "./[locale]/page";
 
 // ISR: Revalidate every 60 seconds for fresh content with CDN caching
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 export const revalidate = 60;
 export const dynamicParams = false;
 

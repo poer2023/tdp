@@ -72,7 +72,6 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
               alt={name}
               fill
               className="profile-card-image-scale object-cover"
-              unoptimized
             />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/30 to-transparent dark:from-black/60" />
             <div className="absolute top-6 left-6">
@@ -90,7 +89,6 @@ const ProfileCard = React.forwardRef<HTMLDivElement, ProfileCardProps>(
                   width={32}
                   height={32}
                   className="object-cover"
-                  unoptimized
                 />
               </div>
               <div className="profile-card-translate min-w-0 flex-1">

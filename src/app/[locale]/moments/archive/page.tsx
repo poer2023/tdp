@@ -2,9 +2,8 @@ import prisma from "@/lib/prisma";
 import { localePath } from "@/lib/locale-path";
 import { Container } from "@/components/ui/container";
 
-// Force dynamic rendering - no static generation at build time
+// ISR: Revalidate every minute for archive pages
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 type Props = {

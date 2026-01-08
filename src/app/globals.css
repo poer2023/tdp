@@ -1,8 +1,7 @@
-/* Google Fonts for Zhi Design - must be first */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
-
 @import "tailwindcss";
-@import "maplibre-gl/dist/maplibre-gl.css";
+
+/* Note: Google Fonts (Outfit, Lora) are now loaded via next/font in layout.tsx */
+/* Note: MapLibre CSS is loaded locally in src/components/ui/map.tsx */
 
 /* MapLibre GL popup style overrides */
 .maplibregl-popup-content {
@@ -46,8 +45,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Outfit', var(--font-geist-sans), system-ui, sans-serif;
-  --font-serif: 'Lora', Georgia, serif;
+  --font-sans: var(--font-outfit), var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
   --font-mono: var(--font-geist-mono);
 
   /* Sage 颜色系统 - Zhi 主色 */
@@ -113,7 +112,7 @@ body {
   background-color: #fafaf9;
   /* stone-50 */
   color: var(--foreground);
-  font-family: 'Outfit', var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-outfit), var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -505,7 +504,7 @@ html.dark {
 
 /* Utility: font-serif for Lora */
 .font-serif {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--font-lora), Georgia, serif;
 }
 
 /* Admin primary button - consistent contrast across admin */

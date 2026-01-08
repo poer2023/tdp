@@ -5,7 +5,7 @@ import { ZhiHeader, ZhiFooter } from "@/components/zhi";
 import CuratedDetailContent from "./curated-detail-content";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+// ISR: Revalidate every 5 minutes
 export const revalidate = 300;
 
 type PageProps = {
