@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { listGalleryImagesWithLocation } from "@/lib/gallery";
-import { GalleryMapWrapper } from "@/components/gallery-map-wrapper";
+import { GalleryMapWrapper } from "@/components/gallery/gallery-map-wrapper";
 
 // ISR: Revalidate every 5 minutes for gallery map data
-export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 type PageProps = {

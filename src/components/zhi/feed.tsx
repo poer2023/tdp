@@ -337,13 +337,11 @@ export function ZhiFeed({ initialItems, onPostClick, onMomentLike }: ZhiFeedProp
                     post={{
                       id: item.id,
                       title: item.title,
+                      slug: item.slug,
                       excerpt: item.excerpt,
-                      category: item.category,
-                      date: item.date,
-                      readTime: item.readTime,
                       imageUrl: item.imageUrl,
+                      date: item.date,
                       tags: item.tags,
-                      likes: item.likes,
                     }}
                     onClick={() => onPostClick?.(item)}
                     onLike={handlePostLike}
@@ -393,13 +391,11 @@ export function ZhiFeed({ initialItems, onPostClick, onMomentLike }: ZhiFeedProp
                         post={{
                           id: item.id,
                           title: item.title,
+                          slug: item.slug,
                           excerpt: item.excerpt,
-                          category: item.category,
-                          date: item.date,
-                          readTime: item.readTime,
                           imageUrl: item.imageUrl,
+                          date: item.date,
                           tags: item.tags,
-                          likes: item.likes,
                         }}
                         onClick={() => onPostClick?.(item)}
                         onLike={handlePostLike}

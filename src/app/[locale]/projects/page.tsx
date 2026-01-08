@@ -4,7 +4,6 @@ import type { ZhiProject } from "@/components/zhi";
 import { aboutContent, resolveAboutLocale } from "@/lib/about-content";
 
 // Revalidate every 60 seconds
-export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 type PageProps = {

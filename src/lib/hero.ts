@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+import { withDbFallback } from "@/lib/utils/db-fallback";
 
 // Cache tag for hero images invalidation
 export const HERO_IMAGES_TAG = "hero-images";
@@ -41,13 +42,19 @@ function toHeroThumbUrl(url: string): string {
  * 获取激活的 Hero 图片 URL 列表（内部实现）
  */
 async function _listHeroImages(): Promise<string[]> {
-  const images = await prisma.heroImage.findMany({
-    where: { active: true },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-  });
+  return withDbFallback(
+    async () => {
+      const images = await prisma.heroImage.findMany({
+        where: { active: true },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      });
 
-  // Prefer small thumbnails to keep hero grid lightweight
-  return images.map((img) => toHeroThumbUrl(img.url));
+      // Prefer small thumbnails to keep hero grid lightweight
+      return images.map((img) => toHeroThumbUrl(img.url));
+    },
+    async () => [],
+    "hero:list"
+  );
 }
 
 /**

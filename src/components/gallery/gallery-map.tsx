@@ -36,7 +36,6 @@ function PhotoMarker({ image }: { image: GalleryLocationImage }) {
             width={48}
             height={48}
             className="h-full w-full object-cover"
-            unoptimized
           />
         </div>
         {/* Pointer tail */}

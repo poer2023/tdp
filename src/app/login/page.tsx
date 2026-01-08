@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { LoginButtons } from "@/components/login-buttons";
+import { LoginButtons } from "@/components/auth/login-buttons";
 
 export default async function LoginPage({
   searchParams,

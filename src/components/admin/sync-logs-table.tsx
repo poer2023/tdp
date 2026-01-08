@@ -242,6 +242,7 @@ export function SyncLogsTable({ logs }: SyncLogsTableProps) {
                                 alt={item.title}
                                 fill
                                 className="object-cover"
+                                // unoptimized: External media covers from various CDNs, admin panel only
                                 unoptimized
                               />
                             </div>

@@ -1,9 +1,16 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import LocalizedMomentsPage from "../[locale]/moments/page";
+
+// SEO: Canonical URL for English moments (避免与 /en/moments 重复)
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/moments",
+  },
+};
 
 // ISR: Match localized page revalidate (300s)
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
 export const revalidate = 300;
 
 type PageProps = {

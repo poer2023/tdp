@@ -1,0 +1,227 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import type { ZhiGalleryItem, OriginalLoadState } from "./types";
+import {
+    THUMB_FULL_WIDTH,
+    THUMB_COLLAPSED_WIDTH,
+    THUMB_GAP,
+    THUMB_MARGIN,
+} from "./types";
+import { formatBytes, formatProgress } from "./utils";
+import { getGalleryTranslation } from "./translations";
+import { ThumbnailItem } from "./thumbnail-item";
+import { SidebarPanel } from "./sidebar-panel";
+import { MobileDrawer } from "./mobile-drawer";
+
+export type GalleryLightboxProps = {
+    selectedItem: ZhiGalleryItem;
+    items: ZhiGalleryItem[];
+    currentIndex: number;
+    slideDirection: "left" | "right" | null;
+    zoomLevel: number;
+    displaySrc: string;
+    originalState: OriginalLoadState;
+    showProgress: boolean;
+    isDark: boolean;
+    locale: string;
+    drawerOpen: boolean;
+    imageContainerRef: React.RefObject<HTMLDivElement | null>;
+    onClose: () => void;
+    onPrev: (e?: React.MouseEvent) => void;
+    onNext: (e?: React.MouseEvent) => void;
+    onThumbnailClick: (index: number) => void;
+    onToggleDrawer: () => void;
+    onTouchStart: (e: React.TouchEvent) => void;
+    onTouchMove: (e: React.TouchEvent) => void;
+    onTouchEnd: () => void;
+};
+
+export function GalleryLightbox({
+    selectedItem,
+    items,
+    currentIndex,
+    slideDirection,
+    zoomLevel,
+    displaySrc,
+    originalState,
+    showProgress,
+    isDark,
+    locale,
+    drawerOpen,
+    imageContainerRef,
+    onClose,
+    onPrev,
+    onNext,
+    onThumbnailClick,
+    onToggleDrawer,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
+}: GalleryLightboxProps) {
+    const thumbnailsRef = useRef<HTMLDivElement>(null);
+    const t = (key: string) => getGalleryTranslation(locale as "en" | "zh", key as Parameters<typeof getGalleryTranslation>[1]);
+
+    // Scroll thumbnails to current index
+    useEffect(() => {
+        if (thumbnailsRef.current) {
+            let scrollPosition = 0;
+            for (let i = 0; i < currentIndex; i++) {
+                scrollPosition += THUMB_COLLAPSED_WIDTH + THUMB_GAP;
+            }
+            scrollPosition += THUMB_MARGIN;
+            const containerWidth = thumbnailsRef.current.offsetWidth;
+            const centerOffset = containerWidth / 2 - THUMB_FULL_WIDTH / 2;
+            scrollPosition -= centerOffset;
+            thumbnailsRef.current.scrollTo({
+                left: scrollPosition,
+                behavior: "smooth",
+            });
+        }
+    }, [currentIndex]);
+
+    return (
+        <div className={`fixed inset-0 z-[70] flex flex-col backdrop-blur-sm ${isDark ? 'bg-[#09090b]/95' : 'bg-[#fafaf9]/95'}`}>
+            {/* Close Button */}
+            <button
+                onClick={onClose}
+                className={`absolute top-6 right-6 z-[80] p-2 transition-all duration-300 hover:rotate-90 ${isDark ? 'text-stone-500 hover:text-white' : 'text-stone-400 hover:text-stone-900'}`}
+            >
+                <X size={24} />
+            </button>
+
+            {/* Navigation Arrows */}
+            <button
+                onClick={onPrev}
+                className={`fixed left-6 top-1/2 z-[80] hidden -translate-y-1/2 rounded-full p-3 transition-all duration-300 lg:block ${isDark ? 'bg-black/20 text-white/30 hover:bg-black/40 hover:text-white hover:scale-110' : 'bg-white/40 text-stone-400 hover:bg-white/80 hover:text-stone-900 hover:scale-110 hover:shadow-lg'}`}
+            >
+                <ChevronLeft size={32} />
+            </button>
+            <button
+                onClick={onNext}
+                className={`fixed top-1/2 z-[80] hidden -translate-y-1/2 rounded-full p-3 transition-all duration-300 lg:block lg:right-[calc(380px+2rem)] xl:right-[calc(420px+2rem)] ${isDark ? 'bg-black/20 text-white/30 hover:bg-black/40 hover:text-white hover:scale-110' : 'bg-white/40 text-stone-400 hover:bg-white/80 hover:text-stone-900 hover:scale-110 hover:shadow-lg'}`}
+            >
+                <ChevronRight size={32} />
+            </button>
+
+            {/* Main Layout */}
+            <div className="flex h-full flex-col lg:flex-row">
+                {/* Main Content Area */}
+                <div
+                    ref={imageContainerRef}
+                    className={`relative flex flex-1 items-center justify-center overflow-hidden pb-24 lg:pb-28 ${isDark ? 'bg-black' : 'bg-stone-100'}`}
+                    onClick={onClose}
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
+                >
+                    <motion.div
+                        key={selectedItem.id}
+                        initial={{ opacity: 0, x: slideDirection === "left" ? 100 : slideDirection === "right" ? -100 : 0 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                    >
+                        <div
+                            className="relative transition-transform duration-300 ease-out"
+                            style={{ transform: `scale(${zoomLevel})` }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {selectedItem.type === "video" ? (
+                                <video
+                                    src={selectedItem.url}
+                                    controls
+                                    autoPlay
+                                    loop
+                                    className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
+                                />
+                            ) : (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img
+                                    src={displaySrc || selectedItem.mediumPath || selectedItem.thumbnail || selectedItem.url}
+                                    alt={selectedItem.title}
+                                    className="w-[95vw] max-h-[75vh] h-auto select-none object-contain shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw] pointer-events-none"
+                                    draggable={false}
+                                />
+                            )}
+                        </div>
+                    </motion.div>
+
+                    {/* Zoom Level Indicator */}
+                    {zoomLevel > 1 && (
+                        <div className="pointer-events-none absolute bottom-32 left-6 z-[75] rounded bg-black/60 px-2 py-1 text-xs font-medium text-white/80 backdrop-blur lg:bottom-36">
+                            {Math.round(zoomLevel * 100)}%
+                        </div>
+                    )}
+
+                    {/* Loading Progress Indicator */}
+                    {originalState.status === "loading" && showProgress && (
+                        <div className="pointer-events-none absolute right-6 bottom-32 z-[75] flex items-center gap-3 rounded-xl bg-black/75 px-4 py-2 text-xs text-white shadow-lg backdrop-blur lg:bottom-36 lg:right-[calc(380px+2rem)] xl:right-[calc(420px+2rem)]">
+                            <svg
+                                className="h-4 w-4 animate-spin text-white/80"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                            >
+                                <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                                <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z" />
+                            </svg>
+                            <div>
+                                <div className="font-medium">
+                                    {t("Loading")}{formatProgress(originalState.loadedBytes, originalState.totalBytes)}
+                                </div>
+                                <div className="text-[11px] text-white/70">
+                                    {formatBytes(originalState.loadedBytes)}
+                                    {typeof originalState.totalBytes === "number" ? ` / ${formatBytes(originalState.totalBytes)}` : ""}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Desktop Sidebar */}
+                <SidebarPanel
+                    item={selectedItem}
+                    currentIndex={currentIndex}
+                    totalItems={items.length}
+                    isDark={isDark}
+                    locale={locale}
+                />
+
+                {/* Mobile Drawer */}
+                <MobileDrawer
+                    item={selectedItem}
+                    isOpen={drawerOpen}
+                    onToggle={onToggleDrawer}
+                    isDark={isDark}
+                    locale={locale}
+                />
+            </div>
+
+            {/* Thumbnail Strip */}
+            <div className="fixed inset-x-0 bottom-6 z-[72] flex justify-center pointer-events-none lg:right-[380px] xl:right-[420px]">
+                <div className="pointer-events-auto mx-4 transition-all duration-300">
+                    <div
+                        ref={thumbnailsRef}
+                        className="flex max-w-[80vw] overflow-x-auto p-2 lg:max-w-[600px]"
+                        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                    >
+                        <style>{`.overflow-x-auto::-webkit-scrollbar { display: none; }`}</style>
+                        <div className="flex h-12 gap-1.5 px-2" style={{ width: "fit-content" }}>
+                            {items.map((item, i) => (
+                                <ThumbnailItem
+                                    key={item.id}
+                                    item={item}
+                                    index={i}
+                                    isActive={i === currentIndex}
+                                    onClick={onThumbnailClick}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

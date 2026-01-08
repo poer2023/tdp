@@ -1,7 +1,7 @@
-/* Google Fonts loaded via preconnect in layout.tsx for better performance */
-
 @import "tailwindcss";
-@import "maplibre-gl/dist/maplibre-gl.css";
+
+/* Note: Google Fonts (Outfit, Lora) are now loaded via next/font in layout.tsx */
+/* Note: MapLibre CSS is loaded locally in src/components/ui/map.tsx */
 
 /* MapLibre GL popup style overrides */
 .maplibregl-popup-content {
@@ -45,8 +45,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Outfit', var(--font-geist-sans), system-ui, sans-serif;
-  --font-serif: 'Lora', Georgia, serif;
+  --font-sans: var(--font-outfit), var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
   --font-mono: var(--font-geist-mono);
 
   /* Sage 颜色系统 - Zhi 主色 */
@@ -112,7 +112,7 @@ body {
   background-color: #fafaf9;
   /* stone-50 */
   color: var(--foreground);
-  font-family: 'Outfit', var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-outfit), var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -212,143 +212,12 @@ select:focus-visible {
   /* Tertiary text */
 }
 
-.dark .dark\:bg-zinc-950 {
-  background-color: var(--ios-bg) !important;
-}
-
-.dark .dark\:bg-zinc-900 {
-  background-color: var(--ios-bg) !important;
-}
-
-.dark .dark\:bg-zinc-900\/40 {
-  background-color: rgba(28, 28, 30, 0.4) !important;
-}
-
-.dark .dark\:bg-zinc-900\/60 {
-  background-color: rgba(28, 28, 30, 0.6) !important;
-}
-
-.dark .dark\:bg-zinc-900\/70 {
-  background-color: rgba(28, 28, 30, 0.7) !important;
-}
-
-.dark .dark\:bg-zinc-900\/80 {
-  background-color: rgba(28, 28, 30, 0.8) !important;
-}
-
-.dark .dark\:border-zinc-800 {
-  border-color: var(--ios-elev-1) !important;
-}
-
-.dark .dark\:ring-zinc-800 {
-  --tw-ring-color: var(--ios-elev-1) !important;
-}
-
-/* Fallback mappings to make more of the UI dark by default */
-.dark .bg-white {
-  background-color: var(--ios-elev-1) !important;
-}
-
-.dark .bg-white\/90 {
-  background-color: rgba(44, 44, 46, 0.9) !important;
-}
-
-.dark .bg-white\/80 {
-  background-color: rgba(44, 44, 46, 0.8) !important;
-}
-
-.dark .bg-white\/70 {
-  background-color: rgba(44, 44, 46, 0.7) !important;
-}
-
-.dark .bg-white\/60 {
-  background-color: rgba(44, 44, 46, 0.6) !important;
-}
-
-.dark .bg-zinc-50 {
-  background-color: var(--ios-bg) !important;
-}
-
-.dark .bg-zinc-100 {
-  background-color: var(--ios-elev-2) !important;
-}
-
-.dark .bg-zinc-100\/60 {
-  background-color: rgba(58, 58, 60, 0.6) !important;
-}
-
-.dark .border-zinc-200 {
-  border-color: var(--ios-elev-1) !important;
-}
-
-.dark .text-zinc-900 {
-  color: var(--ios-label) !important;
-}
-
-.dark .text-zinc-800 {
-  color: var(--ios-label) !important;
-}
-
-.dark .text-zinc-700 {
-  color: var(--ios-secondary-label) !important;
-}
-
-.dark .text-zinc-600 {
-  color: var(--ios-secondary-label) !important;
-}
-
-.dark .text-zinc-500 {
-  color: var(--ios-tertiary-label) !important;
-}
-
-.dark .text-zinc-400 {
-  color: var(--ios-tertiary-label) !important;
-}
-
-.dark .text-black {
-  color: var(--ios-label) !important;
-}
-
-/* Stone color overrides for iOS-style dark mode */
-.dark .bg-stone-50 {
-  background-color: var(--ios-bg) !important;
-}
-
-.dark .bg-stone-100 {
-  background-color: var(--ios-elev-1) !important;
-}
-
-.dark .bg-stone-200 {
-  background-color: var(--ios-elev-2) !important;
-}
-
-.dark .text-stone-900 {
-  color: var(--ios-label) !important;
-}
-
-.dark .text-stone-800 {
-  color: var(--ios-label) !important;
-}
-
-.dark .text-stone-700 {
-  color: var(--ios-secondary-label) !important;
-}
-
-.dark .text-stone-600 {
-  color: var(--ios-secondary-label) !important;
-}
-
-.dark .text-stone-500 {
-  color: var(--ios-tertiary-label) !important;
-}
-
-.dark .border-stone-200 {
-  border-color: var(--ios-elev-1) !important;
-}
-
-.dark .border-stone-300 {
-  border-color: var(--ios-elev-2) !important;
-}
+/* 
+ * NOTE: Dark mode color overrides removed (2026-01-08)
+ * Components should use standard dark:* Tailwind utilities instead of relying
+ * on these !important overrides. The iOS variables above are still available
+ * for custom components that need them.
+ */
 
 /* Inform UA for form controls, scrollbars, etc. */
 html {
@@ -473,38 +342,15 @@ html.dark {
   animation-name: slide-in-from-bottom;
 }
 
-/* Duration overrides */
-.duration-75 {
-  animation-duration: 75ms !important;
-}
-
-.duration-100 {
-  animation-duration: 100ms !important;
-}
-
-.duration-150 {
-  animation-duration: 150ms !important;
-}
-
-.duration-200 {
-  animation-duration: 200ms !important;
-}
-
-.duration-300 {
-  animation-duration: 300ms !important;
-}
-
-.duration-500 {
-  animation-duration: 500ms !important;
-}
-
-.duration-700 {
-  animation-duration: 700ms !important;
-}
+/* 
+ * NOTE: Duration overrides removed (2026-01-08)
+ * Use Tailwind's built-in duration-* utilities instead.
+ * The .animate-in class now works with standard duration classes.
+ */
 
 /* Utility: font-serif for Lora */
 .font-serif {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--font-lora), Georgia, serif;
 }
 
 /* Admin primary button - consistent contrast across admin */

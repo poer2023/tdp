@@ -94,31 +94,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(redirectUrl, { status: 302 });
     }
 
-    // Authenticated but not ADMIN → return 403
+    // Authenticated but not ADMIN → rewrite to /403 page with locale preserved
     if (role !== "ADMIN") {
-      const forbiddenHtml = `<!DOCTYPE html><html lang="${currentLocale}">
-        <head>
-          <meta charset="utf-8" />
-          <title>403 Forbidden</title>
-          <style>
-            body{font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;margin:0;padding:0;background:#f4f4f5;color:#18181b;}
-            main{display:flex;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;}
-            h1{font-size:3rem;margin-bottom:1rem;}
-            p{color:#52525b;margin-bottom:1.5rem;}
-            a{color:#2563eb;text-decoration:none;font-weight:600;}
-          </style>
-        </head>
-        <body>
-          <main>
-            <h1>403</h1>
-            <p>Forbidden - Admin access required</p>
-            <a href="/">Return to Home</a>
-          </main>
-        </body>
-      </html>`;
-      return new NextResponse(forbiddenHtml, {
+      const forbiddenUrl = new URL("/403", request.nextUrl.origin);
+      return NextResponse.rewrite(forbiddenUrl, {
         status: 403,
-        headers: { "Content-Type": "text/html" },
+        request: { headers: requestHeaders },
       });
     }
   }

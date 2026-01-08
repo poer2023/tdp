@@ -274,6 +274,7 @@ export default function SteamPlaytimePage() {
                                             width={48}
                                             height={48}
                                             className="w-12 h-12 rounded object-cover"
+                                            // unoptimized: Steam CDN covers not in remotePatterns, admin panel only
                                             unoptimized
                                         />
                                     )}

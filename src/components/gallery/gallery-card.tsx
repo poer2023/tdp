@@ -1,5 +1,5 @@
 import type { GalleryImage } from "@/lib/gallery";
-import { LivePhotoPlayer } from "./live-photo-player";
+import { LivePhotoPlayer } from "@/components/shared/live-photo-player";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDate } from "@/lib/date-utils";

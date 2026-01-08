@@ -151,6 +151,7 @@ export function AdminImage({
           onError={handleError}
           onLoad={handleLoad}
           priority={priority}
+          // unoptimized: Skip Next.js optimization for external URLs not in remotePatterns
           unoptimized={!shouldOptimize}
           sizes={sizes}
         />
@@ -176,6 +177,8 @@ export function AdminImage({
         onError={handleError}
         onLoad={handleLoad}
         priority={priority}
+        // unoptimized: Skip Next.js optimization for external URLs not in remotePatterns
+        // Fixed dimensions branch - same logic as fill mode for consistency
         unoptimized={!shouldOptimize}
       />
     </div>

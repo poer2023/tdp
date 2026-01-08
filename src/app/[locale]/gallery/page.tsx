@@ -3,12 +3,11 @@ import { listCachedGalleryImages } from "@/lib/gallery";
 import type { GalleryCategory, GalleryImage } from "@/lib/gallery";
 import { ZhiHeader, ZhiFooter, ZhiGallery } from "@/components/zhi";
 import type { ZhiGalleryItem } from "@/components/zhi";
-import { GalleryCategoryTabs } from "@/components/gallery-category-tabs";
+import { GalleryCategoryTabs } from "@/components/gallery/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
-import { GalleryMapWrapper } from "@/components/gallery-map-wrapper";
+import { GalleryMapWrapper } from "@/components/gallery/gallery-map-wrapper";
 
 // ISR: Revalidate every 5 minutes for gallery updates with CDN caching
-export const dynamic = "force-dynamic";
 export const revalidate = 300; // 5 minutes
 
 // Default gallery limit to prevent performance issues with large datasets

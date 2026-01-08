@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
 import { getRecentTracks, type NowPlayingData } from "@/lib/now-playing";
+import { withDbFallback } from "@/lib/utils/db-fallback";
 
 // Cache tag for dashboard stats invalidation
 const DASHBOARD_TAG = "dashboard";
@@ -32,6 +33,17 @@ export interface DashboardStatsData {
     gitHubContributions?: { date: string; value: number }[];
     nowPlaying?: NowPlayingData[];
 }
+
+const FALLBACK_DASHBOARD_STATS: DashboardStatsData = {
+    photoCount: 0,
+    photosByWeek: [],
+    routineData: [],
+    stepsData: { entries: [], startDate: "", endDate: "" },
+    movieCount: 0,
+    movieData: [],
+    skillData: [],
+    currentGame: undefined,
+};
 
 /**
  * Get latest GitHub stats
@@ -471,5 +483,9 @@ const getCachedDashboardStats = unstable_cache(
  * Can be called from Server Components directly
  */
 export async function getDashboardStats(): Promise<DashboardStatsData> {
-    return getCachedDashboardStats();
+    return withDbFallback(
+        async () => getCachedDashboardStats(),
+        async () => FALLBACK_DASHBOARD_STATS,
+        "dashboard:getDashboardStats"
+    );
 }

@@ -9,10 +9,26 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { shouldSkipDb } from "@/lib/utils/db-fallback";
 
 export const revalidate = 60; // Cache for 1 minute
 
 export async function GET(_request: NextRequest) {
+  if (shouldSkipDb()) {
+    return NextResponse.json({
+      success: true,
+      overall: {
+        uptime24h: 0,
+        uptime30d: 0,
+        totalMonitors: 0,
+        activeMonitors: 0,
+        downMonitors: 0,
+      },
+      monitors: [],
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   try {
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);

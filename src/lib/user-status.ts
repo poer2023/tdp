@@ -5,6 +5,7 @@
 
 import prisma from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+import { shouldSkipDb } from "@/lib/utils/db-fallback";
 
 export interface StatusItem {
     key: string;
@@ -24,6 +25,7 @@ export interface AtAGlanceData {
  * Get the latest movie/series being watched from MediaWatch table
  */
 async function getLatestWatching(): Promise<StatusItem | null> {
+    if (shouldSkipDb()) return null;
     try {
         const latest = await prisma.mediaWatch.findFirst({
             where: {
@@ -59,6 +61,7 @@ async function getLatestWatching(): Promise<StatusItem | null> {
  * Get the latest game being played from GameSession table
  */
 async function getLatestPlaying(): Promise<StatusItem | null> {
+    if (shouldSkipDb()) return null;
     try {
         const latestSession = await prisma.gameSession.findFirst({
             orderBy: { startTime: "desc" },
@@ -103,6 +106,14 @@ async function getLatestPlaying(): Promise<StatusItem | null> {
  * For Phase 1, we use a simple approach with environment variable or default
  */
 async function getCurrentFocus(): Promise<StatusItem | null> {
+    if (shouldSkipDb()) {
+        return {
+            key: "focusing",
+            label: "Focusing on",
+            value: process.env.CURRENT_FOCUS || "Product Strategy",
+            icon: "zap",
+        };
+    }
     try {
         // Try to get from UserStatus table if it exists
         const p = prisma as any;
@@ -174,26 +185,28 @@ async function _fetchAtAGlanceStatus(): Promise<AtAGlanceData> {
     // Calculate the most recent update time
     // For now, just use current time as we don't have per-item timestamps in return
     // In a real implementation, we'd track the watchedAt/startTime
-    try {
-        const [latestMedia, latestGame] = await Promise.all([
-            prisma.mediaWatch.findFirst({
-                orderBy: { watchedAt: "desc" },
-                select: { watchedAt: true },
-            }),
-            prisma.gameSession.findFirst({
-                orderBy: { startTime: "desc" },
-                select: { startTime: true },
-            }),
-        ]);
+    if (!shouldSkipDb()) {
+        try {
+            const [latestMedia, latestGame] = await Promise.all([
+                prisma.mediaWatch.findFirst({
+                    orderBy: { watchedAt: "desc" },
+                    select: { watchedAt: true },
+                }),
+                prisma.gameSession.findFirst({
+                    orderBy: { startTime: "desc" },
+                    select: { startTime: true },
+                }),
+            ]);
 
-        if (latestMedia?.watchedAt && latestMedia.watchedAt > latestUpdate) {
-            latestUpdate = latestMedia.watchedAt;
+            if (latestMedia?.watchedAt && latestMedia.watchedAt > latestUpdate) {
+                latestUpdate = latestMedia.watchedAt;
+            }
+            if (latestGame?.startTime && latestGame.startTime > latestUpdate) {
+                latestUpdate = latestGame.startTime;
+            }
+        } catch {
+            // Ignore errors, use default
         }
-        if (latestGame?.startTime && latestGame.startTime > latestUpdate) {
-            latestUpdate = latestGame.startTime;
-        }
-    } catch {
-        // Ignore errors, use default
     }
 
     // If no updates found, use current time

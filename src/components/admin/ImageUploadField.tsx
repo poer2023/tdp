@@ -126,6 +126,7 @@ export function ImageUploadField({
       {value ? (
         <div className="group relative inline-block">
           <div className="relative h-32 w-32 overflow-hidden rounded-2xl border-2 border-stone-200 dark:border-stone-700">
+            {/* unoptimized: Preview may be data: URL or newly uploaded blob */}
             <Image src={value} alt={label} fill className="object-cover" unoptimized />
           </div>
           {/* 删除按钮 */}
