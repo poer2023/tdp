@@ -2,7 +2,7 @@
  * Admin Translations Module
  *
  * Split by locale for better tree-shaking and lazy loading.
- * Original file: src/lib/admin-translations.ts (now deprecated, kept for reference)
+ * Replaces: src/lib/admin-translations.ts (deleted)
  */
 
 import { en } from "./en";

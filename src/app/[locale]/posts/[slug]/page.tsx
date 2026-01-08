@@ -98,7 +98,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
-  const url = `${baseUrl}/${l}/posts/${slug}`;
+  // Canonical URL: English uses no prefix (matches 301 redirect strategy), Chinese uses /zh prefix
+  const url = l === "en" ? `${baseUrl}/posts/${slug}` : `${baseUrl}/${l}/posts/${slug}`;
   const alternateLinks = generateAlternateLinks(postLocale, slug, alternateSlug);
 
   // Use post cover or fallback to default OG image
@@ -144,8 +145,10 @@ export default async function LocalizedPostPage({ params }: PageProps) {
   const postLocale = post.locale;
 
   // Generate JSON-LD schema for SEO
+  // URL matches canonical: English no prefix, Chinese with /zh prefix
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
-  const schema = generateBlogPostingSchema(post, `${baseUrl}/${l}/posts/${post.slug}`);
+  const jsonLdUrl = l === "en" ? `${baseUrl}/posts/${post.slug}` : `${baseUrl}/${l}/posts/${post.slug}`;
+  const schema = generateBlogPostingSchema(post, jsonLdUrl);
 
   return (
     <>
