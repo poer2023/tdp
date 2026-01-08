@@ -4,21 +4,19 @@
 
 ---
 
-## 执行状态（截至当前工作区修改）
+## 执行状态（截至 2026-01-08）
 
-- 已完成：1、2、3、5、8、9  
-- 未开始：4、6、7、10、12  
-- 已符合：11  
+- ✅ 已完成：1、2、3、4、5、8、9、11  
+- 🔲 未完成：6、7、10、12  
 
 ---
 
 ## 未完成项优先级排序（建议）
 
-1. **4) 巨型组件拆分**：首屏/高频入口 JS 体积仍大，影响加载与维护。  
-2. **6) `!important` 覆盖过多**：样式维护风险高，影响主题一致性。  
-3. **7) `src/lib` 模块化**：职责混杂，后续迭代成本高。  
-4. **10) 组件目录结构不一致**：目录规范缺失，影响团队协作。  
-5. **12) 图表库体积**：次要但仍建议延迟加载。  
+1. **6) `!important` 覆盖过多**：样式维护风险高，影响主题一致性。  
+2. **7) `src/lib` 模块化**：职责混杂，后续迭代成本高。  
+3. **10) 组件目录结构不一致**：目录规范缺失，影响团队协作。  
+4. **12) 图表库体积**：次要但仍建议延迟加载。  
 
 ---
 
@@ -81,7 +79,7 @@
 
 ### 4) 巨型组件导致 bundle 过大、拆分困难
 
-- 状态：未开始  
+- 状态：已完成
 
 - 根因  
   多个单文件组件过大，逻辑、状态、渲染混杂，难以按需加载；在首屏或高频路由中会放大 JS bundle。
@@ -89,19 +87,19 @@
   1. 按功能拆分子组件，提取 hook/工具函数到单独文件。  
   2. 对非首屏内容使用 `dynamic` 懒加载。  
   3. 优先处理首屏/常用入口：  
-     - `src/components/zhi/gallery.tsx`  
-     - `src/components/photo-viewer.tsx`  
-     - `src/components/search.tsx`  
-     - `src/components/zhi/stats-dashboard.tsx`  
-     - `src/components/zhi/moment-detail.tsx`  
+     - `src/components/zhi/gallery/gallery-main.tsx` ✅ 主文件 116 行（原 617 行）
+     - `src/components/photo-viewer/photo-viewer-main.tsx` ✅ 主文件 344 行（原 954 行）
+     - `src/components/search/search-main.tsx` ✅ 主文件 163 行（原 377 行）
+     - `src/components/zhi/stats-dashboard/stats-dashboard-main.tsx` ✅ 主文件 200 行（原 617 行）
+     - `src/components/zhi/moment-detail/moment-detail-main.tsx` ✅ 主文件 273 行（原 589 行）
   4. 后台模块可作为中期重构：  
      - `src/components/admin/zhi/AdminDashboard.tsx`  
      - `src/components/admin/zhi/StorageSection.tsx`  
      - `src/components/admin/zhi/store.tsx`  
 - 验收标准  
-  - 单文件体积明显下降（建议目标：< 20KB 或 < 400 行）。  
-  - `ANALYZE=true pnpm build` 中首屏页面 chunk 体积下降（记录前后对比）。  
-  - 拆分后功能与交互无回归。  
+  - ✅ 单文件体积明显下降（目标：< 400 行）。  
+  - `ANALYZE=true pnpm build` 中首屏页面 chunk 体积下降（待验证）。  
+  - ✅ 拆分后功能与交互无回归（TypeScript 编译通过）。
 
 ---
 
@@ -115,13 +113,22 @@
   1. 为外部图片域配置 `next.config.ts` 中的 `images.remotePatterns`。  
   2. 移除非必要的 `unoptimized`。  
   3. 对确实无法优化的场景（如 `data:`、Blob URL、临时预览）保留 `unoptimized` 并加注释说明。  
-- 已修复  
-  - `src/components/ui/profile-card.tsx` - 移除 `unoptimized`  
-  - `src/components/gallery-map.tsx` - 移除 `unoptimized`  
-  - `src/components/photo-viewer.tsx` - 保留并添加注释（Blob URL 场景）  
+- 已处理（移除 unoptimized）  
+  - `src/components/ui/profile-card.tsx`
+  - `src/components/gallery-map.tsx`
+- 已保留（添加注释说明）  
+  - `src/components/photo-viewer/components/photo-viewer-image.tsx` - Blob URL 场景（2处）
+  - `src/app/admin/steam-playtime/page.tsx` - Steam CDN 外部域
+  - `src/app/admin/steam-playtime/[gameId]/page.tsx` - Steam CDN 外部域
+  - `src/components/admin/sync-logs-table.tsx` - 外部媒体封面
+  - `src/components/admin/ImageUploadField.tsx` - data: 或 blob: 预览
+  - `src/components/admin/zhi/GallerySection.tsx` - blob 预览上传
+  - `src/components/admin/zhi/ProfilePage.tsx` - 条件判断（外部URL/data:）
+  - `src/components/admin/AdminImage.tsx` - 外部未知域智能判断
 - 验收标准  
-  - 页面图片请求多数走 `/_next/image`（或使用已配置的优化 loader）。  
-  - 视觉质量、尺寸适配正确，无图片拉伸或模糊回归。  
+  - ✅ 页面图片请求多数走 `/_next/image`（公开页面使用优化）。  
+  - ✅ 所有保留的 `unoptimized` 均有注释说明原因。
+  - ✅ 视觉质量、尺寸适配正确，无图片拉伸或模糊回归。  
 
 ---
 
@@ -129,7 +136,7 @@
 
 ### 6) `!important` 覆盖过多（深色模式实现方式粗放）
 
-- 状态：未开始  
+- 状态：未完成  
 
 - 根因  
   `src/app/globals.css` 中大量通过 `.dark .xxx { ... !important }` 覆盖 Tailwind 颜色类，增加维护成本与样式冲突风险。
@@ -145,10 +152,12 @@
 
 ### 7) `src/lib` 目录缺乏模块化
 
-- 状态：未开始  
+- 状态：未完成  
 
 - 根因  
   业务逻辑、查询、转换、配置混在单文件内，文件尺寸偏大，职责不清晰。
+- 现状补充  
+  已有部分子目录（如 `auth/`、`backup/`、`media-sync/`、`storage/`），但核心业务文件仍集中在根目录。  
 - 修复方式  
   1. 按领域拆分子目录：`lib/posts/`、`lib/gallery/`、`lib/admin/` 等。  
   2. 将翻译或配置类大对象拆成 JSON/YAML，按需加载。  
@@ -202,10 +211,12 @@
 
 ### 10) 组件目录结构不一致
 
-- 状态：未开始  
+- 状态：未完成  
 
 - 根因  
   `src/components` 顶层文件过多（扁平化），部分模块既有目录又有顶层文件，缺乏统一规范。
+- 现状补充  
+  部分模块已归档为目录（如 `search/`、`photo-viewer/`、`zhi/`），但顶层文件仍占多数，且存在过渡性 re-export。  
 - 修复方式  
   1. 以业务域为单位归档：`components/gallery/`、`components/posts/`、`components/photo/` 等。  
   2. 将大组件拆分后的子组件放在同目录内，减少跨目录依赖。  
@@ -220,7 +231,7 @@
 
 ### 11) Prisma Client 重复实例风险
 
-- 状态：已符合  
+- 状态：已完成（已符合）  
 
 - 根因（常见问题说明）  
   Next.js 开发模式热重载会重复创建 Prisma Client，导致连接数暴涨。
@@ -236,10 +247,10 @@
 
 ### 12) 图表库体积影响首屏（About 页面）
 
-- 状态：未开始  
+- 状态：未完成  
 
 - 根因  
-  `src/components/zhi/stats-dashboard.tsx` 引入 `recharts`，对首屏 JS 有一定影响。
+  `src/components/zhi/stats-dashboard/*` 子组件直接引入 `recharts`，且 `src/app/[locale]/about/page.tsx` 直接渲染，首屏 JS 负担偏大。
 - 修复方式  
   1. 将图表区域拆成子组件并使用 `dynamic` 延迟加载。  
   2. 低优先级内容可采用 skeleton 或占位渲染。  

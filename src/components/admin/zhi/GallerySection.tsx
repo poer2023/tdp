@@ -445,6 +445,7 @@ export const GallerySection: React.FC = () => {
                                             alt="Uploading"
                                             fill
                                             className="object-cover"
+                                            // unoptimized: Local blob preview during optimistic upload
                                             unoptimized
                                         />
                                         <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">

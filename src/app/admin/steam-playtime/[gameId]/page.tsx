@@ -140,6 +140,7 @@ export default function GameDetailPage() {
                                     width={80}
                                     height={80}
                                     className="w-20 h-20 rounded-lg object-cover"
+                                    // unoptimized: Steam CDN covers not in remotePatterns, admin panel only
                                     unoptimized
                                 />
                             )}

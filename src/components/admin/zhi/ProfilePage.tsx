@@ -149,6 +149,7 @@ export function ProfilePage({ user }: ProfilePageProps) {
                   alt="avatar"
                   fill
                   className="object-cover"
+                  // unoptimized: Only when src is external URL or data: preview (not local storage paths)
                   unoptimized={avatarPreview.startsWith("http") || avatarPreview.startsWith("data:")}
                 />
               ) : (
