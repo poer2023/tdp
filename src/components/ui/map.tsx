@@ -139,8 +139,8 @@ function Map({ children, className, onLoad, ...props }: MapProps) {
                     // Short distance: instant jump, no animation overhead
                     mapRef.current.jumpTo({ center: newCenter });
                 } else {
-                    // Longer distance: use flyTo with shorter duration (200ms instead of 500ms)
-                    mapRef.current.flyTo({ center: newCenter, duration: 200 });
+                    // Longer distance: use flyTo with smooth animation
+                    mapRef.current.flyTo({ center: newCenter, duration: 500 });
                 }
             } else {
                 // First render: just set center instantly

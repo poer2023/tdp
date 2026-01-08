@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { ZhiGalleryItem, OriginalLoadState } from "./types";
 import {
@@ -117,40 +117,42 @@ export function GalleryLightbox({
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}
                 >
-                    <AnimatePresence mode="popLayout" initial={false}>
-                        <motion.div
-                            key={selectedItem.id}
-                            initial={{ opacity: 0, x: slideDirection === "left" ? 50 : slideDirection === "right" ? -50 : 0 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: slideDirection === "left" ? -50 : slideDirection === "right" ? 50 : 0 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="absolute inset-0 flex items-center justify-center"
+                    {/* Image/Video Content with Spring Animation */}
+                    <motion.div
+                        key={selectedItem.id}
+                        initial={{ opacity: 0, x: slideDirection === "left" ? 80 : slideDirection === "right" ? -80 : 0 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 30,
+                        }}
+                        className="absolute inset-0 flex items-center justify-center"
+                    >
+                        <div
+                            className="relative transition-transform duration-300 ease-out"
+                            style={{ transform: `scale(${zoomLevel})` }}
+                            onClick={(e) => e.stopPropagation()}
                         >
-                            <div
-                                className="relative transition-transform duration-300 ease-out"
-                                style={{ transform: `scale(${zoomLevel})` }}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                {selectedItem.type === "video" ? (
-                                    <video
-                                        src={selectedItem.url}
-                                        controls
-                                        autoPlay
-                                        loop
-                                        className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
-                                    />
-                                ) : (
-                                    /* eslint-disable-next-line @next/next/no-img-element */
-                                    <img
-                                        src={displaySrc || selectedItem.mediumPath || selectedItem.thumbnail || selectedItem.url}
-                                        alt={selectedItem.title}
-                                        className="w-[95vw] max-h-[75vh] h-auto select-none object-contain shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw] pointer-events-none"
-                                        draggable={false}
-                                    />
-                                )}
-                            </div>
-                        </motion.div>
-                    </AnimatePresence>
+                            {selectedItem.type === "video" ? (
+                                <video
+                                    src={selectedItem.url}
+                                    controls
+                                    autoPlay
+                                    loop
+                                    className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
+                                />
+                            ) : (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img
+                                    src={displaySrc || selectedItem.mediumPath || selectedItem.thumbnail || selectedItem.url}
+                                    alt={selectedItem.title}
+                                    className="w-[95vw] max-h-[75vh] h-auto select-none object-contain shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw] pointer-events-none"
+                                    draggable={false}
+                                />
+                            )}
+                        </div>
+                    </motion.div>
 
                     {/* Zoom Level Indicator */}
                     {zoomLevel > 1 && (
