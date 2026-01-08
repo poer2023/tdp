@@ -6,24 +6,19 @@
 
 ## 执行状态（截至当前工作区修改）
 
-- 已完成：1、3  
-- 部分完成：2、5、8  
-- 未开始：4、6、7、9、10、12  
+- 已完成：1、2、3、5、8、9  
+- 未开始：4、6、7、10、12  
 - 已符合：11  
 
 ---
 
 ## 未完成项优先级排序（建议）
 
-1. **2) ISR 配置矛盾**：仅剩 `src/app/admin/layout.tsx` 同时声明 `force-dynamic` + `revalidate`，需确认策略。  
-2. **4) 巨型组件拆分**：首屏/高频入口 JS 体积仍大，影响加载与维护。  
-3. **5) `next/image` `unoptimized`**：仍有关键路径保留 `unoptimized`，需要明确是否必须。  
-4. **6) `!important` 覆盖过多**：样式维护风险高，影响主题一致性。  
-5. **8) 403 路由国际化细节**：rewrite 未传递 locale，返回链接未区分语言。  
-6. **7) `src/lib` 模块化**：职责混杂，后续迭代成本高。  
-7. **9) 路由结构重复**：SEO 与维护成本问题，需要策略明确。  
-8. **10) 组件目录结构不一致**：目录规范缺失，影响团队协作。  
-9. **12) 图表库体积**：次要但仍建议延迟加载。  
+1. **4) 巨型组件拆分**：首屏/高频入口 JS 体积仍大，影响加载与维护。  
+2. **6) `!important` 覆盖过多**：样式维护风险高，影响主题一致性。  
+3. **7) `src/lib` 模块化**：职责混杂，后续迭代成本高。  
+4. **10) 组件目录结构不一致**：目录规范缺失，影响团队协作。  
+5. **12) 图表库体积**：次要但仍建议延迟加载。  
 
 ---
 
@@ -49,7 +44,7 @@
 
 ### 2) ISR 配置矛盾（`force-dynamic` + `revalidate`）
 
-- 状态：部分完成（仅剩 `src/app/admin/layout.tsx`）  
+- 状态：已完成  
 
 - 根因  
   多个页面同时设置 `export const dynamic = "force-dynamic"` 与 `export const revalidate = N`，导致 ISR 被禁用，所有请求都走 SSR，无法命中 CDN 缓存。
@@ -58,8 +53,9 @@
      - 需要 ISR：删除 `force-dynamic` 或改为 `dynamic = "auto"`，保留 `revalidate`。  
      - 必须 SSR：保留 `force-dynamic` 并删除 `revalidate`（或设为 `0` 并注明原因）。  
   2. 统一首页与英文无前缀路由的策略，避免重复配置。  
-  3. 剩余涉及文件：  
-     - `src/app/admin/layout.tsx`
+- 已修复文件  
+  - 18+ 页面移除 `force-dynamic`  
+  - `src/app/admin/layout.tsx` 移除冗余 `revalidate = 0`  
 - 验收标准  
   - 需要 ISR 的页面返回头包含可缓存标识（如 `Cache-Control: s-maxage`），并在二次访问出现 `x-nextjs-cache: HIT`（或等价机制）。  
   - `rg -n "force-dynamic" src/app` 输出中不再出现与 `revalidate` 冲突的页面。  
@@ -111,18 +107,18 @@
 
 ### 5) `next/image` `unoptimized` 使用范围过大
 
-- 状态：部分完成（`profile-card`、`gallery-map` 已移除；`photo-viewer` 仍保留）  
+- 状态：已完成  
 
 - 根因  
   部分组件对可优化图片仍使用 `unoptimized`，导致无法利用 Next.js 图片优化与缓存。
 - 修复方式  
   1. 为外部图片域配置 `next.config.ts` 中的 `images.remotePatterns`。  
   2. 移除非必要的 `unoptimized`。  
-  3. 对确实无法优化的场景（如 `data:`、临时预览）保留 `unoptimized` 并加注释说明。  
-  4. 重点排查：  
-     - `src/components/photo-viewer.tsx`  
-     - `src/components/ui/profile-card.tsx`  
-     - `src/components/gallery-map.tsx`  
+  3. 对确实无法优化的场景（如 `data:`、Blob URL、临时预览）保留 `unoptimized` 并加注释说明。  
+- 已修复  
+  - `src/components/ui/profile-card.tsx` - 移除 `unoptimized`  
+  - `src/components/gallery-map.tsx` - 移除 `unoptimized`  
+  - `src/components/photo-viewer.tsx` - 保留并添加注释（Blob URL 场景）  
 - 验收标准  
   - 页面图片请求多数走 `/_next/image`（或使用已配置的优化 loader）。  
   - 视觉质量、尺寸适配正确，无图片拉伸或模糊回归。  
@@ -172,14 +168,14 @@
 
 ### 8) 中间件内联 403 HTML 可维护性差
 
-- 状态：部分完成（已改为 `/403` 路由，但 locale 与跳转细节待完善）  
+- 状态：已完成  
 
 - 根因  
   `middleware.ts` 中直接拼接 HTML，无法复用组件且不利于国际化维护。
 - 修复方式  
   1. 增加 `/403` 路由页面（支持中英文）。  
-  2. 在 `middleware.ts` 中改为 `redirect("/403")` 或 `rewrite`。  
-  3. 若必须返回 HTML，则改为读取静态模板文件。  
+  2. 在 `middleware.ts` 中改为 `rewrite` 并传递 `x-locale` header。  
+  3. 403 页面返回链接根据 locale 区分（英文 `/`，中文 `/zh`）。  
 - 验收标准  
   - 中间件中不存在大段 HTML 字符串。  
   - 403 页面可独立维护且支持多语言。  
@@ -188,13 +184,16 @@
 
 ### 9) 路由结构重复（前缀与无前缀并存）
 
-- 状态：未开始  
+- 状态：已完成（策略：保留英文无前缀）  
 
 - 根因  
   同时存在 `/gallery` 与 `/[locale]/gallery` 等结构，可能导致维护成本与内容重复。
-- 修复方式（二选一）  
-  1. **统一为 `/[locale]` 路由**：根路径通过中间件或重定向指定默认语言。  
-  2. **保留英文无前缀**：确保无前缀页面仅做轻量转发/包装，并设置 canonical 防止重复内容。  
+- 修复方式  
+  **保留英文无前缀**：确保无前缀页面仅做轻量转发/包装，并设置 canonical 防止重复内容。  
+- 已添加 canonical  
+  - `src/app/gallery/page.tsx`  
+  - `src/app/projects/page.tsx`  
+  - `src/app/moments/page.tsx`  
 - 验收标准  
   - 确定唯一 canonical 路由，搜索引擎不出现重复索引。  
   - `/` 与 `/<locale>` 的跳转逻辑清晰、可预测。  
