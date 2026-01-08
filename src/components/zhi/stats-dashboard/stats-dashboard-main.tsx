@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import type { DashboardStatsData } from "@/lib/dashboard-stats";
@@ -10,12 +11,43 @@ import { NowPlayingCard, type MusicTrack } from "../now-playing-card";
 // Import from extracted modules
 import type { StatCardData } from "./types";
 import { CodeFrequencyHeatmap } from "./code-frequency-heatmap";
-import { ShutterCountCard } from "./shutter-count-card";
-import { WeeklyRoutineCard } from "./weekly-routine-card";
-import { MediaDietCard } from "./media-diet-card";
-import { DailyStepsCard } from "./daily-steps-card";
-import { LanguagesCard } from "./languages-card";
 import { QuickLinksCard } from "./quick-links-card";
+
+// Skeleton component for lazy-loaded chart cards
+function CardSkeleton() {
+  return (
+    <div className="animate-pulse rounded-2xl bg-stone-100 dark:bg-stone-800 p-6 h-48">
+      <div className="h-4 w-24 bg-stone-200 dark:bg-stone-700 rounded mb-4" />
+      <div className="h-32 bg-stone-200 dark:bg-stone-700 rounded" />
+    </div>
+  );
+}
+
+// Lazy load recharts card components to reduce initial bundle size
+const ShutterCountCard = dynamic(() => import("./shutter-count-card").then(m => m.ShutterCountCard), {
+  loading: () => <CardSkeleton />,
+  ssr: false,
+});
+
+const WeeklyRoutineCard = dynamic(() => import("./weekly-routine-card").then(m => m.WeeklyRoutineCard), {
+  loading: () => <CardSkeleton />,
+  ssr: false,
+});
+
+const MediaDietCard = dynamic(() => import("./media-diet-card").then(m => m.MediaDietCard), {
+  loading: () => <CardSkeleton />,
+  ssr: false,
+});
+
+const DailyStepsCard = dynamic(() => import("./daily-steps-card").then(m => m.DailyStepsCard), {
+  loading: () => <CardSkeleton />,
+  ssr: false,
+});
+
+const LanguagesCard = dynamic(() => import("./languages-card").then(m => m.LanguagesCard), {
+  loading: () => <CardSkeleton />,
+  ssr: false,
+});
 
 interface ZhiStatsDashboardProps {
   stats: DashboardStatsData;
