@@ -98,7 +98,9 @@ export function useGalleryImageLoading({
             };
 
             xhr.onerror = () => {
-                setOriginalState({ status: "error", loadedBytes: 0, totalBytes: null });
+                // CORS or network error - gracefully fallback to direct URL
+                // The <img> tag can load the image without CORS restrictions
+                setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
                 setDisplaySrc(selectedItem.url);
             };
 

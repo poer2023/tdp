@@ -119,13 +119,14 @@ function Map({ children, className, onLoad, ...props }: MapProps) {
 
     // Handle center changes - fly to new location instead of recreating the map
     useEffect(() => {
-        if (mapRef.current && props.center) {
+        // Only fly to new location when map and style are fully loaded
+        if (mapRef.current && props.center && isLoaded && isStyleLoaded) {
             mapRef.current.flyTo({
                 center: props.center as [number, number],
                 duration: 500,
             });
         }
-    }, [props.center]);
+    }, [props.center, isLoaded, isStyleLoaded]);
 
     const isLoading = !isLoaded && !isStyleLoaded;
 
