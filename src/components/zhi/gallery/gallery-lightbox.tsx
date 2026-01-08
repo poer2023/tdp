@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { motion, useMotionValue, animate } from "framer-motion";
+import type { PanInfo } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { ZhiGalleryItem, OriginalLoadState } from "./types";
 import {
@@ -15,6 +16,7 @@ import { getGalleryTranslation } from "./translations";
 import { ThumbnailItem } from "./thumbnail-item";
 import { SidebarPanel } from "./sidebar-panel";
 import { MobileDrawer } from "./mobile-drawer";
+import { CarouselSlide } from "./carousel-slide";
 
 export type GalleryLightboxProps = {
     selectedItem: ZhiGalleryItem;
@@ -39,6 +41,10 @@ export type GalleryLightboxProps = {
     onTouchEnd: () => void;
 };
 
+// Swipe detection thresholds
+const SWIPE_VELOCITY_THRESHOLD = 500;
+const SWIPE_OFFSET_THRESHOLD = 0.3; // 30% of container width
+
 export function GalleryLightbox({
     selectedItem,
     items,
@@ -62,7 +68,86 @@ export function GalleryLightbox({
     onTouchEnd,
 }: GalleryLightboxProps) {
     const thumbnailsRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [containerWidth, setContainerWidth] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const x = useMotionValue(0);
     const t = (key: string) => getGalleryTranslation(locale as "en" | "zh", key as Parameters<typeof getGalleryTranslation>[1]);
+
+    // Measure container width on mount and resize
+    useEffect(() => {
+        const updateWidth = () => {
+            if (containerRef.current) {
+                setContainerWidth(containerRef.current.offsetWidth);
+            }
+        };
+        updateWidth();
+        window.addEventListener("resize", updateWidth);
+        return () => window.removeEventListener("resize", updateWidth);
+    }, []);
+
+    // Animate to current index when it changes (not during drag)
+    useEffect(() => {
+        if (!isDragging && containerWidth > 0) {
+            const targetX = -currentIndex * containerWidth;
+            animate(x, targetX, {
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+            });
+        }
+    }, [currentIndex, containerWidth, isDragging, x]);
+
+    // Get visible items (current ± 1 for virtualization)
+    const visibleItems = useMemo(() => {
+        const windowSize = 1;
+        const start = Math.max(0, currentIndex - windowSize);
+        const end = Math.min(items.length - 1, currentIndex + windowSize);
+        return items.slice(start, end + 1).map((item, i) => ({
+            item,
+            index: start + i,
+            position: start + i,
+        }));
+    }, [items, currentIndex]);
+
+    // Handle drag end - determine if swipe should navigate
+    const handleDragEnd = useCallback(
+        (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+            setIsDragging(false);
+            if (containerWidth === 0) return;
+
+            const offset = info.offset.x;
+            const velocity = info.velocity.x;
+            let newIndex = currentIndex;
+
+            // Fast swipe detection
+            if (Math.abs(velocity) > SWIPE_VELOCITY_THRESHOLD) {
+                newIndex = velocity > 0 ? currentIndex - 1 : currentIndex + 1;
+            }
+            // Slow drag detection (30% of container)
+            else if (Math.abs(offset) > containerWidth * SWIPE_OFFSET_THRESHOLD) {
+                newIndex = offset > 0 ? currentIndex - 1 : currentIndex + 1;
+            }
+
+            // Clamp and navigate
+            newIndex = Math.max(0, Math.min(items.length - 1, newIndex));
+            if (newIndex !== currentIndex) {
+                if (newIndex < currentIndex) {
+                    onPrev();
+                } else {
+                    onNext();
+                }
+            } else {
+                // Snap back to current position
+                animate(x, -currentIndex * containerWidth, {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                });
+            }
+        },
+        [containerWidth, currentIndex, items.length, onNext, onPrev, x]
+    );
 
     // Scroll thumbnails to current index
     useEffect(() => {
@@ -72,8 +157,8 @@ export function GalleryLightbox({
                 scrollPosition += THUMB_COLLAPSED_WIDTH + THUMB_GAP;
             }
             scrollPosition += THUMB_MARGIN;
-            const containerWidth = thumbnailsRef.current.offsetWidth;
-            const centerOffset = containerWidth / 2 - THUMB_FULL_WIDTH / 2;
+            const thumbContainerWidth = thumbnailsRef.current.offsetWidth;
+            const centerOffset = thumbContainerWidth / 2 - THUMB_FULL_WIDTH / 2;
             scrollPosition -= centerOffset;
             thumbnailsRef.current.scrollTo({
                 left: scrollPosition,
@@ -110,48 +195,45 @@ export function GalleryLightbox({
             <div className="flex h-full flex-col lg:flex-row">
                 {/* Main Content Area */}
                 <div
-                    ref={imageContainerRef}
+                    ref={(el) => {
+                        // Merge refs
+                        if (containerRef) containerRef.current = el;
+                        if (imageContainerRef && typeof imageContainerRef === 'object') {
+                            (imageContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+                        }
+                    }}
                     className={`relative flex flex-1 items-center justify-center overflow-hidden pb-24 lg:pb-28 ${isDark ? 'bg-black' : 'bg-stone-100'}`}
                     onClick={onClose}
-                    onTouchStart={onTouchStart}
-                    onTouchMove={onTouchMove}
-                    onTouchEnd={onTouchEnd}
                 >
-                    {/* Image/Video Content with Spring Animation */}
+                    {/* Carousel Container with Drag Support */}
                     <motion.div
-                        key={selectedItem.id}
-                        initial={{ opacity: 0, x: slideDirection === "left" ? 80 : slideDirection === "right" ? -80 : 0 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 30,
-                        }}
-                        className="absolute inset-0 flex items-center justify-center"
+                        className="absolute inset-0"
+                        drag="x"
+                        dragElastic={0.2}
+                        dragMomentum={false}
+                        dragConstraints={{ left: 0, right: 0 }}
+                        onDragStart={() => setIsDragging(true)}
+                        onDragEnd={handleDragEnd}
+                        style={{ x }}
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        <div
-                            className="relative transition-transform duration-300 ease-out"
-                            style={{ transform: `scale(${zoomLevel})` }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {selectedItem.type === "video" ? (
-                                <video
-                                    src={selectedItem.url}
-                                    controls
-                                    autoPlay
-                                    loop
-                                    className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
+                        {/* Render visible slides (virtualized window) */}
+                        {visibleItems.map(({ item, index, position }) => (
+                            <div
+                                key={item.id}
+                                className="absolute inset-0"
+                                style={{
+                                    transform: `translateX(${position * 100}%)`,
+                                }}
+                            >
+                                <CarouselSlide
+                                    item={item}
+                                    isActive={index === currentIndex}
+                                    displaySrc={index === currentIndex ? displaySrc : null}
+                                    zoomLevel={index === currentIndex ? zoomLevel : 1}
                                 />
-                            ) : (
-                                /* eslint-disable-next-line @next/next/no-img-element */
-                                <img
-                                    src={displaySrc || selectedItem.mediumPath || selectedItem.thumbnail || selectedItem.url}
-                                    alt={selectedItem.title}
-                                    className="w-[95vw] max-h-[75vh] h-auto select-none object-contain shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw] pointer-events-none"
-                                    draggable={false}
-                                />
-                            )}
-                        </div>
+                            </div>
+                        ))}
                     </motion.div>
 
                     {/* Zoom Level Indicator */}
