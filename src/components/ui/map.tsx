@@ -118,13 +118,36 @@ function Map({ children, className, onLoad, ...props }: MapProps) {
     }, [resolvedTheme]);
 
     // Handle center changes - fly to new location instead of recreating the map
+    // Store previous center for distance calculation
+    const prevCenterRef = useRef<[number, number] | null>(null);
+
     useEffect(() => {
         // Only fly to new location when map and style are fully loaded
         if (mapRef.current && props.center && isLoaded && isStyleLoaded) {
-            mapRef.current.flyTo({
-                center: props.center as [number, number],
-                duration: 500,
-            });
+            const newCenter = props.center as [number, number];
+            const prevCenter = prevCenterRef.current;
+
+            // Calculate distance between old and new center
+            // If distance is very small (< 0.01 degrees ≈ 1km), use jumpTo for instant transition
+            if (prevCenter) {
+                const distance = Math.sqrt(
+                    Math.pow(newCenter[0] - prevCenter[0], 2) +
+                    Math.pow(newCenter[1] - prevCenter[1], 2)
+                );
+
+                if (distance < 0.01) {
+                    // Short distance: instant jump, no animation overhead
+                    mapRef.current.jumpTo({ center: newCenter });
+                } else {
+                    // Longer distance: use flyTo with shorter duration (200ms instead of 500ms)
+                    mapRef.current.flyTo({ center: newCenter, duration: 200 });
+                }
+            } else {
+                // First render: just set center instantly
+                mapRef.current.jumpTo({ center: newCenter });
+            }
+
+            prevCenterRef.current = newCenter;
         }
     }, [props.center, isLoaded, isStyleLoaded]);
 
