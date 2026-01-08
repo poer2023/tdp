@@ -1,9 +1,9 @@
 "use client";
 /* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useEffect, useRef, startTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Menu, X, LogOut, LayoutDashboard, Moon, Sun, Languages, Search } from "lucide-react";
@@ -198,9 +198,12 @@ export function ZhiHeader() {
                   className="flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-300 dark:bg-[#27272a] dark:text-stone-200 dark:hover:bg-[#3f3f46]"
                 >
                   {session.user?.image ? (
-                    <img
+                    <Image
                       src={session.user.image}
                       alt="avatar"
+                      width={32}
+                      height={32}
+                      sizes="32px"
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -293,9 +296,12 @@ export function ZhiHeader() {
             {session && (
               <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-800 dark:bg-[#27272a] dark:text-stone-100">
                 {session.user?.image ? (
-                  <img
+                  <Image
                     src={session.user.image}
                     alt="avatar"
+                    width={32}
+                    height={32}
+                    sizes="32px"
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -380,4 +386,3 @@ export function ZhiHeader() {
 }
 
 export default ZhiHeader;
-

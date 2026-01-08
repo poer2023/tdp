@@ -1,7 +1,7 @@
 "use client";
-/* eslint-disable @next/next/no-img-element */
 
 import React from "react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Film, Gamepad2, Mail, Github, Twitter, MessageCircle, Compass, Zap } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
@@ -88,9 +88,12 @@ export function ProfileWidget({
             onAnimationEnd={() => setIsFlipping(false)}
           >
             {avatarUrl ? (
-              <img
+              <Image
                 src={avatarUrl}
                 alt={name}
+                width={96}
+                height={96}
+                sizes="96px"
                 className="h-full w-full object-cover"
                 onError={(e) => {
                   e.currentTarget.style.display = "none";
@@ -307,4 +310,3 @@ function StatusRow({ label, value, icon, url }: StatusRowProps) {
 
   return content;
 }
-

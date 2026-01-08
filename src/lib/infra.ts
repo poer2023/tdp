@@ -8,6 +8,7 @@
 import { unstable_cache } from "next/cache";
 import prisma from "@/lib/prisma";
 import type { SelfHostedService, InfraEvent, Server } from "@/types/live-data";
+import { withDbFallback } from "@/lib/utils/db-fallback";
 
 // Cache tag for infra data invalidation
 export const INFRA_TAG = "infra-data";
@@ -155,30 +156,36 @@ export async function getInfraData(): Promise<{
     services: SelfHostedService[];
     events: InfraEvent[];
 }> {
-    const [services, overallStats, incidents] = await Promise.all([
-        getCachedMonitors(),
-        getCachedOverallStats(),
-        getCachedRecentIncidents(10),
-    ]);
+    return withDbFallback(
+        async () => {
+            const [services, overallStats, incidents] = await Promise.all([
+                getCachedMonitors(),
+                getCachedOverallStats(),
+                getCachedRecentIncidents(10),
+            ]);
 
-    // Create simplified server overview
-    const servers: Server[] = [
-        {
-            id: "monitoring-01",
-            name: "Monitoring System",
-            location: "US",
-            status: overallStats.downMonitors > 0 ? "warning" : "healthy",
-            specs: {
-                cpu: { cores: 0, usage: 0 },
-                memory: { total: 0, used: 0 },
-                disk: { total: 0, used: 0 },
-            },
-            services: services.map((s) => s.name),
-            uptime: overallStats.uptime30d,
+            // Create simplified server overview
+            const servers: Server[] = [
+                {
+                    id: "monitoring-01",
+                    name: "Monitoring System",
+                    location: "US",
+                    status: overallStats.downMonitors > 0 ? "warning" : "healthy",
+                    specs: {
+                        cpu: { cores: 0, usage: 0 },
+                        memory: { total: 0, used: 0 },
+                        disk: { total: 0, used: 0 },
+                    },
+                    services: services.map((s) => s.name),
+                    uptime: overallStats.uptime30d,
+                },
+            ];
+
+            return { servers, services, events: incidents };
         },
-    ];
-
-    return { servers, services, events: incidents };
+        async () => ({ servers: [], services: [], events: [] }),
+        "infra:getInfraData"
+    );
 }
 
 // Export individual cached functions for granular access

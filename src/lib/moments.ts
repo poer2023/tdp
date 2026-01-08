@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
 import type { Prisma } from "@prisma/client";
+import { withDbFallback } from "@/lib/utils/db-fallback";
 
 // Cache tags for invalidation (exported for use in API routes)
 export const MOMENTS_PUBLIC_TAG = "moments:public";
@@ -46,77 +47,83 @@ async function _fetchMoments(options?: {
   q?: string | null;
   viewerId?: string | null;
 }): Promise<MomentListItem[]> {
-  const limit = options?.limit ?? 20;
-  const cursor = options?.cursor ?? null;
-  const now = new Date();
-  const where: Prisma.MomentWhereInput = {
-    deletedAt: null,
-    OR: [{ status: "PUBLISHED" }, { status: "SCHEDULED", scheduledAt: { lte: now } }],
-  };
-  if (options?.visibility) where.visibility = options.visibility;
-  else where.visibility = { in: ["PUBLIC", "UNLISTED"] };
-  if (options?.lang) where.lang = options.lang;
-  const extraAnd: Prisma.MomentWhereInput[] = [];
-  if (options?.tag) extraAnd.push({ tags: { has: options.tag } });
-  if (options?.q) extraAnd.push({ content: { contains: options.q, mode: "insensitive" } });
-  if (extraAnd.length) {
-    if (Array.isArray((where as Prisma.MomentWhereInput).AND)) {
-      (where as Prisma.MomentWhereInput).AND = [
-        ...((where as Prisma.MomentWhereInput).AND as Prisma.MomentWhereInput[]),
-        ...extraAnd,
-      ];
-    } else {
-      (where as Prisma.MomentWhereInput).AND = extraAnd;
-    }
-  }
+  return withDbFallback(
+    async () => {
+      const limit = options?.limit ?? 20;
+      const cursor = options?.cursor ?? null;
+      const now = new Date();
+      const where: Prisma.MomentWhereInput = {
+        deletedAt: null,
+        OR: [{ status: "PUBLISHED" }, { status: "SCHEDULED", scheduledAt: { lte: now } }],
+      };
+      if (options?.visibility) where.visibility = options.visibility;
+      else where.visibility = { in: ["PUBLIC", "UNLISTED"] };
+      if (options?.lang) where.lang = options.lang;
+      const extraAnd: Prisma.MomentWhereInput[] = [];
+      if (options?.tag) extraAnd.push({ tags: { has: options.tag } });
+      if (options?.q) extraAnd.push({ content: { contains: options.q, mode: "insensitive" } });
+      if (extraAnd.length) {
+        if (Array.isArray((where as Prisma.MomentWhereInput).AND)) {
+          (where as Prisma.MomentWhereInput).AND = [
+            ...((where as Prisma.MomentWhereInput).AND as Prisma.MomentWhereInput[]),
+            ...extraAnd,
+          ];
+        } else {
+          (where as Prisma.MomentWhereInput).AND = extraAnd;
+        }
+      }
 
-  const select: Prisma.MomentSelect = {
-    id: true,
-    slug: true,
-    content: true,
-    images: true,
-    createdAt: true,
-    visibility: true,
-    location: true,
-    tags: true,
-    lang: true,
-    authorId: true,
-    author: { select: { id: true, name: true, image: true } },
-    likeStats: { select: { likeCount: true } },
-    _count: { select: { comments: true } },
-  };
+      const select: Prisma.MomentSelect = {
+        id: true,
+        slug: true,
+        content: true,
+        images: true,
+        createdAt: true,
+        visibility: true,
+        location: true,
+        tags: true,
+        lang: true,
+        authorId: true,
+        author: { select: { id: true, name: true, image: true } },
+        likeStats: { select: { likeCount: true } },
+        _count: { select: { comments: true } },
+      };
 
-  if (options?.viewerId) {
-    // Get viewer's like state via likes relation
-    (select as Prisma.MomentSelect & { likes: unknown }).likes = {
-      where: { userId: options.viewerId },
-      select: { id: true },
-    };
-  }
+      if (options?.viewerId) {
+        // Get viewer's like state via likes relation
+        (select as Prisma.MomentSelect & { likes: unknown }).likes = {
+          where: { userId: options.viewerId },
+          select: { id: true },
+        };
+      }
 
-  const items = await prisma.moment.findMany({
-    where,
-    take: limit,
-    ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-    orderBy: { createdAt: "desc" },
-    select,
-  });
-  return items.map((m) => {
-    const mWithExtras = m as typeof m & {
-      likes?: { id: string }[];
-      likeStats?: { likeCount: number };
-      _count?: { comments: number };
-    };
-    return {
-      ...m,
-      images: (m.images as MomentImage[] | null) ?? [],
-      likeCount: mWithExtras.likeStats?.likeCount ?? 0,
-      commentsCount: mWithExtras._count?.comments ?? 0,
-      likedByViewer: options?.viewerId && Array.isArray(mWithExtras.likes)
-        ? mWithExtras.likes.length > 0
-        : false,
-    };
-  });
+      const items = await prisma.moment.findMany({
+        where,
+        take: limit,
+        ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+        orderBy: { createdAt: "desc" },
+        select,
+      });
+      return items.map((m) => {
+        const mWithExtras = m as typeof m & {
+          likes?: { id: string }[];
+          likeStats?: { likeCount: number };
+          _count?: { comments: number };
+        };
+        return {
+          ...m,
+          images: (m.images as MomentImage[] | null) ?? [],
+          likeCount: mWithExtras.likeStats?.likeCount ?? 0,
+          commentsCount: mWithExtras._count?.comments ?? 0,
+          likedByViewer: options?.viewerId && Array.isArray(mWithExtras.likes)
+            ? mWithExtras.likes.length > 0
+            : false,
+        };
+      });
+    },
+    async () => [],
+    "moments:list"
+  );
 }
 
 // Cached version for public moments list (no viewerId, no cursor, no tag, no q)
@@ -161,21 +168,27 @@ export async function listMoments(options?: {
 
 // Internal function to fetch moment by ID or slug
 async function _getMomentByIdOrSlug(idOrSlug: string) {
-  const now = new Date();
-  const m = await prisma.moment.findFirst({
-    where: {
-      deletedAt: null,
-      AND: [
-        { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
-        { OR: [{ status: "PUBLISHED" }, { status: "SCHEDULED", scheduledAt: { lte: now } }] },
-      ],
+  return withDbFallback(
+    async () => {
+      const now = new Date();
+      const m = await prisma.moment.findFirst({
+        where: {
+          deletedAt: null,
+          AND: [
+            { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+            { OR: [{ status: "PUBLISHED" }, { status: "SCHEDULED", scheduledAt: { lte: now } }] },
+          ],
+        },
+        include: {
+          author: { select: { id: true, name: true, image: true } },
+        },
+      });
+      if (!m) return null;
+      return { ...m, images: (m.images as MomentImage[] | null) ?? [] };
     },
-    include: {
-      author: { select: { id: true, name: true, image: true } },
-    },
-  });
-  if (!m) return null;
-  return { ...m, images: (m.images as MomentImage[] | null) ?? [] };
+    async () => null,
+    "moments:detail"
+  );
 }
 
 // Cached version of getMomentByIdOrSlug with 60s TTL
@@ -199,12 +212,17 @@ export type MomentFeedItem = {
 
 // Internal function for feed items
 async function _fetchMomentsForFeed(limit: number): Promise<MomentFeedItem[]> {
-  return prisma.moment.findMany({
-    where: { status: "PUBLISHED", visibility: "PUBLIC" },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-    select: { id: true, slug: true, content: true, createdAt: true },
-  });
+  return withDbFallback(
+    async () =>
+      prisma.moment.findMany({
+        where: { status: "PUBLISHED", visibility: "PUBLIC" },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        select: { id: true, slug: true, content: true, createdAt: true },
+      }),
+    async () => [],
+    "moments:feed"
+  );
 }
 
 // Cached version with 600s TTL (matches Cache-Control header)
@@ -230,12 +248,17 @@ export type MomentSitemapItem = {
 
 // Internal function for sitemap items
 async function _fetchMomentsForSitemap(limit: number): Promise<MomentSitemapItem[]> {
-  return prisma.moment.findMany({
-    where: { status: "PUBLISHED", visibility: "PUBLIC" },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-    select: { id: true, slug: true, updatedAt: true },
-  });
+  return withDbFallback(
+    async () =>
+      prisma.moment.findMany({
+        where: { status: "PUBLISHED", visibility: "PUBLIC" },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        select: { id: true, slug: true, updatedAt: true },
+      }),
+    async () => [],
+    "moments:sitemap"
+  );
 }
 
 // Cached version with 600s TTL

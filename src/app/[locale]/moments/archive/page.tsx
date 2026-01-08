@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { localePath } from "@/lib/locale-path";
 import { Container } from "@/components/ui/container";
+import { withDbFallback } from "@/lib/utils/db-fallback";
 
 // ISR: Revalidate every minute for archive pages
 export const runtime = "nodejs";
@@ -20,15 +21,20 @@ export default async function LocalizedMomentsArchivePage({ params, searchParams
   const start = new Date(Date.UTC(year, month - 1, 1));
   const end = new Date(Date.UTC(year, month, 1));
 
-  const moments = await prisma.moment.findMany({
-    where: {
-      status: "PUBLISHED",
-      visibility: { in: ["PUBLIC", "UNLISTED"] },
-      createdAt: { gte: start, lt: end },
-    },
-    orderBy: { createdAt: "desc" },
-    select: { id: true, slug: true, content: true, createdAt: true },
-  });
+  const moments = await withDbFallback(
+    async () =>
+      prisma.moment.findMany({
+        where: {
+          status: "PUBLISHED",
+          visibility: { in: ["PUBLIC", "UNLISTED"] },
+          createdAt: { gte: start, lt: end },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, slug: true, content: true, createdAt: true },
+      }),
+    async () => [],
+    "moments:archive"
+  );
 
   const ym = `${year}-${String(month).padStart(2, "0")}`;
   return (

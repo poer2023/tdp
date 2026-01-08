@@ -154,12 +154,18 @@ async function _fetchCachedGalleryImages(
   limit: number,
   category: GalleryCategory | undefined
 ): Promise<GalleryImage[]> {
-  const images = await prisma.galleryImage.findMany({
-    where: category ? { category } : undefined,
-    orderBy: { createdAt: "desc" as const },
-    take: limit,
-  });
-  return images.map(toGalleryImage);
+  return withDbFallback(
+    async () => {
+      const images = await prisma.galleryImage.findMany({
+        where: category ? { category } : undefined,
+        orderBy: { createdAt: "desc" as const },
+        take: limit,
+      });
+      return images.map(toGalleryImage);
+    },
+    async () => [],
+    "gallery:listCachedGalleryImages"
+  );
 }
 
 // Cached version with 300s TTL for gallery list page
