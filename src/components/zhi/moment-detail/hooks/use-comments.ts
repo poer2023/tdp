@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { MomentComment } from "../types";
 
 export type UseCommentsOptions = {
@@ -13,7 +13,7 @@ export type UseCommentsReturn = {
     isSubmitting: boolean;
     newComment: string;
     setNewComment: (value: string) => void;
-    fetchComments: () => Promise<void>;
+    refetch: () => Promise<void>;
     handleSubmitComment: (e: React.FormEvent) => Promise<void>;
     formatCommentDate: (dateString: string, locale: string) => string;
 };
@@ -38,6 +38,11 @@ export function useComments({ momentId }: UseCommentsOptions): UseCommentsReturn
             setIsLoading(false);
         }
     }, [momentId]);
+
+    // Auto-fetch on mount and when momentId changes (best practice: hook manages its own data lifecycle)
+    useEffect(() => {
+        fetchComments();
+    }, [fetchComments]);
 
     const handleSubmitComment = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
@@ -79,7 +84,7 @@ export function useComments({ momentId }: UseCommentsOptions): UseCommentsReturn
         isSubmitting,
         newComment,
         setNewComment,
-        fetchComments,
+        refetch: fetchComments,
         handleSubmitComment,
         formatCommentDate,
     };

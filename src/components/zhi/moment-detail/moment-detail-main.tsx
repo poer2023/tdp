@@ -40,9 +40,8 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
 
   const imageCount = moment.images?.length || 0;
 
-  // Use extracted hooks
+  // Use extracted hooks (auto-fetches comments on mount/momentId change)
   const commentsHook = useComments({ momentId: moment.id });
-  const { fetchComments } = commentsHook;
   const carousel = useImageCarousel({ imageCount });
 
   const t = (key: string) => getMomentDetailTranslation(locale, key);
@@ -65,16 +64,16 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
     [onClose, drawerOpen, imageCount, carousel]
   );
 
+  // Handle keyboard navigation and body scroll lock
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     document.body.style.overflow = "hidden";
-    fetchComments();
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
-  }, [handleKeyDown, fetchComments]);
+  }, [handleKeyDown]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
