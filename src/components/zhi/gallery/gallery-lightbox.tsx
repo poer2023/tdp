@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ZhiGalleryItem, OriginalLoadState } from "./types";
@@ -16,6 +16,7 @@ import { getGalleryTranslation } from "./translations";
 import { ThumbnailItem } from "./thumbnail-item";
 import { SidebarPanel } from "./sidebar-panel";
 import { MobileDrawer } from "./mobile-drawer";
+import BlockLoader from "@/components/ui/block-loader";
 
 export type GalleryLightboxProps = {
     selectedItem: ZhiGalleryItem;
@@ -64,6 +65,23 @@ export function GalleryLightbox({
 }: GalleryLightboxProps) {
     const thumbnailsRef = useRef<HTMLDivElement>(null);
     const t = (key: string) => getGalleryTranslation(locale as "en" | "zh", key as Parameters<typeof getGalleryTranslation>[1]);
+
+    // Track if current image has loaded (for showing loader placeholder)
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const prevDisplaySrcRef = useRef<string>("");
+
+    // Reset imageLoaded when switching images (displaySrc changes)
+    useEffect(() => {
+        if (displaySrc && displaySrc !== prevDisplaySrcRef.current) {
+            setImageLoaded(false);
+            prevDisplaySrcRef.current = displaySrc;
+        }
+    }, [displaySrc]);
+
+    // Also reset when currentIndex changes (immediate feedback)
+    useEffect(() => {
+        setImageLoaded(false);
+    }, [currentIndex]);
 
     // Thumbnail virtualizer for horizontal scrolling
     const rowVirtualizer = useVirtualizer({
@@ -148,15 +166,30 @@ export function GalleryLightbox({
                                     className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
                                 />
                             ) : (
-                                /* eslint-disable-next-line @next/next/no-img-element */
-                                <img
-                                    src={displaySrc?.startsWith("blob:") ? displaySrc : buildImageUrl(displaySrc || selectedItem.mediumPath || selectedItem.url, 1200)}
-                                    srcSet={displaySrc?.startsWith("blob:") ? undefined : buildImageSrcSet(selectedItem.mediumPath || selectedItem.url, [640, 960, 1200, 1600])}
-                                    sizes="(min-width: 1024px) 55vw, 95vw"
-                                    alt={selectedItem.title}
-                                    className="w-[95vw] max-h-[75vh] h-auto select-none object-contain shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw] pointer-events-none"
-                                    draggable={false}
-                                />
+                                <>
+                                    {/* BlockLoader placeholder - shown while image is loading */}
+                                    {!imageLoaded && (
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <BlockLoader
+                                                blockColor={isDark ? "#3b82f6" : "#2563eb"}
+                                                borderColor={isDark ? "#3b82f6" : "#2563eb"}
+                                                size={32}
+                                                gap={4}
+                                                speed={0.8}
+                                            />
+                                        </div>
+                                    )}
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={displaySrc?.startsWith("blob:") ? displaySrc : buildImageUrl(displaySrc || selectedItem.mediumPath || selectedItem.url, 1200)}
+                                        srcSet={displaySrc?.startsWith("blob:") ? undefined : buildImageSrcSet(selectedItem.mediumPath || selectedItem.url, [640, 960, 1200, 1600])}
+                                        sizes="(min-width: 1024px) 55vw, 95vw"
+                                        alt={selectedItem.title}
+                                        className={`w-[95vw] max-h-[75vh] h-auto select-none object-contain shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw] pointer-events-none transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                        draggable={false}
+                                        onLoad={() => setImageLoaded(true)}
+                                    />
+                                </>
                             )}
                         </div>
                     </div>
