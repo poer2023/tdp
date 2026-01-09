@@ -2,106 +2,17 @@ import Link from "next/link";
 import localFont from "next/font/local";
 import "./globals.css";
 
+// Use variable fonts for optimal performance (single file, all weights)
 const geistSans = localFont({
-  src: [
-    {
-      path: "../../public/fonts/geist-sans/Geist-Thin.woff2",
-      weight: "100",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-UltraLight.woff2",
-      weight: "200",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-SemiBold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-Black.woff2",
-      weight: "800",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-sans/Geist-UltraBlack.woff2",
-      weight: "900",
-      style: "normal",
-    },
-  ],
+  src: [{ path: "../../public/fonts/geist-sans/Geist-Variable.woff2", weight: "100 900" }],
   variable: "--font-geist-sans",
+  display: "swap",
 });
 
 const geistMono = localFont({
-  src: [
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Thin.woff2",
-      weight: "100",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-UltraLight.woff2",
-      weight: "200",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-SemiBold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-Black.woff2",
-      weight: "800",
-      style: "normal",
-    },
-    {
-      path: "../../public/fonts/geist-mono/GeistMono-UltraBlack.woff2",
-      weight: "900",
-      style: "normal",
-    },
-  ],
+  src: [{ path: "../../public/fonts/geist-mono/GeistMono-Variable.woff2", weight: "100 900" }],
   variable: "--font-geist-mono",
+  display: "swap",
 });
 
 export default function GlobalNotFound() {
