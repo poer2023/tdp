@@ -20,6 +20,10 @@ import { isAllowedImageHost } from "@/lib/image-hosts";
 // Allowed image domains (security measure)
 const ALLOWED_DOMAINS = getAllowedImageProxyDomains();
 
+// LCP optimization: limit max width to avoid unnecessary 4K processing
+// Hero images: ~300px display × 2x Retina × 2 safety margin = 1200px
+const MAX_TARGET_WIDTH = 1200;
+
 /**
  * GET /api/image-proxy?url=<image_url>&w=<width>&q=<quality>
  */
@@ -27,7 +31,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const imageUrl = searchParams.get("url");
-    const targetWidth = parseInt(searchParams.get("w") || "0", 10);
+    // Clamp width to MAX_TARGET_WIDTH to avoid unnecessary large image processing
+    const rawWidth = parseInt(searchParams.get("w") || "0", 10);
+    const targetWidth = rawWidth > 0 ? Math.min(rawWidth, MAX_TARGET_WIDTH) : 0;
     const targetQuality = parseInt(searchParams.get("q") || "78", 10);
 
     if (!imageUrl) {

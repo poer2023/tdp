@@ -168,14 +168,15 @@ function getImageQuality(cols: number): number {
   return 75;
 }
 
-// Get image sizes for responsive loading - request larger images for Retina displays
+// Get image sizes for responsive loading - optimized for actual display widths
 function getImageSizes(cols: number): string {
-  // Request 2x the display size to ensure sharp images on Retina displays
-  // WebP compression keeps file sizes reasonable even at larger dimensions
-  if (cols === 1) return "(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 800px";
-  if (cols === 2) return "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px";
-  if (cols === 3) return "(max-width: 640px) 50vw, (max-width: 1024px) 40vw, 450px";
-  return "(max-width: 640px) 50vw, (max-width: 1024px) 35vw, 400px";
+  // LCP optimization: request sizes closer to actual display width
+  // 4 cols on desktop ≈ 12.5vw, with 2x Retina max ≈ 25vw
+  if (cols === 1) return "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 640px";
+  if (cols === 2) return "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 480px";
+  if (cols === 3) return "(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 360px";
+  // 4 cols: mobile 25vw, desktop ~12.5vw, max 300px (Retina 2x = 600px)
+  return "(max-width: 640px) 25vw, (max-width: 1024px) 20vw, 300px";
 }
 
 // Shuffle Grid Component - unified layout for 1-16 images
@@ -282,8 +283,11 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
               sizes={imageSizes}
               className="object-cover transition-transform duration-300 hover:scale-105"
               quality={imageQuality}
-              priority={sq.id < 4}
+              // LCP optimization: only 2 priority images to reduce concurrent high-priority requests
+              priority={sq.id < 2}
               loading={sq.id < 4 ? "eager" : "lazy"}
+              // First 2 images are priority, 3-4 are eager but low priority, rest are lazy
+              {...(sq.id >= 2 && sq.id < 4 ? { fetchPriority: "low" as const } : {})}
             />
           )}
           <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
