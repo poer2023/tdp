@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { motion, useMotionValue, animate } from "framer-motion";
-import type { PanInfo } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ZhiGalleryItem, OriginalLoadState } from "./types";
 import {
     THUMB_FULL_WIDTH,
@@ -12,11 +11,12 @@ import {
     THUMB_MARGIN,
 } from "./types";
 import { formatBytes, formatProgress } from "./utils";
+import { buildImageUrl, buildImageSrcSet } from "@/lib/image-resize";
 import { getGalleryTranslation } from "./translations";
 import { ThumbnailItem } from "./thumbnail-item";
 import { SidebarPanel } from "./sidebar-panel";
 import { MobileDrawer } from "./mobile-drawer";
-import { CarouselSlide } from "./carousel-slide";
+import BlockLoader from "@/components/ui/block-loader";
 
 export type GalleryLightboxProps = {
     selectedItem: ZhiGalleryItem;
@@ -41,15 +41,11 @@ export type GalleryLightboxProps = {
     onTouchEnd: () => void;
 };
 
-// Swipe detection thresholds
-const SWIPE_VELOCITY_THRESHOLD = 500;
-const SWIPE_OFFSET_THRESHOLD = 0.3; // 30% of container width
-
 export function GalleryLightbox({
     selectedItem,
     items,
     currentIndex,
-    slideDirection: _slideDirection,
+    slideDirection,
     zoomLevel,
     displaySrc,
     originalState,
@@ -63,109 +59,51 @@ export function GalleryLightbox({
     onNext,
     onThumbnailClick,
     onToggleDrawer,
-    onTouchStart: _onTouchStart,
-    onTouchMove: _onTouchMove,
-    onTouchEnd: _onTouchEnd,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
 }: GalleryLightboxProps) {
     const thumbnailsRef = useRef<HTMLDivElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [containerWidth, setContainerWidth] = useState(0);
-    const [isDragging, setIsDragging] = useState(false);
-    const x = useMotionValue(0);
     const t = (key: string) => getGalleryTranslation(locale as "en" | "zh", key as Parameters<typeof getGalleryTranslation>[1]);
 
-    // Measure container width on mount and resize
-    useEffect(() => {
-        const updateWidth = () => {
-            if (containerRef.current) {
-                setContainerWidth(containerRef.current.offsetWidth);
-            }
-        };
-        updateWidth();
-        window.addEventListener("resize", updateWidth);
-        return () => window.removeEventListener("resize", updateWidth);
-    }, []);
+    // Track if current image has loaded (for showing loader placeholder)
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const prevDisplaySrcRef = useRef<string>("");
 
-    // Animate to current index when it changes (not during drag)
+    // Reset imageLoaded when switching images (displaySrc changes)
     useEffect(() => {
-        if (!isDragging && containerWidth > 0) {
-            const targetX = -currentIndex * containerWidth;
-            animate(x, targetX, {
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-            });
+        if (displaySrc && displaySrc !== prevDisplaySrcRef.current) {
+            setImageLoaded(false);
+            prevDisplaySrcRef.current = displaySrc;
         }
-    }, [currentIndex, containerWidth, isDragging, x]);
+    }, [displaySrc]);
 
-    // Get visible items (current ± 1 for virtualization)
-    const visibleItems = useMemo(() => {
-        const windowSize = 1;
-        const start = Math.max(0, currentIndex - windowSize);
-        const end = Math.min(items.length - 1, currentIndex + windowSize);
-        return items.slice(start, end + 1).map((item, i) => ({
-            item,
-            index: start + i,
-            position: start + i,
-        }));
-    }, [items, currentIndex]);
+    // Also reset when currentIndex changes (immediate feedback)
+    useEffect(() => {
+        setImageLoaded(false);
+    }, [currentIndex]);
 
-    // Handle drag end - determine if swipe should navigate
-    const handleDragEnd = useCallback(
-        (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-            setIsDragging(false);
-            if (containerWidth === 0) return;
+    // Thumbnail virtualizer for horizontal scrolling
+    const rowVirtualizer = useVirtualizer({
+        count: items.length,
+        getScrollElement: () => thumbnailsRef.current,
+        estimateSize: (index) => index === currentIndex ? THUMB_FULL_WIDTH : THUMB_COLLAPSED_WIDTH,
+        horizontal: true,
+        overscan: 5,
+        gap: THUMB_GAP,
+    });
 
-            const offset = info.offset.x;
-            const velocity = info.velocity.x;
-            let newIndex = currentIndex;
-
-            // Fast swipe detection
-            if (Math.abs(velocity) > SWIPE_VELOCITY_THRESHOLD) {
-                newIndex = velocity > 0 ? currentIndex - 1 : currentIndex + 1;
-            }
-            // Slow drag detection (30% of container)
-            else if (Math.abs(offset) > containerWidth * SWIPE_OFFSET_THRESHOLD) {
-                newIndex = offset > 0 ? currentIndex - 1 : currentIndex + 1;
-            }
-
-            // Clamp and navigate
-            newIndex = Math.max(0, Math.min(items.length - 1, newIndex));
-            if (newIndex !== currentIndex) {
-                if (newIndex < currentIndex) {
-                    onPrev();
-                } else {
-                    onNext();
-                }
-            } else {
-                // Snap back to current position
-                animate(x, -currentIndex * containerWidth, {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                });
-            }
-        },
-        [containerWidth, currentIndex, items.length, onNext, onPrev, x]
-    );
+    // Force re-measure when currentIndex changes (active item has different width)
+    useEffect(() => {
+        rowVirtualizer.measure();
+    }, [currentIndex, rowVirtualizer]);
 
     // Scroll thumbnails to current index
     useEffect(() => {
-        if (thumbnailsRef.current) {
-            let scrollPosition = 0;
-            for (let i = 0; i < currentIndex; i++) {
-                scrollPosition += THUMB_COLLAPSED_WIDTH + THUMB_GAP;
-            }
-            scrollPosition += THUMB_MARGIN;
-            const thumbContainerWidth = thumbnailsRef.current.offsetWidth;
-            const centerOffset = thumbContainerWidth / 2 - THUMB_FULL_WIDTH / 2;
-            scrollPosition -= centerOffset;
-            thumbnailsRef.current.scrollTo({
-                left: scrollPosition,
-                behavior: "smooth",
-            });
+        if (thumbnailsRef.current && items.length > 0) {
+            rowVirtualizer.scrollToIndex(currentIndex, { align: "center", behavior: "smooth" });
         }
-    }, [currentIndex]);
+    }, [currentIndex, items.length, rowVirtualizer]);
 
     return (
         <div className={`fixed inset-0 z-[70] flex flex-col backdrop-blur-sm ${isDark ? 'bg-[#09090b]/95' : 'bg-[#fafaf9]/95'}`}>
@@ -195,48 +133,66 @@ export function GalleryLightbox({
             <div className="flex h-full flex-col lg:flex-row">
                 {/* Main Content Area */}
                 <div
-                    ref={(el) => {
-                        // Update our local ref
-                        containerRef.current = el;
-                        // Also update the parent's ref if provided (using a callback pattern)
-                        if (imageContainerRef && 'current' in imageContainerRef) {
-                            // Use Object.assign to avoid lint error about modifying props
-                            Object.assign(imageContainerRef, { current: el });
-                        }
-                    }}
+                    ref={imageContainerRef}
                     className={`relative flex flex-1 items-center justify-center overflow-hidden pb-24 lg:pb-28 ${isDark ? 'bg-black' : 'bg-stone-100'}`}
                     onClick={onClose}
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
                 >
-                    {/* Carousel Container with Drag Support */}
-                    <motion.div
-                        className="absolute inset-0"
-                        drag="x"
-                        dragElastic={0.2}
-                        dragMomentum={false}
-                        dragConstraints={{ left: 0, right: 0 }}
-                        onDragStart={() => setIsDragging(true)}
-                        onDragEnd={handleDragEnd}
-                        style={{ x }}
-                        onClick={(e) => e.stopPropagation()}
+                    {/* 使用 CSS 变量驱动动画，避免 key 变化导致组件重挂载 */}
+                    <div
+                        className="transition-all duration-300 ease-out"
+                        style={{
+                            opacity: slideDirection ? 0.7 : 1,
+                            transform: slideDirection === "left"
+                                ? "translateX(0)"
+                                : slideDirection === "right"
+                                    ? "translateX(0)"
+                                    : "translateX(0)",
+                        }}
                     >
-                        {/* Render visible slides (virtualized window) */}
-                        {visibleItems.map(({ item, index, position }) => (
-                            <div
-                                key={item.id}
-                                className="absolute inset-0"
-                                style={{
-                                    transform: `translateX(${position * 100}%)`,
-                                }}
-                            >
-                                <CarouselSlide
-                                    item={item}
-                                    isActive={index === currentIndex}
-                                    displaySrc={index === currentIndex ? displaySrc : null}
-                                    zoomLevel={index === currentIndex ? zoomLevel : 1}
+                        <div
+                            className="relative transition-transform duration-300 ease-out"
+                            style={{ transform: `scale(${zoomLevel})` }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {selectedItem.type === "video" ? (
+                                <video
+                                    src={selectedItem.url}
+                                    controls
+                                    autoPlay
+                                    loop
+                                    className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
                                 />
-                            </div>
-                        ))}
-                    </motion.div>
+                            ) : (
+                                <>
+                                    {/* BlockLoader placeholder - shown while image is loading */}
+                                    {!imageLoaded && (
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <BlockLoader
+                                                blockColor={isDark ? "#3b82f6" : "#2563eb"}
+                                                borderColor={isDark ? "#3b82f6" : "#2563eb"}
+                                                size={32}
+                                                gap={4}
+                                                speed={0.8}
+                                            />
+                                        </div>
+                                    )}
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={displaySrc?.startsWith("blob:") ? displaySrc : buildImageUrl(displaySrc || selectedItem.mediumPath || selectedItem.url, 1200)}
+                                        srcSet={displaySrc?.startsWith("blob:") ? undefined : buildImageSrcSet(selectedItem.mediumPath || selectedItem.url, [640, 960, 1200, 1600])}
+                                        sizes="(min-width: 1024px) 55vw, 95vw"
+                                        alt={selectedItem.title}
+                                        className={`w-[95vw] max-h-[75vh] h-auto select-none object-contain shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw] pointer-events-none transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                        draggable={false}
+                                        onLoad={() => setImageLoaded(true)}
+                                    />
+                                </>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Zoom Level Indicator */}
                     {zoomLevel > 1 && (
@@ -289,25 +245,40 @@ export function GalleryLightbox({
                 />
             </div>
 
-            {/* Thumbnail Strip */}
+            {/* Thumbnail Strip - Virtualized */}
             <div className="fixed inset-x-0 bottom-6 z-[72] flex justify-center pointer-events-none lg:right-[380px] xl:right-[420px]">
                 <div className="pointer-events-auto mx-4 transition-all duration-300">
                     <div
                         ref={thumbnailsRef}
-                        className="flex max-w-[80vw] overflow-x-auto p-2 lg:max-w-[600px]"
+                        className="max-w-[80vw] overflow-x-auto p-2 lg:max-w-[600px]"
                         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                     >
                         <style>{`.overflow-x-auto::-webkit-scrollbar { display: none; }`}</style>
-                        <div className="flex h-12 gap-1.5 px-2" style={{ width: "fit-content" }}>
-                            {items.map((item, i) => (
-                                <ThumbnailItem
-                                    key={item.id}
-                                    item={item}
-                                    index={i}
-                                    isActive={i === currentIndex}
-                                    onClick={onThumbnailClick}
-                                />
-                            ))}
+                        <div
+                            className="relative h-12"
+                            style={{ width: `${rowVirtualizer.getTotalSize()}px` }}
+                        >
+                            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                                const item = items[virtualItem.index];
+                                if (!item) return null;
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className="absolute top-0 h-full"
+                                        style={{
+                                            left: `${virtualItem.start}px`,
+                                            width: `${virtualItem.size}px`,
+                                        }}
+                                    >
+                                        <ThumbnailItem
+                                            item={item}
+                                            index={virtualItem.index}
+                                            isActive={virtualItem.index === currentIndex}
+                                            onClick={onThumbnailClick}
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

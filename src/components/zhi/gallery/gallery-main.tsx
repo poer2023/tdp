@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { useTheme } from "next-themes";
+import { useImageCache } from "@/hooks/use-image-cache";
 
 // Import from extracted modules
 import type { ZhiGalleryItem, ZhiGalleryProps } from "./types";
@@ -24,9 +25,15 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
   // Image container ref for wheel zoom
   const imageContainerRef = useRef<HTMLDivElement | null>(null);
 
+  // LRU image cache for preloading
+  const imageCache = useImageCache();
+
   // Use extracted hooks
   const navigation = useGalleryNavigation({ items });
-  const imageLoading = useGalleryImageLoading({ selectedItem: navigation.selectedItem });
+  const imageLoading = useGalleryImageLoading({
+    selectedItem: navigation.selectedItem,
+    shouldLoadOriginal: navigation.zoomLevel > 1,
+  });
 
   // Touch swipe handlers
   const touch = useGalleryTouch({
@@ -41,15 +48,9 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
     navigation.handleClose();
   }, [imageLoading, navigation]);
 
-  // Preload adjacent images
+  // Preload adjacent images using LRU cache
   useEffect(() => {
     if (!navigation.selectedItem || items.length === 0) return;
-
-    const preloadImage = (src: string | undefined) => {
-      if (!src) return;
-      const img = new Image();
-      img.src = src;
-    };
 
     const currentIndex = navigation.currentIndex;
     const prevIdx = (currentIndex - 1 + items.length) % items.length;
@@ -57,13 +58,16 @@ export function ZhiGallery({ items }: ZhiGalleryProps) {
     const prevItem = items[prevIdx];
     const nextItem = items[nextIdx];
 
+    // Use imageCache.preload for deduplication and caching
     if (prevItem) {
-      preloadImage(prevItem.mediumPath || prevItem.thumbnail || prevItem.url);
+      const prevUrl = prevItem.mediumPath || prevItem.url;
+      imageCache.preload(prevItem.id, prevUrl);
     }
     if (nextItem) {
-      preloadImage(nextItem.mediumPath || nextItem.thumbnail || nextItem.url);
+      const nextUrl = nextItem.mediumPath || nextItem.url;
+      imageCache.preload(nextItem.id, nextUrl);
     }
-  }, [navigation.currentIndex, navigation.selectedItem, items.length, items]);
+  }, [navigation.currentIndex, navigation.selectedItem, items.length, items, imageCache]);
 
   // Wheel zoom (center-based)
   useEffect(() => {
