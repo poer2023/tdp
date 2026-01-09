@@ -1,4 +1,6 @@
-export const INTERNAL_IMAGE_HOST_HINTS = ["r2.dev", "r2.cloudflarestorage.com", "dybzy.com"];
+// R2 images should NOT go through image-proxy - they are served directly via Cloudflare CDN
+// image-proxy is only for external CDNs with anti-hotlinking (Bilibili, Douban, etc.)
+export const INTERNAL_IMAGE_HOST_HINTS: string[] = [];
 
 export function hostMatches(hostname: string, domain: string): boolean {
   if (!hostname || !domain) return false;
