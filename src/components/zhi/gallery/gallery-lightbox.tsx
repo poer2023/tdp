@@ -172,7 +172,6 @@ export function GalleryLightbox({
                                         <div className="absolute inset-0 flex items-center justify-center">
                                             <BlockLoader
                                                 blockColor={isDark ? "#3b82f6" : "#2563eb"}
-                                                borderColor={isDark ? "#3b82f6" : "#2563eb"}
                                                 size={32}
                                                 gap={4}
                                                 speed={0.8}

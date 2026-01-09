@@ -123,6 +123,7 @@ export function useGalleryImageLoading({
     }, [selectedItem, isOriginalLoaded, originalState.status, imageCache]);
 
     // Initialize with medium/thumbnail when selectedItem changes
+    /* eslint-disable react-hooks/set-state-in-effect -- necessary to sync state when selectedItem changes */
     useEffect(() => {
         if (!selectedItem) {
             setDisplaySrc("");
@@ -151,10 +152,12 @@ export function useGalleryImageLoading({
             }
         }
     }, [selectedItem, imageCache]);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     // Auto-load original when shouldLoadOriginal is true (e.g., zoom > 1)
     useEffect(() => {
         if (shouldLoadOriginal && selectedItem && !isOriginalLoaded) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- loadOriginal is triggered by external state change (zoom > 1), not a render side effect
             loadOriginal();
         }
     }, [shouldLoadOriginal, selectedItem, isOriginalLoaded, loadOriginal]);
