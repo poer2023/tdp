@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useImageCache } from "@/hooks/use-image-cache";
 import type { ZhiGalleryItem, OriginalLoadState } from "../types";
 
 export type UseGalleryImageLoadingOptions = {
     selectedItem: ZhiGalleryItem | null;
+    /** Optional: load original immediately (e.g., when zoomLevel > 1) */
+    shouldLoadOriginal?: boolean;
 };
 
 export type UseGalleryImageLoadingReturn = {
@@ -12,10 +15,21 @@ export type UseGalleryImageLoadingReturn = {
     originalState: OriginalLoadState;
     showProgress: boolean;
     cleanup: () => void;
+    /** Manually trigger original image loading */
+    loadOriginal: () => void;
+    /** Whether original image is loaded (from cache or XHR) */
+    isOriginalLoaded: boolean;
+};
+
+// Detect if we're on a mobile device
+const isMobile = (): boolean => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < 768;
 };
 
 export function useGalleryImageLoading({
     selectedItem,
+    shouldLoadOriginal = false,
 }: UseGalleryImageLoadingOptions): UseGalleryImageLoadingReturn {
     const [displaySrc, setDisplaySrc] = useState<string>("");
     const [originalState, setOriginalState] = useState<OriginalLoadState>({
@@ -24,108 +38,128 @@ export function useGalleryImageLoading({
         totalBytes: null,
     });
     const [showProgress, setShowProgress] = useState(true);
+    const [isOriginalLoaded, setIsOriginalLoaded] = useState(false);
     const progressHideTimerRef = useRef<number | null>(null);
     const xhrRef = useRef<XMLHttpRequest | null>(null);
     const objectUrlRef = useRef<string | null>(null);
+    const currentItemIdRef = useRef<string | null>(null);
 
-    const cleanup = () => {
+    // LRU cache for original images
+    const imageCache = useImageCache();
+
+    const cleanup = useCallback(() => {
         xhrRef.current?.abort();
-        if (objectUrlRef.current) {
-            URL.revokeObjectURL(objectUrlRef.current);
-            objectUrlRef.current = null;
-        }
-    };
+        // Don't revoke blob URLs that are cached - the cache manages them
+        objectUrlRef.current = null;
+    }, []);
 
-    // Load original image with progress
-    useEffect(() => {
+    // Load original image via XHR with progress, using LRU cache
+    const loadOriginal = useCallback(() => {
         if (!selectedItem) return;
-        let cancelled = false;
-        const schedule = (fn: () => void) => {
-            queueMicrotask(() => {
-                if (!cancelled) {
-                    fn();
-                }
-            });
+
+        // Mobile: skip original, medium is sufficient
+        if (isMobile()) return;
+
+        // Already loaded or loading
+        if (isOriginalLoaded || originalState.status === "loading") return;
+
+        const cacheKey = selectedItem.id;
+
+        // Check cache first
+        const cachedUrl = imageCache.get(cacheKey);
+        if (cachedUrl) {
+            setDisplaySrc(cachedUrl);
+            setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
+            setIsOriginalLoaded(true);
+            return;
+        }
+
+        // No cache hit, fetch via XHR
+        if (typeof window === "undefined" || typeof window.XMLHttpRequest === "undefined") {
+            return;
+        }
+
+        // Abort any previous request
+        xhrRef.current?.abort();
+
+        const xhr = new window.XMLHttpRequest();
+        xhrRef.current = xhr;
+        setOriginalState({ status: "loading", loadedBytes: 0, totalBytes: null });
+        setShowProgress(true);
+
+        xhr.open("GET", selectedItem.url, true);
+        xhr.responseType = "blob";
+
+        xhr.onprogress = (event) => {
+            setOriginalState((prev) => ({
+                status: "loading",
+                loadedBytes: event.loaded,
+                totalBytes: event.lengthComputable ? event.total : prev.totalBytes,
+            }));
         };
 
-        // Abort previous request
-        xhrRef.current?.abort();
-        if (objectUrlRef.current) {
-            URL.revokeObjectURL(objectUrlRef.current);
-            objectUrlRef.current = null;
-        }
+        xhr.onerror = () => {
+            setOriginalState({ status: "error", loadedBytes: 0, totalBytes: null });
+            // Fallback to direct URL on error
+            setDisplaySrc(selectedItem.url);
+        };
 
-        // Start with medium or thumbnail
-        const initialSrc = selectedItem.mediumPath || selectedItem.thumbnail || selectedItem.url;
-        schedule(() => {
-            setDisplaySrc(initialSrc);
-        });
-
-        // If we have medium path, load original in background
-        if (selectedItem.mediumPath && selectedItem.mediumPath !== selectedItem.url) {
-            if (typeof window === "undefined" || typeof window.XMLHttpRequest === "undefined") {
-                schedule(() => {
-                    setOriginalState({ status: "idle", loadedBytes: 0, totalBytes: null });
-                });
-                return () => {
-                    cancelled = true;
-                };
-            }
-
-            const xhr = new window.XMLHttpRequest();
-            xhrRef.current = xhr;
-            schedule(() => {
-                setOriginalState({ status: "loading", loadedBytes: 0, totalBytes: null });
-                setShowProgress(true);
-            });
-
-            xhr.open("GET", selectedItem.url, true);
-            xhr.responseType = "blob";
-
-            xhr.onprogress = (event) => {
-                setOriginalState((prev) => ({
-                    status: "loading",
-                    loadedBytes: event.loaded,
-                    totalBytes: event.lengthComputable ? event.total : prev.totalBytes,
-                }));
-            };
-
-            xhr.onerror = () => {
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300 && xhr.response instanceof Blob) {
+                const blob = xhr.response;
+                // Store in LRU cache - cache manages blob URL lifecycle
+                const blobUrl = imageCache.set(cacheKey, blob);
+                objectUrlRef.current = blobUrl;
+                setDisplaySrc(blobUrl);
+                setOriginalState({ status: "success", loadedBytes: blob.size, totalBytes: blob.size });
+                setIsOriginalLoaded(true);
+            } else {
                 setOriginalState({ status: "error", loadedBytes: 0, totalBytes: null });
                 setDisplaySrc(selectedItem.url);
-            };
+            }
+        };
 
-            xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300 && xhr.response instanceof Blob) {
-                    const blob = xhr.response;
-                    const url = URL.createObjectURL(blob);
-                    objectUrlRef.current = url;
-                    setDisplaySrc(url);
-                    setOriginalState({ status: "success", loadedBytes: blob.size, totalBytes: blob.size });
-                } else {
-                    setOriginalState({ status: "error", loadedBytes: 0, totalBytes: null });
-                    setDisplaySrc(selectedItem.url);
-                }
-            };
+        xhr.send();
+    }, [selectedItem, isOriginalLoaded, originalState.status, imageCache]);
 
-            xhr.send();
-
-            return () => {
-                cancelled = true;
-                xhr.abort();
-            };
-        } else {
-            schedule(() => {
-                setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
-            });
-            return () => {
-                cancelled = true;
-            };
+    // Initialize with medium/thumbnail when selectedItem changes
+    useEffect(() => {
+        if (!selectedItem) {
+            setDisplaySrc("");
+            setIsOriginalLoaded(false);
+            return;
         }
-    }, [selectedItem]);
+
+        // Reset state for new item
+        if (currentItemIdRef.current !== selectedItem.id) {
+            currentItemIdRef.current = selectedItem.id;
+            xhrRef.current?.abort();
+            objectUrlRef.current = null;
+            setIsOriginalLoaded(false);
+
+            // Check if original is already cached
+            const cachedUrl = imageCache.get(selectedItem.id);
+            if (cachedUrl) {
+                setDisplaySrc(cachedUrl);
+                setOriginalState({ status: "success", loadedBytes: 0, totalBytes: null });
+                setIsOriginalLoaded(true);
+            } else {
+                // Start with medium resolution
+                const initialSrc = selectedItem.mediumPath || selectedItem.thumbnail || selectedItem.url;
+                setDisplaySrc(initialSrc);
+                setOriginalState({ status: "idle", loadedBytes: 0, totalBytes: null });
+            }
+        }
+    }, [selectedItem, imageCache]);
+
+    // Auto-load original when shouldLoadOriginal is true (e.g., zoom > 1)
+    useEffect(() => {
+        if (shouldLoadOriginal && selectedItem && !isOriginalLoaded) {
+            loadOriginal();
+        }
+    }, [shouldLoadOriginal, selectedItem, isOriginalLoaded, loadOriginal]);
 
     // Auto-hide progress indicator
-    // Use setTimeout in callback instead of synchronous setState in effect
     useEffect(() => {
         let cancelled = false;
         if (progressHideTimerRef.current) {
@@ -133,7 +167,6 @@ export function useGalleryImageLoading({
             progressHideTimerRef.current = null;
         }
         if (originalState.status === "loading") {
-            // Schedule state update via setTimeout (async, not synchronous)
             progressHideTimerRef.current = window.setTimeout(() => {
                 if (!cancelled) {
                     setShowProgress(true);
@@ -159,9 +192,7 @@ export function useGalleryImageLoading({
     useEffect(() => {
         return () => {
             xhrRef.current?.abort();
-            if (objectUrlRef.current) {
-                URL.revokeObjectURL(objectUrlRef.current);
-            }
+            // Note: Don't revoke blob URLs - they're managed by the LRU cache
         };
     }, []);
 
@@ -170,5 +201,7 @@ export function useGalleryImageLoading({
         originalState,
         showProgress,
         cleanup,
+        loadOriginal,
+        isOriginalLoaded,
     };
 }

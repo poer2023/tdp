@@ -47,10 +47,10 @@ export interface ZhiGalleryProps {
     items: ZhiGalleryItem[];
 }
 
-// Thumbnail dimensions constants
-export const THUMB_FULL_WIDTH = 120;
-export const THUMB_COLLAPSED_WIDTH = 35;
-export const THUMB_GAP = 2;
+// Thumbnail dimensions constants (must match thumbnail-item.tsx CSS)
+export const THUMB_FULL_WIDTH = 60;       // active: w-[60px]
+export const THUMB_COLLAPSED_WIDTH = 32;   // inactive: w-8 = 32px
+export const THUMB_GAP = 4;
 export const THUMB_MARGIN = 2;
 
 export const GRID_IMAGE_SIZES = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px";

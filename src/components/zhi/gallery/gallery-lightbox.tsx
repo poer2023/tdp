@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ZhiGalleryItem, OriginalLoadState } from "./types";
 import {
     THUMB_FULL_WIDTH,
@@ -11,6 +11,7 @@ import {
     THUMB_MARGIN,
 } from "./types";
 import { formatBytes, formatProgress } from "./utils";
+import { buildImageUrl, buildImageSrcSet } from "@/lib/image-resize";
 import { getGalleryTranslation } from "./translations";
 import { ThumbnailItem } from "./thumbnail-item";
 import { SidebarPanel } from "./sidebar-panel";
@@ -64,23 +65,27 @@ export function GalleryLightbox({
     const thumbnailsRef = useRef<HTMLDivElement>(null);
     const t = (key: string) => getGalleryTranslation(locale as "en" | "zh", key as Parameters<typeof getGalleryTranslation>[1]);
 
+    // Thumbnail virtualizer for horizontal scrolling
+    const rowVirtualizer = useVirtualizer({
+        count: items.length,
+        getScrollElement: () => thumbnailsRef.current,
+        estimateSize: (index) => index === currentIndex ? THUMB_FULL_WIDTH : THUMB_COLLAPSED_WIDTH,
+        horizontal: true,
+        overscan: 5,
+        gap: THUMB_GAP,
+    });
+
+    // Force re-measure when currentIndex changes (active item has different width)
+    useEffect(() => {
+        rowVirtualizer.measure();
+    }, [currentIndex, rowVirtualizer]);
+
     // Scroll thumbnails to current index
     useEffect(() => {
-        if (thumbnailsRef.current) {
-            let scrollPosition = 0;
-            for (let i = 0; i < currentIndex; i++) {
-                scrollPosition += THUMB_COLLAPSED_WIDTH + THUMB_GAP;
-            }
-            scrollPosition += THUMB_MARGIN;
-            const containerWidth = thumbnailsRef.current.offsetWidth;
-            const centerOffset = containerWidth / 2 - THUMB_FULL_WIDTH / 2;
-            scrollPosition -= centerOffset;
-            thumbnailsRef.current.scrollTo({
-                left: scrollPosition,
-                behavior: "smooth",
-            });
+        if (thumbnailsRef.current && items.length > 0) {
+            rowVirtualizer.scrollToIndex(currentIndex, { align: "center", behavior: "smooth" });
         }
-    }, [currentIndex]);
+    }, [currentIndex, items.length, rowVirtualizer]);
 
     return (
         <div className={`fixed inset-0 z-[70] flex flex-col backdrop-blur-sm ${isDark ? 'bg-[#09090b]/95' : 'bg-[#fafaf9]/95'}`}>
@@ -117,11 +122,17 @@ export function GalleryLightbox({
                     onTouchMove={onTouchMove}
                     onTouchEnd={onTouchEnd}
                 >
-                    <motion.div
-                        key={selectedItem.id}
-                        initial={{ opacity: 0, x: slideDirection === "left" ? 100 : slideDirection === "right" ? -100 : 0 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
+                    {/* 使用 CSS 变量驱动动画，避免 key 变化导致组件重挂载 */}
+                    <div
+                        className="transition-all duration-300 ease-out"
+                        style={{
+                            opacity: slideDirection ? 0.7 : 1,
+                            transform: slideDirection === "left"
+                                ? "translateX(0)"
+                                : slideDirection === "right"
+                                    ? "translateX(0)"
+                                    : "translateX(0)",
+                        }}
                     >
                         <div
                             className="relative transition-transform duration-300 ease-out"
@@ -139,14 +150,16 @@ export function GalleryLightbox({
                             ) : (
                                 /* eslint-disable-next-line @next/next/no-img-element */
                                 <img
-                                    src={displaySrc || selectedItem.mediumPath || selectedItem.thumbnail || selectedItem.url}
+                                    src={displaySrc?.startsWith("blob:") ? displaySrc : buildImageUrl(displaySrc || selectedItem.mediumPath || selectedItem.url, 1200)}
+                                    srcSet={displaySrc?.startsWith("blob:") ? undefined : buildImageSrcSet(selectedItem.mediumPath || selectedItem.url, [640, 960, 1200, 1600])}
+                                    sizes="(min-width: 1024px) 55vw, 95vw"
                                     alt={selectedItem.title}
                                     className="w-[95vw] max-h-[75vh] h-auto select-none object-contain shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw] pointer-events-none"
                                     draggable={false}
                                 />
                             )}
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* Zoom Level Indicator */}
                     {zoomLevel > 1 && (
@@ -199,25 +212,40 @@ export function GalleryLightbox({
                 />
             </div>
 
-            {/* Thumbnail Strip */}
+            {/* Thumbnail Strip - Virtualized */}
             <div className="fixed inset-x-0 bottom-6 z-[72] flex justify-center pointer-events-none lg:right-[380px] xl:right-[420px]">
                 <div className="pointer-events-auto mx-4 transition-all duration-300">
                     <div
                         ref={thumbnailsRef}
-                        className="flex max-w-[80vw] overflow-x-auto p-2 lg:max-w-[600px]"
+                        className="max-w-[80vw] overflow-x-auto p-2 lg:max-w-[600px]"
                         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                     >
                         <style>{`.overflow-x-auto::-webkit-scrollbar { display: none; }`}</style>
-                        <div className="flex h-12 gap-1.5 px-2" style={{ width: "fit-content" }}>
-                            {items.map((item, i) => (
-                                <ThumbnailItem
-                                    key={item.id}
-                                    item={item}
-                                    index={i}
-                                    isActive={i === currentIndex}
-                                    onClick={onThumbnailClick}
-                                />
-                            ))}
+                        <div
+                            className="relative h-12"
+                            style={{ width: `${rowVirtualizer.getTotalSize()}px` }}
+                        >
+                            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                                const item = items[virtualItem.index];
+                                if (!item) return null;
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className="absolute top-0 h-full"
+                                        style={{
+                                            left: `${virtualItem.start}px`,
+                                            width: `${virtualItem.size}px`,
+                                        }}
+                                    >
+                                        <ThumbnailItem
+                                            item={item}
+                                            index={virtualItem.index}
+                                            isActive={virtualItem.index === currentIndex}
+                                            onClick={onThumbnailClick}
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
