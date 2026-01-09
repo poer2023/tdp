@@ -224,8 +224,8 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
       timeoutRef.current = setTimeout(shuffleSquares, 3000);
     };
 
-    // Start shuffle after initial delay
-    timeoutRef.current = setTimeout(shuffleSquares, 3000);
+    // Start shuffle after 5s delay to improve TBT and LCP metrics
+    timeoutRef.current = setTimeout(shuffleSquares, 5000);
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
