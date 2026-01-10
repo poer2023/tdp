@@ -23,6 +23,7 @@ export function MomentComposerLoader() {
   useEffect(() => {
     // Skip on admin routes
     if (pathname?.startsWith("/admin")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- early return for admin routes
       setChecked(true);
       return;
     }

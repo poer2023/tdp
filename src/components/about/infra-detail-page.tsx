@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, Activity, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import type { InfraData } from "@/types/live-data";
 import { ServerStatusCard } from "./server-status-card";
 import { ServiceStatusCard } from "./service-status-card";
@@ -15,22 +14,35 @@ interface InfraDetailPageProps {
 }
 
 export function InfraDetailPage({ locale }: InfraDetailPageProps) {
-  const { data: session } = useSession();
   const [data, setData] = useState<InfraData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check if user is admin
-  const isAdmin = session?.user?.email && (session.user as { role?: string }).role === "ADMIN";
+  // Check admin status via API
+  useEffect(() => {
+    fetch("/api/auth/me", { credentials: "include" })
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.user?.role === "ADMIN") {
+           
+          setIsAdmin(true);
+        }
+      })
+      .catch(() => { });
+  }, []);
 
   useEffect(() => {
     fetch("/api/about/live/infra")
       .then((res) => res.json())
       .then((data) => {
+         
         setData(data);
+         
         setLoading(false);
       })
       .catch((error) => {
         console.error("Failed to fetch infrastructure data:", error);
+         
         setLoading(false);
       });
   }, []);
@@ -38,31 +50,31 @@ export function InfraDetailPage({ locale }: InfraDetailPageProps) {
   const t =
     locale === "zh"
       ? {
-          title: "基础设施仪表盘",
-          backToDashboard: "返回仪表盘",
-          serversOverview: "服务器概览",
-          selfHostedServices: "自建服务",
-          networkTraffic: "网络流量",
-          recentEvents: "最近事件",
-          loading: "加载中...",
-          noData: "暂无数据",
-          last24Hours: "最近 24 小时",
-          inbound: "入站",
-          outbound: "出站",
-        }
+        title: "基础设施仪表盘",
+        backToDashboard: "返回仪表盘",
+        serversOverview: "服务器概览",
+        selfHostedServices: "自建服务",
+        networkTraffic: "网络流量",
+        recentEvents: "最近事件",
+        loading: "加载中...",
+        noData: "暂无数据",
+        last24Hours: "最近 24 小时",
+        inbound: "入站",
+        outbound: "出站",
+      }
       : {
-          title: "Infrastructure Dashboard",
-          backToDashboard: "Back to Dashboard",
-          serversOverview: "Servers Overview",
-          selfHostedServices: "Self-Hosted Services",
-          networkTraffic: "Network Traffic",
-          recentEvents: "Recent Events",
-          loading: "Loading...",
-          noData: "No data available",
-          last24Hours: "Last 24 Hours",
-          inbound: "Inbound",
-          outbound: "Outbound",
-        };
+        title: "Infrastructure Dashboard",
+        backToDashboard: "Back to Dashboard",
+        serversOverview: "Servers Overview",
+        selfHostedServices: "Self-Hosted Services",
+        networkTraffic: "Network Traffic",
+        recentEvents: "Recent Events",
+        loading: "Loading...",
+        noData: "No data available",
+        last24Hours: "Last 24 Hours",
+        inbound: "Inbound",
+        outbound: "Outbound",
+      };
 
   const formatTimestamp = (date: Date) => {
     const now = new Date();

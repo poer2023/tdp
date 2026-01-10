@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Particles } from "@/components/ui/particles";
 import { useTheme } from "@/hooks/use-theme";
 import { MomentMasonry } from "@/components/moments/moment-masonry";
@@ -27,17 +26,33 @@ export function ParticlesMomentsContent({
   const pathname = usePathname();
   const particleColor = useMemo(() => (theme === "dark" ? "#ffffff" : "#000000"), [theme]);
 
-  // Client-side admin check (hydrates after initial render)
-  const { data: session, status } = useSession();
-  const isAdmin = useMemo(() => {
-    if (serverIsAdmin) return true; // Trust server if it says admin
-    if (status === "loading") return false; // Not yet loaded
-    return (session?.user as { role?: string } | undefined)?.role === "ADMIN";
-  }, [serverIsAdmin, session, status]);
+  // Client-side admin check via API
+  const [isAdmin, setIsAdmin] = useState(serverIsAdmin);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    if (serverIsAdmin) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- trust server for admin
+      setChecked(true);
+      return;
+    }
+    fetch("/api/auth/me", { credentials: "include" })
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.user?.role === "ADMIN") {
+           
+          setIsAdmin(true);
+        }
+      })
+      .catch(() => { })
+      .finally(() => {
+         
+        setChecked(true);
+      });
+  }, [serverIsAdmin]);
 
   // Show admin controls container but hide content until session loads
-  // This preserves layout space and prevents content shift
-  const adminButtonVisible = status !== "loading" && isAdmin;
+  const adminButtonVisible = checked && isAdmin;
 
   return (
     <LightboxProvider>
