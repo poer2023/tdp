@@ -127,9 +127,23 @@ export function GalleryGrid({ items, onItemClick }: GalleryGridProps) {
     // Filter out undefined/null items to prevent Masonry errors
     const validItems = items.filter((item): item is ZhiGalleryItem => item != null && item.id != null);
 
+    // Create a stable key based on items to force Masonry to re-initialize when items change
+    // This fixes the "No data was found at index" error when switching categories
+    const masonryKey = validItems.map(item => item.id).join(',') || 'empty';
+
+    // Handle empty state
+    if (validItems.length === 0) {
+        return (
+            <div className="flex h-64 w-full items-center justify-center text-stone-400 dark:text-stone-500">
+                <p>No items found</p>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full">
             <Masonry
+                key={masonryKey}
                 items={validItems}
                 columnCount={columnCount}
                 columnGutter={columnGutter}
