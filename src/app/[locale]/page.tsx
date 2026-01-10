@@ -139,8 +139,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   );
 
   // Transform hero image URLs to HeroImageItem format
-  // Limit to 6 images to reduce RSC payload and improve performance
-  const heroImages: HeroImageItem[] = heroImageUrls.slice(0, 6).map((url) => ({
+  const heroImages: HeroImageItem[] = heroImageUrls.map((url) => ({
     src: url,
     href: `/${locale}/gallery`,
     type: "gallery" as const,
@@ -158,7 +157,6 @@ export default async function LocalizedHomePage({ params }: PageProps) {
             items: statusData.items,
             updatedAt: formatRelativeTime(statusData.updatedAt, locale),
           }}
-          locale={locale}
         />
       </main>
       <ZhiFooter />

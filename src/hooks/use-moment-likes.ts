@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 const CACHE_KEY = "moment_likes_cache";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -15,15 +15,17 @@ interface CacheData {
  * Hook to fetch and cache moment like states for the current user.
  * Uses localStorage to avoid flicker on page load and provides
  * optimistic updates when toggling likes.
- * No longer depends on SessionProvider - uses API responses to detect auth state.
+ * Short-circuits for anonymous users to avoid unnecessary network requests.
  */
 export function useMomentLikes(momentIds: string[]) {
-    const router = useRouter();
+    const { data: session, status } = useSession();
+    const isAuthenticated = status === "authenticated" && !!session?.user;
 
     // Always start with empty set to match SSR (avoids hydration mismatch)
     const [likedIds, setLikedIds] = useState<Set<string>>(() => new Set());
+    const [_isHydrated, setIsHydrated] = useState(false);
+
     const [isLoading, setIsLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
     const fetchedRef = useRef(false);
 
     // Hydrate from localStorage AFTER mount to avoid hydration mismatch
@@ -42,6 +44,7 @@ export function useMomentLikes(momentIds: string[]) {
         } catch {
             // Ignore parse errors
         }
+        setIsHydrated(true);
     }, []);
 
     // Fetch like states from API
@@ -53,25 +56,11 @@ export function useMomentLikes(momentIds: string[]) {
 
         try {
             const res = await fetch(`/api/moments/likes?ids=${ids.join(",")}`);
-
-            // 401/403 means not authenticated
-            if (res.status === 401 || res.status === 403) {
-                setIsAuthenticated(false);
-                setLikedIds(new Set());
-                setIsLoading(false);
-                // Clear cache for logged-out users
-                try {
-                    localStorage.removeItem(CACHE_KEY);
-                } catch { /* ignore */ }
-                return;
-            }
-
             if (!res.ok) throw new Error("Failed to fetch like states");
 
             const data = await res.json();
             const newLikedIds = new Set<string>(data.likedIds || []);
 
-            setIsAuthenticated(true);
             setLikedIds(newLikedIds);
 
             // Update localStorage cache
@@ -85,29 +74,34 @@ export function useMomentLikes(momentIds: string[]) {
                 // Ignore storage errors
             }
         } catch {
-            // Network error - assume not authenticated for safety
-            setIsAuthenticated(false);
         } finally {
             setIsLoading(false);
         }
     }, []);
 
-    // Fetch on mount (only once)
+    // Fetch on mount (only once, only for authenticated users)
     useEffect(() => {
-        if (fetchedRef.current) return;
-        fetchedRef.current = true;
-        fetchLikeStates(momentIds);
-    }, [momentIds, fetchLikeStates]);
-
-    // Optimistic like toggle - redirects to login if not authenticated
-    const toggleLike = useCallback(async (momentId: string, newLikedState: boolean) => {
-        // If we know we're not authenticated, redirect to login
-        if (isAuthenticated === false) {
-            router.push("/login");
+        // Short-circuit for anonymous users - no need to fetch likes
+        if (status === "loading") return; // Wait for session to load
+        if (!isAuthenticated) {
+            setIsLoading(false);
+            // Clear cache for logged-out users
+            if (typeof window !== "undefined") {
+                try {
+                    localStorage.removeItem(CACHE_KEY);
+                } catch { /* ignore */ }
+            }
+            setLikedIds(new Set());
             return;
         }
 
-        // Optimistic update
+        if (fetchedRef.current) return;
+        fetchedRef.current = true;
+        fetchLikeStates(momentIds);
+    }, [momentIds, fetchLikeStates, isAuthenticated, status]);
+
+    // Optimistic like toggle
+    const toggleLike = useCallback((momentId: string, newLikedState: boolean) => {
         setLikedIds((prev) => {
             const next = new Set(prev);
             if (newLikedState) {
@@ -129,7 +123,7 @@ export function useMomentLikes(momentIds: string[]) {
 
             return next;
         });
-    }, [isAuthenticated, router]);
+    }, []);
 
     // Check if a moment is liked
     const isLiked = useCallback((momentId: string) => likedIds.has(momentId), [likedIds]);
@@ -138,9 +132,8 @@ export function useMomentLikes(momentIds: string[]) {
         likedIds,
         isLiked,
         isLoading,
-        isAuthenticated,
         toggleLike,
-        refetch: () => fetchLikeStates(momentIds),
+        refetch: () => isAuthenticated && fetchLikeStates(momentIds),
     };
 }
 

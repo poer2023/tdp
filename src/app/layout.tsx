@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Outfit, Lora } from "next/font/google";
 import "./globals.css";
+import { SessionProvider } from "@/components/layout/session-provider";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { getHtmlLang } from "@/lib/i18n";
 import { HtmlLangSync } from "@/components/layout/html-lang-sync";
@@ -87,22 +88,24 @@ export default async function RootLayout({
         {/* Keep <html lang> consistent on client navigations */}
         <HtmlLangSync />
         <ThemeProvider>
-          <ConfirmProvider>
-            {/* Skip to content link for accessibility */}
-            <a
-              href="#main-content"
-              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              Skip to content
-            </a>
+          <SessionProvider>
+            <ConfirmProvider>
+              {/* Skip to content link for accessibility */}
+              <a
+                href="#main-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              >
+                Skip to content
+              </a>
 
-            <main id="main-content" className="flex-1">
-              {children}
-            </main>
+              <main id="main-content" className="flex-1">
+                {children}
+              </main>
 
-            {/* Global mobile composer FAB (hidden on admin via client check) */}
-            <MomentComposerLoader />
-          </ConfirmProvider>
+              {/* Global mobile composer FAB (hidden on admin via client check) */}
+              <MomentComposerLoader />
+            </ConfirmProvider>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

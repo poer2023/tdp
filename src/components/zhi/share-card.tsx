@@ -1,13 +1,13 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Heart, ExternalLink, Link2 } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
-import { toOptimizedImageUrl } from "@/lib/image-proxy";
 
 interface ShareItem {
   id: string;
@@ -27,13 +27,18 @@ interface ShareCardProps {
 }
 
 export function ZhiShareCard({ item, onLike }: ShareCardProps) {
+  const { data: session } = useSession();
+  const router = useRouter();
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
 
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // No session check - let the feed layer handle auth via API response
+    if (!session) {
+      router.push("/login");
+      return;
+    }
     onLike?.(item.id);
   };
 
@@ -52,12 +57,10 @@ export function ZhiShareCard({ item, onLike }: ShareCardProps) {
           {/* Top: Image (if any) or pattern */}
           {item.imageUrl ? (
             <div className="relative h-32 w-full overflow-hidden">
-              <Image
-                src={toOptimizedImageUrl(item.imageUrl) || item.imageUrl}
+              <img
+                src={item.imageUrl}
                 alt={item.title}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute top-2 right-2 flex items-center gap-2">
                 {/* External Link Button */}
