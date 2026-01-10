@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { LazyMotion, domMax, m } from "framer-motion";
 import { MapPin, Briefcase, Aperture, Cpu } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import Image from "next/image";
@@ -245,52 +245,53 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
 
   // Unified grid layout - all sizes use the same structure
   return (
-    <div
-      className={`grid w-full ${layout.gap}`}
-      style={{
-        gridTemplateColumns: `repeat(${layout.cols}, 1fr)`,
-        gridTemplateRows: `repeat(${layout.rows}, 1fr)`,
-        aspectRatio: `${layout.cols} / ${layout.rows}`,
-      }}
-    >
-      {squares.map((sq) => (
-        <motion.a
-          key={sq.id}
-          href={sq.href}
-          layout
-          transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
-          className="relative cursor-pointer overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
-          style={{ aspectRatio: "1 / 1" }}
-        >
-          {sq.mediaType === "video" && sq.videoSrc ? (
-            <video
-              src={sq.videoSrc}
-              poster={sq.src}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-            />
+    <LazyMotion features={domMax} strict>
+      <div
+        className={`grid w-full ${layout.gap}`}
+        style={{
+          gridTemplateColumns: `repeat(${layout.cols}, 1fr)`,
+          gridTemplateRows: `repeat(${layout.rows}, 1fr)`,
+          aspectRatio: `${layout.cols} / ${layout.rows}`,
+        }}
+      >
+        {squares.map((sq) => (
+          <m.a
+            key={sq.id}
+            href={sq.href}
+            layout
+            transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
+            className="relative cursor-pointer overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
+            style={{ aspectRatio: "1 / 1" }}
+          >
+            {sq.mediaType === "video" && sq.videoSrc ? (
+              <video
+                src={sq.videoSrc}
+                poster={sq.src}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+              />
 
-          ) : (
-            <Image
-              src={sq.src}
-              alt=""
-              fill
-              sizes={imageSizes}
-              className="object-cover transition-transform duration-300 hover:scale-105"
-              quality={imageQuality}
-              priority={sq.id < 4}
-              loading={sq.id < 4 ? "eager" : "lazy"}
-            />
-          )}
-          <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
-        </motion.a>
-      ))}
-
-    </div>
+            ) : (
+              <Image
+                src={sq.src}
+                alt=""
+                fill
+                sizes={imageSizes}
+                className="object-cover transition-transform duration-300 hover:scale-105"
+                quality={imageQuality}
+                priority={sq.id < 4}
+                loading={sq.id < 4 ? "eager" : "lazy"}
+              />
+            )}
+            <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
+          </m.a>
+        ))}
+      </div>
+    </LazyMotion>
   );
 }
 

@@ -4,7 +4,7 @@ import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Heart, MessageCircle } from "lucide-react";
-import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { LazyMotion, domMax, m, useMotionTemplate, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { SmoothImage } from "@/components/ui/smooth-image";
 
 // Image type matching FeedImage
@@ -106,7 +106,7 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
       <div className="px-4">
         <SmoothImage
           src={img.url}
-                blurDataURL={img.blurDataURL}
+          blurDataURL={img.blurDataURL}
           alt=""
           width={0}
           height={0}
@@ -148,7 +148,7 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
               >
                 <SmoothImage
                   src={img.url}
-                blurDataURL={img.blurDataURL}
+                  blurDataURL={img.blurDataURL}
                   alt=""
                   fill
                   sizes="(max-width: 768px) 80vw, 400px"
@@ -165,7 +165,7 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
             <SmoothImage
               key={idx}
               src={img.url}
-                blurDataURL={img.blurDataURL}
+              blurDataURL={img.blurDataURL}
               alt=""
               width={0}
               height={0}
@@ -331,136 +331,138 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
 
     return (
       <div className="mb-8 break-inside-avoid [perspective:1000px]">
-        <motion.div
-          ref={ref}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          onClick={onClick}
-          style={{
-            rotateX,
-            rotateY,
-          }}
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.5 }}
-          whileTap={{ scale: 0.98 }}
-          className={`group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-lg transition-shadow duration-500 hover:shadow-2xl [transform-style:preserve-3d] ${bgStyle}`}
-        >
-          {/* 1. Desktop Only: Mouse Spotlight Overlay */}
-          <motion.div
-            style={{ background: spotlightBg }}
-            className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-          />
-
-          {/* 2. Image Layer */}
-          {hasImages && moment.images![0] && (
-            <div className="absolute inset-0 z-0">
-              <SmoothImage
-                src={moment.images![0].url}
-                alt="Background"
-                fill
-                sizes="(max-width: 1024px) 50vw, 384px"
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-                quality={75}
-              />
-              {/* Dark gradient overlay for text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90" />
-            </div>
-          )}
-
-          {/* 3. Content Container (Lifted in 3D space) */}
-          <div
-            className={`relative z-20 flex h-full flex-col justify-between p-6 ${hasImages ? "min-h-[360px]" : "min-h-[220px]"}`}
-            style={{ transform: "translateZ(20px)" }}
+        <LazyMotion features={domMax} strict>
+          <m.div
+            ref={ref}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            onClick={onClick}
+            style={{
+              rotateX,
+              rotateY,
+            }}
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5 }}
+            whileTap={{ scale: 0.98 }}
+            className={`group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-lg transition-shadow duration-500 hover:shadow-2xl [transform-style:preserve-3d] ${bgStyle}`}
           >
-            {/* Header */}
-            <div className="mb-4 flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                {moment.author?.image ? (
-                  <SmoothImage
-                    src={moment.author.image}
-                    alt={moment.author.name || "Author"}
-                    width={40}
-                    height={40}
-                    className={`h-10 w-10 rounded-full object-cover border ${hasImages
-                      ? "border-white/20"
-                      : "border-stone-200 dark:border-[#2a2a2e]"
-                      }`}
-                  />
-                ) : (
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full border ${hasImages
-                      ? "border-white/20 bg-white/10 text-white backdrop-blur-md"
-                      : "border-stone-200 bg-stone-100 text-stone-600 dark:border-[#2a2a2e] dark:bg-[#1f1f23] dark:text-stone-300"
-                      }`}
-                  >
-                    <span className="font-serif font-bold">
-                      {moment.author?.name?.[0]?.toUpperCase() || "?"}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <p
-                    className={`text-xs font-medium ${hasImages ? "text-white/90" : "text-stone-700 dark:text-stone-300"}`}
-                  >
-                    {moment.author?.name || "Anonymous"}
-                  </p>
-                  <p
-                    className={`text-[10px] ${hasImages ? "text-white/70" : "text-stone-500 dark:text-stone-400"}`}
-                  >
-                    {moment.date}
-                  </p>
-                </div>
+            {/* 1. Desktop Only: Mouse Spotlight Overlay */}
+            <m.div
+              style={{ background: spotlightBg }}
+              className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+            />
+
+            {/* 2. Image Layer */}
+            {hasImages && moment.images![0] && (
+              <div className="absolute inset-0 z-0">
+                <SmoothImage
+                  src={moment.images![0].url}
+                  alt="Background"
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 384px"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  quality={75}
+                />
+                {/* Dark gradient overlay for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90" />
               </div>
-            </div>
+            )}
 
-            {/* Main Content */}
-            <div className="mt-auto">
-              <p
-                className={`line-clamp-4 font-serif text-xl leading-relaxed md:text-2xl ${hasImages ? "text-white drop-shadow-md" : "text-stone-800 dark:text-stone-100"}`}
-              >
-                {moment.content}
-              </p>
-            </div>
-
-            {/* Actions Bar - Appears on hover */}
+            {/* 3. Content Container (Lifted in 3D space) */}
             <div
-              className={`absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl p-2 backdrop-blur-md transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 z-30 ${hasImages
-                ? "border border-white/10 bg-black/40 text-white hover:bg-black/60"
-                : "border border-stone-200 bg-white/80 text-stone-600 hover:bg-white dark:border-[#2a2a2e] dark:bg-[#1f1f23]/80 dark:text-stone-400 dark:hover:bg-[#27272a]"
-                }`}
+              className={`relative z-20 flex h-full flex-col justify-between p-6 ${hasImages ? "min-h-[360px]" : "min-h-[220px]"}`}
+              style={{ transform: "translateZ(20px)" }}
             >
-              <div className="flex gap-1">
-                <button
-                  onClick={handleLike}
-                  className="group/heart rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10"
-                >
-                  <motion.div
-                    animate={moment.liked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                  >
-                    <Heart
-                      size={18}
-                      className={`transition-colors duration-200 ${moment.liked
-                        ? "fill-rose-500 text-rose-500"
-                        : moment.likes > 0
-                          ? "text-rose-500 group-hover/heart:fill-rose-200"
-                          : "group-hover/heart:text-rose-400"
+              {/* Header */}
+              <div className="mb-4 flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  {moment.author?.image ? (
+                    <SmoothImage
+                      src={moment.author.image}
+                      alt={moment.author.name || "Author"}
+                      width={40}
+                      height={40}
+                      className={`h-10 w-10 rounded-full object-cover border ${hasImages
+                        ? "border-white/20"
+                        : "border-stone-200 dark:border-[#2a2a2e]"
                         }`}
                     />
-                  </motion.div>
-                </button>
-                <button className="rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10">
-                  <MessageCircle size={18} />
-                </button>
+                  ) : (
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border ${hasImages
+                        ? "border-white/20 bg-white/10 text-white backdrop-blur-md"
+                        : "border-stone-200 bg-stone-100 text-stone-600 dark:border-[#2a2a2e] dark:bg-[#1f1f23] dark:text-stone-300"
+                        }`}
+                    >
+                      <span className="font-serif font-bold">
+                        {moment.author?.name?.[0]?.toUpperCase() || "?"}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <p
+                      className={`text-xs font-medium ${hasImages ? "text-white/90" : "text-stone-700 dark:text-stone-300"}`}
+                    >
+                      {moment.author?.name || "Anonymous"}
+                    </p>
+                    <p
+                      className={`text-[10px] ${hasImages ? "text-white/70" : "text-stone-500 dark:text-stone-400"}`}
+                    >
+                      {moment.date}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <span className="px-3 text-xs font-medium opacity-80">
-                {moment.likes} {moment.likes === 1 ? "like" : "likes"}
-              </span>
+
+              {/* Main Content */}
+              <div className="mt-auto">
+                <p
+                  className={`line-clamp-4 font-serif text-xl leading-relaxed md:text-2xl ${hasImages ? "text-white drop-shadow-md" : "text-stone-800 dark:text-stone-100"}`}
+                >
+                  {moment.content}
+                </p>
+              </div>
+
+              {/* Actions Bar - Appears on hover */}
+              <div
+                className={`absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl p-2 backdrop-blur-md transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 z-30 ${hasImages
+                  ? "border border-white/10 bg-black/40 text-white hover:bg-black/60"
+                  : "border border-stone-200 bg-white/80 text-stone-600 hover:bg-white dark:border-[#2a2a2e] dark:bg-[#1f1f23]/80 dark:text-stone-400 dark:hover:bg-[#27272a]"
+                  }`}
+              >
+                <div className="flex gap-1">
+                  <button
+                    onClick={handleLike}
+                    className="group/heart rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10"
+                  >
+                    <m.div
+                      animate={moment.liked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                    >
+                      <Heart
+                        size={18}
+                        className={`transition-colors duration-200 ${moment.liked
+                          ? "fill-rose-500 text-rose-500"
+                          : moment.likes > 0
+                            ? "text-rose-500 group-hover/heart:fill-rose-200"
+                            : "group-hover/heart:text-rose-400"
+                          }`}
+                      />
+                    </m.div>
+                  </button>
+                  <button className="rounded-full p-2 transition-transform hover:bg-black/5 active:scale-90 dark:hover:bg-white/10">
+                    <MessageCircle size={18} />
+                  </button>
+                </div>
+                <span className="px-3 text-xs font-medium opacity-80">
+                  {moment.likes} {moment.likes === 1 ? "like" : "likes"}
+                </span>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </m.div>
+        </LazyMotion>
       </div>
     );
   };
