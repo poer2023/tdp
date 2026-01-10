@@ -134,14 +134,16 @@ jobs:
           if [ -n "$COOLIFY_WEBHOOK_URL" ]; then
             echo "Triggering Coolify deployment..."
             # Coolify v4 requires Bearer token authentication
-            AUTH_HEADER=""
             if [ -n "$COOLIFY_API_TOKEN" ]; then
-              AUTH_HEADER="-H \"Authorization: Bearer $COOLIFY_API_TOKEN\""
+              curl -X GET "$COOLIFY_WEBHOOK_URL" \
+                -H "Authorization: Bearer $COOLIFY_API_TOKEN" \
+                --fail --silent --show-error \
+                --max-time 30 && echo " ✅ Coolify deployment triggered" || echo " ⚠️ Coolify webhook failed"
+            else
+              curl -X GET "$COOLIFY_WEBHOOK_URL" \
+                --fail --silent --show-error \
+                --max-time 30 && echo " ✅ Coolify deployment triggered" || echo " ⚠️ Coolify webhook failed"
             fi
-            eval curl -X GET "$COOLIFY_WEBHOOK_URL" \
-              $AUTH_HEADER \
-              --fail --silent --show-error \
-              --max-time 30 && echo " ✅ Coolify deployment triggered" || echo " ⚠️ Coolify webhook failed, please check token"
           else
             echo "COOLIFY_WEBHOOK_URL not configured, skipping deployment trigger"
           fi
