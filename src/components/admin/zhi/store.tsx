@@ -787,10 +787,23 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    // Analytics API was removed - this is now a no-op stub to prevent 404 errors
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const refreshAnalytics = async (_period: '7d' | '30d' | '90d' | 'all' = '30d') => {
-        // No-op: analytics endpoint was removed
+    const refreshAnalytics = async (period: '7d' | '30d' | '90d' | 'all' = '30d') => {
+        setLoadingFor('analytics', true);
+        setErrorFor('analytics', null);
+        try {
+            const res = await fetch(`/api/admin/analytics/overview?period=${period}`, { cache: 'no-store' });
+            const data = await res.json();
+            if (res.ok) {
+                if (Array.isArray(data.trafficData)) setTrafficData(data.trafficData);
+                if (Array.isArray(data.sourceData)) setSourceData(data.sourceData);
+                if (Array.isArray(data.pageVisitData)) setPageVisitData(data.pageVisitData);
+                if (Array.isArray(data.deviceData)) setDeviceData(data.deviceData);
+            }
+        } catch (error) {
+            handleApiError(error, 'analytics');
+        } finally {
+            setLoadingFor('analytics', false);
+        }
     };
 
     const refreshLifeData = async () => {

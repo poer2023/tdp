@@ -8,7 +8,6 @@ import {
     THUMB_FULL_WIDTH,
     THUMB_COLLAPSED_WIDTH,
     THUMB_GAP,
-    THUMB_MARGIN,
 } from "./types";
 import { formatBytes, formatProgress } from "./utils";
 import { buildImageUrl, buildImageSrcSet } from "@/lib/image-resize";
