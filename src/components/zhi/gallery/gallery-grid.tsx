@@ -108,28 +108,35 @@ export function GalleryGrid({ items, onItemClick }: GalleryGridProps) {
 
     // Render function for Masonry items
     const renderItem = useCallback(
-        ({ data, index, width }: { data: unknown; index: number; width: number }) => (
-            <MasonryCard
-                data={data as ZhiGalleryItem}
-                index={index}
-                width={width}
-                columnCount={columnCount}
-                onItemClick={onItemClick}
-            />
-        ),
+        ({ data, index, width }: { data: unknown; index: number; width: number }) => {
+            // Guard against undefined data
+            if (!data) return null;
+            return (
+                <MasonryCard
+                    data={data as ZhiGalleryItem}
+                    index={index}
+                    width={width}
+                    columnCount={columnCount}
+                    onItemClick={onItemClick}
+                />
+            );
+        },
         [columnCount, onItemClick]
     );
+
+    // Filter out undefined/null items to prevent Masonry errors
+    const validItems = items.filter((item): item is ZhiGalleryItem => item != null && item.id != null);
 
     return (
         <div className="w-full">
             <Masonry
-                items={items}
+                items={validItems}
                 columnCount={columnCount}
                 columnGutter={columnGutter}
                 rowGutter={columnGutter}
                 overscanBy={2}
                 render={renderItem}
-                itemKey={(data) => (data as ZhiGalleryItem).id}
+                itemKey={(data) => (data as ZhiGalleryItem)?.id ?? `fallback-${Math.random()}`}
                 itemHeightEstimate={300}
             />
         </div>
