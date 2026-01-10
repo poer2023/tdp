@@ -39,6 +39,7 @@ export function ZhiHeader() {
 
   // Wait for client-side hydration to avoid theme mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- necessary for hydration check
     setMounted(true);
   }, []);
 

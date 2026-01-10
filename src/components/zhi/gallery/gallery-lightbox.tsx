@@ -83,6 +83,7 @@ export function GalleryLightbox({
     }, [currentIndex]);
 
     // Thumbnail virtualizer for horizontal scrolling
+    // eslint-disable-next-line react-hooks/incompatible-library -- useVirtualizer is safe here, we access its functions only within effects
     const rowVirtualizer = useVirtualizer({
         count: items.length,
         getScrollElement: () => thumbnailsRef.current,
