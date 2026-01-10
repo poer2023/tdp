@@ -1,13 +1,16 @@
-# Automated deployment workflow triggered after Docker Build completes
+# Automated deployment workflow - DISABLED for Coolify
+# Coolify handles auto-deployment via GitHub App integration.
+# Keep this for manual/emergency deployments only.
 name: Auto Deploy
 
 on:
-  workflow_run:
-    workflows: ["Docker Build and Push"]
-    types:
-      - completed
-    branches:
-      - main
+  # Disabled: Coolify handles auto-deployment via GitHub App
+  # workflow_run:
+  #   workflows: ["Docker Build and Push"]
+  #   types:
+  #     - completed
+  #   branches:
+  #     - main
   workflow_dispatch:
     inputs:
       environment:
