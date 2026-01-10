@@ -2,7 +2,6 @@
 
 import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Heart, MessageCircle } from "lucide-react";
 import { LazyMotion, domAnimation, m, useMotionTemplate, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { SmoothImage } from "@/components/ui/smooth-image";
@@ -189,7 +188,6 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
 }
 
 export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
-  const { data: session } = useSession();
   const router = useRouter();
   const hasImages = moment.images && moment.images.length > 0;
 
@@ -232,10 +230,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
   // --- Interaction Logic ---
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!session) {
-      router.push("/login");
-      return;
-    }
+    // No session check here - let the feed layer handle auth via API response
     onLike?.(moment.id);
   };
 

@@ -3,7 +3,6 @@
 import React, { useEffect, useCallback, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Heart, X, Calendar, MessageCircle, ChevronUp } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 
@@ -18,7 +17,6 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
   const pathname = usePathname();
   const locale = getLocaleFromPathname(pathname) ?? "en";
   const hasImages = moment.images && moment.images.length > 0;
-  const { data: session } = useSession();
 
   const [likeCount, setLikeCount] = useState(moment.likes);
   const [liked, setLiked] = useState(Boolean(moment.liked));
@@ -195,7 +193,7 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
               onChange={commentsHook.setNewComment}
               onSubmit={commentsHook.handleSubmitComment}
               isSubmitting={commentsHook.isSubmitting}
-              isLoggedIn={!!session?.user}
+              isLoggedIn={true}
               t={t}
               variant="mobile"
             />
@@ -268,7 +266,7 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
                 onChange={commentsHook.setNewComment}
                 onSubmit={commentsHook.handleSubmitComment}
                 isSubmitting={commentsHook.isSubmitting}
-                isLoggedIn={!!session?.user}
+                isLoggedIn={true}
                 t={t}
               />
             </div>
