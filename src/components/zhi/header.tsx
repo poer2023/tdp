@@ -1,25 +1,15 @@
 "use client";
-/* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { useState, useEffect, useRef, startTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useSession, signOut } from "next-auth/react";
 import { Menu, X, LogOut, LayoutDashboard, Moon, Sun, Languages, Search } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { localePath } from "@/lib/locale-path";
 import { useTheme } from "next-themes";
 
-// Safe session hook that handles missing SessionProvider
-function useSafeSession() {
-  try {
-    return useSession();
-  } catch {
-    // Return a mock session state when SessionProvider is missing
-    return { data: null, status: "unauthenticated" as const, update: async () => null };
-  }
-}
+
 
 interface NavLink {
   label: string;
@@ -38,7 +28,7 @@ export function ZhiHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { data: session } = useSafeSession();
+  const [user, setUser] = useState<{ name?: string | null; email?: string | null; image?: string | null; role?: string } | null>(null);
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
@@ -51,6 +41,31 @@ export function ZhiHeader() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch user status via API (no SessionProvider needed)
+  useEffect(() => {
+    fetch("/api/auth/me", { credentials: "include" })
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((data) => {
+        if (data?.user) {
+          setUser(data.user);
+        }
+      })
+      .catch(() => {
+        // Ignore errors
+      });
+  }, []);
+
+  // Handle sign out
+  const handleSignOut = async () => {
+    setIsUserMenuOpen(false);
+    await fetch("/api/auth/signout", { method: "POST", credentials: "include" });
+    setUser(null);
+    router.push("/");
+  };
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -126,7 +141,7 @@ export function ZhiHeader() {
     return translations[locale]?.[key] || key;
   };
 
-  const isAdmin = session?.user?.role === "ADMIN";
+  const isAdmin = user?.role === "ADMIN";
 
   return (
     <header className="sticky top-0 z-50 w-full bg-stone-50/80 backdrop-blur-md transition-colors duration-300 dark:bg-[#0a0a0b]/80">
@@ -185,16 +200,16 @@ export function ZhiHeader() {
               </button>
             </div>
 
-            {session ? (
+            {user ? (
               <div className="relative" ref={userMenuRef}>
                 {/* User Avatar Button */}
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-700 transition-colors hover:bg-stone-300 dark:bg-[#27272a] dark:text-stone-200 dark:hover:bg-[#3f3f46]"
                 >
-                  {session.user?.image ? (
+                  {user?.image ? (
                     <Image
-                      src={session.user.image}
+                      src={user.image}
                       alt="avatar"
                       width={32}
                       height={32}
@@ -202,7 +217,7 @@ export function ZhiHeader() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    (session.user?.name ?? session.user?.email ?? "U")[0]?.toUpperCase() ?? "U"
+                    (user?.name ?? user?.email ?? "U")[0]?.toUpperCase() ?? "U"
                   )}
                 </button>
 
@@ -212,11 +227,11 @@ export function ZhiHeader() {
                     {/* User Info */}
                     <div className="border-b border-stone-100 px-4 py-3 dark:border-stone-800">
                       <p className="truncate text-sm font-medium text-stone-900 dark:text-stone-100">
-                        {session.user?.name || session.user?.email}
+                        {user?.name || user?.email}
                       </p>
-                      {session.user?.name && session.user?.email && (
+                      {user?.name && user?.email && (
                         <p className="truncate text-xs text-stone-500 dark:text-stone-400">
-                          {session.user.email}
+                          {user.email}
                         </p>
                       )}
                     </div>
@@ -238,7 +253,7 @@ export function ZhiHeader() {
                     <button
                       onClick={() => {
                         setIsUserMenuOpen(false);
-                        signOut();
+                        handleSignOut();
                       }}
                       className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-sm text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/20"
                     >
@@ -288,11 +303,11 @@ export function ZhiHeader() {
               {locale.toUpperCase()}
             </button>
             {/* User Avatar */}
-            {session && (
+            {user && (
               <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-stone-200 text-sm font-bold text-stone-800 dark:bg-[#27272a] dark:text-stone-100">
-                {session.user?.image ? (
+                {user?.image ? (
                   <Image
-                    src={session.user.image}
+                    src={user.image}
                     alt="avatar"
                     width={32}
                     height={32}
@@ -300,7 +315,7 @@ export function ZhiHeader() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  (session.user?.name ?? session.user?.email ?? "U")[0]?.toUpperCase() ?? "U"
+                  (user?.name ?? user?.email ?? "U")[0]?.toUpperCase() ?? "U"
                 )}
               </div>
             )}
@@ -342,7 +357,7 @@ export function ZhiHeader() {
 
 
               <div className="mt-2 border-t border-stone-100 pt-2 dark:border-stone-800">
-                {!session ? (
+                {!user ? (
                   <Link
                     href="/login"
                     prefetch={false}
@@ -364,7 +379,7 @@ export function ZhiHeader() {
                       </Link>
                     )}
                     <button
-                      onClick={() => signOut()}
+                      onClick={() => handleSignOut()}
                       className="block w-full cursor-pointer rounded-md px-3 py-3 text-left text-base font-medium text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20"
                     >
                       {t("Logout")}

@@ -126,7 +126,6 @@ export function useGalleryImageLoading({
     /* eslint-disable react-hooks/set-state-in-effect -- necessary to sync state when selectedItem changes */
     useEffect(() => {
         if (!selectedItem) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reset on item change
             setDisplaySrc("");
             setIsOriginalLoaded(false);
             return;

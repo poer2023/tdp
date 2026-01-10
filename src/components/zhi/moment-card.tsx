@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
 import { Heart, MessageCircle } from "lucide-react";
 import { LazyMotion, domAnimation, m, useMotionTemplate, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { SmoothImage } from "@/components/ui/smooth-image";
@@ -188,7 +187,6 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
 }
 
 export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
-  const router = useRouter();
   const hasImages = moment.images && moment.images.length > 0;
 
   // --- Physics & 3D Logic (Desktop) ---
