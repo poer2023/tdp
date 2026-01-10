@@ -1,6 +1,3 @@
-"use client";
-
-import React from "react";
 import Image from "next/image";
 import { Film, Gamepad2, Mail, Github, Twitter, MessageCircle, Compass, Zap } from "lucide-react";
 import type { PublicLocale } from "@/lib/locale-path";
@@ -20,8 +17,6 @@ export function ProfileWidget({
   bio,
   locale = "en",
 }: ProfileWidgetProps) {
-  const [isFlipping, setIsFlipping] = React.useState(false);
-
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
       en: {
@@ -42,15 +37,9 @@ export function ProfileWidget({
   // Fallback avatar using initials
   const initials = name.slice(0, 2).toUpperCase();
 
-  const handleAvatarHover = () => {
-    if (!isFlipping) {
-      setIsFlipping(true);
-    }
-  };
-
   return (
     <>
-      <style jsx global>{`
+      <style>{`
         @keyframes border-spin {
           100% {
             transform: rotate(-360deg);
@@ -64,8 +53,8 @@ export function ProfileWidget({
             transform: rotateY(360deg);
           }
         }
-        .animate-flip-y {
-          animation: flip-y 1s ease-in-out forwards;
+        .avatar-flip:hover {
+          animation: flip-y 1s ease-in-out;
         }
       `}</style>
       <div className="group relative mb-6 rounded-2xl transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl">
@@ -80,11 +69,8 @@ export function ProfileWidget({
           <div className="pointer-events-none absolute top-0 left-0 h-24 w-full bg-gradient-to-b from-stone-100 to-transparent dark:from-[#1f1f23]/60" />
 
           <div
-            className={`relative mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl dark:border-[#0a0a0b] dark:bg-[#27272a] ${isFlipping ? "animate-flip-y" : ""
-              }`}
+            className="avatar-flip relative mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl dark:border-[#0a0a0b] dark:bg-[#27272a]"
             style={{ perspective: "1000px" }}
-            onMouseEnter={handleAvatarHover}
-            onAnimationEnd={() => setIsFlipping(false)}
           >
             {avatarUrl ? (
               <Image
@@ -94,9 +80,6 @@ export function ProfileWidget({
                 height={96}
                 sizes="96px"
                 className="h-full w-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-sage-400 to-sage-600 text-2xl font-bold text-white">

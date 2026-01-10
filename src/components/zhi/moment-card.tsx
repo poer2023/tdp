@@ -89,7 +89,7 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
                 blurDataURL={img.blurDataURL}
                 alt=""
                 fill
-                sizes="(max-width: 768px) 100vw, 50vw"
+                sizes="(max-width: 768px) 85vw, 320px"
                 className="rounded-xl"
                 style={{ objectFit: "cover" }}
                 quality={80}
@@ -110,7 +110,7 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
           alt=""
           width={0}
           height={0}
-          sizes="100vw"
+          sizes="85vw"
           className="cursor-pointer rounded-xl"
           style={{
             height: GALLERY_HEIGHT,
@@ -151,7 +151,7 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
                   blurDataURL={img.blurDataURL}
                   alt=""
                   fill
-                  sizes="(max-width: 768px) 80vw, 400px"
+                  sizes="(max-width: 768px) 70vw, 300px"
                   style={{ objectFit: "contain" }}
                   quality={80}
                   loading={idx === 0 ? "eager" : "lazy"}
@@ -169,7 +169,7 @@ function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData
               alt=""
               width={0}
               height={0}
-              sizes="80vw"
+              sizes="70vw"
               style={{
                 height: GALLERY_HEIGHT,
                 width: "auto",
@@ -361,7 +361,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                   src={moment.images![0].url}
                   alt="Background"
                   fill
-                  sizes="(max-width: 1024px) 50vw, 384px"
+                  sizes="(max-width: 1024px) 45vw, 350px"
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                   quality={75}
                 />
