@@ -24,6 +24,9 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     qualities: [75, 80],
+    // Optimized sizes to reduce srcset length and improve parsing performance
+    deviceSizes: [640, 828, 1200, 1920],
+    imageSizes: [16, 32, 64, 128, 256],
     unoptimized: false,
     loader: "custom",
     loaderFile: "./image-loader.ts",

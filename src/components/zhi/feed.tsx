@@ -1,14 +1,23 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Loader2, ArrowDown } from "lucide-react";
 import { ZhiPostCard } from "./post-card";
 import { ZhiMomentCard } from "./moment-card";
-import { ZhiMomentDetail } from "./moment-detail";
-import { ZhiShareCard } from "./share-card";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import { useMomentLikes } from "@/hooks/use-moment-likes";
+
+// Dynamic import for MomentDetail - only loaded when needed (click to open)
+const ZhiMomentDetail = dynamic(() => import("./moment-detail").then(mod => mod.ZhiMomentDetail), {
+  loading: () => null,
+});
+
+// Dynamic import for ShareCard - reduce initial bundle size
+const ZhiShareCard = dynamic(() => import("./share-card").then(mod => mod.ZhiShareCard), {
+  loading: () => <div className="mb-8 h-48 animate-pulse rounded-xl bg-stone-100 dark:bg-stone-800" />,
+});
 
 export type FeedFilter = "All" | "Articles" | "Moments" | "Curated";
 

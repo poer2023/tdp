@@ -550,11 +550,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [stepsData, setStepsData] = useState<StepData[]>([]);
     const [heroImages, setHeroImages] = useState<HeroImage[]>([]);
 
-    // Traffic Stats State
-    const [trafficData, setTrafficData] = useState<TrafficData[]>([]);
-    const [sourceData, setSourceData] = useState<SourceData[]>([]);
-    const [pageVisitData, setPageVisitData] = useState<PageVisitData[]>([]);
-    const [deviceData, setDeviceData] = useState<DeviceData[]>([]);
+    // Traffic Stats State (read-only, populated by refreshAnalytics when implemented)
+    const [trafficData, _setTrafficData] = useState<TrafficData[]>([]);
+    const [sourceData, _setSourceData] = useState<SourceData[]>([]);
+    const [pageVisitData, _setPageVisitData] = useState<PageVisitData[]>([]);
+    const [deviceData, _setDeviceData] = useState<DeviceData[]>([]);
 
     // NEW MODULES STATE
     const [friends, setFriends] = useState<Friend[]>([]);
@@ -794,10 +794,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const res = await fetch(`/api/admin/analytics/overview?period=${period}`, { cache: 'no-store' });
             const data = await res.json();
             if (res.ok) {
-                if (Array.isArray(data.trafficData)) setTrafficData(data.trafficData);
-                if (Array.isArray(data.sourceData)) setSourceData(data.sourceData);
-                if (Array.isArray(data.pageVisitData)) setPageVisitData(data.pageVisitData);
-                if (Array.isArray(data.deviceData)) setDeviceData(data.deviceData);
+                if (Array.isArray(data.trafficData)) _setTrafficData(data.trafficData);
+                if (Array.isArray(data.sourceData)) _setSourceData(data.sourceData);
+                if (Array.isArray(data.pageVisitData)) _setPageVisitData(data.pageVisitData);
+                if (Array.isArray(data.deviceData)) _setDeviceData(data.deviceData);
             }
         } catch (error) {
             handleApiError(error, 'analytics');
