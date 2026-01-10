@@ -11,10 +11,17 @@ import { getZhiProfile } from "@/lib/zhi-profile";
 import { getAtAGlanceStatus, formatRelativeTime } from "@/lib/user-status";
 import { getMomentImageUrl } from "@/lib/moment-images";
 
-// ISR: Revalidate every 60 seconds for fresh content with CDN caching
+// ISR: Force static generation for CDN caching
+// This ensures cache-control is not "no-store" and page can be cached at edge
 export const runtime = "nodejs";
+export const dynamic = "force-static";
 export const revalidate = 60;
 export const dynamicParams = false;
+
+// Generate static params for both locales - ensures pages are pre-rendered
+export function generateStaticParams() {
+  return [{ locale: "en" }, { locale: "zh" }];
+}
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -32,10 +39,10 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   // Client-side will hydrate user's like states via useMomentLikes hook
   // All data fetching uses unstable_cache for reduced DB load during ISR rebuilds
   const [posts, moments, heroImageUrls, curatedItems, statusData] = await Promise.all([
-    listPublishedPostSummaries({ limit: 20 }),
-    listMoments({ limit: 12, visibility: "PUBLIC" }),
+    listPublishedPostSummaries({ limit: 8 }),
+    listMoments({ limit: 6, visibility: "PUBLIC" }),
     listHeroImages(),
-    listCuratedItems(12),
+    listCuratedItems(6),
     getAtAGlanceStatus(),
   ]);
 
@@ -84,10 +91,9 @@ export default async function LocalizedHomePage({ params }: PageProps) {
       id: moment.id,
       type: "moment" as const,
       content: moment.content,
-      // Pass image objects with url, mediumUrl, w, h for proper display
-      images: moment.images?.map((img) => ({
+      // Only pass first image for card display - full images loaded in detail view
+      images: moment.images?.slice(0, 1).map((img) => ({
         url: getMomentImageUrl(img, "small"),
-        mediumUrl: getMomentImageUrl(img, "medium"),
         w: img.w,
         h: img.h,
       })) || [],
@@ -133,8 +139,8 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   );
 
   // Transform hero image URLs to HeroImageItem format
-  // Default to gallery type since they come from admin-selected hero images
-  const heroImages: HeroImageItem[] = heroImageUrls.map((url) => ({
+  // Limit to 6 images to reduce RSC payload and improve performance
+  const heroImages: HeroImageItem[] = heroImageUrls.slice(0, 6).map((url) => ({
     src: url,
     href: `/${locale}/gallery`,
     type: "gallery" as const,
@@ -152,6 +158,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
             items: statusData.items,
             updatedAt: formatRelativeTime(statusData.updatedAt, locale),
           }}
+          locale={locale}
         />
       </main>
       <ZhiFooter />

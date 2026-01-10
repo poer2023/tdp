@@ -2,15 +2,15 @@
 
 import React from "react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
 import { Film, Gamepad2, Mail, Github, Twitter, MessageCircle, Compass, Zap } from "lucide-react";
-import { getLocaleFromPathname } from "@/lib/i18n";
+import type { PublicLocale } from "@/lib/locale-path";
 
 interface ProfileWidgetProps {
   avatarUrl?: string;
   name?: string;
   title?: string;
   bio?: string;
+  locale?: PublicLocale;
 }
 
 export function ProfileWidget({
@@ -18,9 +18,8 @@ export function ProfileWidget({
   name = "BaoZhi",
   title,
   bio,
+  locale = "en",
 }: ProfileWidgetProps) {
-  const pathname = usePathname();
-  const locale = getLocaleFromPathname(pathname) ?? "en";
   const [isFlipping, setIsFlipping] = React.useState(false);
 
   const t = (key: string) => {
@@ -185,6 +184,7 @@ interface StatusItem {
 interface CompactStatusWidgetProps {
   items?: StatusItem[];
   updatedAt?: string;
+  locale?: PublicLocale;
 }
 
 // Icon mapping function
@@ -203,9 +203,7 @@ function getIconComponent(icon: StatusItem["icon"]): React.ReactNode {
   return iconMap[icon] || <Zap size={16} className="text-stone-400" />;
 }
 
-export function CompactStatusWidget({ items, updatedAt }: CompactStatusWidgetProps) {
-  const pathname = usePathname();
-  const locale = getLocaleFromPathname(pathname) ?? "en";
+export function CompactStatusWidget({ items, updatedAt, locale = "en" }: CompactStatusWidgetProps) {
 
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {

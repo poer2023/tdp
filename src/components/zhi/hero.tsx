@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { MapPin, Briefcase, Aperture, Cpu } from "lucide-react";
 import { getLocaleFromPathname } from "@/lib/i18n";
 import Image from "next/image";
@@ -168,14 +168,14 @@ function getImageQuality(cols: number): number {
   return 75;
 }
 
-// Get image sizes for responsive loading - request larger images for Retina displays
+// Get image sizes for responsive loading - optimized for performance
+// Reduced sizes to minimize LCP payload while maintaining visual quality
 function getImageSizes(cols: number): string {
-  // Request 2x the display size to ensure sharp images on Retina displays
-  // WebP compression keeps file sizes reasonable even at larger dimensions
-  if (cols === 1) return "(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 800px";
-  if (cols === 2) return "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px";
-  if (cols === 3) return "(max-width: 640px) 50vw, (max-width: 1024px) 40vw, 450px";
-  return "(max-width: 640px) 50vw, (max-width: 1024px) 35vw, 400px";
+  // Use 1.5x instead of 2x to balance Retina sharpness vs bandwidth
+  if (cols === 1) return "(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 600px";
+  if (cols === 2) return "(max-width: 640px) 80vw, (max-width: 1024px) 40vw, 400px";
+  if (cols === 3) return "(max-width: 640px) 40vw, (max-width: 1024px) 30vw, 300px";
+  return "(max-width: 640px) 40vw, (max-width: 1024px) 25vw, 250px";
 }
 
 // Shuffle Grid Component - unified layout for 1-16 images
@@ -214,20 +214,57 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
   }, [initialSquares]);
 
   // Shuffle animation (only for layouts with 4+ images)
+  // Optimized: delay start using requestIdleCallback, pause when page is hidden
   useEffect(() => {
     // Check length inside effect to avoid dependency on changing value
     if (initialSquares.length < 4) return;
 
+    let isActive = true;
+    let idleCallbackId: number | null = null;
+
     const shuffleSquares = () => {
+      if (!isActive || document.visibilityState === "hidden") return;
       setSquares((prev) => shuffle(prev));
       timeoutRef.current = setTimeout(shuffleSquares, 3000);
     };
 
-    // Start shuffle after initial delay
-    timeoutRef.current = setTimeout(shuffleSquares, 3000);
+    const startShuffle = () => {
+      if (!isActive) return;
+      // Initial delay before first shuffle
+      timeoutRef.current = setTimeout(shuffleSquares, 3000);
+    };
+
+    // Handle visibility change - pause when hidden, resume when visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        // Pause: clear pending timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+      } else if (isActive) {
+        // Resume: restart shuffle cycle
+        timeoutRef.current = setTimeout(shuffleSquares, 3000);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Delay animation start using requestIdleCallback to avoid blocking LCP
+    if ("requestIdleCallback" in window) {
+      idleCallbackId = window.requestIdleCallback(startShuffle, { timeout: 3000 });
+    } else {
+      // Fallback for Safari and older browsers
+      timeoutRef.current = setTimeout(startShuffle, 3000);
+    }
 
     return () => {
+      isActive = false;
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (idleCallbackId !== null && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleCallbackId);
+      }
     };
   }, [initialSquares.length]);
 
@@ -245,52 +282,53 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
 
   // Unified grid layout - all sizes use the same structure
   return (
-    <div
-      className={`grid w-full ${layout.gap}`}
-      style={{
-        gridTemplateColumns: `repeat(${layout.cols}, 1fr)`,
-        gridTemplateRows: `repeat(${layout.rows}, 1fr)`,
-        aspectRatio: `${layout.cols} / ${layout.rows}`,
-      }}
-    >
-      {squares.map((sq) => (
-        <motion.a
-          key={sq.id}
-          href={sq.href}
-          layout
-          transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
-          className="relative cursor-pointer overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
-          style={{ aspectRatio: "1 / 1" }}
-        >
-          {sq.mediaType === "video" && sq.videoSrc ? (
-            <video
-              src={sq.videoSrc}
-              poster={sq.src}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-            />
+    <LazyMotion features={domAnimation} strict>
+      <div
+        className={`grid w-full ${layout.gap}`}
+        style={{
+          gridTemplateColumns: `repeat(${layout.cols}, 1fr)`,
+          gridTemplateRows: `repeat(${layout.rows}, 1fr)`,
+          aspectRatio: `${layout.cols} / ${layout.rows}`,
+        }}
+      >
+        {squares.map((sq) => (
+          <m.a
+            key={sq.id}
+            href={sq.href}
+            layout
+            transition={{ duration: 1.5, type: "spring", stiffness: 45, damping: 15 }}
+            className="relative cursor-pointer overflow-hidden rounded-xl bg-stone-200 shadow-sm dark:bg-[#1f1f23]"
+            style={{ aspectRatio: "1 / 1" }}
+          >
+            {sq.mediaType === "video" && sq.videoSrc ? (
+              <video
+                src={sq.videoSrc}
+                poster={sq.src}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+              />
 
-          ) : (
-            <Image
-              src={sq.src}
-              alt=""
-              fill
-              sizes={imageSizes}
-              className="object-cover transition-transform duration-300 hover:scale-105"
-              quality={imageQuality}
-              priority={sq.id < 4}
-              loading={sq.id < 4 ? "eager" : "lazy"}
-            />
-          )}
-          <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
-        </motion.a>
-      ))}
-
-    </div>
+            ) : (
+              <Image
+                src={sq.src}
+                alt=""
+                fill
+                sizes={imageSizes}
+                className="object-cover transition-transform duration-300 hover:scale-105"
+                quality={imageQuality}
+                priority={sq.id === 0}
+                loading={sq.id === 0 ? "eager" : "lazy"}
+              />
+            )}
+            <div className="absolute inset-0 bg-stone-900/0 transition-colors duration-300 hover:bg-stone-900/10" />
+          </m.a>
+        ))}
+      </div>
+    </LazyMotion>
   );
 }
 

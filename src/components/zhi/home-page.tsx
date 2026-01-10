@@ -1,13 +1,9 @@
-"use client";
-
 import React from "react";
-import { usePathname, useRouter } from "next/navigation";
 import { ZhiHero, type HeroImageItem } from "./hero";
-import { ZhiFeed } from "./feed";
-import type { FeedItem, FeedPost } from "./feed";
+import { ZhiFeedWrapper } from "./feed-wrapper";
+import type { FeedItem } from "./feed";
 import { ProfileWidget, CompactStatusWidget } from "./side-widgets";
-import { getLocaleFromPathname } from "@/lib/i18n";
-import { localePath } from "@/lib/locale-path";
+import type { PublicLocale } from "@/lib/locale-path";
 
 interface StatusItem {
   label: string;
@@ -29,13 +25,21 @@ interface ZhiHomePageProps {
     items: StatusItem[];
     updatedAt: string;
   };
+  locale: PublicLocale;
 }
 
-export function ZhiHomePage({ feedItems, heroImages, profileData, statusData }: ZhiHomePageProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const locale = getLocaleFromPathname(pathname) ?? "en";
-
+/**
+ * Server Component: ZhiHomePage
+ * Renders the homepage layout with Hero, Feed, and Widgets
+ * Interactive parts are delegated to client components
+ */
+export function ZhiHomePage({
+  feedItems,
+  heroImages,
+  profileData,
+  statusData,
+  locale
+}: ZhiHomePageProps) {
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
       en: {
@@ -48,11 +52,6 @@ export function ZhiHomePage({ feedItems, heroImages, profileData, statusData }: 
     return translations[locale]?.[key] || key;
   };
 
-  const handlePostClick = (post: FeedPost) => {
-    // Navigate to post detail page
-    router.push(localePath(locale, `/posts/${post.slug}`));
-  };
-
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-[#0a0a0b]">
       {/* Hero Section */}
@@ -63,9 +62,9 @@ export function ZhiHomePage({ feedItems, heroImages, profileData, statusData }: 
         <div className="flex flex-col gap-12 lg:flex-row">
           {/* Left Column: Feed (2/3 width) */}
           <div className="w-full lg:w-2/3">
-            <ZhiFeed
-              initialItems={feedItems}
-              onPostClick={handlePostClick}
+            <ZhiFeedWrapper
+              feedItems={feedItems}
+              locale={locale}
             />
           </div>
 
@@ -73,12 +72,13 @@ export function ZhiHomePage({ feedItems, heroImages, profileData, statusData }: 
           <div className="w-full lg:w-1/3">
             <div className="sticky top-24 space-y-6">
               {/* Profile Widget */}
-              <ProfileWidget {...profileData} />
+              <ProfileWidget {...profileData} locale={locale} />
 
               {/* Compact Status Widget */}
               <CompactStatusWidget
                 items={statusData?.items}
                 updatedAt={statusData?.updatedAt}
+                locale={locale}
               />
 
               {/* Footer Note */}
