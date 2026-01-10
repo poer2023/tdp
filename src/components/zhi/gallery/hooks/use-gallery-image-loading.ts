@@ -125,6 +125,7 @@ export function useGalleryImageLoading({
     // Initialize with medium/thumbnail when selectedItem changes
     useEffect(() => {
         if (!selectedItem) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reset on item change
             setDisplaySrc("");
             setIsOriginalLoaded(false);
             return;
@@ -155,6 +156,7 @@ export function useGalleryImageLoading({
     // Auto-load original when shouldLoadOriginal is true (e.g., zoom > 1)
     useEffect(() => {
         if (shouldLoadOriginal && selectedItem && !isOriginalLoaded) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional trigger on zoom
             loadOriginal();
         }
     }, [shouldLoadOriginal, selectedItem, isOriginalLoaded, loadOriginal]);
