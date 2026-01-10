@@ -20,9 +20,9 @@ const nextConfig: NextConfig = {
     globalNotFound: true,
   },
   images: {
-    // Optimized sizes to reduce srcset length and improve LCP
-    deviceSizes: [640, 828, 1200, 1920],
-    imageSizes: [16, 32, 64, 128, 256],
+    // Optimized sizes for mobile-first: includes 360/414/480 for small screens
+    deviceSizes: [360, 414, 480, 640, 828, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
     qualities: [75, 80],
     unoptimized: false,
     loader: "custom",
