@@ -1,103 +1,149 @@
 /**
  * Fix image dimensions in database
  *
- * Problem: Images uploaded before the fix have swapped width/height due to EXIF rotation
- * This script downloads each medium.webp, extracts actual dimensions, and updates the database
+ * Problem: Images uploaded before the fix have incorrect width/height due to:
+ * 1. No dimensions stored at all
+ * 2. EXIF rotation not handled correctly
+ * 
+ * This script downloads each original image, extracts actual dimensions 
+ * with EXIF orientation handling, and updates the database
  *
  * Usage: npx tsx scripts/fix-image-dimensions.ts
  */
 
 import { PrismaClient } from '@prisma/client';
 import sharp from 'sharp';
-import { getStorageProviderAsync } from '../src/lib/storage';
 
 const prisma = new PrismaClient();
 
-async function fixImageDimensions() {
-  console.log('🔍 Fetching all gallery images with dimensions...');
+async function fetchImageBuffer(url: string): Promise<Buffer | null> {
+  try {
+    const response = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    });
+    if (!response.ok) {
+      console.log(`   ❌ Failed to fetch: ${response.status}`);
+      return null;
+    }
+    return Buffer.from(await response.arrayBuffer());
+  } catch (error) {
+    console.log(`   ❌ Fetch error:`, error);
+    return null;
+  }
+}
 
+async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number } | null> {
+  try {
+    const meta = await sharp(buffer).metadata();
+    if (!meta.width || !meta.height) {
+      return null;
+    }
+
+    let width = meta.width;
+    let height = meta.height;
+
+    // EXIF orientation 5-8 means the image is rotated 90° or 270°
+    // In these cases, width and height need to be swapped
+    if (meta.orientation && meta.orientation >= 5) {
+      [width, height] = [height, width];
+      console.log(`   📐 EXIF orientation ${meta.orientation}: swapped ${meta.width}×${meta.height} → ${width}×${height}`);
+    }
+
+    return { width, height };
+  } catch {
+    return null;
+  }
+}
+
+async function fixImageDimensions() {
+  console.log('🔍 Fetching all gallery images...\n');
+
+  // Get all images (including those without dimensions)
   const images = await prisma.galleryImage.findMany({
     where: {
-      mediumPath: { not: null },
-      width: { not: null },
-      height: { not: null },
+      OR: [
+        { mimeType: { startsWith: 'image/' } },
+        { mimeType: null }, // Legacy records
+      ],
     },
     select: {
       id: true,
+      title: true,
+      filePath: true,
       mediumPath: true,
       width: true,
       height: true,
+      mimeType: true,
     },
+    orderBy: { createdAt: 'desc' },
   });
 
-  console.log(`📊 Found ${images.length} images to check`);
+  console.log(`📊 Found ${images.length} images to check\n`);
 
-  const storage = await getStorageProviderAsync();
   let fixedCount = 0;
   let skippedCount = 0;
   let errorCount = 0;
 
-  for (const image of images) {
-    try {
-      if (!image.mediumPath) {
-        console.log(`\n📷 Image ${image.id}: No mediumPath, skipping`);
-        skippedCount++;
-        continue;
-      }
+  for (let i = 0; i < images.length; i++) {
+    const image = images[i];
+    const shortTitle = (image.title || 'Untitled').slice(0, 25).padEnd(25);
 
-      // Check if mediumPath is already a full URL or just a path
-      const mediumUrl = image.mediumPath.startsWith('http')
-        ? image.mediumPath
-        : storage.getPublicUrl(image.mediumPath);
+    process.stdout.write(`[${i + 1}/${images.length}] ${shortTitle} `);
 
-      console.log(`\n📷 Checking image ${image.id}`);
-      console.log(`   Current DB: ${image.width}×${image.height}`);
-
-      // Download and check actual dimensions
-      const response = await fetch(mediumUrl);
-      if (!response.ok) {
-        console.log(`   ❌ Failed to fetch: ${response.status}`);
-        errorCount++;
-        continue;
-      }
-
-      const buffer = Buffer.from(await response.arrayBuffer());
-      const metadata = await sharp(buffer).metadata();
-
-      const actualWidth = metadata.width;
-      const actualHeight = metadata.height;
-
-      console.log(`   Actual size: ${actualWidth}×${actualHeight}`);
-
-      // Check if dimensions need fixing
-      if (image.width === actualWidth && image.height === actualHeight) {
-        console.log(`   ✅ Already correct, skipping`);
-        skippedCount++;
-        continue;
-      }
-
-      // Update database
-      await prisma.galleryImage.update({
-        where: { id: image.id },
-        data: {
-          width: actualWidth,
-          height: actualHeight,
-        },
-      });
-
-      console.log(`   ✅ Fixed: ${image.width}×${image.height} → ${actualWidth}×${actualHeight}`);
-      fixedCount++;
-
-    } catch (error) {
-      console.log(`   ❌ Error processing image ${image.id}:`, error);
-      errorCount++;
+    // Skip videos
+    if (image.mimeType?.startsWith('video/')) {
+      console.log('⏭️ video');
+      skippedCount++;
+      continue;
     }
+
+    // Use original file for accurate dimensions
+    const imageUrl = image.filePath;
+    if (!imageUrl) {
+      console.log('❌ no file path');
+      errorCount++;
+      continue;
+    }
+
+    // Fetch and analyze
+    const buffer = await fetchImageBuffer(imageUrl);
+    if (!buffer) {
+      errorCount++;
+      continue;
+    }
+
+    const dimensions = await getImageDimensions(buffer);
+    if (!dimensions) {
+      console.log('❌ failed to get dimensions');
+      errorCount++;
+      continue;
+    }
+
+    // Check if update is needed
+    if (image.width === dimensions.width && image.height === dimensions.height) {
+      console.log(`✅ correct (${dimensions.width}×${dimensions.height})`);
+      skippedCount++;
+      continue;
+    }
+
+    // Update database
+    await prisma.galleryImage.update({
+      where: { id: image.id },
+      data: {
+        width: dimensions.width,
+        height: dimensions.height,
+      },
+    });
+
+    const oldDim = image.width && image.height ? `${image.width}×${image.height}` : 'null';
+    console.log(`🔧 fixed: ${oldDim} → ${dimensions.width}×${dimensions.height}`);
+    fixedCount++;
   }
 
   console.log('\n' + '='.repeat(60));
   console.log('📊 Migration Summary:');
-  console.log(`   ✅ Fixed: ${fixedCount}`);
-  console.log(`   ⏭️  Skipped (already correct): ${skippedCount}`);
+  console.log(`   🔧 Fixed: ${fixedCount}`);
+  console.log(`   ✅ Already correct: ${skippedCount}`);
   console.log(`   ❌ Errors: ${errorCount}`);
   console.log('='.repeat(60));
 }

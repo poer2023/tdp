@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, ArrowLeft } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ZhiGalleryItem, OriginalLoadState } from "./types";
 import {
@@ -15,6 +15,7 @@ import { getGalleryTranslation } from "./translations";
 import { ThumbnailItem } from "./thumbnail-item";
 import { SidebarPanel } from "./sidebar-panel";
 import { MobileDrawer } from "./mobile-drawer";
+import { CustomVideoPlayer } from "./custom-video-player";
 import BlockLoader from "@/components/ui/block-loader";
 
 export type GalleryLightboxProps = {
@@ -65,6 +66,9 @@ export function GalleryLightbox({
     const thumbnailsRef = useRef<HTMLDivElement>(null);
     const t = (key: string) => getGalleryTranslation(locale as "en" | "zh", key as Parameters<typeof getGalleryTranslation>[1]);
 
+    // State for sidebar collapsed/expanded
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
     // Track if current image has loaded (for showing loader placeholder)
     const [imageLoaded, setImageLoaded] = useState(false);
     const prevDisplaySrcRef = useRef<string>("");
@@ -107,12 +111,13 @@ export function GalleryLightbox({
 
     return (
         <div className={`fixed inset-0 z-[70] flex flex-col backdrop-blur-sm ${isDark ? 'bg-[#09090b]/95' : 'bg-[#fafaf9]/95'}`}>
-            {/* Close Button */}
+            {/* Back Button - Top Left */}
             <button
                 onClick={onClose}
-                className={`absolute top-6 right-6 z-[80] p-2 transition-all duration-300 hover:rotate-90 ${isDark ? 'text-stone-500 hover:text-white' : 'text-stone-400 hover:text-stone-900'}`}
+                className={`absolute top-6 left-6 z-[80] flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 ${isDark ? 'text-stone-400 hover:text-white hover:bg-white/10' : 'text-stone-500 hover:text-stone-900 hover:bg-black/5'}`}
             >
-                <X size={24} />
+                <ArrowLeft size={18} />
+                <span className="hidden sm:inline">{locale === "zh" ? "返回" : "Back"}</span>
             </button>
 
             {/* Navigation Arrows */}
@@ -124,7 +129,7 @@ export function GalleryLightbox({
             </button>
             <button
                 onClick={onNext}
-                className={`fixed top-1/2 z-[80] hidden -translate-y-1/2 rounded-full p-3 transition-all duration-300 lg:block lg:right-[calc(380px+2rem)] xl:right-[calc(420px+2rem)] ${isDark ? 'bg-black/20 text-white/30 hover:bg-black/40 hover:text-white hover:scale-110' : 'bg-white/40 text-stone-400 hover:bg-white/80 hover:text-stone-900 hover:scale-110 hover:shadow-lg'}`}
+                className={`fixed top-1/2 z-[80] hidden -translate-y-1/2 rounded-full p-3 transition-all duration-300 lg:block ${sidebarCollapsed ? 'right-6' : 'lg:right-[calc(380px+2rem)] xl:right-[calc(420px+2rem)]'} ${isDark ? 'bg-black/20 text-white/30 hover:bg-black/40 hover:text-white hover:scale-110' : 'bg-white/40 text-stone-400 hover:bg-white/80 hover:text-stone-900 hover:scale-110 hover:shadow-lg'}`}
             >
                 <ChevronRight size={32} />
             </button>
@@ -158,14 +163,11 @@ export function GalleryLightbox({
                             onClick={(e) => e.stopPropagation()}
                         >
                             {selectedItem.type === "video" ? (
-                                <video
+                                <CustomVideoPlayer
                                     src={selectedItem.url}
                                     poster={selectedItem.thumbnail}
-                                    controls
-                                    playsInline
-                                    preload="metadata"
-                                    className="w-auto max-w-[95vw] shadow-2xl lg:max-w-[55vw]"
-                                    style={{ maxHeight: 'calc(100vh - 240px)' }}
+                                    className="w-auto max-w-[95vw] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] lg:max-w-[55vw]"
+                                    style={{ maxHeight: 'calc(100vh - 280px)' }}
                                 />
                             ) : (
                                 <>
@@ -186,7 +188,7 @@ export function GalleryLightbox({
                                         srcSet={displaySrc?.startsWith("blob:") ? undefined : buildImageSrcSet(selectedItem.mediumPath || selectedItem.url, [640, 960, 1200, 1600])}
                                         sizes="(min-width: 1024px) 55vw, 95vw"
                                         alt={selectedItem.title}
-                                        className={`w-auto max-w-[95vw] select-none object-contain shadow-2xl lg:max-w-[55vw] pointer-events-none transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                        className={`w-auto max-w-[95vw] select-none object-contain shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] lg:max-w-[55vw] pointer-events-none transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                                         style={{ maxHeight: 'calc(100vh - 240px)' }}
                                         draggable={false}
                                         onLoad={() => setImageLoaded(true)}
@@ -228,14 +230,17 @@ export function GalleryLightbox({
                     )}
                 </div>
 
-                {/* Desktop Sidebar */}
-                <SidebarPanel
-                    item={selectedItem}
-                    currentIndex={currentIndex}
-                    totalItems={items.length}
-                    isDark={isDark}
-                    locale={locale}
-                />
+                {/* Desktop Sidebar - Collapsible */}
+                <div className={`hidden lg:flex h-full transition-all duration-300 ${sidebarCollapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto'}`}>
+                    <SidebarPanel
+                        item={selectedItem}
+                        currentIndex={currentIndex}
+                        totalItems={items.length}
+                        isDark={isDark}
+                        locale={locale}
+                        onCollapse={() => setSidebarCollapsed(true)}
+                    />
+                </div>
 
                 {/* Mobile Drawer */}
                 <MobileDrawer
@@ -247,8 +252,19 @@ export function GalleryLightbox({
                 />
             </div>
 
+            {/* Collapsed Sidebar Toggle - Small circle at bottom right (desktop only) */}
+            {sidebarCollapsed && (
+                <button
+                    onClick={() => setSidebarCollapsed(false)}
+                    className={`fixed bottom-24 right-6 z-[80] hidden lg:flex items-center justify-center h-12 w-12 rounded-full shadow-lg transition-all duration-300 hover:scale-110 ${isDark ? 'bg-stone-800 text-white hover:bg-stone-700' : 'bg-white text-stone-700 hover:bg-stone-50'}`}
+                    title={locale === "zh" ? "展开详情" : "Show details"}
+                >
+                    <Info size={20} />
+                </button>
+            )}
+
             {/* Thumbnail Strip - Virtualized */}
-            <div className="fixed inset-x-0 bottom-6 z-[72] flex justify-center pointer-events-none lg:right-[380px] xl:right-[420px]">
+            <div className={`fixed inset-x-0 bottom-6 z-[72] flex justify-center pointer-events-none transition-all duration-300 ${sidebarCollapsed ? 'lg:right-0' : 'lg:right-[380px] xl:right-[420px]'}`}>
                 <div className="pointer-events-auto mx-4 transition-all duration-300">
                     <div
                         ref={thumbnailsRef}

@@ -53,15 +53,20 @@ export async function POST(req: Request) {
     const imgKey = `${baseKey}.${imgExt}`;
 
     // Generate thumbnails and blur placeholder in parallel
-    const [thumbnails, blurDataURL] = await Promise.all([
+    const [thumbnails, blurDataURL, originalMeta] = await Promise.all([
       generateThumbnails(imageBuf),
       generateBlurDataURL(imageBuf),
+      sharp(imageBuf).metadata().catch(() => null),
     ]);
 
-    // Derive display dimensions from rotated WebP thumbnail (avoids EXIF orientation issues)
-    const thumbMeta = await sharp(thumbnails.medium).metadata().catch(() => null);
-    const thumbWidth = thumbMeta?.width ?? null;
-    const thumbHeight = thumbMeta?.height ?? null;
+    // Extract display dimensions from original image metadata
+    // Handle EXIF orientation: values 5-8 mean the image is rotated 90° or 270°
+    // In these cases, width and height need to be swapped for correct display
+    let displayWidth = originalMeta?.width ?? exif?.width ?? null;
+    let displayHeight = originalMeta?.height ?? exif?.height ?? null;
+    if (originalMeta?.orientation && originalMeta.orientation >= 5 && displayWidth && displayHeight) {
+      [displayWidth, displayHeight] = [displayHeight, displayWidth];
+    }
 
     // Upload original + 3 thumbnails in batch
     const [imgPath, microPath, smallPath, mediumPath] = (await storage.uploadBatch([
@@ -110,8 +115,8 @@ export async function POST(req: Request) {
       livePhotoVideoPath: videoPublic,
       isLivePhoto: !!videoPublic,
       fileSize: image.size || null,
-      width: thumbWidth ?? exif?.width ?? null,
-      height: thumbHeight ?? exif?.height ?? null,
+      width: displayWidth,
+      height: displayHeight,
       mimeType: image.type || null,
       capturedAt: capturedAt ?? exif?.capturedAt ?? null,
       storageType: process.env.STORAGE_TYPE || "local",
