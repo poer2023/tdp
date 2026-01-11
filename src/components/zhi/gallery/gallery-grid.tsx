@@ -81,7 +81,7 @@ export function GalleryGrid({ items, onItemClick }: GalleryGridProps) {
     // Get column count and gutter based on screen size
     const [columnCount, setColumnCount] = useState(2);
     const [columnGutter, setColumnGutter] = useState(12);
-    const [columnWidth, setColumnWidth] = useState(200);
+    const [_columnWidth, setColumnWidth] = useState(200);
 
     useEffect(() => {
         const updateLayout = () => {

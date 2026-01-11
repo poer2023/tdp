@@ -74,6 +74,22 @@ export default async function RootLayout({
 
   return (
     <html lang={htmlLang} suppressHydrationWarning>
+      <head>
+        {/* R2 CDN Preconnect - 减少图片加载延迟 */}
+        {process.env.NEXT_PUBLIC_R2_CDN_DOMAIN && (
+          <>
+            <link
+              rel="preconnect"
+              href={process.env.NEXT_PUBLIC_R2_CDN_DOMAIN}
+              crossOrigin="anonymous"
+            />
+            <link
+              rel="dns-prefetch"
+              href={process.env.NEXT_PUBLIC_R2_CDN_DOMAIN}
+            />
+          </>
+        )}
+      </head>
       {/* Google Fonts now loaded via next/font - no external link needed */}
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${lora.variable} flex min-h-screen flex-col overflow-x-hidden bg-white text-stone-900 antialiased dark:bg-[#1C1C1E] dark:text-stone-100`}

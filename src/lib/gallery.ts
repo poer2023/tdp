@@ -3,6 +3,7 @@ import { unstable_cache, revalidateTag } from "next/cache";
 import fs from "fs";
 import path from "path";
 import { withDbFallback } from "@/lib/utils/db-fallback";
+import { transformGalleryImageUrls } from "@/lib/r2-cdn";
 
 // Cache tag for gallery data (exported for external revalidation)
 export const GALLERY_TAG = "gallery:location";
@@ -709,7 +710,8 @@ function toGalleryImage(image: {
     // 非致命，忽略
   }
 
-  return mapped;
+  // 转换 R2 公共桶 URL 为 CDN URL
+  return transformGalleryImageUrls(mapped);
 }
 
 function extractFileName(filePath: string): string | null {
