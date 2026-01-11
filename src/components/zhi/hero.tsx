@@ -264,17 +264,29 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
             style={{ aspectRatio: "1 / 1" }}
           >
             {sq.mediaType === "video" && sq.videoSrc ? (
-              <video
-                src={sq.videoSrc}
-                poster={sq.src}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-              />
-
+              <>
+                {/* 优化的 Image 占位符 - 立即显示 */}
+                <Image
+                  src={sq.src}
+                  alt=""
+                  fill
+                  sizes={imageSizes}
+                  className="object-cover"
+                  quality={imageQuality}
+                  priority={sq.id < 4}
+                />
+                {/* 视频在上层 - 加载后淡入 */}
+                <video
+                  src={sq.videoSrc}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500"
+                  onLoadedData={(e) => e.currentTarget.classList.replace('opacity-0', 'opacity-100')}
+                />
+              </>
             ) : (
               <Image
                 src={sq.src}

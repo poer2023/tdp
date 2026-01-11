@@ -160,9 +160,13 @@ export function GalleryLightbox({
                             {selectedItem.type === "video" ? (
                                 <video
                                     src={selectedItem.url}
+                                    poster={selectedItem.thumbnail}
                                     controls
                                     autoPlay
                                     loop
+                                    muted
+                                    playsInline
+                                    preload="metadata"
                                     className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
                                 />
                             ) : (

@@ -54,6 +54,7 @@ export const CarouselSlide = React.memo(function CarouselSlide({
                         loop
                         muted={!isActive}
                         playsInline
+                        preload="metadata"
                         className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
                     />
                 ) : (

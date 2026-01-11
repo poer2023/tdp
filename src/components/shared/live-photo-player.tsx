@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 
 interface LivePhotoPlayerProps {
@@ -16,16 +16,39 @@ interface LivePhotoPlayerProps {
  * - Hover/长按触发，符合用户预期
  * - 状态标识清晰（LIVE标记）
  * - 无炫技动画，仅必要的淡入淡出
+ * 
+ * 2026 性能优化:
+ * - IntersectionObserver - 仅在视口内响应交互
+ * - preload="metadata" - 仅加载视频元数据
  */
 export function LivePhotoPlayer({ imageSrc, videoSrc, alt, className = "" }: LivePhotoPlayerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isInViewport, setIsInViewport] = useState(false);
+
+  // IntersectionObserver - 视口检测，节省资源
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry) setIsInViewport(entry.isIntersecting);
+      },
+      { threshold: 0.1, rootMargin: "50px" }
+    );
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   const handleInteractionStart = () => {
-    if (videoRef.current) {
-      videoRef.current.play();
-      setIsPlaying(true);
-    }
+    // 只在视口内响应交互，节省资源
+    if (!isInViewport || !videoRef.current) return;
+    videoRef.current.play();
+    setIsPlaying(true);
   };
 
   const handleInteractionEnd = () => {
@@ -38,6 +61,7 @@ export function LivePhotoPlayer({ imageSrc, videoSrc, alt, className = "" }: Liv
 
   return (
     <div
+      ref={containerRef}
       className={`group relative overflow-hidden ${className}`}
       onMouseEnter={handleInteractionStart}
       onMouseLeave={handleInteractionEnd}
@@ -59,12 +83,12 @@ export function LivePhotoPlayer({ imageSrc, videoSrc, alt, className = "" }: Liv
       <video
         ref={videoRef}
         src={videoSrc}
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-150 ${
-          isPlaying ? "opacity-100" : "opacity-0"
-        }`}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-150 ${isPlaying ? "opacity-100" : "opacity-0"
+          }`}
         muted
         playsInline
         loop
+        preload="metadata"
         aria-hidden="true"
       />
 
