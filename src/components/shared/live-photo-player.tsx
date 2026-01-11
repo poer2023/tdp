@@ -30,7 +30,8 @@ export function LivePhotoPlayer({ imageSrc, videoSrc, alt, className = "" }: Liv
   // IntersectionObserver - 视口检测，节省资源
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    // Skip if IntersectionObserver not available (e.g., test environment)
+    if (!container || typeof IntersectionObserver === "undefined") return;
 
     const observer = new IntersectionObserver(
       (entries) => {
