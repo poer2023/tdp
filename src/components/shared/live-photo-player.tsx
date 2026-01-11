@@ -25,7 +25,8 @@ export function LivePhotoPlayer({ imageSrc, videoSrc, alt, className = "" }: Liv
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isInViewport, setIsInViewport] = useState(false);
+  // Default to true if IntersectionObserver not available (e.g., test environment)
+  const [isInViewport, setIsInViewport] = useState(typeof IntersectionObserver === "undefined");
 
   // IntersectionObserver - 视口检测，节省资源
   useEffect(() => {
