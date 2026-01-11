@@ -17,7 +17,7 @@ export async function runStartupMigrations() {
         return;
     }
 
-    console.log("[Migrations] Starting startup migrations...");
+    console.warn("[Migrations] Starting startup migrations...");
 
     try {
         await fixImageDimensions();
@@ -25,7 +25,7 @@ export async function runStartupMigrations() {
         console.error("[Migrations] Error:", error);
     }
 
-    console.log("[Migrations] Complete");
+    console.warn("[Migrations] Complete");
 }
 
 /**
@@ -45,11 +45,11 @@ async function fixImageDimensions() {
         });
 
         if (withoutDimensions === 0) {
-            console.log("[FixDimensions] All images have dimensions, skipping");
+            console.warn("[FixDimensions] All images have dimensions, skipping");
             return;
         }
 
-        console.log(`[FixDimensions] Found ${withoutDimensions} images to fix`);
+        console.warn(`[FixDimensions] Found ${withoutDimensions} images to fix`);
 
         // Get images without dimensions
         const images = await prisma.galleryImage.findMany({
@@ -105,7 +105,7 @@ async function fixImageDimensions() {
             }
         }
 
-        console.log(`[FixDimensions] Fixed: ${fixed}, Errors: ${errors}`);
+        console.warn(`[FixDimensions] Fixed: ${fixed}, Errors: ${errors}`);
     } finally {
         await prisma.$disconnect();
     }
