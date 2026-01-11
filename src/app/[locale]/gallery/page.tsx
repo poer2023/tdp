@@ -35,7 +35,7 @@ function toGalleryItem(image: GalleryImage, locale: string): ZhiGalleryItem {
   return {
     id: image.id,
     type: isVideo ? "video" : "image",
-    url: isVideo ? (image.livePhotoVideoPath || image.filePath) : image.filePath,
+    url: image.filePath, // 视频和图片都使用原始文件，保持原始分辨率
     thumbnail: image.smallThumbPath || image.microThumbPath || undefined,
     title: image.title || (locale === "zh" ? "无标题" : "Untitled"),
     description: image.description || undefined,

@@ -131,10 +131,10 @@ export function GalleryLightbox({
 
             {/* Main Layout */}
             <div className="flex h-full flex-col lg:flex-row">
-                {/* Main Content Area */}
+                {/* Main Content Area - 固定上下 padding，内容自适应 */}
                 <div
                     ref={imageContainerRef}
-                    className={`relative flex flex-1 items-center justify-center overflow-hidden pb-24 lg:pb-28 ${isDark ? 'bg-black' : 'bg-stone-100'}`}
+                    className={`relative flex flex-1 items-center justify-center overflow-hidden py-20 pb-28 lg:py-20 lg:pb-32 ${isDark ? 'bg-black' : 'bg-stone-100'}`}
                     onClick={onClose}
                     onTouchStart={onTouchStart}
                     onTouchMove={onTouchMove}
@@ -164,7 +164,8 @@ export function GalleryLightbox({
                                     controls
                                     playsInline
                                     preload="metadata"
-                                    className="w-[95vw] max-h-[75vh] h-auto shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw]"
+                                    className="w-auto max-w-[95vw] shadow-2xl lg:max-w-[55vw]"
+                                    style={{ maxHeight: 'calc(100vh - 240px)' }}
                                 />
                             ) : (
                                 <>
@@ -185,7 +186,8 @@ export function GalleryLightbox({
                                         srcSet={displaySrc?.startsWith("blob:") ? undefined : buildImageSrcSet(selectedItem.mediumPath || selectedItem.url, [640, 960, 1200, 1600])}
                                         sizes="(min-width: 1024px) 55vw, 95vw"
                                         alt={selectedItem.title}
-                                        className={`w-[95vw] max-h-[75vh] h-auto select-none object-contain shadow-2xl lg:w-auto lg:max-h-[70vh] lg:max-w-[55vw] pointer-events-none transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                        className={`w-auto max-w-[95vw] select-none object-contain shadow-2xl lg:max-w-[55vw] pointer-events-none transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                        style={{ maxHeight: 'calc(100vh - 240px)' }}
                                         draggable={false}
                                         onLoad={() => setImageLoaded(true)}
                                     />
