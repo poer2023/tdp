@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 type LocalImage = { file: File; url: string };
+type LocalVideo = { file: File; url: string; thumbnail?: string };
 type CreateMomentState =
   | { status: "idle" }
   | { status: "error"; message: string }
@@ -23,14 +24,22 @@ function MomentComposerCore() {
   const formRef = React.useRef<HTMLFormElement>(null);
   const [text, setText] = useState("");
   const [images, setImages] = useState<LocalImage[]>([]);
+  const [video, setVideo] = useState<LocalVideo | null>(null);
   const imagesRef = React.useRef<LocalImage[]>([]);
+  const videoRef = React.useRef<LocalVideo | null>(null);
   const revokeUrls = (list: LocalImage[]) => {
     list.forEach((im) => URL.revokeObjectURL(im.url));
   };
   useEffect(() => {
     imagesRef.current = images;
   }, [images]);
-  useEffect(() => () => revokeUrls(imagesRef.current), []);
+  useEffect(() => {
+    videoRef.current = video;
+  }, [video]);
+  useEffect(() => () => {
+    revokeUrls(imagesRef.current);
+    if (videoRef.current) URL.revokeObjectURL(videoRef.current.url);
+  }, []);
 
   // Check if user is admin
   const isAdmin = session?.user?.role === "ADMIN";
@@ -110,6 +119,8 @@ function MomentComposerCore() {
     setText("");
     revokeUrls(imagesRef.current);
     setImages([]);
+    if (videoRef.current) URL.revokeObjectURL(videoRef.current.url);
+    setVideo(null);
     setOpen(false);
     formRef.current?.reset();
   };
@@ -194,12 +205,44 @@ function MomentComposerCore() {
         }
       }
 
+      // 视频上传
+      let uploadedVideo: { url: string; thumbnailUrl?: string; previewUrl?: string; w?: number; h?: number } | null = null;
+      if (video) {
+        try {
+          const formData = new FormData();
+          formData.append("file", video.file);
+
+          const uploadRes = await fetch("/api/admin/video/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json().catch(() => ({}));
+            if (uploadData.video) {
+              uploadedVideo = {
+                url: uploadData.video.url,
+                thumbnailUrl: uploadData.video.thumbnailUrl,
+                previewUrl: uploadData.video.previewUrl,
+                w: uploadData.video.width,
+                h: uploadData.video.height,
+              };
+            }
+          } else {
+            console.error("Failed to upload video:", await uploadRes.text());
+          }
+        } catch (error) {
+          console.error("Video upload failed:", error);
+        }
+      }
+
       const res = await fetch("/api/admin/moments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content,
           images: uploadedImages,
+          ...(uploadedVideo ? { videos: [uploadedVideo] } : {}),
           tags,
           visibility,
           status: "PUBLISHED",
@@ -348,6 +391,34 @@ function MomentComposerCore() {
                     ))}
                   </div>
                 )}
+                {/* Video preview */}
+                {video && (
+                  <div className="relative aspect-video overflow-hidden rounded-xl bg-stone-900">
+                    <video src={video.url} className="h-full w-full object-cover" muted />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="rounded-full bg-white/20 p-3 backdrop-blur-sm">
+                        <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="absolute top-2 right-2 rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80"
+                      onClick={() => {
+                        URL.revokeObjectURL(video.url);
+                        setVideo(null);
+                      }}
+                    >
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
+                    <div className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-1 text-xs text-white">
+                      视频
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300">
@@ -373,6 +444,26 @@ function MomentComposerCore() {
                         <path d="M21 15l-5-5L5 21" />
                       </svg>
                       图片
+                    </label>
+                    {/* 视频按钮 - 最多 1 个视频 */}
+                    <label className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-medium transition-colors ${video ? 'border-sage-500 bg-sage-50 text-sage-700 dark:border-sage-500 dark:bg-sage-900/20 dark:text-sage-300' : 'border-stone-200 bg-stone-50 text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300'}`}>
+                      <input
+                        type="file"
+                        accept="video/mp4,video/quicktime,video/webm"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (video) URL.revokeObjectURL(video.url);
+                            setVideo({ file, url: URL.createObjectURL(file) });
+                          }
+                        }}
+                      />
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="23 7 16 12 23 17 23 7" />
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                      </svg>
+                      {video ? '已选视频' : '视频'}
                     </label>
                     <label className="inline-flex cursor-pointer items-center gap-1.5 text-xs text-stone-600 dark:text-stone-400">
                       <input

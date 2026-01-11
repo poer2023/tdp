@@ -41,8 +41,9 @@ export const ImageUploadArea: React.FC<{
     existingImages?: (string | MomentImage)[],
     onRemoveExisting?: (idx: number) => void,
     manualUrl: string,
-    setManualUrl: (v: string) => void
-}> = ({ queue, onDrop, onFileSelect, onRemove, onRetry: _onRetry, isDragOver, setIsDragOver, multiple, currentImageUrl, existingImages, onRemoveExisting, manualUrl, setManualUrl }) => {
+    setManualUrl: (v: string) => void,
+    acceptVideo?: boolean // 是否接受视频上传
+}> = ({ queue, onDrop, onFileSelect, onRemove, onRetry: _onRetry, isDragOver, setIsDragOver, multiple, currentImageUrl, existingImages, onRemoveExisting, manualUrl, setManualUrl, acceptVideo = false }) => {
     const { t } = useAdminLocale();
 
     return (
@@ -61,7 +62,7 @@ export const ImageUploadArea: React.FC<{
                     multiple={multiple}
                     className="absolute inset-0 opacity-0 cursor-pointer z-10"
                     onChange={onFileSelect}
-                    accept="image/*"
+                    accept={acceptVideo ? "image/*,video/mp4,video/quicktime,video/webm" : "image/*"}
                 />
 
                 {queue.length === 0 && !currentImageUrl && (!existingImages || existingImages.length === 0) ? (
@@ -73,7 +74,7 @@ export const ImageUploadArea: React.FC<{
                             {multiple ? t('dragMultiplePhotos') : t('dragCoverPhoto')}
                         </p>
                         <p className="text-xs text-stone-400 mt-1 pointer-events-none">
-                            {t('jpgPngWebpSupported')}
+                            {acceptVideo ? 'JPG, PNG, WebP, MP4, MOV, WebM' : t('jpgPngWebpSupported')}
                         </p>
                     </>
                 ) : (

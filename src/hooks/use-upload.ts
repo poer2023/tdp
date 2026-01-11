@@ -159,7 +159,9 @@ export function useUpload(options: UseUploadOptions = {}) {
                 });
 
                 const formData = new FormData();
-                formData.append("image", item.file);
+                // 视频文件使用 'file' 字段名，图片使用 'image' 字段名
+                const fieldName = item.file.type.startsWith('video/') ? 'file' : 'image';
+                formData.append(fieldName, item.file);
                 if (extraData) {
                     Object.entries(extraData).forEach(([key, value]) => {
                         formData.append(key, value);
