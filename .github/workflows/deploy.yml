@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 # Automated deployment workflow - DISABLED for Coolify
 # Coolify handles auto-deployment via GitHub App integration.
 # Keep this for manual/emergency deployments only.
