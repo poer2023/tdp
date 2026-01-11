@@ -220,8 +220,9 @@ export async function generatePreviewVideo(
         "-bufsize", "1M",
         // Scale to preview width
         "-vf", `scale=${cfg.previewWidth}:-2`,
-        // No audio for previews (smaller file)
-        "-an",
+        // Audio: AAC with low bitrate (preserve audio)
+        "-c:a", "aac",
+        "-b:a", "64k", // 64kbps audio is sufficient for web
         // Web optimization
         "-movflags", "+faststart",
         // Output format
