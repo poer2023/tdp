@@ -137,8 +137,74 @@ denied: permission_denied: The token provided does not match expected scopes.
 4. ✅ **验证镜像** - 推送后验证 manifest
 5. ⚠️ **避免频繁重建** - 利用缓存加速
 
+---
+
+## 基础镜像维护
+
+### 为什么固定 digest?
+
+我们使用固定的 digest 而不是 `latest-dev` 标签，原因：
+
+| 使用 `latest-dev` | 使用固定 digest |
+|-------------------|-----------------|
+| 每次构建可能拉取新镜像 | 镜像版本稳定 |
+| **缓存频繁失效** | **缓存稳定复用** |
+| 构建时间 5-6 分钟 | **构建时间 ~42 秒** |
+
+### 如何更新基础镜像
+
+**1. 获取最新的 amd64 digest：**
+
+```bash
+docker manifest inspect cgr.dev/chainguard/node:latest-dev | \
+  jq -r '.manifests[] | select(.platform.architecture == "amd64") | .digest'
+```
+
+**2. 更新 Dockerfile（第 7 行）：**
+
+```dockerfile
+ARG NODE_IMAGE=cgr.dev/chainguard/node@sha256:<新的digest>
+```
+
+**3. 更新注释中的日期：**
+
+```dockerfile
+# Last updated: YYYY-MM-DD
+```
+
+**4. 提交并推送：**
+
+```bash
+git add Dockerfile
+git commit -m "chore(docker): update Chainguard base image digest"
+git push
+```
+
+### 更新频率建议
+
+| 场景 | 频率 |
+|------|------|
+| **常规维护** | 每月 1 次 |
+| **安全补丁** | 收到 Trivy/Dependabot 告警时 |
+| **Node.js 升级** | 需要新版本功能时 |
+
+### 一键更新脚本
+
+```bash
+# scripts/update-base-image.sh
+#!/bin/bash
+NEW_DIGEST=$(docker manifest inspect cgr.dev/chainguard/node:latest-dev | \
+  jq -r '.manifests[] | select(.platform.architecture == "amd64") | .digest')
+
+echo "New digest: $NEW_DIGEST"
+echo "Update Dockerfile ARG NODE_IMAGE with this digest"
+```
+
+---
+
 ## 相关链接
 
 - [GitHub Container Registry 文档](https://docs.github.com/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
 - [Docker Buildx 缓存文档](https://docs.docker.com/build/cache/backends/)
+- [Chainguard Node.js 镜像](https://images.chainguard.dev/directory/image/node/versions)
 - [项目部署文档](../README.md#deployment)
