@@ -13,6 +13,8 @@ import {
 } from "@/lib/video-processor";
 import type { VideoProcessResult } from "@/lib/video-processor";
 import { getStorageProviderAsync } from "@/lib/storage";
+import { addGalleryImage } from "@/lib/gallery";
+import { revalidatePath } from "next/cache";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,6 +64,9 @@ export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
         const file = formData.get("file") as File | null;
+        const title = (formData.get("title") as string | null)?.trim() || null;
+        const description = (formData.get("description") as string | null)?.trim() || null;
+        const category = (formData.get("category") as string | null) ?? "ORIGINAL";
 
         if (!file) {
             return NextResponse.json({ error: "未提供视频文件" }, { status: 400 });
@@ -149,9 +154,33 @@ export async function POST(request: NextRequest) {
                 previewSize: result.previewSize,
             };
 
+            // 保存到数据库 Gallery
+            const created = await addGalleryImage({
+                title: title || `Video ${new Date().toLocaleDateString()}`,
+                description,
+                filePath: videoData.url,
+                microThumbPath: videoData.thumbnailUrl,
+                smallThumbPath: videoData.thumbnailUrl,
+                mediumPath: videoData.previewUrl,
+                category: category as "REPOST" | "ORIGINAL" | "MOMENT",
+                livePhotoVideoPath: videoData.previewUrl, // 预览视频用于播放
+                isLivePhoto: true, // 标记为有视频
+                fileSize: file.size,
+                width: result.metadata.width,
+                height: result.metadata.height,
+                mimeType: file.type || "video/mp4",
+                storageType: process.env.STORAGE_TYPE || "local",
+            });
+
+            // Revalidate gallery pages
+            revalidatePath("/");
+            revalidatePath("/gallery");
+            revalidatePath("/admin/gallery");
+
             return NextResponse.json({
                 success: true,
                 video: videoData,
+                image: created, // 返回 gallery image 格式供前端使用
                 compressionRatio: result.compressionRatio.toFixed(1),
                 message: `视频处理完成，预览版大小: ${Math.round(result.previewSize / 1024)}KB`,
             });

@@ -47,39 +47,10 @@ export const GallerySection: React.FC = () => {
         // Remove from pending and add real item to gallery
         setPendingUploads(prev => prev.filter(p => p.id !== item.id));
 
-        // 处理图片上传响应
+        // 图片和视频上传 API 现在都返回 image 字段
         const imageResult = (result as { image?: GalleryItem })?.image;
         if (imageResult) {
             setGalleryItems(prev => [imageResult, ...prev]);
-            return;
-        }
-
-        // 处理视频上传响应：将视频数据转换为 GalleryItem 格式
-        const videoResult = (result as {
-            video?: {
-                url: string;
-                previewUrl: string;
-                thumbnailUrl: string;
-                duration: number;
-                width: number;
-                height: number;
-            }
-        })?.video;
-        if (videoResult) {
-            const videoItem: GalleryItem = {
-                id: crypto.randomUUID(),
-                title: `Video ${new Date().toLocaleDateString()}`,
-                url: videoResult.url,
-                filePath: videoResult.url,
-                thumbnail: videoResult.thumbnailUrl,
-                smallThumbPath: videoResult.thumbnailUrl,
-                mediumPath: videoResult.previewUrl,
-                type: 'video',
-                width: videoResult.width,
-                height: videoResult.height,
-                date: new Date().toISOString().split('T')[0] ?? new Date().toISOString(),
-            };
-            setGalleryItems(prev => [videoItem, ...prev]);
         }
     }, []);
 
