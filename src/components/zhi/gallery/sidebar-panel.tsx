@@ -185,8 +185,8 @@ export const SidebarPanel = React.memo(function SidebarPanel({
                     </section>
                 )}
 
-                {/* Live Photo */}
-                {item.isLivePhoto && item.livePhotoVideoPath && (
+                {/* Live Photo - 只对图片类型显示，视频类型不需要这个区域 */}
+                {item.type !== "video" && item.isLivePhoto && item.livePhotoVideoPath && (
                     <section className="mb-8">
                         <h3 className={`mb-3 text-xs font-bold uppercase tracking-wider ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
                             {t("LivePhoto")}
