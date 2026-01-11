@@ -1,7 +1,13 @@
 # syntax=docker/dockerfile:1.7
 
+# Chainguard Node.js base image
+# Pin to specific digest for cache stability. Update periodically for security patches:
+#   docker manifest inspect cgr.dev/chainguard/node:latest-dev | jq -r '.manifests[] | select(.platform.architecture == "amd64") | .digest'
+# Last updated: 2026-01-11
+ARG NODE_IMAGE=cgr.dev/chainguard/node@sha256:07a515c87878ff06a41daa099345c624a446bddb24c27cf7c45122044de93513
+
 # === Dependencies Stage: Install production dependencies ===
-FROM cgr.dev/chainguard/node:latest-dev AS deps
+FROM ${NODE_IMAGE} AS deps
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -16,7 +22,7 @@ COPY prisma ./prisma
 RUN pnpm exec prisma generate
 
 # === Builder Stage: Build application ===
-FROM cgr.dev/chainguard/node:latest-dev AS builder
+FROM ${NODE_IMAGE} AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -40,7 +46,7 @@ RUN pnpm exec prisma generate && pnpm run build
 RUN pnpm exec tsc --esModuleInterop --module commonjs --moduleResolution node --target es2022 --outDir /app/scripts-dist /app/scripts/production-data-migration.ts || echo "Script pre-compilation skipped"
 
 # === Migration Stage: Database migrations ===
-FROM cgr.dev/chainguard/node:latest-dev AS migrator
+FROM ${NODE_IMAGE} AS migrator
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json pnpm-lock.yaml ./
@@ -50,7 +56,7 @@ CMD ["pnpm", "exec", "prisma", "migrate", "deploy"]
 
 # === Production Stage: Runtime environment ===
 # Using -dev variant to include apk for FFmpeg installation
-FROM cgr.dev/chainguard/node:latest-dev AS runner
+FROM ${NODE_IMAGE} AS runner
 ENV NODE_ENV=production
 ENV HUSKY=0
 ENV HOSTNAME=0.0.0.0
