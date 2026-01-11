@@ -29,10 +29,13 @@ function toGalleryItem(image: GalleryImage, locale: string): ZhiGalleryItem {
     }
   );
 
+  // 根据 mimeType 判断媒体类型
+  const isVideo = image.mimeType?.startsWith('video/');
+
   return {
     id: image.id,
-    type: "image",
-    url: image.filePath,
+    type: isVideo ? "video" : "image",
+    url: isVideo ? (image.livePhotoVideoPath || image.filePath) : image.filePath,
     thumbnail: image.smallThumbPath || image.microThumbPath || undefined,
     title: image.title || (locale === "zh" ? "无标题" : "Untitled"),
     description: image.description || undefined,
