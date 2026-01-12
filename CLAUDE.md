@@ -2,7 +2,23 @@
 
 ## Project Overview
 
-TDP is a personal blog and life dashboard platform built with Next.js 16, React 19, and PostgreSQL.
+TDP (The Dashboard Platform) is a personal blog and life dashboard platform with 735+ commits.
+
+**Tech Stack:**
+- **Framework:** Next.js 16.1.1 + React 19.2.1 (App Router)
+- **Database:** PostgreSQL + Prisma 6.18.0 (40+ models)
+- **Runtime:** Node.js >= 22.0.0, pnpm 10.16.1
+- **Styling:** Tailwind CSS 4, Framer Motion
+- **Auth:** NextAuth v5 (Google OAuth)
+- **Storage:** Local + Cloudflare R2
+- **i18n:** EN (default) / ZH with `[locale]` routing
+
+**Core Features:**
+- Blog posts with multi-language support
+- Photo gallery with Live Photos, EXIF, map view
+- Moments (微博-style short posts)
+- Life dashboard (gaming, media, reading, finance tracking)
+- External data sync (Steam, Bilibili, Douban, GitHub)
 
 ## Project-Specific Skills
 
@@ -74,6 +90,14 @@ The following skills are available for this project. **Use the Read tool to load
 
 **How to invoke:** Read the skill: `.claude/skills/tdp-api-development/SKILL.md`
 
+### tdp-update-claude-md
+
+**Location:** `.claude/skills/tdp-update-claude-md/SKILL.md`
+
+**When to use:** When updating CLAUDE.md, after major dependency upgrades, adding new directories, or establishing new patterns. Covers version extraction, structure scanning, and content validation.
+
+**How to invoke:** Read the skill: `.claude/skills/tdp-update-claude-md/SKILL.md`
+
 ## Quick Reference
 
 ### Common Commands
@@ -85,13 +109,19 @@ pnpm build                  # Build for production
 
 # Code Quality (run before every commit)
 pnpm lint                   # Run ESLint
+pnpm lint:fix               # Auto-fix lint errors
 pnpm type-check             # Run TypeScript compiler
-pnpm lint && pnpm type-check  # Quick pre-commit check
+pnpm format                 # Format with Prettier
 
 # Testing
 pnpm test:run               # Run unit tests
 pnpm test:integration       # Run integration tests
 pnpm test:e2e:critical      # Run critical E2E tests
+
+# Database
+pnpm db:studio              # Open Prisma Studio
+pnpm db:migrate             # Run migrations
+pnpm db:generate            # Generate Prisma Client
 
 # Full verification before PR
 pnpm lint && pnpm type-check && pnpm test:run && pnpm build
@@ -101,17 +131,52 @@ pnpm lint && pnpm type-check && pnpm test:run && pnpm build
 
 1. **No console.log** - Use `console.warn` or `console.error` instead (except in `scripts/` and `prisma/`)
 2. **Remove unused imports** - CI will fail on unused variables
-3. **SSR Safety** - Wrap browser APIs in `useEffect` or check `typeof window !== 'undefined'`
-4. **No useSession in public components** - Causes hydration errors
+3. **SSR Safety** - Wrap browser APIs in `useEffect` or use lazy initializer: `useState(() => { if (typeof window === 'undefined') return fallback; ... })`
+4. **No useSession in public components** - Causes hydration errors, use server components instead
 5. **IntersectionObserver needs fallback** - Default to `true` when unavailable
+6. **Await params in Next.js 15+** - Use `const { id } = await params` in routes
+7. **Revalidate both locales** - Call `revalidatePath("/path")` and `revalidatePath("/zh/path")`
 
 ### File Structure
 
-- `src/app/` - Next.js App Router pages and API routes
-- `src/components/` - React components
-- `src/lib/` - Business logic and utilities
-- `src/config/features.ts` - Feature flags
-- `prisma/schema.prisma` - Database schema
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── [locale]/           # i18n pages (EN default, /zh for Chinese)
+│   ├── api/                # API routes (16 categories)
+│   ├── admin/              # Admin dashboard
+│   └── *.xml/              # Sitemap, RSS feeds
+├── components/
+│   ├── ui/                 # Radix UI primitives
+│   ├── zhi/                # Main site components
+│   ├── admin/              # Admin components
+│   ├── gallery/            # Gallery components
+│   └── shared/             # Shared components
+├── lib/                    # Business logic (70+ modules)
+│   ├── gallery.ts          # Gallery queries
+│   ├── posts.ts            # Post queries
+│   ├── moments.ts          # Moments queries
+│   └── prisma.ts           # Prisma client singleton
+├── hooks/                  # Custom React hooks
+├── contexts/               # React contexts
+├── config/features.ts      # Feature flags
+├── types/                  # TypeScript types
+└── auth.ts                 # NextAuth configuration
+
+prisma/schema.prisma        # Database schema (40+ models)
+scripts/                    # Utility scripts
+e2e/                        # Playwright E2E tests
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/lib/prisma.ts` | Prisma client singleton with CI fallback |
+| `src/lib/utils/db-fallback.ts` | `withDbFallback()` for graceful degradation |
+| `src/config/features.ts` | Feature flags (`FEATURE_*` env vars) |
+| `src/auth.ts` | NextAuth v5 configuration |
+| `next.config.ts` | Next.js configuration |
 
 ### Before Committing
 
