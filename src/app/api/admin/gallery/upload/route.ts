@@ -37,6 +37,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing image file" }, { status: 400 });
     }
 
+    // Check if the "image" field is actually a video file
+    const isVideoFile = image.type.startsWith("video/");
+
+    if (isVideoFile) {
+      // Handle standalone video upload (for Moments)
+      return handleVideoUpload(image, { title, description, category, postId, capturedAt });
+    }
+
     const imageBuf = Buffer.from(await image.arrayBuffer());
     const exif = await extractExif(imageBuf);
 
@@ -144,4 +152,77 @@ function cryptoRandom() {
     /-/g,
     ""
   );
+}
+
+/**
+ * Handle standalone video upload (for Moments)
+ * Uploads video without image processing, returns video URL
+ */
+async function handleVideoUpload(
+  videoFile: File,
+  options: {
+    title: string | null;
+    description: string | null;
+    category: string;
+    postId: string | null;
+    capturedAt: Date | null;
+  }
+) {
+  try {
+    const storage = await getStorageProviderAsync();
+    const videoBuf = Buffer.from(await videoFile.arrayBuffer());
+    const videoExt = videoFile.name.split(".").pop() || "mp4";
+    const videoKey = `videos/${cryptoRandom()}.${videoExt}`;
+
+    const videoPath = await storage.upload(
+      videoBuf,
+      videoKey,
+      videoFile.type || "video/mp4"
+    );
+    const videoUrl = storage.getPublicUrl(videoPath);
+
+    // For video moments, we create a gallery entry with video info
+    // The filePath will be empty/placeholder, video info stored separately
+    const created = await addGalleryImage({
+      title: options.title,
+      description: options.description,
+      filePath: videoUrl, // Use video URL as primary path
+      microThumbPath: null,
+      smallThumbPath: null,
+      mediumPath: null,
+      blurDataURL: null,
+      postId: options.postId,
+      category: options.category as "REPOST" | "ORIGINAL" | "MOMENT",
+      latitude: null,
+      longitude: null,
+      locationName: null,
+      city: null,
+      country: null,
+      livePhotoVideoPath: videoUrl, // Store video URL here too
+      isLivePhoto: false,
+      fileSize: videoFile.size || null,
+      width: null,
+      height: null,
+      mimeType: videoFile.type || "video/mp4",
+      capturedAt: options.capturedAt,
+      storageType: process.env.STORAGE_TYPE || "local",
+    });
+
+    // Revalidate paths
+    revalidatePath("/");
+    revalidatePath("/zh");
+    revalidatePath("/gallery");
+    revalidatePath("/zh/gallery");
+    revalidatePath("/admin/gallery");
+
+    return NextResponse.json({
+      ok: true,
+      image: created,
+      isVideo: true,
+      videoUrl,
+    }, { status: 200 });
+  } catch (err) {
+    console.error("Video upload error:", err);
+    return NextResponse.json({ error: "Video upload failed" }, { status: 500 });
+  }
 }

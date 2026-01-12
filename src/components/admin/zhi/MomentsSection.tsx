@@ -71,31 +71,47 @@ export const MomentsSection: React.FC = () => {
         if (!editingMoment?.content) return;
         setIsSaving(true);
 
-        // Get all successfully uploaded image data
+        // Get all successfully uploaded data (images and videos)
         const uploadedData = getUploadedData();
-        const uploadedImageUrls: (string | MomentImage)[] = uploadedData.map((data) => {
+        const uploadedImages: MomentImage[] = [];
+        const uploadedVideos: { url: string; previewUrl?: string; thumbnailUrl?: string; duration?: number; w?: number; h?: number }[] = [];
+
+        uploadedData.forEach((data) => {
             const img = data.image as Record<string, unknown> | undefined;
-            if (img?.filePath) {
-                return {
+            const isVideo = data.isVideo === true || (img?.mimeType as string)?.startsWith('video/');
+
+            if (isVideo) {
+                // Handle video upload result
+                uploadedVideos.push({
+                    url: (data.videoUrl as string) || (img?.filePath as string) || '',
+                    previewUrl: (data.videoUrl as string) || (img?.filePath as string) || '',
+                    thumbnailUrl: '',
+                    duration: 0,
+                    w: img?.width as number | undefined,
+                    h: img?.height as number | undefined,
+                });
+            } else if (img?.filePath) {
+                // Handle image upload result
+                uploadedImages.push({
                     url: img.filePath as string,
                     microThumbUrl: img.microThumbPath as string | undefined,
                     smallThumbUrl: img.smallThumbPath as string | undefined,
                     mediumUrl: img.mediumPath as string | undefined,
                     w: img.width as number | undefined,
                     h: img.height as number | undefined,
-                };
+                });
             }
-            return data.url as string || '';
-        }).filter(Boolean);
+        });
 
-        // Add manual URL if provided
+        // Add manual URL if provided (assume image for now)
         if (manualUrl && (manualUrl.startsWith('/') || manualUrl.startsWith('http'))) {
-            uploadedImageUrls.push(manualUrl);
+            uploadedImages.push({ url: manualUrl });
         }
 
         const momentData = {
             ...editingMoment,
-            images: [...(editingMoment.images || []), ...uploadedImageUrls],
+            images: [...(editingMoment.images || []), ...uploadedImages],
+            videos: [...(editingMoment.videos || []), ...uploadedVideos],
             id: editingMoment.id || Math.random().toString(36).substr(2, 9),
             date: editingMoment.date || 'Just now',
             likes: editingMoment.likes || 0,
@@ -176,6 +192,7 @@ export const MomentsSection: React.FC = () => {
                                 multiple={true}
                                 manualUrl={manualUrl}
                                 setManualUrl={setManualUrl}
+                                acceptVideo={true}
                             />
                             {isUploading && (
                                 <p className="text-xs text-blue-500 mt-2 animate-pulse">

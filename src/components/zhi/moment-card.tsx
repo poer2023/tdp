@@ -46,9 +46,70 @@ interface MomentCardProps {
 
 
 
-// Threads-style horizontal image gallery for mobile
-// Fixed height (320px), width calculated from aspect ratio for single image
-// For multiple images: uniform square thumbnails with object-cover
+// Autoplay video component for moment cards (muted, looped, low-res preview)
+// Uses previewUrl for lightweight autoplay, poster for initial frame
+function AutoplayVideo({
+  video,
+  height = 320,
+  className = "",
+  onClick
+}: {
+  video: MomentVideoData;
+  height?: number;
+  className?: string;
+  onClick?: () => void;
+}) {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  // Calculate width from aspect ratio
+  const width = (video.w && video.h && video.h > 0)
+    ? Math.round(height * (video.w / video.h))
+    : Math.round(height * (16 / 9));
+
+  return (
+    <div
+      className={`relative overflow-hidden rounded-xl ${className}`}
+      style={{ height, width }}
+      onClick={onClick}
+    >
+      {/* Poster image - shows immediately while video loads */}
+      {video.thumbnailUrl && (
+        <img
+          src={video.thumbnailUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+      {/* Video - fades in when loaded, autoplay muted loop */}
+      <video
+        ref={videoRef}
+        src={video.previewUrl || video.url}
+        poster={video.thumbnailUrl}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        className="absolute inset-0 h-full w-full cursor-pointer object-cover opacity-0 transition-opacity duration-500"
+        onLoadedData={(e) => {
+          e.currentTarget.classList.replace("opacity-0", "opacity-100");
+        }}
+      />
+      {/* Play indicator overlay */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="rounded-full bg-black/30 p-3 backdrop-blur-sm">
+          <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Threads-style horizontal image/video gallery for mobile
+// Fixed height (320px), width calculated from aspect ratio for single item
+// For multiple items: uniform thumbnails with object-cover
 const GALLERY_HEIGHT = 320;
 
 function ThreadsImageGallery({ images, onImageClick }: { images: MomentImageData[]; onImageClick?: () => void }) {
@@ -192,6 +253,8 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const hasImages = moment.images && moment.images.length > 0;
+  const hasVideos = moment.videos && moment.videos.length > 0;
+  const hasMedia = hasImages || hasVideos;
 
   // --- Physics & 3D Logic (Desktop) ---
   const ref = useRef<HTMLDivElement>(null);
@@ -295,6 +358,17 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
         <ThreadsImageGallery images={moment.images!} onImageClick={onClick} />
       )}
 
+      {/* Videos: Autoplay preview */}
+      {!hasImages && hasVideos && (
+        <div className="pl-4">
+          <AutoplayVideo
+            video={moment.videos![0]!}
+            height={GALLERY_HEIGHT}
+            onClick={onClick}
+          />
+        </div>
+      )}
+
       {/* Actions Bar - Always visible on mobile (no share button) */}
       <div className="flex items-center gap-4 px-4 pt-3">
         <button
@@ -325,7 +399,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
   // DESKTOP: Original 3D card layout
   // ============================================
   const DesktopCard = () => {
-    const bgStyle = hasImages
+    const bgStyle = hasMedia
       ? "bg-[#141416] border-[#27272a]"
       : `bg-white dark:bg-[#141416]/80 backdrop-blur-xl border ${getGradient(moment.id)}`;
 
@@ -370,9 +444,45 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
               </div>
             )}
 
+            {/* 2b. Video Layer - autoplay muted loop */}
+            {!hasImages && hasVideos && moment.videos![0] && (
+              <div className="absolute inset-0 z-0">
+                {/* Poster image - shows immediately */}
+                {moment.videos![0].thumbnailUrl && (
+                  <img
+                    src={moment.videos![0].thumbnailUrl}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                )}
+                {/* Video - fades in when loaded */}
+                <video
+                  src={moment.videos![0].previewUrl || moment.videos![0].url}
+                  poster={moment.videos![0].thumbnailUrl}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500"
+                  onLoadedData={(e) => {
+                    e.currentTarget.classList.replace("opacity-0", "opacity-100");
+                  }}
+                />
+                {/* Dark gradient overlay for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-90" />
+                {/* Play indicator */}
+                <div className="pointer-events-none absolute right-4 top-4 z-10 rounded-full bg-black/30 p-2 backdrop-blur-sm">
+                  <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
+              </div>
+            )}
+
             {/* 3. Content Container (Lifted in 3D space) */}
             <div
-              className={`relative z-20 flex h-full flex-col justify-between p-6 ${hasImages ? "min-h-[360px]" : "min-h-[220px]"}`}
+              className={`relative z-20 flex h-full flex-col justify-between p-6 ${hasMedia ? "min-h-[360px]" : "min-h-[220px]"}`}
               style={{ transform: "translateZ(20px)" }}
             >
               {/* Header */}
@@ -384,14 +494,14 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                       alt={moment.author.name || "Author"}
                       width={40}
                       height={40}
-                      className={`h-10 w-10 rounded-full object-cover border ${hasImages
+                      className={`h-10 w-10 rounded-full object-cover border ${hasMedia
                         ? "border-white/20"
                         : "border-stone-200 dark:border-[#2a2a2e]"
                         }`}
                     />
                   ) : (
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full border ${hasImages
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border ${hasMedia
                         ? "border-white/20 bg-white/10 text-white backdrop-blur-md"
                         : "border-stone-200 bg-stone-100 text-stone-600 dark:border-[#2a2a2e] dark:bg-[#1f1f23] dark:text-stone-300"
                         }`}
@@ -403,12 +513,12 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                   )}
                   <div>
                     <p
-                      className={`text-xs font-medium ${hasImages ? "text-white/90" : "text-stone-700 dark:text-stone-300"}`}
+                      className={`text-xs font-medium ${hasMedia ? "text-white/90" : "text-stone-700 dark:text-stone-300"}`}
                     >
                       {moment.author?.name || "Anonymous"}
                     </p>
                     <p
-                      className={`text-[10px] ${hasImages ? "text-white/70" : "text-stone-500 dark:text-stone-400"}`}
+                      className={`text-[10px] ${hasMedia ? "text-white/70" : "text-stone-500 dark:text-stone-400"}`}
                     >
                       {moment.date}
                     </p>
@@ -419,7 +529,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
               {/* Main Content */}
               <div className="mt-auto">
                 <p
-                  className={`line-clamp-4 font-serif text-xl leading-relaxed md:text-2xl ${hasImages ? "text-white drop-shadow-md" : "text-stone-800 dark:text-stone-100"}`}
+                  className={`line-clamp-4 font-serif text-xl leading-relaxed md:text-2xl ${hasMedia ? "text-white drop-shadow-md" : "text-stone-800 dark:text-stone-100"}`}
                 >
                   {moment.content}
                 </p>
@@ -427,7 +537,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
 
               {/* Actions Bar - Appears on hover */}
               <div
-                className={`absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl p-2 backdrop-blur-md transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 z-30 ${hasImages
+                className={`absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl p-2 backdrop-blur-md transition-all duration-300 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 z-30 ${hasMedia
                   ? "border border-white/10 bg-black/40 text-white hover:bg-black/60"
                   : "border border-stone-200 bg-white/80 text-stone-600 hover:bg-white dark:border-[#2a2a2e] dark:bg-[#1f1f23]/80 dark:text-stone-400 dark:hover:bg-[#27272a]"
                   }`}

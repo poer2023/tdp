@@ -5,6 +5,14 @@ import { withDbFallback } from "@/lib/utils/db-fallback";
 // Cache tag for hero images invalidation
 export const HERO_IMAGES_TAG = "hero-images";
 
+// Hero item with full media info (image or video)
+export type HeroItem = {
+  url: string; // Image URL or video poster
+  mediaType: "image" | "video";
+  videoUrl?: string | null; // Video URL when mediaType is "video"
+  posterUrl?: string | null; // Poster/thumbnail for video
+};
+
 const INTERNAL_HOST_HINTS = ["r2.dev", "r2.cloudflarestorage.com", "dybzy.com"];
 
 function isLikelyInternalUrl(url: string): boolean {
@@ -41,16 +49,28 @@ function toHeroThumbUrl(url: string): string {
 /**
  * 获取激活的 Hero 图片 URL 列表（内部实现）
  */
-async function _listHeroImages(): Promise<string[]> {
+async function _listHeroImages(): Promise<HeroItem[]> {
   return withDbFallback(
     async () => {
-      const images = await prisma.heroImage.findMany({
+      const items = await prisma.heroImage.findMany({
         where: { active: true },
         orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+        select: {
+          url: true,
+          mediaType: true,
+          videoUrl: true,
+          posterUrl: true,
+        },
       });
 
-      // Prefer small thumbnails to keep hero grid lightweight
-      return images.map((img) => toHeroThumbUrl(img.url));
+      return items.map((item) => ({
+        url: item.mediaType === "video" && item.posterUrl
+          ? item.posterUrl
+          : toHeroThumbUrl(item.url),
+        mediaType: (item.mediaType || "image") as "image" | "video",
+        videoUrl: item.videoUrl,
+        posterUrl: item.posterUrl,
+      }));
     },
     async () => [],
     "hero:list"

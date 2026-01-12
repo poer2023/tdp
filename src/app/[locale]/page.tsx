@@ -38,7 +38,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   // ISR: Fetch public data only (no auth, no viewerId)
   // Client-side will hydrate user's like states via useMomentLikes hook
   // All data fetching uses unstable_cache for reduced DB load during ISR rebuilds
-  const [posts, moments, heroImageUrls, curatedItems, statusData] = await Promise.all([
+  const [posts, moments, heroItems, curatedItems, statusData] = await Promise.all([
     listPublishedPostSummaries({ limit: 8 }),
     listMoments({ limit: 6, visibility: "PUBLIC" }),
     listHeroImages(),
@@ -97,6 +97,15 @@ export default async function LocalizedHomePage({ params }: PageProps) {
         w: img.w,
         h: img.h,
       })) || [],
+      // Pass first video for card display with autoplay preview
+      videos: moment.videos?.slice(0, 1).map((video) => ({
+        url: video.url,
+        previewUrl: video.previewUrl || video.url,
+        thumbnailUrl: video.thumbnailUrl || "",
+        duration: video.duration || 0,
+        w: video.w,
+        h: video.h,
+      })) || [],
       date: dateStr,
       tags: moment.tags || [],
       likes: moment.likeCount ?? 0,
@@ -138,11 +147,13 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     (a, b) => (b.sortKey ?? 0) - (a.sortKey ?? 0)
   );
 
-  // Transform hero image URLs to HeroImageItem format
-  const heroImages: HeroImageItem[] = heroImageUrls.map((url) => ({
-    src: url,
+  // Transform hero items to HeroImageItem format (supports images and videos)
+  const heroImages: HeroImageItem[] = heroItems.map((item) => ({
+    src: item.url,
     href: `/${locale}/gallery`,
     type: "gallery" as const,
+    mediaType: item.mediaType,
+    videoSrc: item.videoUrl || undefined,
   }));
 
   return (

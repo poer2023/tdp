@@ -20,11 +20,21 @@ export type MomentImage = {
   mediumUrl?: string | null;
 };
 
+export type MomentVideo = {
+  url: string; // Original video URL
+  previewUrl?: string | null; // Compressed preview for autoplay (~50-200KB)
+  thumbnailUrl?: string | null; // Poster image
+  duration?: number | null; // Duration in seconds
+  w?: number | null;
+  h?: number | null;
+};
+
 export type MomentListItem = {
   id: string;
   slug: string | null;
   content: string;
   images: MomentImage[];
+  videos: MomentVideo[];
   createdAt: Date;
   visibility: MomentVisibility;
   location: unknown | null;
@@ -78,6 +88,7 @@ async function _fetchMoments(options?: {
         slug: true,
         content: true,
         images: true,
+        videos: true,
         createdAt: true,
         visibility: true,
         location: true,
@@ -113,6 +124,7 @@ async function _fetchMoments(options?: {
         return {
           ...m,
           images: (m.images as MomentImage[] | null) ?? [],
+          videos: (m.videos as MomentVideo[] | null) ?? [],
           likeCount: mWithExtras.likeStats?.likeCount ?? 0,
           commentsCount: mWithExtras._count?.comments ?? 0,
           likedByViewer: options?.viewerId && Array.isArray(mWithExtras.likes)
