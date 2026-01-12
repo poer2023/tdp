@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info, ArrowLeft } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ZhiGalleryItem, OriginalLoadState } from "./types";
@@ -71,19 +71,36 @@ export function GalleryLightbox({
 
     // Track if current image has loaded (for showing loader placeholder)
     const [imageLoaded, setImageLoaded] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
     const prevDisplaySrcRef = useRef<string>("");
 
-    // Reset imageLoaded when switching images (displaySrc changes)
-    useEffect(() => {
-        if (displaySrc && displaySrc !== prevDisplaySrcRef.current) {
-            setImageLoaded(false);
+    // Best practice: Use useLayoutEffect to synchronously check img.complete
+    // before browser paint, avoiding flash of loading state for cached images
+    // Reference: https://stackoverflow.com/questions/59787642/react-image-onload-not-firing
+    useLayoutEffect(() => {
+        const srcChanged = displaySrc && displaySrc !== prevDisplaySrcRef.current;
+
+        if (srcChanged) {
+            // Check if image is already cached (complete + has dimensions)
+            const img = imgRef.current;
+            if (img && img.complete && img.naturalWidth > 0) {
+                // Image is already loaded from browser cache
+                setImageLoaded(true);
+            } else {
+                // New image needs loading
+                setImageLoaded(false);
+            }
             prevDisplaySrcRef.current = displaySrc;
         }
     }, [displaySrc]);
 
-    // Also reset when currentIndex changes (immediate feedback)
-    useEffect(() => {
-        setImageLoaded(false);
+    // Also check complete status when currentIndex changes but displaySrc stays same
+    // This handles navigation back to a previously viewed image
+    useLayoutEffect(() => {
+        const img = imgRef.current;
+        if (img && img.complete && img.naturalWidth > 0) {
+            setImageLoaded(true);
+        }
     }, [currentIndex]);
 
     // Thumbnail virtualizer for horizontal scrolling
@@ -184,6 +201,7 @@ export function GalleryLightbox({
                                     )}
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
+                                        ref={imgRef}
                                         src={displaySrc?.startsWith("blob:") ? displaySrc : buildImageUrl(displaySrc || selectedItem.mediumPath || selectedItem.url, 1200)}
                                         srcSet={displaySrc?.startsWith("blob:") ? undefined : buildImageSrcSet(selectedItem.mediumPath || selectedItem.url, [640, 960, 1200, 1600])}
                                         sizes="(min-width: 1024px) 55vw, 95vw"
