@@ -29,7 +29,6 @@ interface NavLink {
 
 const NAV_LINKS: NavLink[] = [
   { label: "Home", labelZh: "首页", path: "/" },
-  { label: "Stories", labelZh: "文章", path: "/posts" },
   { label: "Projects", labelZh: "项目", path: "/projects" },
   { label: "Gallery", labelZh: "相册", path: "/gallery" },
   { label: "Life Log", labelZh: "生活日志", path: "/about" },
