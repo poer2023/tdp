@@ -217,9 +217,69 @@ function MomentComposerCore() {
       }
 
       // 视频上传
-      let uploadedVideo: { url: string; thumbnailUrl?: string; previewUrl?: string; w?: number; h?: number } | null = null;
+      let uploadedVideo: {
+        url: string;
+        thumbnailUrl?: string;
+        previewUrl?: string;
+        duration?: number;
+        w?: number;
+        h?: number;
+      } | null = null;
       if (video) {
         try {
+          const normalizeUploadedVideo = (uploadData: any) => {
+            if (!uploadData || typeof uploadData !== "object") return null;
+
+            const rawVideo = uploadData.video ?? null;
+            const rawImage = uploadData.image ?? null;
+            const url =
+              (typeof rawVideo?.url === "string" && rawVideo.url) ||
+              (typeof rawVideo?.filePath === "string" && rawVideo.filePath) ||
+              (typeof uploadData.videoUrl === "string" && uploadData.videoUrl) ||
+              (typeof rawImage?.filePath === "string" && rawImage.filePath) ||
+              (typeof rawImage?.url === "string" && rawImage.url) ||
+              (typeof uploadData.url === "string" && uploadData.url) ||
+              "";
+
+            if (!url) return null;
+
+            const previewUrl =
+              (typeof rawVideo?.previewUrl === "string" && rawVideo.previewUrl) ||
+              (typeof rawImage?.mediumPath === "string" && rawImage.mediumPath) ||
+              (typeof rawImage?.smallThumbPath === "string" && rawImage.smallThumbPath) ||
+              (typeof uploadData.videoUrl === "string" && uploadData.videoUrl) ||
+              url;
+
+            const thumbnailUrl =
+              (typeof rawVideo?.thumbnailUrl === "string" && rawVideo.thumbnailUrl) ||
+              (typeof rawImage?.smallThumbPath === "string" && rawImage.smallThumbPath) ||
+              (typeof rawImage?.microThumbPath === "string" && rawImage.microThumbPath) ||
+              "";
+
+            return {
+              url,
+              previewUrl,
+              thumbnailUrl,
+              duration: typeof rawVideo?.duration === "number" ? rawVideo.duration : undefined,
+              w:
+                typeof rawVideo?.width === "number"
+                  ? rawVideo.width
+                  : typeof rawVideo?.w === "number"
+                    ? rawVideo.w
+                    : typeof rawImage?.width === "number"
+                      ? rawImage.width
+                      : undefined,
+              h:
+                typeof rawVideo?.height === "number"
+                  ? rawVideo.height
+                  : typeof rawVideo?.h === "number"
+                    ? rawVideo.h
+                    : typeof rawImage?.height === "number"
+                      ? rawImage.height
+                      : undefined,
+            };
+          };
+
           const formData = new FormData();
           formData.append("file", video.file);
 
@@ -230,20 +290,17 @@ function MomentComposerCore() {
 
           if (uploadRes.ok) {
             const uploadData = await uploadRes.json().catch(() => ({}));
-            if (uploadData.video) {
-              uploadedVideo = {
-                url: uploadData.video.url,
-                thumbnailUrl: uploadData.video.thumbnailUrl,
-                previewUrl: uploadData.video.previewUrl,
-                w: uploadData.video.width,
-                h: uploadData.video.height,
-              };
+            uploadedVideo = normalizeUploadedVideo(uploadData);
+            if (!uploadedVideo) {
+              throw new Error("视频上传响应缺少可用数据");
             }
           } else {
-            console.error("Failed to upload video:", await uploadRes.text());
+            const errorText = await uploadRes.text();
+            throw new Error(errorText || "视频上传失败");
           }
         } catch (error) {
           console.error("Video upload failed:", error);
+          throw error;
         }
       }
 
