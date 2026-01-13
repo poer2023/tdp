@@ -4,6 +4,7 @@ import React, { useEffect, useState, startTransition, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { extractVideoThumbnail } from "@/lib/video-thumbnail";
 
 type LocalImage = { file: File; url: string };
 type LocalVideo = { file: File; url: string; thumbnail?: string };
@@ -38,7 +39,12 @@ function MomentComposerCore() {
   }, [video]);
   useEffect(() => () => {
     revokeUrls(imagesRef.current);
-    if (videoRef.current) URL.revokeObjectURL(videoRef.current.url);
+    if (videoRef.current) {
+      URL.revokeObjectURL(videoRef.current.url);
+      if (videoRef.current.thumbnail?.startsWith('blob:')) {
+        URL.revokeObjectURL(videoRef.current.thumbnail);
+      }
+    }
   }, []);
 
   // Check if user is admin
@@ -119,7 +125,12 @@ function MomentComposerCore() {
     setText("");
     revokeUrls(imagesRef.current);
     setImages([]);
-    if (videoRef.current) URL.revokeObjectURL(videoRef.current.url);
+    if (videoRef.current) {
+      URL.revokeObjectURL(videoRef.current.url);
+      if (videoRef.current.thumbnail?.startsWith('blob:')) {
+        URL.revokeObjectURL(videoRef.current.thumbnail);
+      }
+    }
     setVideo(null);
     setOpen(false);
     formRef.current?.reset();
@@ -394,7 +405,12 @@ function MomentComposerCore() {
                 {/* Video preview */}
                 {video && (
                   <div className="relative aspect-video overflow-hidden rounded-xl bg-stone-900">
-                    <video src={video.url} className="h-full w-full object-cover" muted />
+                    <video
+                      src={video.url}
+                      poster={video.thumbnail}
+                      className="h-full w-full object-cover"
+                      muted
+                    />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="rounded-full bg-white/20 p-3 backdrop-blur-sm">
                         <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -407,6 +423,9 @@ function MomentComposerCore() {
                       className="absolute top-2 right-2 rounded-full bg-black/60 p-1.5 text-white transition-colors hover:bg-black/80"
                       onClick={() => {
                         URL.revokeObjectURL(video.url);
+                        if (video.thumbnail?.startsWith('blob:')) {
+                          URL.revokeObjectURL(video.thumbnail);
+                        }
                         setVideo(null);
                       }}
                     >
@@ -451,11 +470,24 @@ function MomentComposerCore() {
                         type="file"
                         accept="video/mp4,video/quicktime,video/webm"
                         className="hidden"
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            if (video) URL.revokeObjectURL(video.url);
-                            setVideo({ file, url: URL.createObjectURL(file) });
+                            if (video) {
+                              URL.revokeObjectURL(video.url);
+                              if (video.thumbnail?.startsWith('blob:')) {
+                                URL.revokeObjectURL(video.thumbnail);
+                              }
+                            }
+                            const url = URL.createObjectURL(file);
+                            // Extract thumbnail from first frame
+                            let thumbnail: string | undefined;
+                            try {
+                              thumbnail = await extractVideoThumbnail(file);
+                            } catch (error) {
+                              console.warn("Failed to extract video thumbnail:", error);
+                            }
+                            setVideo({ file, url, thumbnail });
                           }
                         }}
                       />
