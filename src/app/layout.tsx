@@ -90,6 +90,19 @@ export default async function RootLayout({
             />
           </>
         )}
+        {/* RSS/Atom Feed Discovery Links */}
+        <link rel="alternate" type="application/rss+xml" title="RSS Feed (EN)" href="/feed.xml" />
+        <link rel="alternate" type="application/rss+xml" title="RSS Feed (中文)" href="/feed.xml?locale=zh" />
+        <link rel="alternate" type="application/atom+xml" title="Atom Feed (EN)" href="/atom.xml" />
+        <link rel="alternate" type="application/atom+xml" title="Atom Feed (中文)" href="/atom.xml?locale=zh" />
+        {/* PWA Manifest & Meta Tags */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#1C1C1E" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Soft Hours" />
+        <link rel="apple-touch-icon" href="/icon-512.png" />
       </head>
       {/* Google Fonts now loaded via next/font - no external link needed */}
       <body

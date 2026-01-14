@@ -175,7 +175,7 @@ export function ZhiStatsDashboard({
                 }
             `}</style>
 
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-3 px-4 pt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-6">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-3 px-4 pt-6 sm:grid-cols-2 sm:gap-4 sm:px-6 lg:grid-cols-3 lg:gap-6 lg:px-8">
         {/* Card 1: Interactive Shutter Count */}
         <ShutterCountCard
           photoCount={stats.photoCount}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 
 type LikeButtonProps = {
   slug: string;
@@ -21,6 +22,7 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lastClickTime = useRef<number>(0);
+  const prefersReducedMotion = useReducedMotion();
 
   const [displayState, setDisplayState] = useState<LikeState>(serverState);
 
@@ -127,25 +129,45 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
     }
   };
 
+  // Animation variants
+  const buttonVariants = {
+    tap: { scale: 0.94 },
+    hover: { scale: 1.03 },
+  };
+
+  const heartVariants = {
+    liked: {
+      scale: [1, 1.3, 1],
+      transition: { duration: 0.3, ease: "easeOut" as const },
+    },
+    idle: { scale: 1 },
+  };
+
   return (
     <div className="flex flex-col gap-2">
-      <button
+      <motion.button
         onClick={handleLike}
         disabled={displayState.isLiked || isSubmitting || isInitialLoading}
         data-testid="like-button"
-        className={`flex items-center gap-2 rounded-lg border px-4 py-2 transition-all ${displayState.isLiked
+        variants={prefersReducedMotion ? undefined : buttonVariants}
+        whileTap={prefersReducedMotion ? undefined : "tap"}
+        whileHover={prefersReducedMotion ? undefined : "hover"}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        className={`flex items-center gap-2 rounded-lg border px-4 py-2 transition-colors ${displayState.isLiked
           ? "border-red-300 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-950 dark:text-red-400"
           : "border-stone-200 bg-white text-stone-700 hover:border-red-300 hover:bg-red-50 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-red-800 dark:hover:bg-red-950"
           } ${isSubmitting || isInitialLoading ? "cursor-wait opacity-50" : ""} ${displayState.isLiked ? "cursor-not-allowed" : "cursor-pointer"}`}
         aria-label={displayState.isLiked ? "Already liked" : "Like this post"}
         aria-live="polite"
       >
-        <svg
-          className={`h-5 w-5 transition-all ${displayState.isLiked ? "scale-110" : ""} ${isSubmitting ? "animate-pulse" : ""}`}
+        <motion.svg
+          className="h-5 w-5"
           fill={displayState.isLiked ? "currentColor" : "none"}
           stroke="currentColor"
           viewBox="0 0 24 24"
           aria-hidden="true"
+          variants={prefersReducedMotion ? undefined : heartVariants}
+          animate={displayState.isLiked ? "liked" : "idle"}
         >
           <path
             strokeLinecap="round"
@@ -153,20 +175,24 @@ export function LikeButton({ slug, locale = "EN" }: LikeButtonProps) {
             strokeWidth={2}
             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
           />
-        </svg>
+        </motion.svg>
         <span className="font-medium">{displayState.likeCount}</span>
         {displayState.isLiked && <span className="text-xs">Liked</span>}
         {isSubmitting && <span className="text-xs">Saving...</span>}
-      </button>
+      </motion.button>
 
       {error && (
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
           className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 dark:border-red-900 dark:bg-red-950 dark:text-red-400"
           role="alert"
         >
           {error}
-        </div>
+        </motion.div>
       )}
     </div>
   );
 }
+

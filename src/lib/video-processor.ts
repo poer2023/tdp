@@ -211,18 +211,19 @@ export async function generatePreviewVideo(
     await execCommand("ffmpeg", [
         "-y", // Overwrite output
         "-i", inputPath,
-        // Video: H.264 with low bitrate
+        // Video: H.264 optimized for web
         "-c:v", "libx264",
-        "-preset", "medium",
-        "-crf", "28", // Higher CRF = smaller file
+        "-preset", "faster", // 2x faster than "medium", good quality tradeoff
+        "-crf", "24", // Better quality than 28, still reasonable file size
+        "-tune", "fastdecode", // Optimize for web playback
         "-b:v", cfg.previewBitrate,
         "-maxrate", cfg.previewBitrate,
         "-bufsize", "1M",
         // Scale to preview width
         "-vf", `scale=${cfg.previewWidth}:-2`,
-        // Audio: AAC with low bitrate (preserve audio)
+        // Audio: AAC with reasonable quality
         "-c:a", "aac",
-        "-b:a", "64k", // 64kbps audio is sufficient for web
+        "-b:a", "96k", // Slightly better audio quality for web
         // Web optimization
         "-movflags", "+faststart",
         // Output format

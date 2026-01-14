@@ -1,8 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import type { PublicPost } from "@/lib/posts";
 import { toOptimizedImageUrl } from "@/lib/image-proxy";
 import { localePath } from "@/lib/locale-path";
+import { useTilt } from "@/hooks/use-tilt";
 
 type PostCardPost = Pick<PublicPost, "id" | "title" | "slug" | "excerpt" | "tags"> & {
   coverImagePath?: string | null;
@@ -30,9 +33,15 @@ export function PostCard({ post, locale = "zh", onClick }: PostCardProps) {
       ? "草稿"
       : "Draft");
 
+  // 3D Tilt effect for enhanced interactivity
+  const { ref, style, handlers } = useTilt<HTMLElement>({ maxTilt: 6, scale: 1.01 });
+
   return (
     <article
-      className="group overflow-hidden border border-stone-200 bg-white transition dark:border-stone-800 dark:bg-stone-900"
+      ref={ref}
+      style={style}
+      {...handlers}
+      className="group overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm transition-shadow hover:shadow-lg dark:border-stone-800 dark:bg-stone-900 card-hover-glow"
       onClick={onClick}
     >
       <div className="relative aspect-[16/9] overflow-hidden bg-stone-100 dark:bg-stone-800">
@@ -81,3 +90,4 @@ export function PostCard({ post, locale = "zh", onClick }: PostCardProps) {
 
 // Alias for backwards compatibility
 export { PostCard as ZhiPostCard };
+

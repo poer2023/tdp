@@ -10,6 +10,8 @@ import type { HeroImageItem } from "@/components/zhi/hero";
 import { getZhiProfile } from "@/lib/zhi-profile";
 import { getAtAGlanceStatus, formatRelativeTime } from "@/lib/user-status";
 import { getMomentImageUrl } from "@/lib/moment-images";
+import { generateWebSiteSchema, generatePersonSchema } from "@/lib/seo-schemas";
+import { safeJsonLd } from "@/lib/safe-json-ld";
 
 // ISR: Force static generation for CDN caching
 // This ensures cache-control is not "no-store" and page can be cached at edge
@@ -156,14 +158,28 @@ export default async function LocalizedHomePage({ params }: PageProps) {
     videoSrc: item.videoUrl || undefined,
   }));
 
+  // Generate JSON-LD structured data for SEO
+  const profileData = getZhiProfile(locale === "zh" ? "zh" : "en");
+  const websiteSchema = generateWebSiteSchema(locale);
+  const personSchema = generatePersonSchema(profileData);
+
   return (
     <>
+      {/* JSON-LD Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(personSchema) }}
+      />
       <ZhiHeader />
       <main>
         <ZhiHomePage
           feedItems={feedItems}
           heroImages={heroImages.length > 0 ? heroImages : undefined}
-          profileData={getZhiProfile(locale === "zh" ? "zh" : "en")}
+          profileData={profileData}
           statusData={{
             items: statusData.items,
             updatedAt: formatRelativeTime(statusData.updatedAt, locale),

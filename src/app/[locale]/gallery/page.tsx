@@ -6,6 +6,8 @@ import type { ZhiGalleryItem } from "@/components/zhi";
 import { GalleryCategoryTabs } from "@/components/gallery/gallery-category-tabs";
 import { localePath } from "@/lib/locale-path";
 import { GalleryMapWrapper } from "@/components/gallery/gallery-map-wrapper";
+import { generateImageGallerySchema } from "@/lib/seo-schemas";
+import { safeJsonLd } from "@/lib/safe-json-ld";
 
 // ISR: Revalidate every 5 minutes for gallery updates with CDN caching
 export const revalidate = 300; // 5 minutes
@@ -90,8 +92,22 @@ export default async function LocalizedGalleryPage({ params, searchParams }: Pag
   // Convert to Zhi gallery format
   const galleryItems: ZhiGalleryItem[] = images.map((img) => toGalleryItem(img, l));
 
+  // Generate JSON-LD structured data for SEO
+  const featuredImages = images.slice(0, 5).map((img) => ({
+    url: img.mediumPath || img.filePath,
+    title: img.title || undefined,
+    width: img.width || undefined,
+    height: img.height || undefined,
+  }));
+  const imageGallerySchema = generateImageGallerySchema(l, images.length, featuredImages);
+
   return (
     <>
+      {/* JSON-LD Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(imageGallerySchema) }}
+      />
       <ZhiHeader />
       <main className="min-h-screen bg-stone-50 dark:bg-stone-950">
         {/* Category Tabs & Navigation */}
