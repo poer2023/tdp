@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { extractVideoThumbnail } from "@/lib/video-thumbnail";
 import { videoLogger } from "@/lib/video-debug-logger";
-import { convertToMomentVideoData, type VideoUploadResponse } from "@/lib/video-types";
+import { convertToMomentVideoData } from "@/lib/video-types";
 
 type LocalImage = { file: File; url: string };
 type LocalVideo = { file: File; url: string; thumbnail?: string };
@@ -235,61 +235,6 @@ function MomentComposerCore() {
             fileType: video.file.type,
           });
 
-          const normalizeUploadedVideo = (uploadData: any) => {
-            if (!uploadData || typeof uploadData !== "object") return null;
-
-            const rawVideo = uploadData.video ?? null;
-            const rawImage = uploadData.image ?? null;
-            const url =
-              (typeof rawVideo?.url === "string" && rawVideo.url) ||
-              (typeof rawVideo?.filePath === "string" && rawVideo.filePath) ||
-              (typeof uploadData.videoUrl === "string" && uploadData.videoUrl) ||
-              (typeof rawImage?.filePath === "string" && rawImage.filePath) ||
-              (typeof rawImage?.url === "string" && rawImage.url) ||
-              (typeof uploadData.url === "string" && uploadData.url) ||
-              "";
-
-            if (!url) return null;
-
-            const previewUrl =
-              (typeof rawVideo?.previewUrl === "string" && rawVideo.previewUrl) ||
-              (typeof rawImage?.mediumPath === "string" && rawImage.mediumPath) ||
-              (typeof rawImage?.smallThumbPath === "string" && rawImage.smallThumbPath) ||
-              (typeof uploadData.videoUrl === "string" && uploadData.videoUrl) ||
-              url;
-
-            const thumbnailUrl =
-              (typeof rawVideo?.thumbnailUrl === "string" && rawVideo.thumbnailUrl) ||
-              (typeof rawImage?.smallThumbPath === "string" && rawImage.smallThumbPath) ||
-              (typeof rawImage?.microThumbPath === "string" && rawImage.microThumbPath) ||
-              "";
-
-            const normalizedData = {
-              url,
-              previewUrl,
-              thumbnailUrl,
-              duration: typeof rawVideo?.duration === "number" ? rawVideo.duration : undefined,
-              w:
-                typeof rawVideo?.width === "number"
-                  ? rawVideo.width
-                  : typeof rawVideo?.w === "number"
-                    ? rawVideo.w
-                    : typeof rawImage?.width === "number"
-                      ? rawImage.width
-                      : undefined,
-              h:
-                typeof rawVideo?.height === "number"
-                  ? rawVideo.height
-                  : typeof rawVideo?.h === "number"
-                    ? rawVideo.h
-                    : typeof rawImage?.height === "number"
-                      ? rawImage.height
-                      : undefined,
-            };
-
-            videoLogger.data('normalized-video-data', normalizedData);
-            return normalizedData;
-          };
 
           const formData = new FormData();
           formData.append("file", video.file);

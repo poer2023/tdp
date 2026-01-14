@@ -74,6 +74,7 @@ function AutoplayVideo({
     >
       {/* Poster image - shows immediately while video loads */}
       {video.thumbnailUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={video.thumbnailUrl}
           alt=""
@@ -433,6 +434,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
               <div className="absolute inset-0 z-0">
                 {/* Poster image - shows immediately */}
                 {moment.videos![0].thumbnailUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={moment.videos![0].thumbnailUrl}
                     alt=""
