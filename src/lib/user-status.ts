@@ -5,7 +5,7 @@
 
 import prisma from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
-import { shouldSkipDb } from "@/lib/utils/db-fallback";
+import { shouldSkipDb, withDbFallback } from "@/lib/utils/db-fallback";
 
 export interface StatusItem {
     key: string;
@@ -220,6 +220,12 @@ async function _fetchAtAGlanceStatus(): Promise<AtAGlanceData> {
     };
 }
 
+// Fallback data when database is unavailable
+const FALLBACK_AT_A_GLANCE: AtAGlanceData = {
+    items: [],
+    updatedAt: new Date(),
+};
+
 // Cached version with 5 minute TTL
 const getCachedAtAGlanceStatus = unstable_cache(
     _fetchAtAGlanceStatus,
@@ -232,7 +238,11 @@ const getCachedAtAGlanceStatus = unstable_cache(
  * Can be called from Server Components directly
  */
 export async function getAtAGlanceStatus(): Promise<AtAGlanceData> {
-    return getCachedAtAGlanceStatus();
+    return withDbFallback(
+        () => getCachedAtAGlanceStatus(),
+        async () => FALLBACK_AT_A_GLANCE,
+        "user-status:getAtAGlanceStatus"
+    );
 }
 
 /**

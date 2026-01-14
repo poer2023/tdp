@@ -481,7 +481,7 @@ export const GallerySection: React.FC = () => {
                                 {galleryItems.map((item, index) => (
                                     <div key={item.id} className="relative group rounded-lg overflow-hidden bg-stone-200 dark:bg-stone-800 aspect-square">
                                         <AdminImage
-                                            src={item.smallThumbPath || item.thumbnail || item.url || item.filePath}
+                                            src={item.type === 'video' ? (item.microThumbPath || item.thumbnail || item.smallThumbPath || item.url || item.filePath) : (item.smallThumbPath || item.thumbnail || item.url || item.filePath)}
                                             alt={item.title || ''}
                                             className="w-full h-full"
                                             containerClassName="w-full h-full"

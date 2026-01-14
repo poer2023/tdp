@@ -3,7 +3,7 @@
 import React from 'react';
 import {
     FileText, Image as ImageIcon, Database,
-    Plus, Trash2, Edit2, X,
+    Plus, Trash2, Edit2, X, Play,
     Briefcase, Camera,
     UploadCloud, Check, Loader2,
     Activity, Clock, TrendingUp, PieChart as PieIcon,
@@ -224,23 +224,24 @@ export const RichMomentItem: React.FC<{ moment: Moment, onEdit: () => void, onDe
             </div>
         )}
         {moment.videos && moment.videos.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto pb-1 mt-2">
-                {moment.videos.map((video, idx) => (
-                    <div key={idx} className="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-blue-200 dark:border-blue-700 relative">
-                        <AdminImage
-                            src={video.thumbnailUrl}
-                            alt=""
-                            className="w-full h-full"
-                            containerClassName="w-full h-full"
-                            sizes="64px"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                            <div className="w-4 h-4 bg-white/90 rounded-full flex items-center justify-center">
-                                <div className="w-0 h-0 border-l-[6px] border-l-stone-900 border-y-[4px] border-y-transparent ml-0.5" />
+            <div className="flex gap-2 overflow-x-auto pb-1">
+                {moment.videos.map((video: any, idx: number) => {
+                    const thumbUrl = video.thumbnailUrl || video.previewUrl || "";
+                    return (
+                        <div key={`video-${idx}`} className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-100 dark:border-stone-700">
+                            <AdminImage
+                                src={thumbUrl}
+                                alt=""
+                                className="w-full h-full"
+                                containerClassName="w-full h-full"
+                                sizes="64px"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                <Play size={16} className="text-white fill-white" />
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         )}
     </div>

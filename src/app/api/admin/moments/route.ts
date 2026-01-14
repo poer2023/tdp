@@ -44,77 +44,88 @@ export async function POST(request: NextRequest) {
     // Validate and filter images - reject blob URLs which are temporary browser-only URLs
     const images = Array.isArray(body.images)
       ? body.images
-        .map((img: any) => ({
-          url: typeof img?.url === "string" ? img.url : "",
-          w: typeof img?.w === "number" ? img.w : null,
-          h: typeof img?.h === "number" ? img.h : null,
-          alt: typeof img?.alt === "string" ? img.alt : null,
-          previewUrl: typeof img?.previewUrl === "string" ? img.previewUrl : null,
-          microThumbUrl: typeof img?.microThumbUrl === "string" ? img.microThumbUrl : null,
-          smallThumbUrl: typeof img?.smallThumbUrl === "string" ? img.smallThumbUrl : null,
-          mediumUrl: typeof img?.mediumUrl === "string" ? img.mediumUrl : null,
-        }))
-        .filter((img: {
-          url: string;
-          w: number | null;
-          h: number | null;
-          alt: string | null;
-          previewUrl: string | null;
-          microThumbUrl: string | null;
-          smallThumbUrl: string | null;
-          mediumUrl: string | null;
-        }) => {
-          // Reject blob URLs - they are temporary browser URLs that won't work on server
-          if (img.url.startsWith("blob:")) {
-            console.warn("[Admin] Rejected blob URL in moment images:", img.url);
-            return false;
-          }
-          // Reject empty URLs
-          if (!img.url) {
-            return false;
-          }
-          // Only allow valid URL patterns
-          const isValidUrl =
-            img.url.startsWith("/") || // Relative URLs (local storage)
-            img.url.startsWith("http://") ||
-            img.url.startsWith("https://");
-          if (!isValidUrl) {
-            console.warn("[Admin] Rejected invalid URL in moment images:", img.url);
-            return false;
-          }
-          return true;
-        })
+          .map((img: any) => ({
+            url: typeof img?.url === "string" ? img.url : "",
+            w: typeof img?.w === "number" ? img.w : null,
+            h: typeof img?.h === "number" ? img.h : null,
+            alt: typeof img?.alt === "string" ? img.alt : null,
+            previewUrl: typeof img?.previewUrl === "string" ? img.previewUrl : null,
+            microThumbUrl: typeof img?.microThumbUrl === "string" ? img.microThumbUrl : null,
+            smallThumbUrl: typeof img?.smallThumbUrl === "string" ? img.smallThumbUrl : null,
+            mediumUrl: typeof img?.mediumUrl === "string" ? img.mediumUrl : null,
+          }))
+          .filter((img: {
+            url: string;
+            w: number | null;
+            h: number | null;
+            alt: string | null;
+            previewUrl: string | null;
+            microThumbUrl: string | null;
+            smallThumbUrl: string | null;
+            mediumUrl: string | null;
+          }) => {
+            // Reject blob URLs - they are temporary browser URLs that won't work on server
+            if (img.url.startsWith("blob:")) {
+              console.warn("[Admin] Rejected blob URL in moment images:", img.url);
+              return false;
+            }
+            // Reject empty URLs
+            if (!img.url) {
+              return false;
+            }
+            // Only allow valid URL patterns
+            const isValidUrl =
+              img.url.startsWith("/") || // Relative URLs (local storage)
+              img.url.startsWith("http://") ||
+              img.url.startsWith("https://");
+            if (!isValidUrl) {
+              console.warn("[Admin] Rejected invalid URL in moment images:", img.url);
+              return false;
+            }
+            return true;
+          })
       : [];
 
-    // Validate and filter videos
+    // Validate and filter videos - same pattern as images
     const videos = Array.isArray(body.videos)
       ? body.videos
-        .map((video: any) => ({
-          url: typeof video?.url === "string" ? video.url : "",
-          previewUrl: typeof video?.previewUrl === "string" ? video.previewUrl : null,
-          thumbnailUrl: typeof video?.thumbnailUrl === "string" ? video.thumbnailUrl : null,
-          duration: typeof video?.duration === "number" ? video.duration : null,
-          w: typeof video?.w === "number" ? video.w : null,
-          h: typeof video?.h === "number" ? video.h : null,
-        }))
-        .filter((video: { url: string }) => {
-          if (video.url.startsWith("blob:")) {
-            console.warn("[Admin] Rejected blob URL in videos:", video.url);
-            return false;
-          }
-          if (!video.url) return false;
-          const isValidUrl =
-            video.url.startsWith("/") ||
-            video.url.startsWith("http://") ||
-            video.url.startsWith("https://");
-          if (!isValidUrl) {
-            console.warn("[Admin] Rejected invalid URL in videos:", video.url);
-            return false;
-          }
-          return true;
-        })
+          .map((vid: any) => ({
+            url: typeof vid?.url === "string" ? vid.url : "",
+            previewUrl: typeof vid?.previewUrl === "string" ? vid.previewUrl : null,
+            thumbnailUrl: typeof vid?.thumbnailUrl === "string" ? vid.thumbnailUrl : null,
+            duration: typeof vid?.duration === "number" ? vid.duration : null,
+            w: typeof vid?.w === "number" ? vid.w : null,
+            h: typeof vid?.h === "number" ? vid.h : null,
+          }))
+          .filter((vid: {
+            url: string;
+            previewUrl: string | null;
+            thumbnailUrl: string | null;
+            duration: number | null;
+            w: number | null;
+            h: number | null;
+          }) => {
+            // Reject blob URLs - they are temporary browser URLs that won't work on server
+            if (vid.url.startsWith("blob:")) {
+              console.warn("[Admin] Rejected blob URL in moment videos:", vid.url);
+              return false;
+            }
+            // Reject empty URLs
+            if (!vid.url) {
+              return false;
+            }
+            // Only allow valid URL patterns
+            const isValidUrl =
+              vid.url.startsWith("/") || // Relative URLs (local storage)
+              vid.url.startsWith("http://") ||
+              vid.url.startsWith("https://");
+            if (!isValidUrl) {
+              console.warn("[Admin] Rejected invalid URL in moment videos:", vid.url);
+              return false;
+            }
+            return true;
+          })
       : [];
-
 
     const moment = await prisma.moment.create({
       data: {
