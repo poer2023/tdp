@@ -25,6 +25,7 @@ export function useComments({ momentId }: UseCommentsOptions): UseCommentsReturn
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const fetchComments = useCallback(async () => {
+        console.log("[DEBUG] use-comments fetchComments called, momentId:", momentId);
         setIsLoading(true);
         try {
             const res = await fetch(`/api/moments/${momentId}/comments`);
@@ -39,10 +40,8 @@ export function useComments({ momentId }: UseCommentsOptions): UseCommentsReturn
         }
     }, [momentId]);
 
-    // Auto-fetch on mount and when momentId changes (best practice: hook manages its own data lifecycle)
-    useEffect(() => {
-        fetchComments();
-    }, [fetchComments]);
+    // NOTE: Auto-fetch removed - caller is responsible for calling refetch()
+    // This prevents infinite loops when multiple components/effects trigger fetches
 
     const handleSubmitComment = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();

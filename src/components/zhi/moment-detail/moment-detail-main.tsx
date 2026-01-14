@@ -43,7 +43,15 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
   // Use extracted hooks
   const commentsHook = useComments({ momentId: moment.id });
   const { refetch } = commentsHook;
-  const carousel = useImageCarousel({ imageCount });
+  const {
+    currentImageIndex,
+    setCurrentImageIndex,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    goToNext,
+    goToPrev,
+  } = useImageCarousel({ imageCount });
 
   const t = (key: string) => getMomentDetailTranslation(locale, key);
 
@@ -58,23 +66,30 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
         }
       }
       if (imageCount > 1 && !drawerOpen) {
-        if (e.key === "ArrowLeft") carousel.goToPrev();
-        else if (e.key === "ArrowRight") carousel.goToNext();
+        if (e.key === "ArrowLeft") goToPrev();
+        else if (e.key === "ArrowRight") goToNext();
       }
     },
-    [onClose, drawerOpen, imageCount, carousel]
+    [onClose, drawerOpen, imageCount, goToPrev, goToNext]
   );
 
+  // Effect 1: 数据获取 - 仅在 momentId 变化时执行一次
+  useEffect(() => {
+    console.log("[DEBUG] moment-detail refetch triggered, moment.id:", moment.id);
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moment.id]);
+
+  // Effect 2: 键盘事件和 body 样式
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     document.body.style.overflow = "hidden";
-    refetch();
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
-  }, [handleKeyDown, refetch]);
+  }, [handleKeyDown]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
@@ -113,15 +128,15 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
 
         <div
           className="flex h-full w-full items-center justify-center relative"
-          onTouchStart={carousel.handleTouchStart}
-          onTouchMove={carousel.handleTouchMove}
-          onTouchEnd={carousel.handleTouchEnd}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           {hasImages ? (
             <>
               <Image
-                src={moment.images?.[carousel.currentImageIndex]?.mediumUrl || moment.images?.[carousel.currentImageIndex]?.url || ""}
-                alt={`Moment image ${carousel.currentImageIndex + 1}`}
+                src={moment.images?.[currentImageIndex]?.mediumUrl || moment.images?.[currentImageIndex]?.url || ""}
+                alt={`Moment image ${currentImageIndex + 1}`}
                 width={1200}
                 height={900}
                 className="max-h-full max-w-full object-contain select-none pointer-events-none"
@@ -133,8 +148,8 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
                   {moment.images!.map((_, idx) => (
                     <button
                       key={idx}
-                      onClick={(e) => { e.stopPropagation(); carousel.setCurrentImageIndex(idx); }}
-                      className={`h-2 rounded-full transition-all ${idx === carousel.currentImageIndex ? "w-6 bg-white" : "w-2 bg-white/50 hover:bg-white/70"}`}
+                      onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
+                      className={`h-2 rounded-full transition-all ${idx === currentImageIndex ? "w-6 bg-white" : "w-2 bg-white/50 hover:bg-white/70"}`}
                     />
                   ))}
                 </div>
