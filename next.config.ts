@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
   }),
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      bodySizeLimit: "100mb", // Support video uploads up to 100MB
     },
     globalNotFound: true,
   },

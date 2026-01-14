@@ -104,7 +104,7 @@ function ProjectSlide({ project, index, total: _total }: ProjectSlideProps) {
       onMouseMove={handleMouseMove}
       className="relative flex min-h-[100dvh] w-full snap-start items-center overflow-hidden bg-stone-50 dark:bg-stone-950"
     >
-      <div className="mx-auto flex h-full w-full max-w-7xl flex-col gap-12 px-4 py-20 sm:px-6 lg:flex-row lg:gap-20 lg:px-8 lg:py-0">
+      <div className="mx-auto flex h-full w-full max-w-6xl flex-col gap-12 px-4 py-20 sm:px-6 lg:flex-row lg:gap-20 lg:px-8 lg:py-0">
         {/* Left: Content Side */}
         <motion.div
           className={`flex flex-1 flex-col justify-center order-2 ${isEven ? "lg:order-1" : "lg:order-2"}`}
