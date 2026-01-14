@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { extractVideoThumbnail } from "@/lib/video-thumbnail";
+import { videoLogger } from "@/lib/video-debug-logger";
+import { convertToMomentVideoData, type VideoUploadResponse } from "@/lib/video-types";
 
 type LocalImage = { file: File; url: string };
 type LocalVideo = { file: File; url: string; thumbnail?: string };
@@ -227,6 +229,12 @@ function MomentComposerCore() {
       } | null = null;
       if (video) {
         try {
+          videoLogger.start('video-upload', {
+            fileName: video.file.name,
+            fileSize: video.file.size,
+            fileType: video.file.type,
+          });
+
           const normalizeUploadedVideo = (uploadData: any) => {
             if (!uploadData || typeof uploadData !== "object") return null;
 
@@ -256,7 +264,7 @@ function MomentComposerCore() {
               (typeof rawImage?.microThumbPath === "string" && rawImage.microThumbPath) ||
               "";
 
-            return {
+            const normalizedData = {
               url,
               previewUrl,
               thumbnailUrl,
@@ -278,10 +286,15 @@ function MomentComposerCore() {
                       ? rawImage.height
                       : undefined,
             };
+
+            videoLogger.data('normalized-video-data', normalizedData);
+            return normalizedData;
           };
 
           const formData = new FormData();
           formData.append("file", video.file);
+
+          videoLogger.step('uploading-to-api', { endpoint: '/api/admin/video/upload' });
 
           const uploadRes = await fetch("/api/admin/video/upload", {
             method: "POST",
@@ -290,16 +303,25 @@ function MomentComposerCore() {
 
           if (uploadRes.ok) {
             const uploadData = await uploadRes.json().catch(() => ({}));
-            uploadedVideo = normalizeUploadedVideo(uploadData);
+            videoLogger.data('api-response', uploadData);
+
+            uploadedVideo = convertToMomentVideoData(uploadData);
+
             if (!uploadedVideo) {
+              videoLogger.error('conversion-failed', { uploadData });
               throw new Error("视频上传响应缺少可用数据");
             }
+
+            videoLogger.success('video-upload-complete', uploadedVideo);
           } else {
             const errorText = await uploadRes.text();
+            videoLogger.error('api-request-failed', { status: uploadRes.status, error: errorText });
             throw new Error(errorText || "视频上传失败");
           }
         } catch (error) {
           console.error("Video upload failed:", error);
+          videoLogger.error('video-upload-error', error);
+          videoLogger.end('video-upload', { success: false });
           throw error;
         }
       }
@@ -530,6 +552,12 @@ function MomentComposerCore() {
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
+                            videoLogger.start('video-selection', {
+                              fileName: file.name,
+                              fileSize: file.size,
+                              fileType: file.type,
+                            });
+
                             if (video) {
                               URL.revokeObjectURL(video.url);
                               if (video.thumbnail?.startsWith('blob:')) {
@@ -537,14 +565,23 @@ function MomentComposerCore() {
                               }
                             }
                             const url = URL.createObjectURL(file);
+
                             // Extract thumbnail from first frame
                             let thumbnail: string | undefined;
                             try {
+                              videoLogger.step('extracting-thumbnail');
                               thumbnail = await extractVideoThumbnail(file);
+                              videoLogger.success('thumbnail-extracted', {
+                                thumbnailLength: thumbnail?.length,
+                                thumbnailPreview: thumbnail?.substring(0, 50),
+                              });
                             } catch (error) {
                               console.warn("Failed to extract video thumbnail:", error);
+                              videoLogger.warn('thumbnail-extraction-failed', error);
                             }
+
                             setVideo({ file, url, thumbnail });
+                            videoLogger.end('video-selection', { success: true, hasThumbnail: !!thumbnail });
                           }
                         }}
                       />

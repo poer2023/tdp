@@ -8,6 +8,7 @@ import { getHtmlLang } from "@/lib/i18n";
 import { HtmlLangSync } from "@/components/layout/html-lang-sync";
 import { ConfirmProvider } from "@/hooks/use-confirm";
 import { MomentComposerLoader } from "@/components/moments/moment-composer-loader";
+import { VideoDebugInit } from "@/components/video-debug-init";
 
 // ISR: Allow Next.js to auto-detect caching strategy
 export const dynamic = "auto";
@@ -120,6 +121,9 @@ export default async function RootLayout({
 
               {/* Global mobile composer FAB (hidden on admin via client check) */}
               <MomentComposerLoader />
+
+              {/* Video debug logger initialization */}
+              <VideoDebugInit />
             </ConfirmProvider>
           </SessionProvider>
         </ThemeProvider>

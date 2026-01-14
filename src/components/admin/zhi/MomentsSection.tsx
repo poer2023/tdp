@@ -9,6 +9,8 @@ import {
 } from './AdminComponents';
 import { useAdminLocale } from './useAdminLocale';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { videoLogger } from '@/lib/video-debug-logger';
+import { convertToMomentVideoData, type VideoUploadResponse } from '@/lib/video-types';
 
 export const MomentsSection: React.FC = () => {
     const { moments, addMoment, updateMoment, deleteMoment, loading } = useData();
@@ -38,19 +40,122 @@ export const MomentsSection: React.FC = () => {
         autoUpload: true,
     });
 
-    const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
-            addFiles(files);
+
+            // 分离图片和视频文件
+            for (const file of files) {
+                const isVideo = file.type.startsWith('video/');
+
+                if (isVideo) {
+                    videoLogger.start('admin-video-upload', {
+                        fileName: file.name,
+                        fileSize: file.size,
+                        fileType: file.type,
+                    });
+
+                    // 视频文件使用专用endpoint
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    try {
+                        videoLogger.step('uploading-to-video-api');
+                        const response = await fetch('/api/admin/video/upload', {
+                            method: 'POST',
+                            body: formData,
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json() as VideoUploadResponse;
+                            videoLogger.data('video-api-response', data);
+
+                            const videoData = convertToMomentVideoData(data);
+                            if (videoData) {
+                                videoLogger.success('admin-video-upload-complete', videoData);
+                                // 使用函数式更新直接添加到 editingMoment.videos
+                                setEditingMoment(prev => ({
+                                    ...prev,
+                                    videos: [...(prev?.videos || []), videoData]
+                                }));
+                                videoLogger.data('moment-videos-updated', videoData);
+                                // 添加到队列显示（临时方案）
+                                addFiles([file]);
+                            } else {
+                                videoLogger.error('video-conversion-failed', { data });
+                            }
+                        } else {
+                            const errorText = await response.text();
+                            videoLogger.error('video-api-failed', { status: response.status, error: errorText });
+                        }
+                    } catch (error) {
+                        videoLogger.error('video-upload-error', error);
+                    }
+                    videoLogger.end('admin-video-upload', { success: true });
+                } else {
+                    // 图片文件使用原有逻辑
+                    addFiles([file]);
+                }
+            }
         }
     }, [addFiles]);
 
-    const handleDrop = useCallback((e: React.DragEvent) => {
+    const handleDrop = useCallback(async (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragOver(false);
         if (!e.dataTransfer) return;
         const files = Array.from(e.dataTransfer.files);
-        addFiles(files);
+
+        // 与 handleFileSelect 相同的逻辑
+        for (const file of files) {
+            const isVideo = file.type.startsWith('video/');
+
+            if (isVideo) {
+                videoLogger.start('admin-video-upload-drop', {
+                    fileName: file.name,
+                    fileSize: file.size,
+                    fileType: file.type,
+                });
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    videoLogger.step('uploading-to-video-api');
+                    const response = await fetch('/api/admin/video/upload', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json() as VideoUploadResponse;
+                        videoLogger.data('video-api-response', data);
+
+                        const videoData = convertToMomentVideoData(data);
+                        if (videoData) {
+                            videoLogger.success('admin-video-upload-complete', videoData);
+                            // 使用函数式更新直接添加到 editingMoment.videos
+                            setEditingMoment(prev => ({
+                                ...prev,
+                                videos: [...(prev?.videos || []), videoData]
+                            }));
+                            videoLogger.data('moment-videos-updated', videoData);
+                            addFiles([file]);
+                        } else {
+                            videoLogger.error('video-conversion-failed', { data });
+                        }
+                    } else {
+                        const errorText = await response.text();
+                        videoLogger.error('video-api-failed', { status: response.status, error: errorText });
+                    }
+                } catch (error) {
+                    videoLogger.error('video-upload-error', error);
+                }
+                videoLogger.end('admin-video-upload-drop', { success: true });
+            } else {
+                addFiles([file]);
+            }
+        }
     }, [addFiles]);
 
     const handleRemoveFromQueue = useCallback((idx: number) => {
@@ -71,26 +176,21 @@ export const MomentsSection: React.FC = () => {
         if (!editingMoment?.content) return;
         setIsSaving(true);
 
-        // Get all successfully uploaded data (images and videos)
+        videoLogger.start('save-moment', {
+            hasVideos: (editingMoment.videos?.length || 0) > 0,
+            videosCount: editingMoment.videos?.length || 0,
+        });
+        videoLogger.data('moment-videos-before-save', editingMoment.videos);
+
+        // Get all successfully uploaded data (images)
         const uploadedData = getUploadedData();
         const uploadedImages: MomentImage[] = [];
-        const uploadedVideos: { url: string; previewUrl?: string; thumbnailUrl?: string; duration?: number; w?: number; h?: number }[] = [];
 
         uploadedData.forEach((data) => {
             const img = data.image as Record<string, unknown> | undefined;
             const isVideo = data.isVideo === true || (img?.mimeType as string)?.startsWith('video/');
 
-            if (isVideo) {
-                // Handle video upload result
-                uploadedVideos.push({
-                    url: (data.videoUrl as string) || (img?.filePath as string) || '',
-                    previewUrl: (data.videoUrl as string) || (img?.filePath as string) || '',
-                    thumbnailUrl: '',
-                    duration: 0,
-                    w: img?.width as number | undefined,
-                    h: img?.height as number | undefined,
-                });
-            } else if (img?.filePath) {
+            if (!isVideo && img?.filePath) {
                 // Handle image upload result
                 uploadedImages.push({
                     url: img.filePath as string,
@@ -111,7 +211,8 @@ export const MomentsSection: React.FC = () => {
         const momentData = {
             ...editingMoment,
             images: [...(editingMoment.images || []), ...uploadedImages],
-            videos: [...(editingMoment.videos || []), ...uploadedVideos],
+            // videos 已经在上传时添加到 editingMoment 中
+            videos: editingMoment.videos || [],
             id: editingMoment.id || Math.random().toString(36).substr(2, 9),
             date: editingMoment.date || 'Just now',
             likes: editingMoment.likes || 0,
@@ -121,11 +222,16 @@ export const MomentsSection: React.FC = () => {
             visibility: editingMoment.visibility || 'PUBLIC'
         } as Moment;
 
+        videoLogger.data('moment-data-before-save', momentData);
+        videoLogger.data('moment-videos', momentData.videos);
+
         try {
             if (editingMoment.id) await updateMoment(momentData);
             else await addMoment(momentData);
+            videoLogger.success('moment-saved', { id: momentData.id, videosCount: momentData.videos?.length });
         } catch (error) {
             console.error('Failed to save moment:', error);
+            videoLogger.error('moment-save-failed', error);
             setIsSaving(false);
             return;
         }
@@ -134,6 +240,7 @@ export const MomentsSection: React.FC = () => {
         clearQueue();
         setManualUrl('');
         setIsSaving(false);
+        videoLogger.end('save-moment', { success: true });
     };
 
     const handleCancel = () => {

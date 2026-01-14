@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import { Heart, MessageCircle } from "lucide-react";
 import { LazyMotion, domMax, m, useMotionTemplate, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { SmoothImage } from "@/components/ui/smooth-image";
+import { videoLogger } from "@/lib/video-debug-logger";
+import { useVideoAutoplay } from "./hooks/use-video-autoplay";
 
 // Image type matching FeedImage
 interface MomentImageData {
@@ -48,6 +50,7 @@ interface MomentCardProps {
 
 // Autoplay video component for moment cards (muted, looped, low-res preview)
 // Uses previewUrl for lightweight autoplay, poster for initial frame
+// Performance: Only plays when in viewport (via IntersectionObserver)
 function AutoplayVideo({
   video,
   height = 320,
@@ -60,6 +63,9 @@ function AutoplayVideo({
   onClick?: () => void;
 }) {
   const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  // 智能播放控制：仅在视口内播放
+  useVideoAutoplay(videoRef);
 
   // Calculate width from aspect ratio
   const width = (video.w && video.h && video.h > 0)
@@ -80,12 +86,11 @@ function AutoplayVideo({
           className="absolute inset-0 h-full w-full object-cover"
         />
       )}
-      {/* Video - fades in when loaded, autoplay muted loop */}
+      {/* Video - fades in when loaded, controlled by IntersectionObserver */}
       <video
         ref={videoRef}
         src={video.previewUrl || video.url}
         poster={video.thumbnailUrl}
-        autoPlay
         muted
         loop
         playsInline
@@ -256,6 +261,18 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
   const hasVideos = moment.videos && moment.videos.length > 0;
   const hasMedia = hasImages || hasVideos;
 
+  // 日志：验证 moment 数据
+  React.useEffect(() => {
+    if (hasVideos) {
+      videoLogger.start('moment-card-display', {
+        momentId: moment.id,
+        videosCount: moment.videos?.length,
+      });
+      videoLogger.data('moment-videos-data', moment.videos);
+      videoLogger.end('moment-card-display', { hasVideos: true });
+    }
+  }, [moment.id, hasVideos, moment.videos]);
+
   // --- Physics & 3D Logic (Desktop) ---
   const ref = useRef<HTMLDivElement>(null);
 
@@ -358,14 +375,22 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
         <ThreadsImageGallery images={moment.images!} onImageClick={onClick} />
       )}
 
-      {/* Videos: Autoplay preview */}
+      {/* Videos: Autoplay preview gallery */}
       {!hasImages && hasVideos && (
         <div className="pl-4">
-          <AutoplayVideo
-            video={moment.videos![0]!}
-            height={GALLERY_HEIGHT}
-            onClick={onClick}
-          />
+          <div
+            className="flex gap-2 overflow-x-auto scrollbar-hide pr-4"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {moment.videos!.map((video, idx) => (
+              <AutoplayVideo
+                key={idx}
+                video={video}
+                height={GALLERY_HEIGHT}
+                onClick={onClick}
+              />
+            ))}
+          </div>
         </div>
       )}
 
@@ -444,7 +469,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
               </div>
             )}
 
-            {/* 2b. Video Layer - autoplay muted loop */}
+            {/* 2b. Video Layer - controlled by IntersectionObserver */}
             {!hasImages && hasVideos && moment.videos![0] && (
               <div className="absolute inset-0 z-0">
                 {/* Poster image - shows immediately */}
@@ -455,11 +480,27 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                 )}
-                {/* Video - fades in when loaded */}
+                {/* Video - fades in when loaded, controlled by IntersectionObserver */}
                 <video
+                  ref={(el) => {
+                    if (el) {
+                      // 为Desktop视频创建单独的IntersectionObserver
+                      const observer = new IntersectionObserver(
+                        ([entry]) => {
+                          if (entry.isIntersecting) {
+                            el.play().catch(() => { });
+                          } else {
+                            el.pause();
+                          }
+                        },
+                        { threshold: 0.3, rootMargin: '100px' }
+                      );
+                      observer.observe(el);
+                      return () => observer.disconnect();
+                    }
+                  }}
                   src={moment.videos![0].previewUrl || moment.videos![0].url}
                   poster={moment.videos![0].thumbnailUrl}
-                  autoPlay
                   muted
                   loop
                   playsInline

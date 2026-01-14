@@ -585,6 +585,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         id: m.id,
         content: m.content || '',
         images: m.images || [],
+        videos: m.videos || [],
         date: m.createdAt || new Date().toISOString(),
         happenedAt: m.happenedAt,
         tags: m.tags || [],
@@ -1007,6 +1008,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 body: JSON.stringify({
                     content: moment.content,
                     images: serializeMomentImages(moment.images),
+                    videos: moment.videos || [],  // 添加视频数据
                     tags: (moment.tags || []).map(tag => tag.trim()).filter(Boolean),
                     visibility: moment.visibility || 'PUBLIC',
                     status: moment.status || 'PUBLISHED',
@@ -1030,6 +1032,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 body: JSON.stringify({
                     content: updated.content,
                     images: serializeMomentImages(updated.images),
+                    videos: updated.videos || [],  // 添加视频数据
                     tags: (updated.tags || []).map(tag => tag.trim()).filter(Boolean),
                     visibility: updated.visibility || 'PUBLIC',
                     status: updated.status || 'PUBLISHED',
