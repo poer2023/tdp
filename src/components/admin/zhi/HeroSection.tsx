@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Link2, Loader2, Image as ImageIcon, FileText, Camera, Layers, Check, ChevronDown } from "lucide-react";
+import { Link2, Loader2, Image as ImageIcon, FileText, Camera, Layers, Check, ChevronDown, Video } from "lucide-react";
 import { useData } from "./store";
 import { AdminImage } from "../AdminImage";
 import { useAdminLocale } from "./useAdminLocale";
@@ -40,6 +40,10 @@ interface SourceImage {
   title?: string;
   createdAt: string;
   isSelected: boolean;
+  // Video fields
+  mediaType?: "image" | "video";
+  videoUrl?: string;
+  posterUrl?: string;
 }
 
 export const HeroSection: React.FC = () => {
@@ -148,6 +152,10 @@ export const HeroSection: React.FC = () => {
         url: image.url,
         sortOrder: heroImages.length,
         active: true,
+        // Pass video fields if this is a video
+        mediaType: image.mediaType || "image",
+        videoUrl: image.videoUrl,
+        posterUrl: image.posterUrl,
       });
     }
 
@@ -402,6 +410,13 @@ export const HeroSection: React.FC = () => {
                         <div className="bg-emerald-500 rounded-full p-1">
                           <Check size={12} className="text-white" />
                         </div>
+                      </div>
+                    )}
+                    {/* Video indicator badge */}
+                    {img.mediaType === "video" && (
+                      <div className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 flex items-center gap-0.5">
+                        <Video size={10} className="text-white" />
+                        <span className="text-[10px] text-white font-medium">视频</span>
                       </div>
                     )}
                   </button>

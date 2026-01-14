@@ -282,9 +282,19 @@ function ShuffleGrid({ heroImages }: { heroImages: HeroImageItem[] }) {
                   muted
                   loop
                   playsInline
-                  preload="metadata"
+                  preload="auto"
                   className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500"
-                  onLoadedData={(e) => e.currentTarget.classList.replace('opacity-0', 'opacity-100')}
+                  onCanPlayThrough={(e) => {
+                    e.currentTarget.classList.remove('opacity-0');
+                    e.currentTarget.classList.add('opacity-100');
+                  }}
+                  onLoadedData={(e) => {
+                    // Fallback for browsers that don't fire canplaythrough
+                    if (e.currentTarget.readyState >= 3) {
+                      e.currentTarget.classList.remove('opacity-0');
+                      e.currentTarget.classList.add('opacity-100');
+                    }
+                  }}
                 />
               </>
             ) : (

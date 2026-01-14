@@ -650,6 +650,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         url: h.url || '',
         sortOrder: h.sortOrder || 0,
         active: h.active !== false,
+        // Video fields
+        mediaType: h.mediaType || 'image',
+        videoUrl: h.videoUrl || null,
+        posterUrl: h.posterUrl || null,
     });
 
     const mapApiFriend = (f: any): Friend => ({
@@ -1280,6 +1284,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     url: image.url,
                     sortOrder: image.sortOrder || heroImages.length,
                     active: image.active !== false,
+                    // Video fields
+                    mediaType: image.mediaType || 'image',
+                    videoUrl: image.videoUrl || null,
+                    posterUrl: image.posterUrl || null,
                 }),
             });
             const data = await res.json();

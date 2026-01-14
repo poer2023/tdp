@@ -43,11 +43,19 @@ export async function POST(request: NextRequest) {
         ? body.sortOrder
         : 0;
 
+    // Extract video-related fields
+    const mediaType = body.mediaType === "video" ? "video" : "image";
+    const videoUrl = typeof body.videoUrl === "string" ? body.videoUrl.trim() || null : null;
+    const posterUrl = typeof body.posterUrl === "string" ? body.posterUrl.trim() || null : null;
+
     const image = await prisma.heroImage.create({
       data: {
         url,
         sortOrder,
         active: body.active === false ? false : true,
+        mediaType,
+        videoUrl,
+        posterUrl,
       },
     });
     // Invalidate hero images cache so homepage updates immediately

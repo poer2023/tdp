@@ -18,6 +18,10 @@ export interface SourceImage {
   title?: string;
   createdAt: string;
   isSelected: boolean;
+  // Video-related fields
+  mediaType?: "image" | "video";
+  videoUrl?: string;       // Video URL for playback
+  posterUrl?: string;      // Poster/thumbnail for video
 }
 
 async function requireAdmin() {
@@ -156,6 +160,8 @@ export async function GET(request: NextRequest) {
             mediumPath: true,
             title: true,
             createdAt: true,
+            mimeType: true,
+            livePhotoVideoPath: true,
           },
         })
       ]);
@@ -174,6 +180,9 @@ export async function GET(request: NextRequest) {
             img.mediumPath,
           ].some((u) => typeof u === "string" && heroUrls.has(u));
 
+          // Detect video based on mimeType
+          const isVideo = img.mimeType?.startsWith("video/");
+
           allImages.push({
             id: `gallery-${img.id}`,
             url: displayUrl,
@@ -183,6 +192,10 @@ export async function GET(request: NextRequest) {
             title: img.title || undefined,
             createdAt: img.createdAt.toISOString(),
             isSelected,
+            // Video fields
+            mediaType: isVideo ? "video" : "image",
+            videoUrl: isVideo ? (img.livePhotoVideoPath || img.filePath) : undefined,
+            posterUrl: isVideo ? displayUrl : undefined,
           });
         }
       }
