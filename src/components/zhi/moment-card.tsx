@@ -421,7 +421,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5 }}
             whileTap={{ scale: 0.98 }}
-            className={`group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-lg transition-shadow duration-500 hover:shadow-2xl [transform-style:preserve-3d] ${bgStyle}`}
+            className={`group relative w-full cursor-pointer overflow-hidden rounded-3xl shadow-lg transition-shadow duration-500 hover:shadow-2xl [transform-style:preserve-3d] isolate ${bgStyle}`}
           >
             {/* 1. Desktop Only: Mouse Spotlight Overlay */}
             <m.div
@@ -431,14 +431,14 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
 
             {/* 2. Video Layer - autoplay muted loop (优先) */}
             {hasVideos && moment.videos![0] && (
-              <div className="absolute inset-0 z-0">
+              <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl">
                 {/* Poster image - shows immediately */}
                 {moment.videos![0].thumbnailUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={moment.videos![0].thumbnailUrl}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full rounded-3xl object-cover"
                   />
                 )}
                 {/* Video - fades in when loaded */}
@@ -450,7 +450,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
                   loop
                   playsInline
                   preload="metadata"
-                  className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500"
+                  className="absolute inset-0 h-full w-full rounded-3xl object-cover opacity-0 transition-opacity duration-500"
                   onLoadedData={(e) => {
                     e.currentTarget.classList.replace("opacity-0", "opacity-100");
                   }}
@@ -468,7 +468,7 @@ export function ZhiMomentCard({ moment, onClick, onLike }: MomentCardProps) {
 
             {/* 2b. Image Layer (无视频时才显示) */}
             {!hasVideos && hasImages && moment.images![0] && (
-              <div className="absolute inset-0 z-0">
+              <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl">
                 <SmoothImage
                   src={moment.images![0].url}
                   alt="Background"
