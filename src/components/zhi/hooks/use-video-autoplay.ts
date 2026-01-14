@@ -12,7 +12,7 @@ import { useEffect, useRef, type RefObject } from 'react';
  * @param videoRef - 视频元素的 ref
  * @returns isInView - 视频是否在视口内
  */
-export function useVideoAutoplay(videoRef: RefObject<HTMLVideoElement>) {
+export function useVideoAutoplay(videoRef: RefObject<HTMLVideoElement>): void {
     const isInViewRef = useRef(false);
 
     useEffect(() => {
@@ -30,12 +30,9 @@ export function useVideoAutoplay(videoRef: RefObject<HTMLVideoElement>) {
 
                 if (isVisible) {
                     // 进入视口：尝试播放
-                    video.play().catch((error) => {
-                        // 处理自动播放被浏览器策略阻止的情况
+                    video.play().catch(() => {
+                        // 自动播放被浏览器策略阻止，静默处理
                         // 常见原因：用户未与页面交互、浏览器设置等
-                        if (error.name !== 'AbortError') {
-                            console.debug('[useVideoAutoplay] Autoplay prevented:', error.message);
-                        }
                     });
                 } else {
                     // 离开视口：暂停播放
@@ -58,5 +55,5 @@ export function useVideoAutoplay(videoRef: RefObject<HTMLVideoElement>) {
         };
     }, [videoRef]);
 
-    return isInViewRef.current;
+    // Hook is used purely for side effects (auto-play/pause)
 }

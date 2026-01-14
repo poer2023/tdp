@@ -75,7 +75,6 @@ export function ZhiMomentDetail({ moment, onClose, onLike }: MomentDetailProps) 
 
   // Effect 1: 数据获取 - 仅在 momentId 变化时执行一次
   useEffect(() => {
-    console.log("[DEBUG] moment-detail refetch triggered, moment.id:", moment.id);
     refetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [moment.id]);

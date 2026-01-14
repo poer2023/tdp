@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable no-console */
+
 /**
  * 视频调试日志工具
  * 用于追踪视频上传、处理和显示的完整数据流
