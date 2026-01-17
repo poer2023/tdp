@@ -45,15 +45,19 @@ jobs:
             exit 1
           fi
 
-      - name: Create scheduled backup
+      - name: Create scheduled backup (attempt 1)
+        id: backup_attempt_1
+        continue-on-error: true
         uses: appleboy/ssh-action@v1.0.3
-        with:
+        with: &backup_with
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT || '22' }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script_stop: true
           envs: PROJECT_DIR,RETENTION_DAYS
+          timeout: 120s
+          command_timeout: 15m
           script: |
             set -euo pipefail
 
@@ -91,6 +95,28 @@ jobs:
             # Disk usage check
             echo "==> Backup directory disk usage:"
             du -sh backups/
+
+      - name: Create scheduled backup (attempt 2)
+        if: steps.backup_attempt_1.outcome == 'failure'
+        id: backup_attempt_2
+        continue-on-error: true
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          <<: *backup_with
+
+      - name: Create scheduled backup (attempt 3)
+        if: steps.backup_attempt_2.outcome == 'failure'
+        id: backup_attempt_3
+        continue-on-error: true
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          <<: *backup_with
+
+      - name: Fail backup after retries
+        if: steps.backup_attempt_3.outcome == 'failure'
+        run: |
+          echo "Backup failed after 3 attempts." >&2
+          exit 1
 
       - name: Backup summary
         if: always()
