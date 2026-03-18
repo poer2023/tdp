@@ -132,7 +132,7 @@ services:
       - .env
     environment:
       NODE_ENV: production
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://dybzy.com}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://sw8ks8c4so8ow84o8wcckkk0.74.48.186.233.sslip.io}
     ports:
       - "3000:3000"
     volumes:
@@ -156,7 +156,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.tdp-app.entryPoints=http
-      - traefik.http.routers.tdp-app.rule=Host(`dybzy.com`) || Host(`www.dybzy.com`)
+      - traefik.http.routers.tdp-app.rule=Host(`sw8ks8c4so8ow84o8wcckkk0.74.48.186.233.sslip.io`)
       - traefik.http.services.tdp-app.loadbalancer.server.port=3000
     # 如果需要本地构建，取消下面的注释
     # build:
